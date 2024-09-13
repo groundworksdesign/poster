@@ -9,6 +9,19 @@ import {
 } from './Broadcast/PresentationEvent';
 export default function Deck() {
   const [socket, setSocket] = useState<BroadcastChannel | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    setSocket(connect());
+    setMessage('Deck connected');
+  }, []);
+
+  useEffect(() => {
+    if (socket) {
+      socket.postMessage(new PresentationEvent(null, message));
+    }
+  }, [message]);
+
   const deck: Slide[] = [
     {
       slideType: SlideType.TITLE,
@@ -31,22 +44,6 @@ export default function Deck() {
       } as SlideContent,
     },
   ];
-
-  useEffect(() => {
-    setSocket(connect());
-    // socket.postMessage({
-    //   slide: {
-    //     slideType: SlideType.TITLE,
-    //     styles: {
-    //       backgroundColor: 'green',
-    //     },
-    //     content: {
-    //       title: 'Joseph Staples',
-    //       subTitle: 'President, Willow Creek Stake',
-    //     },
-    //   } as Slide,
-    // } as PresentationEvent);
-  });
 
   return (
     <>

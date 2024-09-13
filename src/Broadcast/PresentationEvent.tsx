@@ -23,8 +23,10 @@ export const SlideDisplay = ({ slide }: { slide: Slide }) => {
 };
 
 export class PresentationEvent {
-  slide: Slide;
-  constructor(slide: Slide) {
+  slide: Slide | null = null;
+  message: string | null = null;
+  constructor(slide: Slide | null, message: string | null = null) {
     this.slide = slide;
+    this.message = message;
   }
 }
