@@ -6,10 +6,30 @@ export const enum SlideType {
   VIDEO = 'video',
 }
 
+export const enum HorizontalAlign {
+  LEFT = 'left',
+  CENTER = 'center',
+  RIGHT = 'right',
+}
+
+export const enum VerticalAlign {
+  TOP = 'top',
+  MIDDLE = 'middle',
+  BOTTOM = 'bottom',
+}
+
+export type SlideCSS = {
+  backgroundColor: string | undefined;
+  color: string | undefined;
+  height: string | undefined;
+  width: string | undefined;
+  horizontalAlign: HorizontalAlign | undefined;
+  verticalAlign: VerticalAlign | undefined;
+};
 export type SlideContent = { title: string; subTitle: string };
 export type Slide = {
   slideType: SlideType;
-  styles: object;
+  style: SlideCSS;
   content: SlideContent;
 };
 

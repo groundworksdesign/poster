@@ -6,6 +6,8 @@ import {
   Slide,
   SlideContent,
   SlideType,
+  SlideCSS,
+  VerticalAlign,
 } from './Broadcast/PresentationEvent';
 export default function Deck() {
   const [socket, setSocket] = useState<BroadcastChannel | null>(null);
@@ -22,12 +24,16 @@ export default function Deck() {
     }
   }, [message]);
 
+  const slideStyle = {
+    backgroundColor: 'blue',
+    verticalAlign: VerticalAlign.BOTTOM,
+    color: 'white',
+  } as SlideCSS;
+
   const deck: Slide[] = [
     {
       slideType: SlideType.TITLE,
-      styles: {
-        backgroundColor: 'green',
-      },
+      style: slideStyle,
       content: {
         title: 'Joseph Staples',
         subTitle: 'President, Willow Creek Stake',
@@ -35,9 +41,7 @@ export default function Deck() {
     },
     {
       slideType: SlideType.TITLE,
-      styles: {
-        backgroundColor: 'green',
-      },
+      style: slideStyle,
       content: {
         title: 'Alan Mattheson',
         subTitle: 'First Counselor, Willow Creek Stake',

@@ -1,0 +1,12 @@
+body {
+  background-color: #00b140;
+}
+.title {
+  font-size: 2em;
+  font-weight: bold;
+}
+
+.subtitle {
+  font-size: 1.25em;
+  font-weight: bold;
+}
