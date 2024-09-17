@@ -74,6 +74,7 @@ export type PresentationData = {
   title: string;
   date: string;
   location: string;
+  useGreenScreen: boolean;
   notes: string;
   slideStyles: StyleDictionary;
   deck: Slide[];

@@ -13,7 +13,7 @@ export default function Presentation() {
   const [message, setMessage] = useState<string | null | undefined>(null);
   const [useGreenScreen, setUseGreenScreen] = useState<
     boolean | null | undefined
-  >(true);
+  >(false);
   const root = document.getElementsByTagName('body');
 
   useEffect(() => {

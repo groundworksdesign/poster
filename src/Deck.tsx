@@ -17,6 +17,7 @@ export default function Deck() {
   const [file, setFile] = useState<File>();
   const [presentation, setPresentation] = useState<PresentationData>();
   const [deck, setDeck] = useState<Slide[]>([]);
+  const fileReader = new FileReader();
 
   useEffect(() => {
     setSocket(connect());
@@ -35,35 +36,11 @@ export default function Deck() {
     }
   }, [message]);
 
-  const slideStyle = {
-    backgroundColor: 'blue',
-    verticalAlign: VerticalAlign.BOTTOM,
-    color: 'white',
-  } as SlideCSS;
-
-  // const file = fs.readFileSync(
-  //   '/Users/hpractv/temp/stake_conference/Willow Creek 2024 Stake Conference.mqe',
-  //   'utf-8',
-  // );
-
-  // const deck: Slide[] = [
-  //   {
-  //     slideType: SlideType.TITLE,
-  //     style: slideStyle,
-  //     content: {
-  //       title: 'Joseph Staples',
-  //       subTitle: 'President, Willow Creek Stake',
-  //     } as SlideContent,
-  //   },
-  //   {
-  //     slideType: SlideType.TITLE,
-  //     style: slideStyle,
-  //     content: {
-  //       title: 'Alan Mattheson',
-  //       subTitle: 'First Counselor, Willow Creek Stake',
-  //     } as SlideContent,
-  //   },
-  // ];
+  useEffect(() => {
+    if (presentation) {
+      setDeck(presentation?.deck || []);
+    }
+  }, [presentation]);
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -75,24 +52,26 @@ export default function Deck() {
     if (!file) {
       return;
     }
-    const reader = new FileReader();
-    reader.onload = e => {
-      const text = e.target?.result as string;
-      setPresentation(JSON.parse(text) as PresentationData);
-      if ((presentation?.deck.length ?? 0) > 0) {
-        console.log(presentation?.deck);
-        setDeck(presentation?.deck || []);
-      }
-    };
-    reader.readAsText(file);
+
+    fileReader.addEventListener('load', () => {
+      const presentationJson = fileReader.result as string;
+      console.log('presentationJson:', presentationJson);
+      setPresentation(JSON.parse(presentationJson) as PresentationData);
+    });
+
+    fileReader.readAsText(file);
+    console.log('fr called.');
   };
 
   return (
     <>
       <h1>Deck</h1>
       <div>
-        <input type="file" onChange={handleFileChange} />
-        <div>{file && `${file.name} - ${file.type}`}</div>
+        <input
+          type="file"
+          onChange={handleFileChange}
+          style={{ width: '400px', border: '1px solid black' }}
+        />
         <button onClick={handleUploadClick}>Upload</button>
       </div>
       <div>
@@ -106,11 +85,8 @@ export default function Deck() {
               };
               const props = {
                 slide: { ...deck[index], style: style },
-                useGreenScreen: true,
+                useGreenScreen: presentation?.useGreenScreen,
               } as PresentationEventProps;
-
-              console.log('Props: ', props);
-
               return (
                 <li key={index}>
                   <SlideDisplay slide={slide} />
