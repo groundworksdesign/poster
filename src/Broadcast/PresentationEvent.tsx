@@ -29,6 +29,8 @@ export type SlideCSS = {
   fontFamily?: string | undefined;
   fontSize?: string | undefined;
   fontWeight?: string | undefined;
+  title?: SlideCSS | undefined;
+  subTitle?: SlideCSS | undefined;
 };
 
 export type Slide = {

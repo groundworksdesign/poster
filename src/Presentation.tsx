@@ -5,7 +5,6 @@ import {
   Slide,
   VerticalAlign,
 } from './Broadcast/PresentationEvent';
-import './presentation.css';
 
 export default function Presentation() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -20,6 +19,7 @@ export default function Presentation() {
     const socket = connect();
     socket.onmessage = event => {
       const present = event.data as PresentationEvent;
+      console.log('Event Slide:', present.slide);
       setSlide(present.slide);
       setMessage(present.message);
       setUseGreenScreen(present.useGreenScreen);
@@ -43,8 +43,6 @@ export default function Presentation() {
         style={{
           height: '100%',
           width: '100%',
-          // backgroundColor: '#00b140',
-          border: '1px solid orange;',
         }}
       >
         <div
@@ -58,10 +56,25 @@ export default function Presentation() {
             height: slide?.style.height ?? '150px',
             verticalAlign:
               slide?.style.verticalAlign ?? VerticalAlign.MIDDLE.toString(),
+            fontFamily: slide?.style.fontFamily,
+            paddingTop: '20px',
           }}
         >
-          <div className="title">{slide?.title}</div>
-          <div className="subtitle">{slide?.subTitle}</div>
+          <div
+            style={{
+              fontSize: slide?.style.title?.fontSize ?? slide?.style.fontSize,
+            }}
+          >
+            {slide?.title}
+          </div>
+          <div
+            style={{
+              fontSize:
+                slide?.style.subTitle?.fontSize ?? slide?.style.fontSize,
+            }}
+          >
+            {slide?.subTitle}
+          </div>
         </div>
       </div>
     </div>

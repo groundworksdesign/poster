@@ -60,7 +60,8 @@ export default function Deck() {
     });
 
     fileReader.readAsText(file);
-    console.log('fr called.');
+    const fileInput = document.getElementById('file') as HTMLInputElement;
+    fileInput.value = '';
   };
 
   return (
@@ -68,11 +69,14 @@ export default function Deck() {
       <h1>Deck</h1>
       <div>
         <input
+          id="file"
           type="file"
           onChange={handleFileChange}
           style={{ width: '400px', border: '1px solid black' }}
         />
-        <button onClick={handleUploadClick}>Upload</button>
+        <button id="load" onClick={e => handleUploadClick()}>
+          Load{' '}
+        </button>
       </div>
       <div>
         <h2>Slides</h2>
