@@ -23,7 +23,14 @@ export const parseSongXML = async (xmlContent: string): Promise<SongData> => {
     const author = authorElement?.textContent?.trim() || '';
     
     const verses: SongVerse[] = [];
-    const verseElements = songElement.querySelectorAll('verses verse');
+    
+    // Try the current nested format first: <verses><verse>...</verse></verses>
+    let verseElements = songElement.querySelectorAll('verses verse');
+    
+    // If no verses found with nested format, try direct verse elements: <song><verse>...</verse></song>
+    if (verseElements.length === 0) {
+      verseElements = songElement.querySelectorAll(':scope > verse');
+    }
     
     verseElements.forEach((verseElement, index) => {
       const verseNumber = parseInt(verseElement.getAttribute('number') || '') || index + 1;

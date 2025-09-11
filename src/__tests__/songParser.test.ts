@@ -74,6 +74,35 @@ describe('Song XML Parser', () => {
     await expect(parseSongXML(invalidXML)).rejects.toThrow('Failed to parse song XML');
   });
 
+  test('should parse XML with direct verse elements (alternative format)', async () => {
+    const alternativeXML = `<?xml version="1.0" encoding="UTF-8"?>
+<song>
+  <title>Choose the Right</title>
+  <author>Joseph L. Townsend</author>
+  <verse number="1">
+    <line>Choose the right when a choice is placed before you.</line>
+    <line>In the right the Holy Spirit guides;</line>
+  </verse>
+  <verse number="2">
+    <line>Choose the right! Let no spirit of digression</line>
+    <line>Overcome you in the evil hour;</line>
+  </verse>
+</song>`;
+    
+    const result = await parseSongXML(alternativeXML);
+    
+    expect(result.title).toBe('Choose the Right');
+    expect(result.author).toBe('Joseph L. Townsend');
+    expect(result.verses).toHaveLength(2);
+    
+    expect(result.verses[0].number).toBe(1);
+    expect(result.verses[0].lines).toHaveLength(2);
+    expect(result.verses[0].lines[0]).toBe('Choose the right when a choice is placed before you.');
+    
+    expect(result.verses[1].number).toBe(2);
+    expect(result.verses[1].lines[0]).toBe('Choose the right! Let no spirit of digression');
+  });
+
   test('should throw error for XML without song element', async () => {
     const xmlWithoutSong = '<?xml version="1.0"?><root><title>Test</title></root>';
     await expect(parseSongXML(xmlWithoutSong)).rejects.toThrow('missing song element');

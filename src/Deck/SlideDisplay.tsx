@@ -26,7 +26,10 @@ export default function SlideDisplay({
 
   const sendNavigationCommand = (command: LyricsNavigation) => {
     sendAction({
-      lyricsNavigation: { ...command, timestamp: Date.now() },
+      lyricsNavigation: { 
+        ...command, 
+        timestamp: Date.now() // Always use a fresh timestamp
+      },
     });
   };
 

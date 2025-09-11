@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { SongData, LyricsDisplayState, SlideCSS, LyricsNavigation } from '../Present/PresentTypes';
 
 interface LyricsDisplayProps {
@@ -19,6 +19,7 @@ export default function LyricsDisplay({
     currentLineIndex: 0,
     isPlaying: false,
   });
+  const lastProcessedTimestamp = useRef<number>(0);
 
   const currentVerse = songData.verses[state.currentVerse];
   const lines = currentVerse?.lines || [];
@@ -29,7 +30,13 @@ export default function LyricsDisplay({
 
   // Handle external navigation commands
   useEffect(() => {
-    if (navigationCommand) {
+    if (navigationCommand && navigationCommand.timestamp) {
+      // Only process if this is a new command (different timestamp)
+      if (navigationCommand.timestamp <= lastProcessedTimestamp.current) {
+        return;
+      }
+      lastProcessedTimestamp.current = navigationCommand.timestamp;
+      
       if (navigationCommand.command === 'next') {
         setState(prev => {
           let newState = { ...prev };
