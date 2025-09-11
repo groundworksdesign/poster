@@ -1,0 +1,666 @@
+From ebe1101696e03e7c85a1bb469bf39d66953a2f77 Mon Sep 17 00:00:00 2001
+From: "copilot-swe-agent[bot]" <198982749+Copilot@users.noreply.github.com>
+Date: Thu, 11 Sep 2025 04:09:46 +0000
+Subject: [PATCH 2/3] Add XML song file loading and 2-line lyrics display
+ functionality
+
+Co-authored-by: hpractv <13870231+hpractv@users.noreply.github.com>
+---
+ public/sample-song.xml        |  25 +++++
+ src/Deck/DeckBuilder.tsx      |  99 ++++++++++++++---
+ src/Deck/SlideDisplay.tsx     |  19 +++-
+ src/Present/LyricsDisplay.tsx | 204 ++++++++++++++++++++++++++++++++++
+ src/Present/Present.tsx       |  70 +++++++-----
+ src/Present/PresentTypes.tsx  |  18 +++
+ src/utils/songParser.ts       |  69 ++++++++++++
+ 7 files changed, 457 insertions(+), 47 deletions(-)
+ create mode 100644 public/sample-song.xml
+ create mode 100644 src/Present/LyricsDisplay.tsx
+ create mode 100644 src/utils/songParser.ts
+
+diff --git a/public/sample-song.xml b/public/sample-song.xml
+new file mode 100644
+index 0000000..2e1c920
+--- /dev/null
++++ b/public/sample-song.xml
+@@ -0,0 +1,25 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<song>
++  <title>Amazing Grace</title>
++  <author>John Newton</author>
++  <verses>
++    <verse number="1">
++      <line>Amazing grace, how sweet the sound</line>
++      <line>That saved a wretch like me</line>
++      <line>I once was lost, but now I'm found</line>
++      <line>Was blind, but now I see</line>
++    </verse>
++    <verse number="2">
++      <line>'Twas grace that taught my heart to fear</line>
++      <line>And grace my fears relieved</line>
++      <line>How precious did that grace appear</line>
++      <line>The hour I first believed</line>
++    </verse>
++    <verse number="3">
++      <line>Through many dangers, toils and snares</line>
++      <line>I have already come</line>
++      <line>'Tis grace has brought me safe thus far</line>
++      <line>And grace will lead me home</line>
++    </verse>
++  </verses>
++</song>
+\ No newline at end of file
+diff --git a/src/Deck/DeckBuilder.tsx b/src/Deck/DeckBuilder.tsx
+index 203a573..5a557f7 100644
+--- a/src/Deck/DeckBuilder.tsx
++++ b/src/Deck/DeckBuilder.tsx
+@@ -4,18 +4,17 @@ import SlideDisplay from './SlideDisplay';
+ import {
+   PresentData,
+   PresentDataProps,
+-  SlideCSS,
+-  Slide,
+-  VerticalAlign,
+   Deck,
+   SlideType,
+ } from '../Present/PresentTypes';
++import { parseSongXML, createSongSlide } from '../utils/songParser';
+ 
+ export default function DeckBuilder() {
+   const [message, setMessage] = useState<string | null>();
+   const [file, setFile] = useState<File>();
+   const [deck, setDeck] = useState<Deck>();
+   const [connection, setConnection] = useState<Connection | null | undefined>();
++  const [isLoadingSong, setIsLoadingSong] = useState<boolean>(false);
+   const fileReader = new FileReader();
+ 
+   useEffect(() => {
+@@ -24,7 +23,7 @@ export default function DeckBuilder() {
+   }, []);
+ 
+   useEffect(() => {
+-    if (connection) {
++    if (connection && message) {
+       connection.channel.postMessage(
+         new PresentData({
+           slide: null,
+@@ -33,7 +32,7 @@ export default function DeckBuilder() {
+         }),
+       );
+     }
+-  }, [message]);
++  }, [message, connection]);
+ 
+   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+     if (e.target.files) {
+@@ -41,18 +40,85 @@ export default function DeckBuilder() {
+     }
+   };
+ 
+-  const handleUploadClick = () => {
++  const handleUploadClick = async () => {
+     if (!file) {
+       return;
+     }
+ 
+-    fileReader.addEventListener('load', () => {
+-      const presentationJson = fileReader.result as string;
+-      console.log('presentationJson:', presentationJson);
+-      setDeck(JSON.parse(presentationJson) as Deck);
+-    });
++    const fileName = file.name.toLowerCase();
++    
++    if (fileName.endsWith('.xml')) {
++      // Handle XML song file
++      setIsLoadingSong(true);
++      try {
++        fileReader.addEventListener('load', async () => {
++          try {
++            const xmlContent = fileReader.result as string;
++            const songData = await parseSongXML(xmlContent);
++            
++            // Create a new deck with the song slide
++            const songSlide = createSongSlide(songData, {
++              backgroundColor: '#000000',
++              color: '#ffffff',
++              fontFamily: 'Arial, sans-serif',
++              fontSize: '24px',
++              height: '100%',
++              width: '100%',
++            });
++            
++            const newDeck: Deck = {
++              title: `Song: ${songData.title}`,
++              date: new Date().toISOString().split('T')[0],
++              location: '',
++              useGreenScreen: false,
++              notes: `Loaded from ${file.name}`,
++              slideStyles: {
++                [SlideType.GENERAL]: {
++                  backgroundColor: '#000000',
++                  color: '#ffffff',
++                  fontFamily: 'Arial, sans-serif',
++                  fontSize: '24px',
++                },
++                [SlideType.SONG]: {
++                  backgroundColor: '#000000',
++                  color: '#ffffff',
++                  fontFamily: 'Arial, sans-serif',
++                  fontSize: '28px',
++                  height: '100%',
++                  width: '100%',
++                },
++              },
++              slides: [songSlide],
++            };
++            
++            setDeck(newDeck);
++            setMessage(`Loaded song: ${songData.title}`);
++          } catch (error) {
++            setMessage(`Error parsing XML: ${error instanceof Error ? error.message : 'Unknown error'}`);
++          } finally {
++            setIsLoadingSong(false);
++          }
++        });
++        
++        fileReader.readAsText(file);
++      } catch (error) {
++        setMessage(`Error loading file: ${error instanceof Error ? error.message : 'Unknown error'}`);
++        setIsLoadingSong(false);
++      }
++    } else if (fileName.endsWith('.json')) {
++      // Handle existing JSON deck file
++      fileReader.addEventListener('load', () => {
++        const presentationJson = fileReader.result as string;
++        console.log('presentationJson:', presentationJson);
++        setDeck(JSON.parse(presentationJson) as Deck);
++        setMessage('Loaded JSON deck');
++      });
++
++      fileReader.readAsText(file);
++    } else {
++      setMessage('Unsupported file type. Please upload .json or .xml files.');
++    }
+ 
+-    fileReader.readAsText(file);
+     const fileInput = document.getElementById('file') as HTMLInputElement;
+     fileInput.value = '';
+   };
+@@ -70,11 +136,16 @@ export default function DeckBuilder() {
+         <input
+           id="file"
+           type="file"
++          accept=".json,.xml"
+           onChange={handleFileChange}
+           style={{ width: '400px', border: '1px solid black' }}
+         />
+-        <button id="load" onClick={e => handleUploadClick()}>
+-          Load{' '}
++        <button 
++          id="load" 
++          onClick={e => handleUploadClick()}
++          disabled={isLoadingSong}
++        >
++          {isLoadingSong ? 'Loading...' : 'Load'}
+         </button>
+         <button id="save" onCanPlay={handleSaveClick}>
+           Save
+diff --git a/src/Deck/SlideDisplay.tsx b/src/Deck/SlideDisplay.tsx
+index e56c6c5..64451c9 100644
+--- a/src/Deck/SlideDisplay.tsx
++++ b/src/Deck/SlideDisplay.tsx
+@@ -24,10 +24,21 @@ export default function SlideDisplay({
+   } as PresentDataProps;
+ 
+   return (
+-    <div>
+-      <div>{slide.title} </div>
+-      <div> {slide.subTitle} </div>
+-      <button onClick={() => sendAction(props)}>Send</button>
++    <div style={{ border: '1px solid #ccc', padding: '10px', margin: '5px' }}>
++      <div><strong>{slide.title}</strong></div>
++      {slide.subTitle && <div><em>{slide.subTitle}</em></div>}
++      <div>Type: {slide.type}</div>
++      {slide.lyrics && (
++        <div style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>
++          Verses: {slide.lyrics.verses.length}
++        </div>
++      )}
++      <button 
++        onClick={() => sendAction(props)}
++        style={{ marginTop: '10px', padding: '5px 15px' }}
++      >
++        Send to Presentation
++      </button>
+     </div>
+   );
+ }
+diff --git a/src/Present/LyricsDisplay.tsx b/src/Present/LyricsDisplay.tsx
+new file mode 100644
+index 0000000..be43154
+--- /dev/null
++++ b/src/Present/LyricsDisplay.tsx
+@@ -0,0 +1,204 @@
++import React, { useState, useEffect } from 'react';
++import { SongData, LyricsDisplayState, SlideCSS } from '../Present/PresentTypes';
++
++interface LyricsDisplayProps {
++  songData: SongData;
++  style: SlideCSS;
++  onStateChange?: (state: LyricsDisplayState) => void;
++}
++
++export default function LyricsDisplay({
++  songData,
++  style,
++  onStateChange,
++}: LyricsDisplayProps) {
++  const [state, setState] = useState<LyricsDisplayState>({
++    currentVerse: 0,
++    currentLineIndex: 0,
++    isPlaying: false,
++  });
++
++  const currentVerse = songData.verses[state.currentVerse];
++  const lines = currentVerse?.lines || [];
++
++  // Get 2 lines to display
++  const line1 = lines[state.currentLineIndex] || '';
++  const line2 = lines[state.currentLineIndex + 1] || '';
++
++  const hasMoreLines = state.currentLineIndex + 2 < lines.length;
++  const hasMoreVerses = state.currentVerse + 1 < songData.verses.length;
++
++  const nextLines = () => {
++    setState(prev => {
++      let newState = { ...prev };
++      
++      if (hasMoreLines) {
++        // Move to next 2 lines in current verse
++        newState.currentLineIndex = prev.currentLineIndex + 2;
++      } else if (hasMoreVerses) {
++        // Move to next verse
++        newState.currentVerse = prev.currentVerse + 1;
++        newState.currentLineIndex = 0;
++      }
++      
++      return newState;
++    });
++  };
++
++  const previousLines = () => {
++    setState(prev => {
++      let newState = { ...prev };
++      
++      if (prev.currentLineIndex > 0) {
++        // Move to previous 2 lines in current verse
++        newState.currentLineIndex = Math.max(0, prev.currentLineIndex - 2);
++      } else if (prev.currentVerse > 0) {
++        // Move to previous verse
++        newState.currentVerse = prev.currentVerse - 1;
++        const prevVerseLines = songData.verses[newState.currentVerse].lines;
++        // Find the last pair of lines in the previous verse
++        newState.currentLineIndex = Math.max(0, Math.floor((prevVerseLines.length - 1) / 2) * 2);
++      }
++      
++      return newState;
++    });
++  };
++
++  const goToVerse = (verseIndex: number) => {
++    setState(prev => ({
++      ...prev,
++      currentVerse: verseIndex,
++      currentLineIndex: 0,
++    }));
++  };
++
++  useEffect(() => {
++    onStateChange?.(state);
++  }, [state, onStateChange]);
++
++  return (
++    <div
++      style={{
++        height: '100%',
++        width: '100%',
++        display: 'flex',
++        flexDirection: 'column',
++        justifyContent: 'center',
++        alignItems: 'center',
++        backgroundColor: style.backgroundColor,
++        color: style.color,
++        fontFamily: style.fontFamily,
++        fontSize: style.fontSize,
++        textAlign: 'center',
++        padding: '40px',
++      }}
++    >
++      {/* Song title */}
++      <div
++        style={{
++          fontSize: '2.5em',
++          fontWeight: 'bold',
++          marginBottom: '30px',
++        }}
++      >
++        {songData.title}
++      </div>
++
++      {/* Lyrics lines with extra spacing */}
++      <div
++        style={{
++          fontSize: '2em',
++          lineHeight: '2.5',
++          marginBottom: '40px',
++          minHeight: '200px',
++          display: 'flex',
++          flexDirection: 'column',
++          justifyContent: 'center',
++        }}
++      >
++        <div style={{ marginBottom: '30px' }}>{line1}</div>
++        {line2 && <div>{line2}</div>}
++      </div>
++
++      {/* Verse indicator */}
++      <div
++        style={{
++          fontSize: '1.2em',
++          marginBottom: '20px',
++          opacity: 0.7,
++        }}
++      >
++        Verse {currentVerse?.number || state.currentVerse + 1}
++      </div>
++
++      {/* Navigation controls */}
++      <div
++        style={{
++          display: 'flex',
++          gap: '15px',
++          marginTop: '20px',
++        }}
++      >
++        <button
++          onClick={previousLines}
++          disabled={state.currentVerse === 0 && state.currentLineIndex === 0}
++          style={{
++            padding: '10px 20px',
++            fontSize: '1em',
++            backgroundColor: '#007bff',
++            color: 'white',
++            border: 'none',
++            borderRadius: '5px',
++            cursor: 'pointer',
++            opacity: state.currentVerse === 0 && state.currentLineIndex === 0 ? 0.5 : 1,
++          }}
++        >
++          Previous
++        </button>
++        <button
++          onClick={nextLines}
++          disabled={!hasMoreLines && !hasMoreVerses}
++          style={{
++            padding: '10px 20px',
++            fontSize: '1em',
++            backgroundColor: '#007bff',
++            color: 'white',
++            border: 'none',
++            borderRadius: '5px',
++            cursor: 'pointer',
++            opacity: !hasMoreLines && !hasMoreVerses ? 0.5 : 1,
++          }}
++        >
++          Next
++        </button>
++      </div>
++
++      {/* Verse selection */}
++      <div
++        style={{
++          display: 'flex',
++          gap: '10px',
++          marginTop: '15px',
++        }}
++      >
++        {songData.verses.map((verse, index) => (
++          <button
++            key={index}
++            onClick={() => goToVerse(index)}
++            style={{
++              padding: '5px 15px',
++              fontSize: '0.9em',
++              backgroundColor: state.currentVerse === index ? '#28a745' : '#6c757d',
++              color: 'white',
++              border: 'none',
++              borderRadius: '3px',
++              cursor: 'pointer',
++            }}
++          >
++            {verse.number}
++          </button>
++        ))}
++      </div>
++    </div>
++  );
++}
+\ No newline at end of file
+diff --git a/src/Present/Present.tsx b/src/Present/Present.tsx
+index 60d568a..5a36d9d 100644
+--- a/src/Present/Present.tsx
++++ b/src/Present/Present.tsx
+@@ -1,6 +1,7 @@
+ import { useEffect, useState } from 'react';
+-import { connect, ChannelType, Connection, BroadcastEvent } from './Broadcast';
+-import { PresentData, Slide, VerticalAlign } from './PresentTypes';
++import { connect, ChannelType, BroadcastEvent } from './Broadcast';
++import { PresentData, Slide, VerticalAlign, SlideType } from './PresentTypes';
++import LyricsDisplay from './LyricsDisplay';
+ 
+ export default function Presentation() {
+   const [loading, setLoading] = useState<boolean>(true);
+@@ -9,8 +10,6 @@ export default function Presentation() {
+   const [useGreenScreen, setUseGreenScreen] = useState<
+     boolean | null | undefined
+   >(false);
+-  const [connection, setConnection] = useState<Connection | null | undefined>();
+-  const root = document.getElementsByTagName('body');
+ 
+   const broadcastEventHandler = (event: MessageEvent) => {
+     const broadcastEvent = event.data as BroadcastEvent;
+@@ -27,11 +26,13 @@ export default function Presentation() {
+   };
+ 
+   useEffect(() => {
+-    setConnection(connect(ChannelType.PRESENTER, broadcastEventHandler));
++    const connectionInstance = connect(ChannelType.PRESENTER, broadcastEventHandler);
++    console.log('Presentation connected with ID:', connectionInstance.id);
+     setLoading(false);
+   }, []);
+ 
+   useEffect(() => {
++    const root = document.getElementsByTagName('body');
+     if (useGreenScreen) root[0].style.backgroundColor = '#00b140';
+     else root[0].style.backgroundColor = 'inherit';
+   }, [useGreenScreen]);
+@@ -48,36 +49,47 @@ export default function Presentation() {
+           width: '100%',
+         }}
+       >
+-        <div
+-          id="content"
+-          style={{
+-            backgroundColor: slide?.style.backgroundColor,
+-            color: slide?.style.color,
+-            position: 'absolute',
+-            bottom: '0px',
+-            width: slide?.style.width ?? '100%',
+-            height: slide?.style.height ?? '150px',
+-            verticalAlign:
+-              slide?.style.verticalAlign ?? VerticalAlign.MIDDLE.toString(),
+-            fontFamily: slide?.style.fontFamily,
+-            paddingTop: '20px',
+-          }}
+-        >
+-          <div
+-            style={{
+-              fontSize: slide?.titleFontSize ?? slide?.style.fontSize,
++        {slide?.type === SlideType.SONG && slide.lyrics ? (
++          <LyricsDisplay 
++            songData={slide.lyrics} 
++            style={slide.style}
++            onStateChange={(state) => {
++              // Handle lyrics state changes if needed
++              console.log('Lyrics state:', state);
+             }}
+-          >
+-            {slide?.title}
+-          </div>
++          />
++        ) : (
+           <div
++            id="content"
+             style={{
+-              fontSize: slide?.subTitleFontSize ?? slide?.style.fontSize,
++              backgroundColor: slide?.style.backgroundColor,
++              color: slide?.style.color,
++              position: 'absolute',
++              bottom: '0px',
++              width: slide?.style.width ?? '100%',
++              height: slide?.style.height ?? '150px',
++              verticalAlign:
++                slide?.style.verticalAlign ?? VerticalAlign.MIDDLE.toString(),
++              fontFamily: slide?.style.fontFamily,
++              paddingTop: '20px',
+             }}
+           >
+-            {slide?.subTitle}
++            <div
++              style={{
++                fontSize: slide?.titleFontSize ?? slide?.style.fontSize,
++              }}
++            >
++              {slide?.title}
++            </div>
++            <div
++              style={{
++                fontSize: slide?.subTitleFontSize ?? slide?.style.fontSize,
++              }}
++            >
++              {slide?.subTitle}
++            </div>
+           </div>
+-        </div>
++        )}
+       </div>
+     </div>
+   );
+diff --git a/src/Present/PresentTypes.tsx b/src/Present/PresentTypes.tsx
+index 6825f5b..63ac598 100644
+--- a/src/Present/PresentTypes.tsx
++++ b/src/Present/PresentTypes.tsx
+@@ -39,6 +39,24 @@ export type Slide = {
+   style: SlideCSS;
+   titleFontSize?: string | undefined;
+   subTitleFontSize?: string | undefined;
++  lyrics?: SongData | undefined;
++};
++
++export type SongData = {
++  title: string;
++  author?: string;
++  verses: SongVerse[];
++};
++
++export type SongVerse = {
++  number: number;
++  lines: string[];
++};
++
++export type LyricsDisplayState = {
++  currentVerse: number;
++  currentLineIndex: number;
++  isPlaying: boolean;
+ };
+ 
+ export type PresentDataProps = {
+diff --git a/src/utils/songParser.ts b/src/utils/songParser.ts
+new file mode 100644
+index 0000000..2b4cf33
+--- /dev/null
++++ b/src/utils/songParser.ts
+@@ -0,0 +1,69 @@
++import { SongData, SongVerse, SlideType } from '../Present/PresentTypes';
++
++export const parseSongXML = async (xmlContent: string): Promise<SongData> => {
++  try {
++    const parser = new DOMParser();
++    const xmlDoc = parser.parseFromString(xmlContent, 'text/xml');
++    
++    // Check for parsing errors
++    const parseError = xmlDoc.querySelector('parsererror');
++    if (parseError) {
++      throw new Error('Invalid XML format');
++    }
++    
++    const songElement = xmlDoc.querySelector('song');
++    if (!songElement) {
++      throw new Error('Invalid song XML format: missing song element');
++    }
++
++    const titleElement = songElement.querySelector('title');
++    const authorElement = songElement.querySelector('author');
++    
++    const title = titleElement?.textContent?.trim() || 'Untitled';
++    const author = authorElement?.textContent?.trim() || '';
++    
++    const verses: SongVerse[] = [];
++    const verseElements = songElement.querySelectorAll('verses verse');
++    
++    verseElements.forEach((verseElement, index) => {
++      const verseNumber = parseInt(verseElement.getAttribute('number') || '') || index + 1;
++      const lineElements = verseElement.querySelectorAll('line');
++      const lines: string[] = [];
++      
++      lineElements.forEach(lineElement => {
++        const lineText = lineElement.textContent?.trim();
++        if (lineText) {
++          lines.push(lineText);
++        }
++      });
++      
++      verses.push({
++        number: verseNumber,
++        lines,
++      });
++    });
++    
++    if (verses.length === 0) {
++      throw new Error('No verses found in song XML');
++    }
++    
++    return {
++      title,
++      author,
++      verses,
++    };
++  } catch (error) {
++    throw new Error(`Failed to parse song XML: ${error instanceof Error ? error.message : 'Unknown error'}`);
++  }
++};
++
++export const createSongSlide = (songData: SongData, existingStyle: any) => {
++  return {
++    type: SlideType.SONG,
++    title: songData.title,
++    subTitle: songData.author ? `by ${songData.author}` : undefined,
++    file: undefined,
++    style: existingStyle,
++    lyrics: songData,
++  };
++};
+\ No newline at end of file
+-- 
+2.51.0
+

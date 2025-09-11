@@ -1,0 +1,285 @@
+From 10c89e326f16df595f4032a0e24da9c3c0e84ff9 Mon Sep 17 00:00:00 2001
+From: "copilot-swe-agent[bot]" <198982749+Copilot@users.noreply.github.com>
+Date: Thu, 11 Sep 2025 04:13:42 +0000
+Subject: [PATCH 3/3] Add comprehensive tests and additional sample song XML
+ file
+
+Co-authored-by: hpractv <13870231+hpractv@users.noreply.github.com>
+---
+ public/sample-song-2.xml             |  31 +++++++
+ src/__tests__/LyricsDisplay.test.tsx | 133 +++++++++++++++++++++++++++
+ src/__tests__/songParser.test.ts     |  81 ++++++++++++++++
+ 3 files changed, 245 insertions(+)
+ create mode 100644 public/sample-song-2.xml
+ create mode 100644 src/__tests__/LyricsDisplay.test.tsx
+ create mode 100644 src/__tests__/songParser.test.ts
+
+diff --git a/public/sample-song-2.xml b/public/sample-song-2.xml
+new file mode 100644
+index 0000000..82d7a68
+--- /dev/null
++++ b/public/sample-song-2.xml
+@@ -0,0 +1,31 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<song>
++  <title>How Great Thou Art</title>
++  <author>Carl Boberg</author>
++  <verses>
++    <verse number="1">
++      <line>O Lord my God, when I in awesome wonder</line>
++      <line>Consider all the worlds thy hands have made</line>
++      <line>I see the stars, I hear the rolling thunder</line>
++      <line>Thy power throughout the universe displayed</line>
++    </verse>
++    <verse number="2">
++      <line>When through the woods and forest glades I wander</line>
++      <line>And hear the birds sing sweetly in the trees</line>
++      <line>When I look down from lofty mountain grandeur</line>
++      <line>And hear the brook and feel the gentle breeze</line>
++    </verse>
++    <verse number="3">
++      <line>And when I think that God, his son not sparing</line>
++      <line>Sent him to die, I scarce can take it in</line>
++      <line>That on the cross, my burden gladly bearing</line>
++      <line>He bled and died to take away my sin</line>
++    </verse>
++    <chorus>
++      <line>Then sings my soul, my savior God to thee</line>
++      <line>How great thou art, how great thou art</line>
++      <line>Then sings my soul, my savior God to thee</line>
++      <line>How great thou art, how great thou art</line>
++    </chorus>
++  </verses>
++</song>
+\ No newline at end of file
+diff --git a/src/__tests__/LyricsDisplay.test.tsx b/src/__tests__/LyricsDisplay.test.tsx
+new file mode 100644
+index 0000000..8b1d253
+--- /dev/null
++++ b/src/__tests__/LyricsDisplay.test.tsx
+@@ -0,0 +1,133 @@
++import React from 'react';
++import { render, screen, fireEvent } from '@testing-library/react';
++import LyricsDisplay from '../Present/LyricsDisplay';
++import { SongData } from '../Present/PresentTypes';
++
++describe('LyricsDisplay', () => {
++  const mockSongData: SongData = {
++    title: 'Test Song',
++    author: 'Test Author',
++    verses: [
++      {
++        number: 1,
++        lines: [
++          'Line 1 of verse 1',
++          'Line 2 of verse 1',
++          'Line 3 of verse 1',
++          'Line 4 of verse 1',
++        ],
++      },
++      {
++        number: 2,
++        lines: [
++          'Line 1 of verse 2',
++          'Line 2 of verse 2',
++        ],
++      },
++    ],
++  };
++
++  const mockStyle = {
++    backgroundColor: '#000000',
++    color: '#ffffff',
++    fontFamily: 'Arial',
++    fontSize: '24px',
++  };
++
++  test('should display song title', () => {
++    render(
++      <LyricsDisplay songData={mockSongData} style={mockStyle} />
++    );
++    
++    expect(screen.getByText('Test Song')).toBeInTheDocument();
++  });
++
++  test('should display exactly 2 lines at a time initially', () => {
++    render(
++      <LyricsDisplay songData={mockSongData} style={mockStyle} />
++    );
++    
++    expect(screen.getByText('Line 1 of verse 1')).toBeInTheDocument();
++    expect(screen.getByText('Line 2 of verse 1')).toBeInTheDocument();
++    expect(screen.queryByText('Line 3 of verse 1')).not.toBeInTheDocument();
++  });
++
++  test('should show current verse indicator', () => {
++    render(
++      <LyricsDisplay songData={mockSongData} style={mockStyle} />
++    );
++    
++    expect(screen.getByText('Verse 1')).toBeInTheDocument();
++  });
++
++  test('should navigate to next 2 lines when Next button is clicked', () => {
++    render(
++      <LyricsDisplay songData={mockSongData} style={mockStyle} />
++    );
++    
++    const nextButton = screen.getByText('Next');
++    fireEvent.click(nextButton);
++    
++    expect(screen.getByText('Line 3 of verse 1')).toBeInTheDocument();
++    expect(screen.getByText('Line 4 of verse 1')).toBeInTheDocument();
++    expect(screen.queryByText('Line 1 of verse 1')).not.toBeInTheDocument();
++  });
++
++  test('should navigate to next verse when all lines of current verse are shown', () => {
++    render(
++      <LyricsDisplay songData={mockSongData} style={mockStyle} />
++    );
++    
++    const nextButton = screen.getByText('Next');
++    
++    // Click Next to show lines 3-4 of verse 1
++    fireEvent.click(nextButton);
++    
++    // Click Next again to move to verse 2
++    fireEvent.click(nextButton);
++    
++    expect(screen.getByText('Line 1 of verse 2')).toBeInTheDocument();
++    expect(screen.getByText('Line 2 of verse 2')).toBeInTheDocument();
++    expect(screen.getByText('Verse 2')).toBeInTheDocument();
++  });
++
++  test('should navigate backwards correctly', () => {
++    render(
++      <LyricsDisplay songData={mockSongData} style={mockStyle} />
++    );
++    
++    const nextButton = screen.getByText('Next');
++    const prevButton = screen.getByText('Previous');
++    
++    // Move forward
++    fireEvent.click(nextButton);
++    expect(screen.getByText('Line 3 of verse 1')).toBeInTheDocument();
++    
++    // Move back
++    fireEvent.click(prevButton);
++    expect(screen.getByText('Line 1 of verse 1')).toBeInTheDocument();
++    expect(screen.getByText('Line 2 of verse 1')).toBeInTheDocument();
++  });
++
++  test('should disable Previous button at the beginning', () => {
++    render(
++      <LyricsDisplay songData={mockSongData} style={mockStyle} />
++    );
++    
++    const prevButton = screen.getByText('Previous');
++    expect(prevButton).toBeDisabled();
++  });
++
++  test('should allow direct verse navigation', () => {
++    render(
++      <LyricsDisplay songData={mockSongData} style={mockStyle} />
++    );
++    
++    const verse2Button = screen.getByText('2');
++    fireEvent.click(verse2Button);
++    
++    expect(screen.getByText('Line 1 of verse 2')).toBeInTheDocument();
++    expect(screen.getByText('Line 2 of verse 2')).toBeInTheDocument();
++    expect(screen.getByText('Verse 2')).toBeInTheDocument();
++  });
++});
+\ No newline at end of file
+diff --git a/src/__tests__/songParser.test.ts b/src/__tests__/songParser.test.ts
+new file mode 100644
+index 0000000..0186594
+--- /dev/null
++++ b/src/__tests__/songParser.test.ts
+@@ -0,0 +1,81 @@
++import { parseSongXML, createSongSlide } from '../utils/songParser';
++import { SlideType } from '../Present/PresentTypes';
++
++describe('Song XML Parser', () => {
++  const sampleXML = `<?xml version="1.0" encoding="UTF-8"?>
++<song>
++  <title>Amazing Grace</title>
++  <author>John Newton</author>
++  <verses>
++    <verse number="1">
++      <line>Amazing grace, how sweet the sound</line>
++      <line>That saved a wretch like me</line>
++      <line>I once was lost, but now I'm found</line>
++      <line>Was blind, but now I see</line>
++    </verse>
++    <verse number="2">
++      <line>'Twas grace that taught my heart to fear</line>
++      <line>And grace my fears relieved</line>
++      <line>How precious did that grace appear</line>
++      <line>The hour I first believed</line>
++    </verse>
++  </verses>
++</song>`;
++
++  test('should parse valid XML song data correctly', async () => {
++    const result = await parseSongXML(sampleXML);
++    
++    expect(result.title).toBe('Amazing Grace');
++    expect(result.author).toBe('John Newton');
++    expect(result.verses).toHaveLength(2);
++    
++    expect(result.verses[0].number).toBe(1);
++    expect(result.verses[0].lines).toHaveLength(4);
++    expect(result.verses[0].lines[0]).toBe('Amazing grace, how sweet the sound');
++    
++    expect(result.verses[1].number).toBe(2);
++    expect(result.verses[1].lines[0]).toBe('\'Twas grace that taught my heart to fear');
++  });
++
++  test('should create proper slide structure', async () => {
++    const songData = await parseSongXML(sampleXML);
++    const style = { backgroundColor: '#000', color: '#fff' };
++    const slide = createSongSlide(songData, style);
++    
++    expect(slide.type).toBe(SlideType.SONG);
++    expect(slide.title).toBe('Amazing Grace');
++    expect(slide.subTitle).toBe('by John Newton');
++    expect(slide.lyrics).toEqual(songData);
++    expect(slide.style).toEqual(style);
++  });
++
++  test('should handle XML without author', async () => {
++    const xmlWithoutAuthor = `<?xml version="1.0" encoding="UTF-8"?>
++<song>
++  <title>Test Song</title>
++  <verses>
++    <verse number="1">
++      <line>Test line 1</line>
++      <line>Test line 2</line>
++    </verse>
++  </verses>
++</song>`;
++    
++    const result = await parseSongXML(xmlWithoutAuthor);
++    expect(result.title).toBe('Test Song');
++    expect(result.author).toBe('');
++    
++    const slide = createSongSlide(result, {});
++    expect(slide.subTitle).toBeUndefined();
++  });
++
++  test('should throw error for invalid XML', async () => {
++    const invalidXML = 'not valid xml';
++    await expect(parseSongXML(invalidXML)).rejects.toThrow('Failed to parse song XML');
++  });
++
++  test('should throw error for XML without song element', async () => {
++    const xmlWithoutSong = '<?xml version="1.0"?><root><title>Test</title></root>';
++    await expect(parseSongXML(xmlWithoutSong)).rejects.toThrow('missing song element');
++  });
++});
+\ No newline at end of file
+-- 
+2.51.0
+
