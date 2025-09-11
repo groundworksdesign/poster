@@ -35,7 +35,7 @@ export type Slide = {
   type: SlideType;
   title: string;
   subTitle: string | undefined;
-  file: string | undefined;
+  file?: string | undefined;
   style: SlideCSS;
   titleFontSize?: string | undefined;
   subTitleFontSize?: string | undefined;
