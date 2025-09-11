@@ -1,10 +1,6 @@
 import { useEffect, useState } from 'react';
-import { connect } from './Broadcast/Broadcast';
-import {
-  PresentationEvent,
-  Slide,
-  VerticalAlign,
-} from './Broadcast/PresentationEvent';
+import { connect, ChannelType, Connection, BroadcastEvent } from './Broadcast';
+import { PresentData, Slide, VerticalAlign } from './PresentTypes';
 
 export default function Presentation() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -13,20 +9,27 @@ export default function Presentation() {
   const [useGreenScreen, setUseGreenScreen] = useState<
     boolean | null | undefined
   >(false);
+  const [connection, setConnection] = useState<Connection | null | undefined>();
   const root = document.getElementsByTagName('body');
 
-  useEffect(() => {
-    const socket = connect();
-    socket.onmessage = event => {
-      const present = event.data as PresentationEvent;
-      console.log('Event Slide:', present.slide);
-      setSlide(present.slide);
-      setMessage(present.message);
-      setUseGreenScreen(present.useGreenScreen);
-    };
+  const broadcastEventHandler = (event: MessageEvent) => {
+    const broadcastEvent = event.data as BroadcastEvent;
+    if (broadcastEvent) {
+      const present = event.data as PresentData;
+      if (present) {
+        // console.log('Event Slide:', present.slide);
+        setSlide(present.slide);
+        setMessage(present.message);
+        setUseGreenScreen(present.useGreenScreen);
+        return broadcastEvent;
+      }
+    }
+  };
 
+  useEffect(() => {
+    setConnection(connect(ChannelType.PRESENTER, broadcastEventHandler));
     setLoading(false);
-  });
+  }, []);
 
   useEffect(() => {
     if (useGreenScreen) root[0].style.backgroundColor = '#00b140';
@@ -62,15 +65,14 @@ export default function Presentation() {
         >
           <div
             style={{
-              fontSize: slide?.style.title?.fontSize ?? slide?.style.fontSize,
+              fontSize: slide?.titleFontSize ?? slide?.style.fontSize,
             }}
           >
             {slide?.title}
           </div>
           <div
             style={{
-              fontSize:
-                slide?.style.subTitle?.fontSize ?? slide?.style.fontSize,
+              fontSize: slide?.subTitleFontSize ?? slide?.style.fontSize,
             }}
           >
             {slide?.subTitle}

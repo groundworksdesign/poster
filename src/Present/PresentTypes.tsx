@@ -29,8 +29,6 @@ export type SlideCSS = {
   fontFamily?: string | undefined;
   fontSize?: string | undefined;
   fontWeight?: string | undefined;
-  title?: SlideCSS | undefined;
-  subTitle?: SlideCSS | undefined;
 };
 
 export type Slide = {
@@ -39,29 +37,22 @@ export type Slide = {
   subTitle: string | undefined;
   file: string | undefined;
   style: SlideCSS;
+  titleFontSize?: string | undefined;
+  subTitleFontSize?: string | undefined;
 };
 
-export const SlideDisplay = ({ slide }: { slide: Slide }) => {
-  return (
-    <div>
-      <div>{slide.title} </div>
-      <div> {slide.subTitle} </div>
-    </div>
-  );
-};
-
-export type PresentationEventProps = {
+export type PresentDataProps = {
   slide?: Slide | null;
   message?: string | null;
   useGreenScreen?: boolean | null;
 };
 
-export class PresentationEvent {
+export class PresentData {
   slide?: Slide | null = null;
   message?: string | null = null;
   useGreenScreen?: boolean | null = null;
 
-  constructor(props: PresentationEventProps) {
+  constructor(props: PresentDataProps) {
     if (props.slide) this.slide = props.slide;
     if (props.message) this.message = props.message;
     if (props.useGreenScreen) this.useGreenScreen = props.useGreenScreen;
@@ -72,12 +63,12 @@ interface StyleDictionary {
   [key: string]: SlideCSS;
 }
 
-export type PresentationData = {
+export type Deck = {
   title: string;
   date: string;
   location: string;
   useGreenScreen: boolean;
   notes: string;
   slideStyles: StyleDictionary;
-  deck: Slide[];
+  slides: Slide[];
 };

@@ -1,7 +1,7 @@
 import React from 'react';
 import './App.css';
-import Deck from './Deck';
-import Presentation from './Presentation';
+import DeckBuilder from './Deck/DeckBuilder';
+import Presentation from './Present/Present';
 
 import { Routes, Route, Outlet, Link } from 'react-router-dom';
 
@@ -11,7 +11,7 @@ export default function App() {
       <div className="content">
         <Routes>
           <Route path="/" element={<Layout />}>
-            <Route path="deck" element={<Deck />} />
+            <Route path="deck" element={<DeckBuilder />} />
           </Route>
           <Route path="presentation" element={<Presentation />} />
         </Routes>

@@ -1,33 +1,32 @@
 import React, { ChangeEvent, useEffect, useState } from 'react';
-import { connect } from './Broadcast/Broadcast';
+import { connect, ChannelType, Connection } from '../Present/Broadcast';
+import SlideDisplay from './SlideDisplay';
 import {
-  PresentationEvent,
-  PresentationEventProps,
-  SlideDisplay,
+  PresentData,
+  PresentDataProps,
   SlideCSS,
   Slide,
   VerticalAlign,
-  PresentationData,
+  Deck,
   SlideType,
-} from './Broadcast/PresentationEvent';
+} from '../Present/PresentTypes';
 
-export default function Deck() {
-  const [socket, setSocket] = useState<BroadcastChannel | null>(null);
+export default function DeckBuilder() {
   const [message, setMessage] = useState<string | null>();
   const [file, setFile] = useState<File>();
-  const [presentation, setPresentation] = useState<PresentationData>();
-  const [deck, setDeck] = useState<Slide[]>([]);
+  const [deck, setDeck] = useState<Deck>();
+  const [connection, setConnection] = useState<Connection | null | undefined>();
   const fileReader = new FileReader();
 
   useEffect(() => {
-    setSocket(connect());
-    setMessage('Deck connected');
+    setConnection(connect(ChannelType.BUILDER, event => {}));
+    setMessage('Deck builder connected');
   }, []);
 
   useEffect(() => {
-    if (socket) {
-      socket.postMessage(
-        new PresentationEvent({
+    if (connection) {
+      connection.channel.postMessage(
+        new PresentData({
           slide: null,
           message: message,
           useGreenScreen: false,
@@ -35,12 +34,6 @@ export default function Deck() {
       );
     }
   }, [message]);
-
-  useEffect(() => {
-    if (presentation) {
-      setDeck(presentation?.deck || []);
-    }
-  }, [presentation]);
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -56,13 +49,19 @@ export default function Deck() {
     fileReader.addEventListener('load', () => {
       const presentationJson = fileReader.result as string;
       console.log('presentationJson:', presentationJson);
-      setPresentation(JSON.parse(presentationJson) as PresentationData);
+      setDeck(JSON.parse(presentationJson) as Deck);
     });
 
     fileReader.readAsText(file);
     const fileInput = document.getElementById('file') as HTMLInputElement;
     fileInput.value = '';
   };
+
+  const handleSendClick = (props: PresentDataProps) => {
+    connection?.channel.postMessage(new PresentData(props));
+  };
+
+  const handleSaveClick = () => {};
 
   return (
     <>
@@ -77,30 +76,22 @@ export default function Deck() {
         <button id="load" onClick={e => handleUploadClick()}>
           Load{' '}
         </button>
+        <button id="save" onCanPlay={handleSaveClick}>
+          Save
+        </button>
       </div>
       <div>
         <h2>Slides</h2>
         <div id="slides">
           <ul>
-            {deck.map((slide, index) => {
-              const style = {
-                ...presentation?.slideStyles[SlideType.GENERAL.toString()],
-                ...presentation?.slideStyles[slide.type.toString()],
-              };
-              const props = {
-                slide: { ...deck[index], style: style },
-                useGreenScreen: presentation?.useGreenScreen,
-              } as PresentationEventProps;
+            {deck?.slides.map((slide, index) => {
               return (
                 <li key={index}>
-                  <SlideDisplay slide={slide} />
-                  <button
-                    onClick={() =>
-                      socket?.postMessage(new PresentationEvent(props))
-                    }
-                  >
-                    Send
-                  </button>
+                  <SlideDisplay
+                    deck={deck}
+                    slide={slide}
+                    sendAction={handleSendClick}
+                  />
                 </li>
               );
             })}
