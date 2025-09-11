@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<song>
+  <title>How Great Thou Art</title>
+  <author>Carl Boberg</author>
+  <verses>
+    <verse number="1">
+      <line>O Lord my God, when I in awesome wonder</line>
+      <line>Consider all the worlds thy hands have made</line>
+      <line>I see the stars, I hear the rolling thunder</line>
+      <line>Thy power throughout the universe displayed</line>
+    </verse>
+    <verse number="2">
+      <line>When through the woods and forest glades I wander</line>
+      <line>And hear the birds sing sweetly in the trees</line>
+      <line>When I look down from lofty mountain grandeur</line>
+      <line>And hear the brook and feel the gentle breeze</line>
+    </verse>
+    <verse number="3">
+      <line>And when I think that God, his son not sparing</line>
+      <line>Sent him to die, I scarce can take it in</line>
+      <line>That on the cross, my burden gladly bearing</line>
+      <line>He bled and died to take away my sin</line>
+    </verse>
+    <chorus>
+      <line>Then sings my soul, my savior God to thee</line>
+      <line>How great thou art, how great thou art</line>
+      <line>Then sings my soul, my savior God to thee</line>
+      <line>How great thou art, how great thou art</line>
+    </chorus>
+  </verses>
+</song>
