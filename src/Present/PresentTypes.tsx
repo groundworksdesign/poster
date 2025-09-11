@@ -59,21 +59,29 @@ export type LyricsDisplayState = {
   isPlaying: boolean;
 };
 
+export type LyricsNavigation =
+  | { command: 'next'; timestamp?: number }
+  | { command: 'previous'; timestamp?: number }
+  | { command: 'goToVerse'; verseIndex: number; timestamp?: number };
+
 export type PresentDataProps = {
   slide?: Slide | null;
   message?: string | null;
   useGreenScreen?: boolean | null;
+  lyricsNavigation?: LyricsNavigation | null;
 };
 
 export class PresentData {
   slide?: Slide | null = null;
   message?: string | null = null;
   useGreenScreen?: boolean | null = null;
+  lyricsNavigation?: LyricsNavigation | null = null;
 
   constructor(props: PresentDataProps) {
     if (props.slide) this.slide = props.slide;
     if (props.message) this.message = props.message;
     if (props.useGreenScreen) this.useGreenScreen = props.useGreenScreen;
+    if (props.lyricsNavigation) this.lyricsNavigation = props.lyricsNavigation;
   }
 }
 

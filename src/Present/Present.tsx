@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { connect, ChannelType, BroadcastEvent } from './Broadcast';
-import { PresentData, Slide, VerticalAlign, SlideType } from './PresentTypes';
+import { PresentData, Slide, VerticalAlign, SlideType, LyricsNavigation } from './PresentTypes';
 import LyricsDisplay from './LyricsDisplay';
 
 export default function Presentation() {
@@ -10,6 +10,7 @@ export default function Presentation() {
   const [useGreenScreen, setUseGreenScreen] = useState<
     boolean | null | undefined
   >(false);
+  const [lyricsNavigation, setLyricsNavigation] = useState<LyricsNavigation | null>(null);
 
   const broadcastEventHandler = (event: MessageEvent) => {
     const broadcastEvent = event.data as BroadcastEvent;
@@ -20,6 +21,9 @@ export default function Presentation() {
         setSlide(present.slide);
         setMessage(present.message);
         setUseGreenScreen(present.useGreenScreen);
+        if (present.lyricsNavigation !== undefined) {
+          setLyricsNavigation(present.lyricsNavigation);
+        }
         return broadcastEvent;
       }
     }
@@ -53,6 +57,7 @@ export default function Presentation() {
           <LyricsDisplay 
             songData={slide.lyrics} 
             style={slide.style}
+            navigationCommand={lyricsNavigation}
             onStateChange={(state) => {
               // Handle lyrics state changes if needed
               console.log('Lyrics state:', state);

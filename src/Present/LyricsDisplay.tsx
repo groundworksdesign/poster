@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { SongData, LyricsDisplayState, SlideCSS } from '../Present/PresentTypes';
+import { SongData, LyricsDisplayState, SlideCSS, LyricsNavigation } from '../Present/PresentTypes';
 
 interface LyricsDisplayProps {
   songData: SongData;
   style: SlideCSS;
+  navigationCommand?: LyricsNavigation | null;
   onStateChange?: (state: LyricsDisplayState) => void;
 }
 
 export default function LyricsDisplay({
   songData,
   style,
+  navigationCommand,
   onStateChange,
 }: LyricsDisplayProps) {
   const [state, setState] = useState<LyricsDisplayState>({
@@ -25,52 +27,55 @@ export default function LyricsDisplay({
   const line1 = lines[state.currentLineIndex] || '';
   const line2 = lines[state.currentLineIndex + 1] || '';
 
-  const hasMoreLines = state.currentLineIndex + 2 < lines.length;
-  const hasMoreVerses = state.currentVerse + 1 < songData.verses.length;
-
-  const nextLines = () => {
-    setState(prev => {
-      let newState = { ...prev };
-      
-      if (hasMoreLines) {
-        // Move to next 2 lines in current verse
-        newState.currentLineIndex = prev.currentLineIndex + 2;
-      } else if (hasMoreVerses) {
-        // Move to next verse
-        newState.currentVerse = prev.currentVerse + 1;
-        newState.currentLineIndex = 0;
+  // Handle external navigation commands
+  useEffect(() => {
+    if (navigationCommand) {
+      if (navigationCommand.command === 'next') {
+        setState(prev => {
+          let newState = { ...prev };
+          
+          const currentVerse = songData.verses[prev.currentVerse];
+          const lines = currentVerse?.lines || [];
+          const hasMoreLines = prev.currentLineIndex + 2 < lines.length;
+          const hasMoreVerses = prev.currentVerse + 1 < songData.verses.length;
+          
+          if (hasMoreLines) {
+            // Move to next 2 lines in current verse
+            newState.currentLineIndex = prev.currentLineIndex + 2;
+          } else if (hasMoreVerses) {
+            // Move to next verse
+            newState.currentVerse = prev.currentVerse + 1;
+            newState.currentLineIndex = 0;
+          }
+          
+          return newState;
+        });
+      } else if (navigationCommand.command === 'previous') {
+        setState(prev => {
+          let newState = { ...prev };
+          
+          if (prev.currentLineIndex > 0) {
+            // Move to previous 2 lines in current verse
+            newState.currentLineIndex = Math.max(0, prev.currentLineIndex - 2);
+          } else if (prev.currentVerse > 0) {
+            // Move to previous verse
+            newState.currentVerse = prev.currentVerse - 1;
+            const prevVerseLines = songData.verses[newState.currentVerse].lines;
+            // Find the last pair of lines in the previous verse
+            newState.currentLineIndex = Math.max(0, Math.floor((prevVerseLines.length - 1) / 2) * 2);
+          }
+          
+          return newState;
+        });
+      } else if (navigationCommand.command === 'goToVerse') {
+        setState(prev => ({
+          ...prev,
+          currentVerse: navigationCommand.verseIndex,
+          currentLineIndex: 0,
+        }));
       }
-      
-      return newState;
-    });
-  };
-
-  const previousLines = () => {
-    setState(prev => {
-      let newState = { ...prev };
-      
-      if (prev.currentLineIndex > 0) {
-        // Move to previous 2 lines in current verse
-        newState.currentLineIndex = Math.max(0, prev.currentLineIndex - 2);
-      } else if (prev.currentVerse > 0) {
-        // Move to previous verse
-        newState.currentVerse = prev.currentVerse - 1;
-        const prevVerseLines = songData.verses[newState.currentVerse].lines;
-        // Find the last pair of lines in the previous verse
-        newState.currentLineIndex = Math.max(0, Math.floor((prevVerseLines.length - 1) / 2) * 2);
-      }
-      
-      return newState;
-    });
-  };
-
-  const goToVerse = (verseIndex: number) => {
-    setState(prev => ({
-      ...prev,
-      currentVerse: verseIndex,
-      currentLineIndex: 0,
-    }));
-  };
+    }
+  }, [navigationCommand, songData.verses]);
 
   useEffect(() => {
     onStateChange?.(state);
@@ -129,75 +134,6 @@ export default function LyricsDisplay({
         }}
       >
         Verse {currentVerse?.number || state.currentVerse + 1}
-      </div>
-
-      {/* Navigation controls */}
-      <div
-        style={{
-          display: 'flex',
-          gap: '15px',
-          marginTop: '20px',
-        }}
-      >
-        <button
-          onClick={previousLines}
-          disabled={state.currentVerse === 0 && state.currentLineIndex === 0}
-          style={{
-            padding: '10px 20px',
-            fontSize: '1em',
-            backgroundColor: '#007bff',
-            color: 'white',
-            border: 'none',
-            borderRadius: '5px',
-            cursor: 'pointer',
-            opacity: state.currentVerse === 0 && state.currentLineIndex === 0 ? 0.5 : 1,
-          }}
-        >
-          Previous
-        </button>
-        <button
-          onClick={nextLines}
-          disabled={!hasMoreLines && !hasMoreVerses}
-          style={{
-            padding: '10px 20px',
-            fontSize: '1em',
-            backgroundColor: '#007bff',
-            color: 'white',
-            border: 'none',
-            borderRadius: '5px',
-            cursor: 'pointer',
-            opacity: !hasMoreLines && !hasMoreVerses ? 0.5 : 1,
-          }}
-        >
-          Next
-        </button>
-      </div>
-
-      {/* Verse selection */}
-      <div
-        style={{
-          display: 'flex',
-          gap: '10px',
-          marginTop: '15px',
-        }}
-      >
-        {songData.verses.map((verse, index) => (
-          <button
-            key={index}
-            onClick={() => goToVerse(index)}
-            style={{
-              padding: '5px 15px',
-              fontSize: '0.9em',
-              backgroundColor: state.currentVerse === index ? '#28a745' : '#6c757d',
-              color: 'white',
-              border: 'none',
-              borderRadius: '3px',
-              cursor: 'pointer',
-            }}
-          >
-            {verse.number}
-          </button>
-        ))}
       </div>
     </div>
   );
