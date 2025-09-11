@@ -1,0 +1,130 @@
+{
+  "title": "Sample Presentation Deck",
+  "date": "2024-01-15",
+  "location": "Conference Room A",
+  "useGreenScreen": false,
+  "notes": "This is a sample slide deck for testing the poster presentation application. It includes various slide types to demonstrate the functionality.",
+  "slideStyles": {
+    "default": {
+      "backgroundColor": "#ffffff",
+      "color": "#333333",
+      "fontFamily": "Arial, sans-serif",
+      "fontSize": "24px",
+      "horizontalAlign": "center",
+      "verticalAlign": "middle"
+    },
+    "title": {
+      "backgroundColor": "#2c3e50",
+      "color": "#ffffff",
+      "fontFamily": "Arial, sans-serif",
+      "fontSize": "36px",
+      "fontWeight": "bold",
+      "horizontalAlign": "center",
+      "verticalAlign": "middle"
+    },
+    "image": {
+      "backgroundColor": "#f8f9fa",
+      "color": "#212529",
+      "fontFamily": "Arial, sans-serif",
+      "fontSize": "18px",
+      "horizontalAlign": "center",
+      "verticalAlign": "bottom"
+    }
+  },
+  "slides": [
+    {
+      "type": "title",
+      "title": "Welcome to Our Presentation",
+      "subTitle": "A comprehensive overview of our project",
+      "style": {
+        "backgroundColor": "#2c3e50",
+        "color": "#ffffff",
+        "fontFamily": "Arial, sans-serif",
+        "fontSize": "48px",
+        "fontWeight": "bold",
+        "horizontalAlign": "center",
+        "verticalAlign": "middle"
+      },
+      "titleFontSize": "48px",
+      "subTitleFontSize": "28px"
+    },
+    {
+      "type": "general",
+      "title": "Introduction",
+      "subTitle": "Setting the stage for today's discussion",
+      "style": {
+        "backgroundColor": "#ffffff",
+        "color": "#333333",
+        "fontFamily": "Arial, sans-serif",
+        "fontSize": "32px",
+        "horizontalAlign": "center",
+        "verticalAlign": "middle"
+      },
+      "titleFontSize": "32px",
+      "subTitleFontSize": "20px"
+    },
+    {
+      "type": "general",
+      "title": "Key Points",
+      "subTitle": "• Point 1: Innovation in design\n• Point 2: User-centered approach\n• Point 3: Sustainable solutions",
+      "style": {
+        "backgroundColor": "#f8f9fa",
+        "color": "#212529",
+        "fontFamily": "Arial, sans-serif",
+        "fontSize": "24px",
+        "horizontalAlign": "left",
+        "verticalAlign": "middle"
+      },
+      "titleFontSize": "28px",
+      "subTitleFontSize": "20px"
+    },
+    {
+      "type": "image",
+      "title": "Visual Example",
+      "subTitle": "Demonstrating our design principles",
+      "file": "sample-image.jpg",
+      "style": {
+        "backgroundColor": "#000000",
+        "color": "#ffffff",
+        "fontFamily": "Arial, sans-serif",
+        "fontSize": "20px",
+        "horizontalAlign": "center",
+        "verticalAlign": "bottom"
+      },
+      "titleFontSize": "24px",
+      "subTitleFontSize": "16px"
+    },
+    {
+      "type": "song",
+      "title": "Musical Interlude",
+      "subTitle": "Background music for the presentation",
+      "file": "background-music.mp3",
+      "style": {
+        "backgroundColor": "#6f42c1",
+        "color": "#ffffff",
+        "fontFamily": "Arial, sans-serif",
+        "fontSize": "30px",
+        "horizontalAlign": "center",
+        "verticalAlign": "middle"
+      },
+      "titleFontSize": "30px",
+      "subTitleFontSize": "18px"
+    },
+    {
+      "type": "general",
+      "title": "Thank You",
+      "subTitle": "Questions and Discussion",
+      "style": {
+        "backgroundColor": "#28a745",
+        "color": "#ffffff",
+        "fontFamily": "Arial, sans-serif",
+        "fontSize": "36px",
+        "fontWeight": "bold",
+        "horizontalAlign": "center",
+        "verticalAlign": "middle"
+      },
+      "titleFontSize": "36px",
+      "subTitleFontSize": "24px"
+    }
+  ]
+}

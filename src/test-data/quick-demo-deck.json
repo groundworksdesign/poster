@@ -1,0 +1,65 @@
+{
+  "title": "Quick Demo Deck",
+  "date": "2024-01-16",
+  "location": "Virtual Meeting",
+  "useGreenScreen": true,
+  "notes": "A minimal deck for quick testing with green screen enabled.",
+  "slideStyles": {
+    "minimal": {
+      "backgroundColor": "#ffffff",
+      "color": "#000000",
+      "fontFamily": "sans-serif",
+      "fontSize": "20px",
+      "horizontalAlign": "center",
+      "verticalAlign": "middle"
+    }
+  },
+  "slides": [
+    {
+      "type": "title",
+      "title": "Quick Demo",
+      "subTitle": "Testing the basics",
+      "style": {
+        "backgroundColor": "#007bff",
+        "color": "#ffffff",
+        "fontFamily": "sans-serif",
+        "fontSize": "40px",
+        "fontWeight": "bold",
+        "horizontalAlign": "center",
+        "verticalAlign": "middle"
+      },
+      "titleFontSize": "40px",
+      "subTitleFontSize": "24px"
+    },
+    {
+      "type": "general",
+      "title": "Simple Slide",
+      "subTitle": "Just testing functionality",
+      "style": {
+        "backgroundColor": "#f8f9fa",
+        "color": "#212529",
+        "fontFamily": "sans-serif",
+        "fontSize": "24px",
+        "horizontalAlign": "center",
+        "verticalAlign": "middle"
+      },
+      "titleFontSize": "24px",
+      "subTitleFontSize": "18px"
+    },
+    {
+      "type": "general",
+      "title": "End",
+      "subTitle": "That's all!",
+      "style": {
+        "backgroundColor": "#28a745",
+        "color": "#ffffff",
+        "fontFamily": "sans-serif",
+        "fontSize": "32px",
+        "horizontalAlign": "center",
+        "verticalAlign": "middle"
+      },
+      "titleFontSize": "32px",
+      "subTitleFontSize": "20px"
+    }
+  ]
+}
