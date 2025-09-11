@@ -39,6 +39,24 @@ export type Slide = {
   style: SlideCSS;
   titleFontSize?: string | undefined;
   subTitleFontSize?: string | undefined;
+  lyrics?: SongData | undefined;
+};
+
+export type SongData = {
+  title: string;
+  author?: string;
+  verses: SongVerse[];
+};
+
+export type SongVerse = {
+  number: number;
+  lines: string[];
+};
+
+export type LyricsDisplayState = {
+  currentVerse: number;
+  currentLineIndex: number;
+  isPlaying: boolean;
 };
 
 export type PresentDataProps = {

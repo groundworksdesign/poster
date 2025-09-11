@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { connect, ChannelType, Connection, BroadcastEvent } from './Broadcast';
-import { PresentData, Slide, VerticalAlign } from './PresentTypes';
+import { connect, ChannelType, BroadcastEvent } from './Broadcast';
+import { PresentData, Slide, VerticalAlign, SlideType } from './PresentTypes';
+import LyricsDisplay from './LyricsDisplay';
 
 export default function Presentation() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -9,8 +10,6 @@ export default function Presentation() {
   const [useGreenScreen, setUseGreenScreen] = useState<
     boolean | null | undefined
   >(false);
-  const [connection, setConnection] = useState<Connection | null | undefined>();
-  const root = document.getElementsByTagName('body');
 
   const broadcastEventHandler = (event: MessageEvent) => {
     const broadcastEvent = event.data as BroadcastEvent;
@@ -27,11 +26,13 @@ export default function Presentation() {
   };
 
   useEffect(() => {
-    setConnection(connect(ChannelType.PRESENTER, broadcastEventHandler));
+    const connectionInstance = connect(ChannelType.PRESENTER, broadcastEventHandler);
+    console.log('Presentation connected with ID:', connectionInstance.id);
     setLoading(false);
   }, []);
 
   useEffect(() => {
+    const root = document.getElementsByTagName('body');
     if (useGreenScreen) root[0].style.backgroundColor = '#00b140';
     else root[0].style.backgroundColor = 'inherit';
   }, [useGreenScreen]);
@@ -48,36 +49,47 @@ export default function Presentation() {
           width: '100%',
         }}
       >
-        <div
-          id="content"
-          style={{
-            backgroundColor: slide?.style.backgroundColor,
-            color: slide?.style.color,
-            position: 'absolute',
-            bottom: '0px',
-            width: slide?.style.width ?? '100%',
-            height: slide?.style.height ?? '150px',
-            verticalAlign:
-              slide?.style.verticalAlign ?? VerticalAlign.MIDDLE.toString(),
-            fontFamily: slide?.style.fontFamily,
-            paddingTop: '20px',
-          }}
-        >
+        {slide?.type === SlideType.SONG && slide.lyrics ? (
+          <LyricsDisplay 
+            songData={slide.lyrics} 
+            style={slide.style}
+            onStateChange={(state) => {
+              // Handle lyrics state changes if needed
+              console.log('Lyrics state:', state);
+            }}
+          />
+        ) : (
           <div
+            id="content"
             style={{
-              fontSize: slide?.titleFontSize ?? slide?.style.fontSize,
+              backgroundColor: slide?.style.backgroundColor,
+              color: slide?.style.color,
+              position: 'absolute',
+              bottom: '0px',
+              width: slide?.style.width ?? '100%',
+              height: slide?.style.height ?? '150px',
+              verticalAlign:
+                slide?.style.verticalAlign ?? VerticalAlign.MIDDLE.toString(),
+              fontFamily: slide?.style.fontFamily,
+              paddingTop: '20px',
             }}
           >
-            {slide?.title}
+            <div
+              style={{
+                fontSize: slide?.titleFontSize ?? slide?.style.fontSize,
+              }}
+            >
+              {slide?.title}
+            </div>
+            <div
+              style={{
+                fontSize: slide?.subTitleFontSize ?? slide?.style.fontSize,
+              }}
+            >
+              {slide?.subTitle}
+            </div>
           </div>
-          <div
-            style={{
-              fontSize: slide?.subTitleFontSize ?? slide?.style.fontSize,
-            }}
-          >
-            {slide?.subTitle}
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

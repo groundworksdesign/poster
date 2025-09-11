@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<song>
+  <title>Amazing Grace</title>
+  <author>John Newton</author>
+  <verses>
+    <verse number="1">
+      <line>Amazing grace, how sweet the sound</line>
+      <line>That saved a wretch like me</line>
+      <line>I once was lost, but now I'm found</line>
+      <line>Was blind, but now I see</line>
+    </verse>
+    <verse number="2">
+      <line>'Twas grace that taught my heart to fear</line>
+      <line>And grace my fears relieved</line>
+      <line>How precious did that grace appear</line>
+      <line>The hour I first believed</line>
+    </verse>
+    <verse number="3">
+      <line>Through many dangers, toils and snares</line>
+      <line>I have already come</line>
+      <line>'Tis grace has brought me safe thus far</line>
+      <line>And grace will lead me home</line>
+    </verse>
+  </verses>
+</song>

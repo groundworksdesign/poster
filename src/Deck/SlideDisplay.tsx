@@ -24,10 +24,21 @@ export default function SlideDisplay({
   } as PresentDataProps;
 
   return (
-    <div>
-      <div>{slide.title} </div>
-      <div> {slide.subTitle} </div>
-      <button onClick={() => sendAction(props)}>Send</button>
+    <div style={{ border: '1px solid #ccc', padding: '10px', margin: '5px' }}>
+      <div><strong>{slide.title}</strong></div>
+      {slide.subTitle && <div><em>{slide.subTitle}</em></div>}
+      <div>Type: {slide.type}</div>
+      {slide.lyrics && (
+        <div style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>
+          Verses: {slide.lyrics.verses.length}
+        </div>
+      )}
+      <button 
+        onClick={() => sendAction(props)}
+        style={{ marginTop: '10px', padding: '5px 15px' }}
+      >
+        Send to Presentation
+      </button>
     </div>
   );
 }
