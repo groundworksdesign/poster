@@ -44,7 +44,7 @@ describe('Test Slide Deck Data', () => {
     expect(deck.date).toBe('2024-01-16');
     expect(deck.location).toBe('Virtual Meeting');
     expect(deck.useGreenScreen).toBe(true);
-    expect(deck.slides.length).toBe(3);
+    expect(deck.slides.length).toBe(4);
     
     // Test that all slide types are valid
     deck.slides.forEach((slide) => {
