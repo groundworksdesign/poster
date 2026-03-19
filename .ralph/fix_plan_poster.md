@@ -21,7 +21,7 @@ Ralph loop should pick the next highest-priority item and mark it completed.
 
 5. [x] `broadcast-partial-updates`: Harden `BroadcastChannel` handling so navigation-only commands (lyricsNavigation) do not unintentionally clear slide/message.
 6. [x] `lyrics-state-reset`: Reset `LyricsDisplay` internal state when the cast receives a new `SongData` payload.
-7. [ ] `deck-edit-reorder-cast-sync`: While in presentation mode, editing/reordering slides should keep the cast screen in sync with the currently-active slide.
+7. [x] `deck-edit-reorder-cast-sync`: While in presentation mode, editing/reordering slides should keep the cast screen in sync with the currently-active slide.
 
 ## Priority 3 — Presentation richness (minimal but complete)
 

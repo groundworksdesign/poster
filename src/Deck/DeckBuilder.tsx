@@ -1,7 +1,7 @@
 import React, { ChangeEvent, useEffect, useState } from 'react';
 import { connect, ChannelType, Connection } from '../Present/Broadcast';
 import SlideDisplay from './SlideDisplay';
-import { PresentData, SlideType, Deck } from '../Present/PresentTypes';
+import { PresentData, SlideType, Deck, Slide } from '../Present/PresentTypes';
 import { parseSongXML, createSongSlide } from '../utils/songParser';
 
 export default function DeckBuilder() {
@@ -12,6 +12,13 @@ export default function DeckBuilder() {
   const [isLoadingSong, setIsLoadingSong] = useState<boolean>(false);
   const [isSongMode, setIsSongMode] = useState<boolean>(false);
   const [currentSongIndex, setCurrentSongIndex] = useState<number>(0);
+  const [lastSentSlideId, setLastSentSlideId] = useState<string | null>(null);
+
+  const genId = () => (typeof (globalThis as any).crypto !== 'undefined' && typeof (globalThis as any).crypto.randomUUID === 'function') ? (globalThis as any).crypto.randomUUID() : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+
+  const ensureDeckIds = (d: Deck): Deck => {
+    return { ...d, slides: d.slides.map(sl => ({ ...sl, id: (sl as any).id ?? genId() })) };
+  };
 
   useEffect(() => {
     setConnection(connect(ChannelType.BUILDER, event => {}));
@@ -56,6 +63,7 @@ export default function DeckBuilder() {
           };
 
           const songSlide = createSongSlide(songData, baseStyle);
+          (songSlide as any).id = (songSlide as any).id ?? genId();
 
           const newDeck: Deck = {
             title: `Song: ${songData.title}`,
@@ -75,7 +83,7 @@ export default function DeckBuilder() {
             slides: [songSlide],
           };
 
-          setDeck(newDeck);
+          setDeck(ensureDeckIds(newDeck));
           setIsSongMode(true);
           setCurrentSongIndex(0);
           setMessage(`Loaded song: ${songData.title}`);
@@ -90,8 +98,8 @@ export default function DeckBuilder() {
     } else if (fileName.endsWith('.json')) {
       reader.addEventListener('load', () => {
         try {
-          const json = reader.result as string;
-          setDeck(JSON.parse(json) as Deck);
+          const parsed = JSON.parse(reader.result as string) as Deck;
+          setDeck(ensureDeckIds(parsed));
           setIsSongMode(false);
           setMessage('Loaded JSON deck');
         } catch (err) {
@@ -112,6 +120,8 @@ export default function DeckBuilder() {
   const handleSendClick = (props: any) => {
     const safeSlide = (sl: any) => {
       if (!sl) return sl;
+      // ensure slide has an id so we can track it for sync across edits/reorder
+      (sl as any).id = (sl as any).id ?? genId();
       const resolvedStyle =
         sl.style || (deck?.slideStyles && deck.slideStyles[sl.type]) || {
           backgroundColor: '#000000',
@@ -123,6 +133,7 @@ export default function DeckBuilder() {
     };
     const slideWithStyle = props.slide ? safeSlide(props.slide) : null;
     connection?.channel.postMessage(new PresentData({ ...props, slide: slideWithStyle }));
+    setLastSentSlideId(slideWithStyle?.id ?? null);
   };
 
   const sendLyricsNavigation = (command: 'next' | 'previous' | 'goToVerse', verseIndex?: number) => {
@@ -154,6 +165,26 @@ export default function DeckBuilder() {
       sendLyricsNavigation('previous');
       return next;
     });
+  };
+
+  const syncSentSlideIfNeeded = (newDeck: Deck | null) => {
+    if (!newDeck || !lastSentSlideId) return;
+    const found = newDeck.slides.find((s: any) => (s as any).id === lastSentSlideId);
+    if (found) {
+      // re-send updated slide to presenter so presentation stays in sync
+      handleSendClick({ slide: found, message: `Syncing slide ${found.title || ''}`, useGreenScreen: newDeck.useGreenScreen });
+    }
+  };
+
+  const moveSlide = (index: number, direction: 'up' | 'down') => {
+    if (!deck) return;
+    const slides = deck.slides.slice();
+    const to = direction === 'up' ? index - 1 : index + 1;
+    if (to < 0 || to >= slides.length) return;
+    [slides[index], slides[to]] = [slides[to], slides[index]];
+    const newDeck = { ...deck, slides };
+    setDeck(newDeck);
+    syncSentSlideIfNeeded(newDeck);
   };
 
   const handleSaveClick = () => {
@@ -191,11 +222,13 @@ export default function DeckBuilder() {
         <div id="slides">
           <ul style={{ listStyle: 'none', padding: 0 }}>
             {deck?.slides.map((slide: any, index: number) => (
-              <li key={slide.id || index} style={{ border: '1px solid #ccc', margin: '4px 0', padding: '6px' }}>
+              <li key={(slide as any).id || index} style={{ border: '1px solid #ccc', margin: '4px 0', padding: '6px' }}>
                 <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
                   <strong>{index + 1}.</strong>
                   <span style={{ flex: 1 }}>{slide.title || slide.type || 'Slide'}</span>
                   <button onClick={() => handleSendClick({ slide, message: `Presenting slide ${index + 1}`, useGreenScreen: deck?.useGreenScreen || false })}>Send</button>
+                  <button onClick={() => moveSlide(index, 'up')} disabled={index === 0}>↑</button>
+                  <button onClick={() => moveSlide(index, 'down')} disabled={index === (deck!.slides.length - 1)}>↓</button>
                 </div>
               </li>
             ))}
