@@ -36,4 +36,4 @@ Ralph loop should pick the next highest-priority item and mark it completed.
 13. [x] `coverage-reporting`: Configure test coverage reporting (using Jest/react-scripts in this repo) and add coverage scripts and thresholds.
 
 ## Next priority — Runtime migration
-- [ ] migrate-runtime-to-remix: Replace CRA runtime with Remix+Vite production build; ensure SSR, update scripts, and CI flows. (blocked-by-network-install)
+- [~] migrate-runtime-to-remix: In progress — scaffolding added (remix.config.js, vite.config.ts, server/index.js); full dependency install blocked-by-network-install

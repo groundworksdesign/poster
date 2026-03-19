@@ -26,3 +26,4 @@ Implemented alignment/background and IMAGE slide rendering; marked task 8 done. 
 
 2026-03-19T19:40:54Z: Ran test:coverage — 8 suites passed, 14 tests, All files coverage: 53.13% (branches 41.85% / functions 41.37% / lines 56.13%). Synchronized .cursor/plans statuses to 'done'. No code changes required; next: consider migrating runtime from CRA to Remix+Vite for production build.
 2026-03-19T19:46:38Z: Created session plan.md; ran test:coverage — 8 suites passed, 14 tests. Coverage: All files 53.13% (branches 41.85% / functions 41.37% / lines 56.13%). Next: consider migrating runtime from CRA to Remix+Vite.
+2026-03-19T19:57:18Z: Started migration scaffolding: added remix.config.js, vite.config.ts, server/index.js and updated package.json scripts. Full migration blocked-by-network-install (dependencies not installed). Marked migrate-runtime-to-remix as in-progress in .ralph/fix_plan_poster.md.
