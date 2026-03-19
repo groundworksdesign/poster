@@ -77,3 +77,5 @@ Moved @remix-run/node to dependencies to reflect runtime requirement for server/
 
 ### Remix migration fallback (2026-03-19T20:32:55.093Z)
 When Remix runtime packages are unavailable, server/index.js falls back to serving public/index.html; added start:spa script to use this mode. To complete migration, vendorize runtime packages or enable network install in CI.
+### Vendor stub for Remix runtime
+Added vendor/@remix-run/node minimal stub to allow offline start:remix fallback and updated server/index.js to prefer vendorized runtime when present. Full Remix build (/build) still required for production behavior.

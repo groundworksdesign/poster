@@ -6,19 +6,34 @@ const app = express();
 // Serve static files from /public by default
 app.use(express.static("public"));
 
-// Try to load Remix's request handler; if unavailable, fall back to a simple static SPA handler.
+// Try to load Remix's request handler; prefer vendorized stub if present, otherwise try installed package.
 let createRequestHandler;
 try {
-  // eslint-disable-next-line global-require
-  createRequestHandler = require("@remix-run/node").createRequestHandler;
+  try {
+    // Prefer a local vendorized runtime when present
+    // eslint-disable-next-line global-require
+    createRequestHandler = require("../vendor/@remix-run/node").createRequestHandler;
+    console.log("Using vendorized @remix-run/node stub");
+  } catch (e) {
+    // eslint-disable-next-line global-require
+    createRequestHandler = require("@remix-run/node").createRequestHandler;
+  }
 } catch (err) {
   console.warn("@remix-run/node not found — falling back to static SPA server. Install remix and @remix-run/node to enable full Remix server behavior.");
 }
 
 if (createRequestHandler) {
   app.all("*", (req, res, next) => {
+    // If a real Remix build exists at ../build use it, otherwise the vendor stub will ignore the build and serve index.html.
+    let build;
+    try {
+      build = require("../build");
+    } catch (e) {
+      build = undefined;
+    }
+
     const handler = createRequestHandler({
-      build: require("../build"),
+      build,
       mode: process.env.NODE_ENV,
     });
     return handler(req, res, next);
