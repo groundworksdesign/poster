@@ -35,7 +35,9 @@
     "eject": "react-scripts eject",
     "dev:remix": "remix dev",
     "build:remix": "remix build",
-    "start:remix": "node ./server/index.js"
+    "start:remix": "node ./server/index.js",
+    "start:spa": "node ./server/index.js",
+    "vendor:prepare": "echo \"Vendorization placeholder: add vendor/ dir or prebuilt /build artifacts\""
   },
   "jest": {
     "collectCoverageFrom": [
