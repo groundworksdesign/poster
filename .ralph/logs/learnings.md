@@ -111,3 +111,6 @@ Observed ReactDOMTestUtils.act deprecation warnings from testing-library interna
 
 Verified .ralph/specs covers deck/presentation, broadcast pipeline, lyrics model, and tests. The server includes a vendor stub for @remix-run/node to allow offline start, but a real Remix build under /build is still required for full server behavior. The ReactDOMTestUtils.act deprecation persists due to @testing-library/react internals; upgrade @testing-library/react when network access is available.
 
+## PWA service worker (2026-03-19)
+
+Added a minimal service worker (public/sw.js) and registered it in src/index.tsx for offline caching and PWA support. This is a simple cache-first strategy suitable for demo/offline use; replace with a more robust SW (workbox) for production.

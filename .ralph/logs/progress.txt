@@ -50,3 +50,5 @@ Vendorized @remix-run/node stub added and server/index.js updated to prefer vend
 2026-03-19T21:15:00Z: Added unit tests for DeckBuilder and SlideDisplay; ran tests — all suites passed (10), 16 tests; coverage improved to 55.44%.
 2026-03-19T21:30:20Z: Ran test:coverage — 10 suites passed, 16 tests. Coverage: All files 55.44% (branches 42.29% / functions 46.55% / lines 58.73%). No code changes. Next: address React.act deprecation warnings.
 2026-03-19T21:30:40Z: Inspected .ralph/specs and fix plan; confirmed specs cover major modules (deck, presentation, broadcast pipeline, lyrics). Searched for react-dom/test-utils usage in source (none found). Inspected package.json and server/vendor stubs; vendorized @remix-run/node present, /build missing — full Remix build blocked by offline environment. No code changes required this iteration.
+
+2026-03-19T21:35:40Z: Added PWA service worker (public/sw.js) and registered it in src/index.tsx; ran test:coverage - 10 suites passed, 16 tests. Coverage: 54.542026-03-19T21:35:40Z: Added PWA service worker (public/sw.js) and registered it in src/index.tsx; ran test:coverage - 10 suites passed, 16 tests. Coverage: 54.54%.
