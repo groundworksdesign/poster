@@ -30,7 +30,7 @@ Ralph loop should pick the next highest-priority item and mark it completed.
 
 ## Priority 4 — Tests + coverage
 
-10. [ ] `unit-tests`: Add/expand Vitest unit tests for `songParser`, lyrics navigation logic, and deck pure helpers. Target “max practical coverage”.
+10. [x] `unit-tests`: Add/expand Vitest unit tests for `songParser`, lyrics navigation logic, and deck pure helpers. Target “max practical coverage”.
 11. [ ] `integration-tests`: Add Vitest + React Testing Library integration tests that verify the builder->cast broadcast pipeline (fake `BroadcastChannel`).
 12. [ ] `playwright-smoke`: Add minimal Playwright smoke tests for “send slide from `/deck` updates `/presentation`”.
 13. [ ] `coverage-reporting`: Configure Vitest coverage reporting; iterate until coverage is maximized without brittle tests.

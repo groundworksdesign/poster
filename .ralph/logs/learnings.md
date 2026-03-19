@@ -39,3 +39,9 @@ Applied alignment/backgroundImage handling for SONG, IMAGE and GENERAL slides in
 - ReactDOMTestUtils.act is deprecated; update tests to import `act` from 'react' instead of 'react-dom/test-utils' to silence warnings.
 - babel-preset-react-app warns about an undeclared dependency (`@babel/plugin-proposal-private-property-in-object`). Consider adding it to devDependencies or migrating off CRA for long-term maintenance.
 
+### Test suite additions (2026-03-19)
+
+- Added edge-case tests for song parsing and lyrics rendering. Small improvements to test coverage achieved without new dependencies.
+- Tests printed warnings about ReactDOMTestUtils.act deprecation; update tests to import `act` from 'react' instead of 'react-dom/test-utils' to silence warnings.
+- If tests report leaked handles, run with `--detectOpenHandles` to identify lingering timers or unclosed BroadcastChannel mocks.
+
