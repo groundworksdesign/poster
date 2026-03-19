@@ -38,3 +38,5 @@ Implemented alignment/background and IMAGE slide rendering; marked task 8 done. 
 2026-03-19T20:30:00Z: Moved @remix-run/node from devDependencies to dependencies in package.json; ran tests: 8 suites passed, 14 tests. Migration remains blocked-by-network-install.
 
 2026-03-19T20:32:55.093Z: Added start:spa script and vendor placeholder; validated server fallback
+
+2026-03-19T20:28:10Z: Attempted migrate-runtime-to-remix — added start:spa script, updated .ralph/fix_plan_poster.md and logs; tests passed; committed and pushed.
