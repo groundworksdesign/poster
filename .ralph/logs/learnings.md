@@ -69,3 +69,6 @@ Confirmed presence and coverage of .ralph/specs/app_spec.md and nested spec docs
 
 After reviewing specs and updating session plan, ran the full test suite. All test suites passed locally (8 suites, 14 tests). No code changes were required.
 
+### Remix migration blocker (2026-03-19T20:13:21Z)
+
+Discovered server/index.js depends on @remix-run/node (createRequestHandler) which is not present in node_modules; remix and @remix-run/* packages must be added or vendorized. Updated .ralph/fix_plan_poster.md to capture options (vendor artifacts or allow network installs).
