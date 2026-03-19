@@ -42,7 +42,7 @@ Ralph loop should pick the next highest-priority item and mark it completed.
 Next steps:
   - When a full Remix runtime is available, add remix, @remix-run/*, vite, @vitejs/plugin-react to package.json devDependencies (change prepared where needed) and run `npm install` then `npm run build:remix` to create a production build under /build.
   - If network install is unavailable in CI, keep vendor/ or prebuilt /build artifacts committed or cached so offline builds and server starts are possible.
-  - Update .ralph/AGENT.md with vendor preparation instructions and add a CI caching strategy.
+  - Update .ralph/AGENT.md (or add .ralph/AGENT_VENDOR.md) with vendor preparation instructions and add a CI caching strategy. See .ralph/AGENT_VENDOR.md for exact steps and example commands.
 
 Status: vendor-stub-complete; production Remix build still pending (requires network install or prebuilt /build).
 ## Next blocked task

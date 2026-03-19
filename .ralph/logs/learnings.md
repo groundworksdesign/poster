@@ -120,3 +120,8 @@ Reviewed .ralph/specs and verified they match source. Vendorized Remix stubs pre
 
 ### 2026-03-19 — Tests & runtime
 Ran tests (npm run test) — all suites passed (10 suites, 16 tests). Observed ReactDOMTestUtils.act deprecation warnings from testing-library internals; plan to upgrade @testing-library/react when network access is available. Vendorized Remix stubs allow offline start:remix for smoke tests; replace with real Remix build when network install is possible.
+
+## Offline Remix vendorization ($ts)
+
+Inspected server and vendor stubs: vendor/@remix-run/node and /build/index.js present as stubs. Created .ralph/AGENT_VENDOR.md with reproduction steps for online machines. Finalize real Remix build when network available by running npm install and npm run build:remix; commit /build (or publish to artifact store) so offline CI can run.
+
