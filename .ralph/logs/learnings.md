@@ -51,3 +51,6 @@ FileReader + file uploads in jsdom can be flaky; prefer simulating BroadcastChan
 
 ### Playwright smoke test added (2026-03-19)
 Using a single Playwright context so BroadcastChannel messages route between pages.
+
+### Playwright smoke: run notes (2026-03-19)
+Installed missing deps to run Playwright smoke test. Test passed locally: 1 test. Noted babel-preset-react-app warning about missing plugin dependency.

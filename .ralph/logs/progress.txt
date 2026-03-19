@@ -19,3 +19,4 @@ Implemented alignment/background and IMAGE slide rendering; marked task 8 done. 
 
 2026-03-19: Added integration test src/integration/deck-to-presentation.test.tsx that simulates builder->presentation updates via FakeBroadcastChannel. Marked integration-tests done. Ran test suite — all tests pass.
 2026-03-19: Added Playwright smoke test; updated .ralph/fix_plan_poster.md to mark playwright-smoke done.
+2026-03-19: Added Playwright smoke test; ran smoke test (1 passed). Updated .ralph/fix_plan_poster.md to mark playwright-smoke done.
