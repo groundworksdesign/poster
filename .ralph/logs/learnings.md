@@ -28,3 +28,9 @@ jsdom (test env) may not provide global.crypto.randomUUID. To keep Presentation/
 ## Lyrics reset test (2026-03-19)
 
 Added a unit test confirming Presentation resets lyrics segmentIndex to 0 when a new SongData arrives. Tests use a FakeBroadcastChannel to route messages between instances; ensure test code cleans up channel instances (or delete global.BroadcastChannel) to avoid Jest open-handle warnings.
+
+## Deck reorder sync (2026-03-19)
+
+Ensure slides have stable ids so the builder can re-send the exact slide after edits or reordering. Implemented genId fallback for environments without crypto.randomUUID. Added move up/down controls and automatic resync of last-sent slide via BroadcastChannel (used FakeBroadcastChannel in tests).
+## Rendering improvements
+Applied alignment/backgroundImage handling for SONG, IMAGE and GENERAL slides in src/Present/Present.tsx.

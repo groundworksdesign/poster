@@ -1,6 +1,13 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { connect, ChannelType, Connection } from './Broadcast';
-import { PresentData, Slide, SlideType, SongData, HorizontalAlign, VerticalAlign } from './PresentTypes';
+import {
+  PresentData,
+  Slide,
+  SlideType,
+  SongData,
+  HorizontalAlign,
+  VerticalAlign,
+} from './PresentTypes';
 import LyricsDisplay from './LyricsDisplay';
 
 export default function Presentation() {
@@ -17,7 +24,7 @@ export default function Presentation() {
     const present = event.data as PresentData;
     if (!present) return;
 
-    // If this is a partial update for lyrics navigation, update segmentIndex
+    // Partial updates (e.g., lyrics navigation)
     if ((present as any).data && (present as any).data.lyricsNavigation) {
       const nav = (present as any).data.lyricsNavigation;
       const cmd = nav.command;
@@ -59,6 +66,46 @@ export default function Presentation() {
     else root[0].style.backgroundColor = 'inherit';
   }, [useGreenScreen]);
 
+  const computeContainerStyle = (): React.CSSProperties => {
+    const vAlign =
+      slide?.style?.verticalAlign === VerticalAlign.TOP
+        ? 'flex-start'
+        : slide?.style?.verticalAlign === VerticalAlign.BOTTOM
+        ? 'flex-end'
+        : 'center';
+    const hAlign =
+      slide?.style?.horizontalAlign === HorizontalAlign.LEFT
+        ? 'flex-start'
+        : slide?.style?.horizontalAlign === HorizontalAlign.RIGHT
+        ? 'flex-end'
+        : 'center';
+    const textAlign = slide?.style?.horizontalAlign ?? 'center';
+
+    const backgroundImage =
+      !useGreenScreen &&
+      (slide?.type === SlideType.IMAGE
+        ? slide?.file ?? slide?.style?.backgroundImage
+        : slide?.style?.backgroundImage);
+
+    return {
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: vAlign,
+      alignItems: hAlign,
+      textAlign,
+      backgroundColor: useGreenScreen ? 'transparent' : slide?.style?.backgroundColor,
+      color: slide?.style?.color,
+      width: slide?.style?.width ?? '100%',
+      height: slide?.style?.height ?? '100%',
+      fontFamily: slide?.style?.fontFamily,
+      padding: '20px',
+      backgroundImage: backgroundImage ? `url(${backgroundImage})` : undefined,
+      backgroundSize: slide?.style?.backgroundSize ?? 'cover',
+      backgroundPosition: slide?.style?.backgroundPosition ?? 'center',
+      backgroundRepeat: 'no-repeat',
+    } as React.CSSProperties;
+  };
+
   const display = loading ? (
     <h1>Loading...</h1>
   ) : (
@@ -66,36 +113,18 @@ export default function Presentation() {
       <div id="message">{message}</div>
       <div id="slide" style={{ height: '100%', width: '100%' }}>
         {slide?.type === SlideType.SONG && songData ? (
-          <div id="song" style={{ height: '100%', width: '100%' }}>
+          <div id="song" style={computeContainerStyle()}>
             <LyricsDisplay song={songData} segmentIndex={segmentIndex} />
           </div>
+        ) : slide?.type === SlideType.IMAGE ? (
+          <div id="image-slide" style={computeContainerStyle()}>
+            <div style={{ textAlign: 'inherit', color: slide?.style?.color }}>
+              <div style={{ fontSize: slide?.titleFontSize ?? slide?.style?.fontSize }}>{slide?.title}</div>
+              <div style={{ fontSize: slide?.subTitleFontSize ?? slide?.style?.fontSize }}>{slide?.subTitle}</div>
+            </div>
+          </div>
         ) : (
-          <div
-            id="content"
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent:
-                (slide?.style?.verticalAlign === VerticalAlign.TOP && 'flex-start') ||
-                (slide?.style?.verticalAlign === VerticalAlign.BOTTOM && 'flex-end') ||
-                'center',
-              alignItems:
-                (slide?.style?.horizontalAlign === HorizontalAlign.LEFT && 'flex-start') ||
-                (slide?.style?.horizontalAlign === HorizontalAlign.RIGHT && 'flex-end') ||
-                'center',
-              textAlign: slide?.style?.horizontalAlign ?? 'center',
-              backgroundColor: useGreenScreen ? 'transparent' : slide?.style?.backgroundColor,
-              color: slide?.style?.color,
-              width: slide?.style?.width ?? '100%',
-              height: slide?.style?.height ?? '150px',
-              fontFamily: slide?.style?.fontFamily,
-              padding: '20px',
-              backgroundImage: slide?.style?.backgroundImage ? `url(${slide.style.backgroundImage})` : undefined,
-              backgroundSize: slide?.style?.backgroundSize ?? 'cover',
-              backgroundPosition: slide?.style?.backgroundPosition ?? 'center',
-              backgroundRepeat: 'no-repeat',
-            }}
-          >
+          <div id="content" style={computeContainerStyle()}>
             <div style={{ fontSize: slide?.titleFontSize ?? slide?.style?.fontSize }}>{slide?.title}</div>
             <div style={{ fontSize: slide?.subTitleFontSize ?? slide?.style?.fontSize }}>{slide?.subTitle}</div>
           </div>
