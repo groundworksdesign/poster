@@ -48,3 +48,6 @@ Applied alignment/backgroundImage handling for SONG, IMAGE and GENERAL slides in
 
 ### Integration testing: prefer channel-driven messages over FileReader
 FileReader + file uploads in jsdom can be flaky; prefer simulating BroadcastChannel messages directly to exercise the builder->cast pipeline in integration tests.
+
+### Playwright smoke test added (2026-03-19)
+Using a single Playwright context so BroadcastChannel messages route between pages.
