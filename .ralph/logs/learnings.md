@@ -86,3 +86,7 @@ Remix runtime requires vendorization or network install in CI. Prefer committing
 ### Offline Remix build stub
 
 Created minimal /build/index.js to allow server/index.js to require('../build') in offline environments. Replace with a real Remix build when network/install available.
+
+### Vendorized Remix runtime (2026-03-19)
+
+When network installs are unavailable, add a minimal vendor/@remix-run/node stub exporting createRequestHandler that serves public/index.html. Also include a /build/index.js offline stub. This enables server/index.js to start in offline/dev mode and allows running smoke tests. Replace these stubs with the real Remix build when network/install becomes available.
