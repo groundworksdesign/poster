@@ -93,3 +93,8 @@ When network installs are unavailable, add a minimal vendor/@remix-run/node stub
 
 ### React act deprecation — 2026-03-19
 Imported act from 'react' in tests that explicitly used it to follow React recommendation. Warnings persist for render calls due to @testing-library/react internals using react-dom/test-utils. Options: upgrade @testing-library/react or adjust tests.
+
+### Fix act deprecation (2026-03-19)
+
+Updated tests to import { act } from 'react' where applicable. ReactDOMTestUtils.act deprecation warnings persist because @testing-library/react internals still use react-dom/test-utils. To fully silence warnings, upgrade @testing-library/react when network access is available.
+
