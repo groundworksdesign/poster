@@ -47,3 +47,8 @@ Next steps:
 Status: vendor-stub-complete; production Remix build still pending (requires network install or prebuilt /build).
 ## Next blocked task
 - [x] finalize-remix-build: Vendorized minimal Remix runtime and committed /build stub to allow offline start. Added `vendor/@remix-run/node` minimal stub and `/build/index.js` offline stub so `npm run start:remix` works in offline/dev mode. Full production Remix build (real `/build`) still pending network install; when available, run `npm install` + `npm run build:remix` to produce and replace the stub.
+
+## Maintenance
+
+- [ ] fix-act-deprecation: Silence ReactDOMTestUtils.act deprecation warnings. Update tests to import { act } from 'react' and/or upgrade @testing-library/react to a version that uses React.act internally.
+

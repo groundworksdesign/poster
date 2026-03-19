@@ -1,5 +1,6 @@
 import React from 'react';
-import { render, screen, act } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
+import { act } from 'react';
 import Presentation from './Present/Present';
 import { SlideType } from './Present/PresentTypes';
 

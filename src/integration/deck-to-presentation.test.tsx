@@ -1,5 +1,6 @@
 import React from 'react';
-import { render, screen, act, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { act } from 'react';
 import DeckBuilder from '../Deck/DeckBuilder';
 import Presentation from '../Present/Present';
 

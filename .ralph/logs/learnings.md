@@ -90,3 +90,6 @@ Created minimal /build/index.js to allow server/index.js to require('../build') 
 ### Vendorized Remix runtime (2026-03-19)
 
 When network installs are unavailable, add a minimal vendor/@remix-run/node stub exporting createRequestHandler that serves public/index.html. Also include a /build/index.js offline stub. This enables server/index.js to start in offline/dev mode and allows running smoke tests. Replace these stubs with the real Remix build when network/install becomes available.
+
+### React act deprecation — 2026-03-19
+Imported act from 'react' in tests that explicitly used it to follow React recommendation. Warnings persist for render calls due to @testing-library/react internals using react-dom/test-utils. Options: upgrade @testing-library/react or adjust tests.
