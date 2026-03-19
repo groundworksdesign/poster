@@ -1,0 +1,2 @@
+
+Implemented song-xml-flow: cleaned DeckBuilder, added LyricsDisplay, handled partial lyricsNavigation in Presentation, added songParser unit test

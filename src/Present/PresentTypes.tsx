@@ -20,47 +20,71 @@ export const enum VerticalAlign {
 }
 
 export type SlideCSS = {
-  backgroundColor?: string | undefined;
-  color?: string | undefined;
-  height?: string | undefined;
-  width?: string | undefined;
-  horizontalAlign?: HorizontalAlign | undefined;
-  verticalAlign?: VerticalAlign | undefined;
-  fontFamily?: string | undefined;
-  fontSize?: string | undefined;
-  fontWeight?: string | undefined;
+  backgroundColor?: string;
+  color?: string;
+  height?: string;
+  width?: string;
+  horizontalAlign?: HorizontalAlign;
+  verticalAlign?: VerticalAlign;
+  fontFamily?: string;
+  fontSize?: string;
+  fontWeight?: string;
+  // background image support
+  backgroundImage?: string;
+  backgroundSize?: string;
+  backgroundPosition?: string;
+};
+
+export type SongVerse = {
+  number: number;
+  lines: string[];
+};
+
+export type SongData = {
+  title: string;
+  author?: string;
+  verses: SongVerse[];
 };
 
 export type Slide = {
   type: SlideType;
   title: string;
-  subTitle: string | undefined;
-  file?: string | undefined;
+  subTitle?: string;
+  file?: string;
   style: SlideCSS;
-  titleFontSize?: string | undefined;
-  subTitleFontSize?: string | undefined;
+  titleFontSize?: string;
+  subTitleFontSize?: string;
+  // SongData for SONG slides
+  lyrics?: SongData;
+  // Optional segment helpers (backwards-compat)
+  lines?: string[];
+  firstVerse?: number;
+  lastVerse?: number;
+  segmentIndex?: number;
+  totalSegments?: number;
+  id?: string;
 };
 
 export type PresentDataProps = {
   slide?: Slide | null;
   message?: string | null;
   useGreenScreen?: boolean | null;
+  // Arbitrary payload for partial updates (e.g., lyricsNavigation)
+  data?: any;
 };
 
 export class PresentData {
   slide?: Slide | null = null;
   message?: string | null = null;
   useGreenScreen?: boolean | null = null;
+  data?: any = null;
 
   constructor(props: PresentDataProps) {
-    if (props.slide) this.slide = props.slide;
-    if (props.message) this.message = props.message;
-    if (props.useGreenScreen) this.useGreenScreen = props.useGreenScreen;
+    if (props.slide !== undefined) this.slide = props.slide;
+    if (props.message !== undefined) this.message = props.message;
+    if (props.useGreenScreen !== undefined) this.useGreenScreen = props.useGreenScreen;
+    if (props.data !== undefined) this.data = props.data;
   }
-}
-
-interface StyleDictionary {
-  [key: string]: SlideCSS;
 }
 
 export type Deck = {
@@ -69,6 +93,7 @@ export type Deck = {
   location: string;
   useGreenScreen: boolean;
   notes: string;
-  slideStyles: StyleDictionary;
+  slideStyles: Record<string, SlideCSS>;
   slides: Slide[];
 };
+

@@ -1,0 +1,9 @@
+{
+    "maxIterations": 20,
+    "allowFleet": true,
+    "projectRoot": ".",
+    "logs": {
+        "progress": ".ralph/logs/progress.txt",
+        "learnings": ".ralph/logs/learnings.md"
+    }
+}
