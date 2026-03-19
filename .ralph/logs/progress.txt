@@ -1,2 +1,3 @@
 
 Implemented song-xml-flow: cleaned DeckBuilder, added LyricsDisplay, handled partial lyricsNavigation in Presentation, added songParser unit test
+- [x] remix-vite-setup scaffolded under /app (routes: deck,presentation)
