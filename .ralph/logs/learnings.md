@@ -60,3 +60,4 @@ Installed missing deps to run Playwright smoke test. Test passed locally: 1 test
 Configured coverage scripts using CRA/Jest: `npm run test:coverage` (single-run coverage) and added coverage thresholds in package.json. If migrating to Vitest later, migrate thresholds and coverage config to Vitest's coverage provider (c8/istanbul).
 ## Session note — 2026-03-19
 Created session plan.md; running coverage shows 53.13% overall. Observed ReactDOMTestUtils.act deprecation warnings; update tests to import `act` from 'react' to silence.
+\n## Remix migration blocker (2026-03-19)\n\nRemix/Vite scaffold present but cannot complete install/build due to network restrictions in this environment. To finish migration: add required dependencies and run npm install; in CI, enable dependency caching or vendor dependencies.\n

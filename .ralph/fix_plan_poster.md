@@ -36,4 +36,9 @@ Ralph loop should pick the next highest-priority item and mark it completed.
 13. [x] `coverage-reporting`: Configure test coverage reporting (using Jest/react-scripts in this repo) and add coverage scripts and thresholds.
 
 ## Next priority — Runtime migration
-- [~] migrate-runtime-to-remix: In progress — scaffolding added (remix.config.js, vite.config.ts, server/index.js); full dependency install blocked-by-network-install
+- [~] migrate-runtime-to-remix: In progress — scaffolding added (remix.config.js, vite.config.ts, server/index.js). Blocker: remix & vite dependencies not installed in this environment (network restricted). Next steps:
+  - Add remix, @remix-run/*, vite, @vitejs/plugin-react to package.json devDependencies.
+  - Run npm install (or npm ci) to populate node_modules (requires network or cached artifacts).
+  - Run npm run build:remix and npm run start:remix to verify the Remix server build.
+  - Update CI to cache or vendor dependencies to allow offline builds.
+Status: blocked-by-network-install; leaving as in-progress ([~]).
