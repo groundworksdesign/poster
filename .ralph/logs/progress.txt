@@ -35,3 +35,4 @@ Implemented alignment/background and IMAGE slide rendering; marked task 8 done. 
 2026-03-19T20:15:00Z: Added static SPA fallback to server/index.js so start:remix can run without @remix-run/node installed (falls back to serving public/index.html).
 2026-03-19T20:21:59Z: Started server/index.js (fallback mode) and verified HTTP 200 from /; stopped server.
 2026-03-19T20:25:00Z: Added remix/vite devDependencies placeholders to package.json to prepare offline vendor or future install.
+2026-03-19T20:30:00Z: Moved @remix-run/node from devDependencies to dependencies in package.json; ran tests: 8 suites passed, 14 tests. Migration remains blocked-by-network-install.

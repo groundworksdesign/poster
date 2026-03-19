@@ -72,3 +72,5 @@ After reviewing specs and updating session plan, ran the full test suite. All te
 ### Remix migration blocker (2026-03-19T20:13:21Z)
 
 Discovered server/index.js depends on @remix-run/node (createRequestHandler) which is not present in node_modules; remix and @remix-run/* packages must be added or vendorized. Updated .ralph/fix_plan_poster.md to capture options (vendor artifacts or allow network installs).
+## Remix runtime staging (2026-03-19)
+Moved @remix-run/node to dependencies to reflect runtime requirement for server/index.js. The environment remains offline, so full Remix build still requires vendorized modules or network installs.
