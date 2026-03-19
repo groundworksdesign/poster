@@ -114,3 +114,6 @@ Verified .ralph/specs covers deck/presentation, broadcast pipeline, lyrics model
 ## PWA service worker (2026-03-19)
 
 Added a minimal service worker (public/sw.js) and registered it in src/index.tsx for offline caching and PWA support. This is a simple cache-first strategy suitable for demo/offline use; replace with a more robust SW (workbox) for production.
+
+## 2026-03-19T21:53:26Z — Spec review
+Reviewed .ralph/specs and verified they match source. Vendorized Remix stubs present; full Remix build blocked by offline environment.
