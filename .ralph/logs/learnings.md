@@ -107,3 +107,7 @@ Adding tight unit tests for DeckBuilder and SlideDisplay increased coverage from
 ## Test run — 2026-03-19T21:30:20Z
 Ran test:coverage: 10 suites passed, 16 tests, All files 55.44%.
 Observed ReactDOMTestUtils.act deprecation warnings from testing-library internals; plan to upgrade @testing-library/react when network available.
+## 2026-03-19 — Spec review & runtime status
+
+Verified .ralph/specs covers deck/presentation, broadcast pipeline, lyrics model, and tests. The server includes a vendor stub for @remix-run/node to allow offline start, but a real Remix build under /build is still required for full server behavior. The ReactDOMTestUtils.act deprecation persists due to @testing-library/react internals; upgrade @testing-library/react when network access is available.
+
