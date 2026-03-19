@@ -1,5 +1,15 @@
 import React, { act } from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
+
+// Mock Broadcast connection used by DeckBuilder to avoid BroadcastChannel in the test environment
+jest.mock('../Present/Broadcast', () => ({
+  connect: (channelType: any, handler: any) => ({
+    id: 'mock-id',
+    channel: { postMessage: jest.fn(), onmessage: null },
+    channelType,
+  }),
+}));
+
 import DeckBuilder from './DeckBuilder';
 
 test('DeckBuilder shows header and handles save with no deck', () => {
