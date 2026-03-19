@@ -98,3 +98,12 @@ Imported act from 'react' in tests that explicitly used it to follow React recom
 
 Updated tests to import { act } from 'react' where applicable. ReactDOMTestUtils.act deprecation warnings persist because @testing-library/react internals still use react-dom/test-utils. To fully silence warnings, upgrade @testing-library/react when network access is available.
 
+
+### Tests: small units raise coverage (2026-03-19)
+
+Adding tight unit tests for DeckBuilder and SlideDisplay increased coverage from ~53% to ~55% and exercised save/no-deck and send-action code paths. Keep adding small focused tests targeting untested files (DeckBuilder internal branches, index.tsx if safe) to reach threshold. Note: some tests may leak handles due to global fakes — ensure cleanup in afterEach.
+
+
+## Test run — 2026-03-19T21:30:20Z
+Ran test:coverage: 10 suites passed, 16 tests, All files 55.44%.
+Observed ReactDOMTestUtils.act deprecation warnings from testing-library internals; plan to upgrade @testing-library/react when network available.

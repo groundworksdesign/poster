@@ -48,3 +48,4 @@ Vendorized @remix-run/node stub added and server/index.js updated to prefer vend
 2026-03-19T21:02:33Z: Updated tests to import { act } from 'react' for explicit usages; ran full test suite — 14 tests passed. Added fix-plan item 'fix-act-deprecation'.
 2026-03-19T21:14:46Z: Marked fix-act-deprecation done; tests updated to import { act } from 'react'. Warnings persist due to @testing-library/react internals; schedule dependency upgrade when network access is available.
 2026-03-19T21:15:00Z: Added unit tests for DeckBuilder and SlideDisplay; ran tests — all suites passed (10), 16 tests; coverage improved to 55.44%.
+2026-03-19T21:30:20Z: Ran test:coverage — 10 suites passed, 16 tests. Coverage: All files 55.44% (branches 42.29% / functions 46.55% / lines 58.73%). No code changes. Next: address React.act deprecation warnings.
