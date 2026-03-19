@@ -47,3 +47,4 @@ Vendorized @remix-run/node stub added and server/index.js updated to prefer vend
 2026-03-19T20:53:41Z: Completed finalize-remix-build: vendorized minimal runtime (vendor/@remix-run/node) and committed /build/index.js offline stub; updated .ralph/fix_plan_poster.md to mark task done; ran tests: 8 suites passed, 14 tests, All files coverage: 53.13%.
 2026-03-19T21:02:33Z: Updated tests to import { act } from 'react' for explicit usages; ran full test suite — 14 tests passed. Added fix-plan item 'fix-act-deprecation'.
 2026-03-19T21:14:46Z: Marked fix-act-deprecation done; tests updated to import { act } from 'react'. Warnings persist due to @testing-library/react internals; schedule dependency upgrade when network access is available.
+2026-03-19T21:15:00Z: Added unit tests for DeckBuilder and SlideDisplay; ran tests — all suites passed (10), 16 tests; coverage improved to 55.44%.
