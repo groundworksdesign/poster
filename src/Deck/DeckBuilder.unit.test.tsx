@@ -8,6 +8,7 @@ jest.mock('../Present/Broadcast', () => ({
     channel: { postMessage: jest.fn(), onmessage: null },
     channelType,
   }),
+  ChannelType: { BUILDER: 0, PRESENTER: 1 },
 }));
 
 import DeckBuilder from './DeckBuilder';
