@@ -3,3 +3,9 @@ Implemented song-xml-flow: cleaned DeckBuilder, added LyricsDisplay, handled par
 - [x] remix-vite-setup scaffolded under /app (routes: deck,presentation)
 
 2026-03-19: Implemented cast-rendering-finish — Presentation now honors useGreenScreen (slide background becomes transparent), supports backgroundImage, backgroundSize/Position, and horizontal/vertical alignment. Build completed with warnings.
+
+2026-03-19: Marked deck-save-load as completed: builder save/download, JSON import/reload round-trips slideStyles and useGreenScreen; DeckBuilder handleSaveClick implemented.
+
+2026-03-19: Added integration test 'presentation.broadcast' verifying partial lyricsNavigation updates do not clear current slide/message; created FakeBroadcastChannel mock and test harness.
+
+2026-03-19: Ran tests; all test suites passed locally (7 tests). Broadcast partial-update behavior validated.

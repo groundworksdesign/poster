@@ -1,4 +1,4 @@
-import { UUID } from 'crypto';
+import type { UUID } from 'crypto';
 
 export enum ChannelType {
   BUILDER,
@@ -30,8 +30,11 @@ export const connect: (
   eventHandler: (event: MessageEvent) => void,
 ) => {
   const channel = new BroadcastChannel('presentation');
+  const id = (typeof (globalThis as any).crypto !== 'undefined' && typeof (globalThis as any).crypto.randomUUID === 'function')
+    ? (globalThis as any).crypto.randomUUID()
+    : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
   const connection = {
-    id: crypto.randomUUID(),
+    id,
     channel: channel,
     channelType: channelType,
   } as Connection;

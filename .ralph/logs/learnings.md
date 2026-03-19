@@ -16,3 +16,11 @@ Created /app scaffold for Remix route porting; full Remix install & run blocked 
 
 ## Green-screen rendering (2026-03-19)
 When using green-screen mode (useGreenScreen=true) the presentation should render the body background as the chroma key color while making slide content backgrounds transparent. Implemented: Presentation overrides slide background to transparent when green-screening, and honors backgroundImage, backgroundSize, backgroundPosition and horizontal/vertical alignment fields to allow slide content to be positioned and composited correctly.
+
+## BroadcastChannel testing (2026-03-19)
+
+When testing cross-window messaging, use a FakeBroadcastChannel in tests by assigning it to global.BroadcastChannel. The fake should register instances per channel name and route postMessage calls to other instances' onmessage handlers. This enables integration tests that simulate builder -> presenter communication without real browser windows.
+
+## Test environment crypto fallback (2026-03-19)
+
+jsdom (test env) may not provide global.crypto.randomUUID. To keep Presentation/Broadcast working in tests, use a safe fallback for id generation in connect (e.g., use crypto.randomUUID when available, otherwise use a timestamp+random fallback).
