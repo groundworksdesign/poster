@@ -16,3 +16,5 @@ Implemented alignment/background and IMAGE slide rendering; marked task 8 done. 
 
 2026-03-19: Marked image-slide-rendering complete in .ralph/fix_plan_poster.md to reflect implemented code; ran test suite (CI) — all test suites passed (5 suites, 8 tests). No code changes required.
 2026-03-19: Added unit tests for parseSongXML edge cases and LyricsDisplay boundaries; ran tests (CI) — all tests passed (7 suites, 13 tests).
+
+2026-03-19: Added integration test src/integration/deck-to-presentation.test.tsx that simulates builder->presentation updates via FakeBroadcastChannel. Marked integration-tests done. Ran test suite — all tests pass.

@@ -45,3 +45,6 @@ Applied alignment/backgroundImage handling for SONG, IMAGE and GENERAL slides in
 - Tests printed warnings about ReactDOMTestUtils.act deprecation; update tests to import `act` from 'react' instead of 'react-dom/test-utils' to silence warnings.
 - If tests report leaked handles, run with `--detectOpenHandles` to identify lingering timers or unclosed BroadcastChannel mocks.
 
+
+### Integration testing: prefer channel-driven messages over FileReader
+FileReader + file uploads in jsdom can be flaky; prefer simulating BroadcastChannel messages directly to exercise the builder->cast pipeline in integration tests.
