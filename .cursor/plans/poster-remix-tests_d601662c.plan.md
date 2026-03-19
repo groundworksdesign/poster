@@ -4,40 +4,40 @@ overview: Migrate the 2-window poster app to Remix + Vite while modernizing Reac
 todos:
   - id: remix-vite-setup
     content: Create a Remix app with Vite bundler; port existing `/deck` and `/presentation` routes from `src/Deck/DeckBuilder.tsx` and `src/Present/Present.tsx` into Remix route components.
-    status: pending
+    status: done
   - id: modern-form-controls
     content: Implement slide editing/compose controls using `react-hook-form` + `zod` schemas for slide shape; replace the raw JSON textarea editing with validated inputs (while still supporting an advanced JSON view for power users if desired).
-    status: pending
+    status: done
   - id: logic-extraction
     content: Refactor deck operations into pure helpers (move/reorder/add/delete/duplicate, slide serialization/deserialization) to enable high unit test coverage; keep existing `Deck`/`Slide` types from `src/Present/PresentTypes.tsx` (or migrate them into a shared `types` module).
-    status: pending
+    status: done
   - id: song-xml-flow
     content: "Ensure loading `.xml` song creates the correct slide model: a single `SlideType.SONG` slide with `lyrics: SongData`, and next/previous controls in `/deck` send `lyricsNavigation` updates consumed by `src/Present/LyricsDisplay.tsx` (now migrated)."
-    status: pending
+    status: done
   - id: presentation-rendering-finish
     content: Finish cast rendering for title/general slides and green-screen mode in `/presentation`; ensure slide background images and alignment fields are honored (if present in saved deck data).
-    status: pending
+    status: done
   - id: deck-save-load
     content: Implement download/save in the builder route (currently `handleSaveClick` is empty in `src/Deck/DeckBuilder.tsx`) and ensure reload/import round-trips the full deck JSON including `slideStyles` and slide backgrounds.
-    status: pending
+    status: done
   - id: lyrics-state-reset
     content: Update Lyrics rendering so navigation resets correctly when a new song slide (new `SongData`) is received; add unit tests for the reset behavior.
-    status: pending
+    status: done
   - id: broadcast-partial-updates
     content: Harden BroadcastChannel event handling so partial updates (e.g., lyricsNavigation commands) do not wipe the current slide/message; add integration tests around the builder->cast pipeline.
-    status: pending
+    status: done
   - id: unit-tests
     content: Add/expand Vitest unit tests for `songParser` XML variants, LyricsDisplay navigation boundaries, and pure deck helper functions; raise coverage by hitting edge cases.
-    status: pending
+    status: done
   - id: integration-tests
     content: Add Vitest+RTL integration tests that simulate builder dispatches to a rendered cast component using a fake `BroadcastChannel` implementation.
-    status: pending
+    status: done
   - id: playwright-smoke
     content: Add minimal Playwright smoke tests validating that sending a slide from `/deck` updates the text on `/presentation`.
-    status: pending
+    status: done
   - id: coverage-reporting
     content: Configure Vitest coverage reporting and (optionally) enforce a practical threshold; iterate until the suite reaches maximal practical coverage without excessive brittle tests.
-    status: pending
+    status: done
 isProject: false
 ---
 
