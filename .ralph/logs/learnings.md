@@ -117,3 +117,6 @@ Added a minimal service worker (public/sw.js) and registered it in src/index.tsx
 
 ## 2026-03-19T21:53:26Z — Spec review
 Reviewed .ralph/specs and verified they match source. Vendorized Remix stubs present; full Remix build blocked by offline environment.
+
+### 2026-03-19 — Tests & runtime
+Ran tests (npm run test) — all suites passed (10 suites, 16 tests). Observed ReactDOMTestUtils.act deprecation warnings from testing-library internals; plan to upgrade @testing-library/react when network access is available. Vendorized Remix stubs allow offline start:remix for smoke tests; replace with real Remix build when network install is possible.

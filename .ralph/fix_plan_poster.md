@@ -52,3 +52,6 @@ Status: vendor-stub-complete; production Remix build still pending (requires net
 
 - [x] fix-act-deprecation: Silence ReactDOMTestUtils.act deprecation warnings. Update tests to import { act } from 'react' and/or upgrade @testing-library/react to a version that uses React.act internally. (done: tests updated to import act from 'react'; warnings persist due to @testing-library/react internals — upgrade when network access is available.)
 
+
+## Pending network-needed tasks
+- [ ] finalize-remix-build-real: Run `npm install` and `npm run build:remix` to produce a real Remix /build; replace vendor stubs with real build. (blocked: network)
