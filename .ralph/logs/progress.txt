@@ -14,3 +14,4 @@ Implemented song-xml-flow: cleaned DeckBuilder, added LyricsDisplay, handled par
 2026-03-19: Implemented deck-edit-reorder-cast-sync — added stable slide ids, move up/down controls in DeckBuilder, and automatic re-send of active slide after edits/reorder. Tests: all suites passed.
 Implemented alignment/background and IMAGE slide rendering; marked task 8 done. Tests passed (8).
 
+2026-03-19: Marked image-slide-rendering complete in .ralph/fix_plan_poster.md to reflect implemented code; ran test suite (CI) — all test suites passed (5 suites, 8 tests). No code changes required.

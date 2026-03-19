@@ -26,7 +26,7 @@ Ralph loop should pick the next highest-priority item and mark it completed.
 ## Priority 3 — Presentation richness (minimal but complete)
 
 8. [x] `alignment-and-background-images`: Honor `horizontalAlign`/`verticalAlign` and background image style fields in the cast renderer.
-9. [ ] `image-slide-rendering`: Implement `SlideType.IMAGE` rendering (image behind/around text).
+9. [x] `image-slide-rendering`: Implement `SlideType.IMAGE` rendering (image behind/around text).
 
 ## Priority 4 — Tests + coverage
 
