@@ -1,3 +1,5 @@
 
 Implemented song-xml-flow: cleaned DeckBuilder, added LyricsDisplay, handled partial lyricsNavigation in Presentation, added songParser unit test
 - [x] remix-vite-setup scaffolded under /app (routes: deck,presentation)
+
+2026-03-19: Implemented cast-rendering-finish — Presentation now honors useGreenScreen (slide background becomes transparent), supports backgroundImage, backgroundSize/Position, and horizontal/vertical alignment. Build completed with warnings.

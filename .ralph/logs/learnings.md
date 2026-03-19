@@ -13,3 +13,6 @@ Decided to represent loaded songs as a single SlideType.SONG containing full Son
 
 ## Remix scaffold note (2026-03-19)
 Created /app scaffold for Remix route porting; full Remix install & run blocked by environment (no network). Files ported: PresentTypes, Broadcast (browser-friendly), songParser, LyricsDisplay, SlideDisplay, Deck route, Presentation route.
+
+## Green-screen rendering (2026-03-19)
+When using green-screen mode (useGreenScreen=true) the presentation should render the body background as the chroma key color while making slide content backgrounds transparent. Implemented: Presentation overrides slide background to transparent when green-screening, and honors backgroundImage, backgroundSize, backgroundPosition and horizontal/vertical alignment fields to allow slide content to be positioned and composited correctly.

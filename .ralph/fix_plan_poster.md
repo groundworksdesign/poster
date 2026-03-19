@@ -15,7 +15,7 @@ Ralph loop should pick the next highest-priority item and mark it completed.
 1. [x] `remix-vite-setup`: Scaffold Remix + Vite and port `/deck` + `/presentation` routes. (scaffolded under /app with route components copied; full Remix/Vite install & run pending environment)
 2. [x] `song-xml-flow`: Ensure loading a `.xml` song produces a *single* `SlideType.SONG` slide with `lyrics: SongData`, and that `/deck` next/prev controls send `lyricsNavigation` commands consumed by `LyricsDisplay`.
 3. [ ] `deck-save-load`: Implement builder save/download and reload round-trip for the full `Deck` (including `slideStyles` and slide background image references, and `useGreenScreen`).
-4. [ ] `cast-rendering-finish`: Finish cast rendering for title/general slides and green-screen mode (ensure green key visibility by making slide background transparent when `useGreenScreen` is true).
+4. [x] `cast-rendering-finish`: Finish cast rendering for title/general slides and green-screen mode (ensure green key visibility by making slide background transparent when `useGreenScreen` is true).
 
 ## Priority 2 — Robust casting + persistence correctness
 

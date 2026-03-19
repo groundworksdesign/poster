@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { connect, ChannelType, Connection } from './Broadcast';
-import { PresentData, Slide, SlideType, SongData } from './PresentTypes';
+import { PresentData, Slide, SlideType, SongData, HorizontalAlign, VerticalAlign } from './PresentTypes';
 import LyricsDisplay from './LyricsDisplay';
 
 export default function Presentation() {
@@ -73,15 +73,27 @@ export default function Presentation() {
           <div
             id="content"
             style={{
-              backgroundColor: slide?.style?.backgroundColor,
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent:
+                (slide?.style?.verticalAlign === VerticalAlign.TOP && 'flex-start') ||
+                (slide?.style?.verticalAlign === VerticalAlign.BOTTOM && 'flex-end') ||
+                'center',
+              alignItems:
+                (slide?.style?.horizontalAlign === HorizontalAlign.LEFT && 'flex-start') ||
+                (slide?.style?.horizontalAlign === HorizontalAlign.RIGHT && 'flex-end') ||
+                'center',
+              textAlign: slide?.style?.horizontalAlign ?? 'center',
+              backgroundColor: useGreenScreen ? 'transparent' : slide?.style?.backgroundColor,
               color: slide?.style?.color,
-              position: 'absolute',
-              bottom: '0px',
               width: slide?.style?.width ?? '100%',
               height: slide?.style?.height ?? '150px',
-              verticalAlign: slide?.style?.verticalAlign ?? 'middle',
               fontFamily: slide?.style?.fontFamily,
-              paddingTop: '20px',
+              padding: '20px',
+              backgroundImage: slide?.style?.backgroundImage ? `url(${slide.style.backgroundImage})` : undefined,
+              backgroundSize: slide?.style?.backgroundSize ?? 'cover',
+              backgroundPosition: slide?.style?.backgroundPosition ?? 'center',
+              backgroundRepeat: 'no-repeat',
             }}
           >
             <div style={{ fontSize: slide?.titleFontSize ?? slide?.style?.fontSize }}>{slide?.title}</div>
