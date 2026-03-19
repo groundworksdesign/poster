@@ -58,3 +58,5 @@ Installed missing deps to run Playwright smoke test. Test passed locally: 1 test
 ## Coverage configuration (2026-03-19)
 
 Configured coverage scripts using CRA/Jest: `npm run test:coverage` (single-run coverage) and added coverage thresholds in package.json. If migrating to Vitest later, migrate thresholds and coverage config to Vitest's coverage provider (c8/istanbul).
+## Session note — 2026-03-19
+Created session plan.md; running coverage shows 53.13% overall. Observed ReactDOMTestUtils.act deprecation warnings; update tests to import `act` from 'react' to silence.

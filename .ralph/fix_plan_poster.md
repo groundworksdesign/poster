@@ -34,3 +34,6 @@ Ralph loop should pick the next highest-priority item and mark it completed.
 11. [x] `integration-tests`: Add Vitest + React Testing Library integration tests that verify the builder->cast broadcast pipeline (fake `BroadcastChannel`).
 12. [x] `playwright-smoke`: Add minimal Playwright smoke tests for “send slide from `/deck` updates `/presentation`”.
 13. [x] `coverage-reporting`: Configure test coverage reporting (using Jest/react-scripts in this repo) and add coverage scripts and thresholds.
+
+## Next priority — Runtime migration
+- [ ] migrate-runtime-to-remix: Replace CRA runtime with Remix+Vite production build; ensure SSR, update scripts, and CI flows. (blocked-by-network-install)
