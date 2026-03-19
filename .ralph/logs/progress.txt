@@ -56,3 +56,5 @@ Vendorized @remix-run/node stub added and server/index.js updated to prefer vend
 2026-03-19T21:55:00Z: Ran tests — 10 suites passed, 16 tests passed. All tests green.
 2026-03-19T22:01:49Z - Ran tests: 10 suites, 16 tests passed; warnings: ReactDOMTestUtils.act deprecation persists. Next: finalize real Remix build when network available.
 2026-03-19T22:10:49Z - Added .ralph/AGENT_VENDOR.md and updated fix plan; vendor/runtime stubs inspected; finalize-remix-build-real remains blocked by network
+2026-03-19T22:12:43Z - Added missing .ralph/specs (features.md, data_model.md, architecture.md) to cover app modules
+2026-03-19T22:13:04Z - Iteration: created .ralph/AGENT_VENDOR.md, updated .ralph/fix_plan_poster.md, added .ralph/specs/*; tests passed (10 suites, 16 tests). finalize-remix-build-real remains blocked by network.
