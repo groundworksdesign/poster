@@ -61,3 +61,7 @@ Configured coverage scripts using CRA/Jest: `npm run test:coverage` (single-run 
 ## Session note — 2026-03-19
 Created session plan.md; running coverage shows 53.13% overall. Observed ReactDOMTestUtils.act deprecation warnings; update tests to import `act` from 'react' to silence.
 \n## Remix migration blocker (2026-03-19)\n\nRemix/Vite scaffold present but cannot complete install/build due to network restrictions in this environment. To finish migration: add required dependencies and run npm install; in CI, enable dependency caching or vendor dependencies.\n
+### Spec review (2026-03-19)
+
+Confirmed presence and coverage of .ralph/specs/app_spec.md and nested spec docs (features, data_model, architecture). Migration to Remix/Vite remains blocked by network install; next actions: vendor dependencies or prebuild server artifact for offline CI.
+
