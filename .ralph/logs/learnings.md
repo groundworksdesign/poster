@@ -24,3 +24,7 @@ When testing cross-window messaging, use a FakeBroadcastChannel in tests by assi
 ## Test environment crypto fallback (2026-03-19)
 
 jsdom (test env) may not provide global.crypto.randomUUID. To keep Presentation/Broadcast working in tests, use a safe fallback for id generation in connect (e.g., use crypto.randomUUID when available, otherwise use a timestamp+random fallback).
+
+## Lyrics reset test (2026-03-19)
+
+Added a unit test confirming Presentation resets lyrics segmentIndex to 0 when a new SongData arrives. Tests use a FakeBroadcastChannel to route messages between instances; ensure test code cleans up channel instances (or delete global.BroadcastChannel) to avoid Jest open-handle warnings.
