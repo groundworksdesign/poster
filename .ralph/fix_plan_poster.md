@@ -36,9 +36,9 @@ Ralph loop should pick the next highest-priority item and mark it completed.
 13. [x] `coverage-reporting`: Configure test coverage reporting (using Jest/react-scripts in this repo) and add coverage scripts and thresholds.
 
 ## Next priority — Runtime migration
-- [~] migrate-runtime-to-remix: In progress — scaffolding added (remix.config.js, vite.config.ts, server/index.js). Blocker: remix & vite dependencies not installed in this environment (network restricted). Next steps:
-  - Add remix, @remix-run/*, vite, @vitejs/plugin-react to package.json devDependencies.
-  - Run npm install (or npm ci) to populate node_modules (requires network or cached artifacts).
-  - Run npm run build:remix and npm run start:remix to verify the Remix server build.
+- [~] migrate-runtime-to-remix: In progress — scaffolding added (remix.config.js, vite.config.ts, server/index.js). Current blocker: required runtime packages (@remix-run/node, remix, @vitejs/plugin-react, vite) are not installed and network installs are restricted in this environment. Next steps:
+  - Add remix, @remix-run/*, vite, @vitejs/plugin-react to package.json devDependencies (prepared change ready to commit).
+  - If network install is unavailable, vendor the required packages or include prebuilt server artifacts (a prebuilt /build directory produced externally) so the Remix server can run without a network install.
+  - Once dependencies are available, run `npm install` (or `npm ci`), then `npm run build:remix` and `npm run start:remix` to verify the Remix server build and runtime.
   - Update CI to cache or vendor dependencies to allow offline builds.
-Status: blocked-by-network-install; leaving as in-progress ([~]).
+Status: blocked-by-network-install; next concrete action: stage package.json devDependency additions and document vendor options in this file.
