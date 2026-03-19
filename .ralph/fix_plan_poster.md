@@ -45,3 +45,5 @@ Next steps:
   - Update .ralph/AGENT.md with vendor preparation instructions and add a CI caching strategy.
 
 Status: vendor-stub-complete; production Remix build still pending (requires network install or prebuilt /build).
+## Next blocked task
+- [ ] finalize-remix-build: Vendorize Remix runtime or enable network install and run 'npm install' then 'npm run build:remix' to produce /build. Blocked in current offline environment.
