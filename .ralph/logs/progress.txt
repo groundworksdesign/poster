@@ -43,3 +43,4 @@ Implemented alignment/background and IMAGE slide rendering; marked task 8 done. 
 Vendorized @remix-run/node stub added and server/index.js updated to prefer vendorized runtime. Ran tests (npm run test:coverage) — existing suites passed.
 
 2026-03-19T20:42:32Z: Iteration notes: appended session plan and recorded remix runtime blocker. Tests previously passed (8 suites, 14 tests). Next action: finalize remix runtime build (vendorize or allow network install).
+2026-03-19T20:45:09Z: Attempted finalize-remix-build — created minimal /build/index.js stub and updated .gitignore; finalize-remix-build remains blocked for a full Remix build (network required).

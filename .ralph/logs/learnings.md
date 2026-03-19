@@ -82,3 +82,7 @@ Added vendor/@remix-run/node minimal stub to allow offline start:remix fallback 
 
 ## 2026-03-19 - Migration note
 Remix runtime requires vendorization or network install in CI. Prefer committing /build or vendor dependencies for offline environments.
+
+### Offline Remix build stub
+
+Created minimal /build/index.js to allow server/index.js to require('../build') in offline environments. Replace with a real Remix build when network/install available.
