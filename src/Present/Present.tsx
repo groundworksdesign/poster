@@ -67,12 +67,6 @@ export default function Presentation() {
   }, [useGreenScreen]);
 
   const computeContainerStyle = (): React.CSSProperties => {
-    const vAlign =
-      slide?.style?.verticalAlign === VerticalAlign.TOP
-        ? 'flex-start'
-        : slide?.style?.verticalAlign === VerticalAlign.BOTTOM
-        ? 'flex-end'
-        : 'center';
     const hAlign =
       slide?.style?.horizontalAlign === HorizontalAlign.LEFT
         ? 'flex-start'
@@ -88,10 +82,6 @@ export default function Presentation() {
         : slide?.style?.backgroundImage);
 
     return {
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: vAlign,
-      alignItems: hAlign,
       textAlign,
       backgroundColor: useGreenScreen ? 'transparent' : slide?.style?.backgroundColor,
       color: slide?.style?.color,
@@ -106,6 +96,18 @@ export default function Presentation() {
     } as React.CSSProperties;
   };
 
+  const getTitleOverlayStyle = (): React.CSSProperties => {
+    const v = slide?.style?.verticalAlign;
+    const h = slide?.style?.horizontalAlign;
+    const alignItems = h === HorizontalAlign.LEFT ? 'flex-start' : h === HorizontalAlign.RIGHT ? 'flex-end' : 'center';
+    const textAlign = slide?.style?.horizontalAlign ?? 'center';
+    const base: any = { position: 'absolute', left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems, textAlign };
+    if (v === VerticalAlign.TOP) base.top = '20px';
+    else if (v === VerticalAlign.BOTTOM) base.bottom = '20px';
+    else { base.top = '50%'; base.transform = 'translateY(-50%)'; }
+    return base as React.CSSProperties;
+  };
+
   const display = loading ? (
     <h1>Loading...</h1>
   ) : (
@@ -113,20 +115,35 @@ export default function Presentation() {
       <div id="message">{message}</div>
       <div id="slide" style={{ height: '100%', width: '100%' }}>
         {slide?.type === SlideType.SONG && songData ? (
-          <div id="song" style={computeContainerStyle()}>
-            <LyricsDisplay song={songData} segmentIndex={segmentIndex} />
+          <div id="song" style={{ ...computeContainerStyle(), position: 'relative' }}>
+            <div style={{ height: '100%', width: '100%' }}>
+              <LyricsDisplay song={songData} segmentIndex={segmentIndex} />
+            </div>
+            {(slide?.title || slide?.subTitle) && (
+              <div style={getTitleOverlayStyle()}>
+                <div style={{ fontSize: slide?.titleFontSize ?? slide?.style?.fontSize }}>{slide?.title}</div>
+                <div style={{ fontSize: slide?.subTitleFontSize ?? slide?.style?.fontSize }}>{slide?.subTitle}</div>
+              </div>
+            )}
           </div>
         ) : slide?.type === SlideType.IMAGE ? (
-          <div id="image-slide" style={computeContainerStyle()}>
-            <div style={{ textAlign: 'inherit', color: slide?.style?.color }}>
-              <div style={{ fontSize: slide?.titleFontSize ?? slide?.style?.fontSize }}>{slide?.title}</div>
-              <div style={{ fontSize: slide?.subTitleFontSize ?? slide?.style?.fontSize }}>{slide?.subTitle}</div>
-            </div>
+          <div id="image-slide" style={{ ...computeContainerStyle(), position: 'relative' }}>
+            <div style={{ textAlign: 'inherit', color: slide?.style?.color }} />
+            {(slide?.title || slide?.subTitle) && (
+              <div style={getTitleOverlayStyle()}>
+                <div style={{ fontSize: slide?.titleFontSize ?? slide?.style?.fontSize }}>{slide?.title}</div>
+                <div style={{ fontSize: slide?.subTitleFontSize ?? slide?.style?.fontSize }}>{slide?.subTitle}</div>
+              </div>
+            )}
           </div>
         ) : (
-          <div id="content" style={computeContainerStyle()}>
-            <div style={{ fontSize: slide?.titleFontSize ?? slide?.style?.fontSize }}>{slide?.title}</div>
-            <div style={{ fontSize: slide?.subTitleFontSize ?? slide?.style?.fontSize }}>{slide?.subTitle}</div>
+          <div id="content" style={{ ...computeContainerStyle(), position: 'relative' }}>
+            {(slide?.title || slide?.subTitle) && (
+              <div style={getTitleOverlayStyle()}>
+                <div style={{ fontSize: slide?.titleFontSize ?? slide?.style?.fontSize }}>{slide?.title}</div>
+                <div style={{ fontSize: slide?.subTitleFontSize ?? slide?.style?.fontSize }}>{slide?.subTitle}</div>
+              </div>
+            )}
           </div>
         )}
       </div>

@@ -397,7 +397,7 @@ export default function DeckBuilder() {
                 <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
                   <strong>{index + 1}.</strong>
                   <span style={{ flex: 1 }}>{slide.title || slide.type || 'Slide'}</span>
-                  <button onClick={() => handleSendClick({ slide, message: `Presenting slide ${index + 1}`, useGreenScreen: deck?.useGreenScreen || false })}>Send</button>
+                  <button onClick={() => handleSendClick({ slide, useGreenScreen: deck?.useGreenScreen || false })}>Send</button>
                   <button onClick={() => setSelectedSlideIndex(index)}>Edit</button>
                   <button onClick={() => duplicateSlide(index)}>Duplicate</button>
                   <button onClick={() => deleteSlide(index)}>Delete</button>

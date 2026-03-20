@@ -42,7 +42,6 @@ test('deck send updates presentation', async ({ browser }) => {
   await deckPage.waitForSelector('#slides');
   await deckPage.click('#slides button:has-text("Send")');
 
-  // Assert presentation received the message and rendered the slide/title
-  await expect(presentation.locator('#message')).toHaveText(/Presenting slide|Loaded song|Simulated send/i);
+  // Assert presentation rendered the slide/title
   await expect(presentation.locator('text=Slide 1')).toBeVisible();
 });
