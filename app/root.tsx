@@ -1,19 +1,25 @@
-import React from 'react';
+import React from "react";
+import type { MetaFunction } from "@remix-run/node";
+import { Links, LiveReload, Meta, Outlet, Scripts, ScrollRestoration } from "@remix-run/react";
 
-// Minimal Remix root scaffold for future migration
-export default function Root() {
+export const meta: MetaFunction = () => ({
+  charset: "utf-8",
+  title: "Poster",
+  viewport: "width=device-width,initial-scale=1",
+});
+
+export default function App() {
   return (
-    <html>
+    <html lang="en">
       <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width,initial-scale=1" />
-        <title>Poster (Remix scaffold)</title>
+        <Meta />
+        <Links />
       </head>
       <body>
-        <div id="app-root">
-          <h1>Poster Remix scaffold</h1>
-          <p>This folder contains ported route components: <code>/routes/deck</code> and <code>/routes/presentation</code>.</p>
-        </div>
+        <Outlet />
+        <ScrollRestoration />
+        <Scripts />
+        <LiveReload />
       </body>
     </html>
   );

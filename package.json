@@ -27,7 +27,8 @@
     "@vitejs/plugin-react": "^4.0.0"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "dev": "remix dev",
+    "start": "node ./server/index.js",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "test:coverage": "react-scripts test --coverage --watchAll=false",
