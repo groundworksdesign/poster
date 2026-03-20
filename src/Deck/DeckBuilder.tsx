@@ -14,6 +14,7 @@ export default function DeckBuilder() {
   const [isSongMode, setIsSongMode] = useState<boolean>(false);
   const [currentSongIndex, setCurrentSongIndex] = useState<number>(0);
   const [lastSentSlideId, setLastSentSlideId] = useState<string | null>(null);
+  const [selectedSlideIndex, setSelectedSlideIndex] = useState<number | null>(null);
 
   const genId = () => (typeof (globalThis as any).crypto !== 'undefined' && typeof (globalThis as any).crypto.randomUUID === 'function') ? (globalThis as any).crypto.randomUUID() : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 
@@ -171,6 +172,78 @@ export default function DeckBuilder() {
     }
   };
 
+  // Deck defaults helpers
+  const updateDeckDefaultStyle = (key: keyof any, value: any) => {
+    if (!deck) return;
+    const newSlideStyles = { ...(deck.slideStyles || {}) } as Record<string, any>;
+    const general = newSlideStyles[SlideType.GENERAL] || {};
+    newSlideStyles[SlideType.GENERAL] = { ...general, [key]: value };
+    const newDeck = { ...deck, slideStyles: newSlideStyles };
+    setDeck(newDeck);
+    syncSentSlideIfNeeded(newDeck);
+  };
+
+  const resetDeckGeneralDefaults = () => {
+    if (!deck) return;
+    const newSlideStyles = { ...(deck.slideStyles || {}) } as Record<string, any>;
+    delete newSlideStyles[SlideType.GENERAL];
+    const newDeck = { ...deck, slideStyles: newSlideStyles };
+    setDeck(newDeck);
+    syncSentSlideIfNeeded(newDeck);
+  };
+
+  const updateSlideField = (index: number, field: string, value: any) => {
+    if (!deck) return;
+    const slides = deck.slides.slice();
+    const slide = { ...slides[index] } as any;
+    (slide as any)[field] = value;
+    slides[index] = slide;
+    const newDeck = { ...deck, slides };
+    setDeck(newDeck);
+    syncSentSlideIfNeeded(newDeck);
+  };
+
+  const updateSlideStyle = (index: number, key: keyof any, value: any) => {
+    if (!deck) return;
+    const slides = deck.slides.slice();
+    const slide = { ...slides[index] } as any;
+    const style = { ...(slide.style || {}) } as any;
+    if (value === '' || value === null || value === undefined) {
+      delete style[key as string];
+    } else {
+      style[key as string] = value;
+    }
+    slide.style = style;
+    slides[index] = slide;
+    const newDeck = { ...deck, slides };
+    setDeck(newDeck);
+    syncSentSlideIfNeeded(newDeck);
+  };
+
+  const resetSlideStyleField = (index: number, key: keyof any) => {
+    if (!deck) return;
+    const slides = deck.slides.slice();
+    const slide = { ...slides[index] } as any;
+    const style = { ...(slide.style || {}) } as any;
+    delete style[key as string];
+    slide.style = style;
+    slides[index] = slide;
+    const newDeck = { ...deck, slides };
+    setDeck(newDeck);
+    syncSentSlideIfNeeded(newDeck);
+  };
+
+  const resetAllSlideStyleOverrides = (index: number) => {
+    if (!deck) return;
+    const slides = deck.slides.slice();
+    const slide = { ...slides[index] } as any;
+    slide.style = {};
+    slides[index] = slide;
+    const newDeck = { ...deck, slides };
+    setDeck(newDeck);
+    syncSentSlideIfNeeded(newDeck);
+  };
+
   const moveSlide = (index: number, direction: 'up' | 'down') => {
     if (!deck) return;
     const slides = deck.slides.slice();
@@ -209,6 +282,17 @@ export default function DeckBuilder() {
         <button onClick={startSong} disabled={!deck || !isSongMode}>Start Song</button>
         <button onClick={rewindSong} disabled={!deck || !isSongMode}>Prev 2 Lines</button>
         <button onClick={advanceSong} disabled={!deck || !isSongMode}>Next 2 Lines</button>
+
+        <div style={{ marginTop: '12px', padding: '8px', border: '1px solid #ddd' }}>
+          <h3>Deck defaults (GENERAL)</h3>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <label>Background: <input type="text" value={deck?.slideStyles?.[SlideType.GENERAL]?.backgroundColor || ''} onChange={e => updateDeckDefaultStyle('backgroundColor', e.target.value)} /></label>
+            <label>Color: <input type="text" value={deck?.slideStyles?.[SlideType.GENERAL]?.color || ''} onChange={e => updateDeckDefaultStyle('color', e.target.value)} /></label>
+            <label>Font: <input type="text" value={deck?.slideStyles?.[SlideType.GENERAL]?.fontFamily || ''} onChange={e => updateDeckDefaultStyle('fontFamily', e.target.value)} /></label>
+            <label>Font size: <input type="text" value={deck?.slideStyles?.[SlideType.GENERAL]?.fontSize || ''} onChange={e => updateDeckDefaultStyle('fontSize', e.target.value)} /></label>
+            <button onClick={() => resetDeckGeneralDefaults()}>Clear GENERAL defaults</button>
+          </div>
+        </div>
       </div>
 
       <div>
@@ -222,6 +306,7 @@ export default function DeckBuilder() {
                   <strong>{index + 1}.</strong>
                   <span style={{ flex: 1 }}>{slide.title || slide.type || 'Slide'}</span>
                   <button onClick={() => handleSendClick({ slide, message: `Presenting slide ${index + 1}`, useGreenScreen: deck?.useGreenScreen || false })}>Send</button>
+                  <button onClick={() => setSelectedSlideIndex(index)}>Edit</button>
                   <button onClick={() => moveSlide(index, 'up')} disabled={index === 0}>↑</button>
                   <button onClick={() => moveSlide(index, 'down')} disabled={index === (deck!.slides.length - 1)}>↓</button>
                 </div>
@@ -230,6 +315,40 @@ export default function DeckBuilder() {
           </ul>
         </div>
       </div>
+
+      {typeof selectedSlideIndex === 'number' && deck && deck.slides[selectedSlideIndex] && (
+        <div style={{ marginTop: '12px', padding: '8px', border: '1px solid #ddd' }}>
+          <h3>Editing slide {selectedSlideIndex + 1}</h3>
+          <div>
+            <label>Title: <input type="text" value={deck.slides[selectedSlideIndex].title || ''} onChange={e => updateSlideField(selectedSlideIndex, 'title', e.target.value)} /></label>
+          </div>
+          <div>
+            <label>Subtitle: <input type="text" value={deck.slides[selectedSlideIndex].subTitle || ''} onChange={e => updateSlideField(selectedSlideIndex, 'subTitle', e.target.value)} /></label>
+          </div>
+
+          <h4>Style (effective shown; overrides saved to slide.style)</h4>
+          {(() => {
+            const slide = deck.slides[selectedSlideIndex];
+            const effective = resolveSlideStyle(deck, slide);
+            const styleKeys: Array<keyof any> = ['backgroundColor', 'color', 'fontFamily', 'fontSize'];
+            return (
+              <div>
+                {styleKeys.map((k) => (
+                  <div key={k as string} style={{ marginTop: '6px' }}>
+                    <label style={{ marginRight: '8px' }}>{k}: </label>
+                    <input type="text" value={(slide.style && (slide.style as any)[k]) || (effective as any)[k] || ''} onChange={e => updateSlideStyle(selectedSlideIndex, k, e.target.value)} />
+                    <button onClick={() => resetSlideStyleField(selectedSlideIndex, k)} style={{ marginLeft: '8px' }}>Reset</button>
+                  </div>
+                ))}
+                <div style={{ marginTop: '8px' }}>
+                  <button onClick={() => resetAllSlideStyleOverrides(selectedSlideIndex)}>Reset all overrides</button>
+                  <button onClick={() => setSelectedSlideIndex(null)} style={{ marginLeft: '8px' }}>Close editor</button>
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      )}
 
       <div id="status" style={{ marginTop: '12px' }}>{message}</div>
     </>

@@ -133,3 +133,5 @@ Inspected server and vendor stubs: vendor/@remix-run/node and /build/index.js pr
 Before a new sprint, reset **`.ralph/config.json`** so **`maxIterations` ≥ 1** (e.g. 20). **`maxIterations: 0`** causes the `while` loop to run zero times — no Copilot runs — while open tasks remain. **`ralph.sh`** now exits with an error if `maxIterations < 1`. Seed **`.ralph/logs/progress.txt`** with a **`LOOP START`** banner (see `.ralph/AGENT.md`) so the agent knows iteration 0 and the next task.
 
 2026-03-20: Added resolveSlideStyle helper and tests; DeckBuilder now sends merged style and SlideDisplay shows effective style. All Jest suites passed.
+
+2026-03-20: Added Deck defaults UI and per-slide editor to DeckBuilder. Editor shows effective values (via resolveSlideStyle) but persists only per-slide overrides to slide.style; each style field has a reset-to-default control. Tests updated and all suites passed.
