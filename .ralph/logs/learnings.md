@@ -138,3 +138,4 @@ Before a new sprint, reset **`.ralph/config.json`** so **`maxIterations` ≥ 1**
 ## Presenter UX note (2026-03-20)
 Avoid auto-broadcasting UI status messages from the DeckBuilder; explicit sends should carry message when appropriate. Suppressing automatic message broadcasts prevents a persistent top banner on the presentation window.
 2026-03-20T19:00:37Z — Remix dev failed to start: 'remix' CLI not found in node_modules. Offline environments must vendorize @remix-run packages or run npm install. Documented in .ralph/fix_plan_poster.md as blocked if needed.
+2026-03-20T19:18:46Z - dedupe: app/routes now re-export src implementations; reduces duplication
