@@ -1,27 +1,25 @@
 # Plan Prompt (Poster)
 
-Use `.cursor/plans/poster-remix-tests_d601662c.plan.md` as the roadmap.
+Use **`.cursor/plans/remix_vite_+_deck_ux_7fba078c.plan.md`** as the roadmap (same path as `planFile` in `.ralph/config.json`).
 
 When generating work artifacts:
-- Create/update `.ralph/specs/*` with acceptance criteria and data model details.
-- Create/update `.ralph/fix_plan.md` (and keep `.ralph/fix_plan_poster.md` in sync if the loop still reads it) with a prioritized list of items not yet implemented.
-- Create/update `.ralph/session-plan.md` with a “top 10” slice of the active fix plan.
+- **Create/update `.ralph/specs/*`** with acceptance criteria, data model details (including deck defaults + per-slide style overrides), and architecture notes.
+- **Create/update `.ralph/fix_plan_poster.md`** with a prioritized checklist. **Open tasks that control `ralph.sh` exit must live between** `<!-- ralph-open-tasks-start -->` and `<!-- ralph-open-tasks-end -->` (see that file).
+- **Create/update `.ralph/session-plan.md`** with a “top N” slice of the current fix plan for the session.
 
-Do not assume modules exist; search first. If missing, author the new spec module under `.ralph/specs/`.
+Do not assume modules exist; search first. If missing, add spec modules under `.ralph/specs/`.
 
-Study `.ralph/specs/*` for application specifications and `.ralph/fix_plan.md` to see what is left to do.
+Study `.ralph/specs/*` and **`.ralph/fix_plan_poster.md`** for what remains.
 
 At the beginning of planning mode also read:
-- `.ralph/config.json` to understand loop configuration and constraints.
-- `.ralph/logs/progress.txt` to see what has already been attempted or completed.
-- `.ralph/logs/learnings.md` to incorporate durable learnings into future plans.
+- `.ralph/config.json` (especially `planFile`, `fixPlanFile`, task markers, `maxIterations`, `ignoreBlockedUncheckedTasks`)
+- `.ralph/logs/progress.txt`
+- `.ralph/logs/learnings.md`
 
-The source code lives in `src/` today (Create React App). The roadmap migrates the shell to **Remix + Vite**; there is **no Prisma, no SQLite, and no server database** for Poster—decks are JSON files + in-browser state, and the two windows talk over `BroadcastChannel`.
+**Source layout:** `src/` is the live CRA app today; `app/` is a Remix scaffold — the plan requires **one shared implementation** after migration.
 
-CRITICAL: You must ONLY make changes within this **poster** repository (the project root). Do not modify files outside of this project.
+CRITICAL: Only change files inside this repository root.
 
-First task is to study `.ralph/fix_plan.md` (it may be incorrect) and, using subagents as needed, compare existing code under `src/` against the specifications. Create/update `.ralph/fix_plan.md` as a bullet list sorted by priority for work not yet implemented. Search for TODOs, placeholders, and minimal stubs. Keep the fix plan accurate as items become complete or as new tasks are split out.
+Build toward **Remix + Vite** per the active plan. Decks remain **JSON + in-browser state**; no server database unless requirements change.
 
-IMPORTANT: Build toward **Remix + Vite** per `.cursor/plans/poster-remix-tests_d601662c.plan.md`. Do not introduce Prisma or a SQL database unless the product requirements explicitly change.
-
-ULTIMATE GOAL: a **two-window Poster app**—composer (`/deck`) and cast (`/presentation`)—with song XML loading, lyrics (two lines at a time), editable/reorderable slides, deck save/load (JSON), green-screen friendly casting, and strong unit/integration tests (Vitest + RTL + minimal Playwright). If specs are missing, add them at `.ralph/specs/MODULE_NAME/MODULE_NAME.md` (search before creating). If you add a spec module, reflect the implementation work in `.ralph/fix_plan.md`.
+ULTIMATE GOAL (aligned with active plan): Remix+Vite app with **new deck from scratch**, **full slide CRUD**, **deck-level style defaults** with **per-slide overrides** (`resolveSlideStyle`), **cast without slide-number messaging**, **title band at top/middle/bottom per slide**, song lyrics + green-screen, strong tests — specs and `fix_plan_poster.md` stay the living documentation.

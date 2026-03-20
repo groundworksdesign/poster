@@ -1,57 +1,38 @@
-# Fix Plan / TODO List (poster)
+# Fix plan — poster (Ralph execution list)
 
-This file is the single source of truth for the next prioritized work items.
-Ralph loop should pick the next highest-priority item and mark it completed.
+**Loop start / reset:** see **“Loop start state”** in [.ralph/AGENT.md](./AGENT.md) — `config.json` `maxIterations`, `progress.txt` `LOOP START` banner, and this file’s marked tasks must be consistent before `./.ralph/ralph.sh` runs.
 
-## ✅ Iteration: create poster specs/tasks artifacts (completed)
+**Active roadmap:** [.cursor/plans/remix_vite_+_deck_ux_7fba078c.plan.md](../.cursor/plans/remix_vite_+_deck_ux_7fba078c.plan.md)
 
-- [x] Rewired `.ralph` loop prompts/config (`.ralph/config.json`, `.ralph/ralph.sh`, `.ralph/PROMPT.md`, `.ralph/AGENT.md`, `.ralph/PLAN_PROMPT.md`)
-- [x] Generated poster-specific specs under `.ralph/specs/*` (`app_spec`, `features`, `data_model`, `architecture`)
-- [x] Created poster-specific execution plans under `.ralph/session-plan.md`
-- [x] Updated loop prompt to ingest `.cursor/plans/poster-remix-tests_d601662c.plan.md`
+**How Ralph counts “open work”:** only markdown checklist lines `- [ ] …` **between** `<!-- ralph-open-tasks-start -->` and `<!-- ralph-open-tasks-end -->` below. When every such item is checked `- [x]` or removed, `ralph.sh` exits. Lines containing `blocked` (case-insensitive) are ignored when `ignoreBlockedUncheckedTasks` is true in `.ralph/config.json`.
 
-## Priority 1 — Core app migration + behavior parity
+Completed items should be marked `[x]` or moved to **Completed (archive)** so the open section stays accurate.
 
-1. [x] `remix-vite-setup`: Scaffold Remix + Vite and port `/deck` + `/presentation` routes. (scaffolded under /app with route components copied; full Remix/Vite install & run pending environment)
-2. [x] `song-xml-flow`: Ensure loading a `.xml` song produces a *single* `SlideType.SONG` slide with `lyrics: SongData`, and that `/deck` next/prev controls send `lyricsNavigation` commands consumed by `LyricsDisplay`.
-3. [x] `deck-save-load`: Implement builder save/download and reload round-trip for the full `Deck` (including `slideStyles` and slide background image references, and `useGreenScreen`).
-4. [x] `cast-rendering-finish`: Finish cast rendering for title/general slides and green-screen mode (ensure green key visibility by making slide background transparent when `useGreenScreen` is true).
+<!-- ralph-open-tasks-start -->
 
-## Priority 2 — Robust casting + persistence correctness
+- [x] `style-merge-helper`: Add `resolveSlideStyle(deck, slide)` — merge `deck.slideStyles[general]`, then type-specific `slideStyles[slide.type]`, then `slide.style` (shallow override) + unit tests; use on send path and presenter.
+- [ ] `deck-defaults-ui`: Deck builder “Deck defaults” panel bound to `deck.slideStyles`; per-slide editor shows effective style, persists overrides in `slide.style`, reset-to-default per field.
+- [ ] `slide-crud-editor`: New deck from scratch; add / duplicate / delete / reorder slides; type-specific manual editors for GENERAL, TITLE, IMAGE, SONG (incl. lyrics structure).
+- [ ] `presenter-ux`: Remove slide-index / “Presenting slide N” from cast (`#message`); title/subtitle overlay follows `verticalAlign` top|middle|bottom; preserve lyrics + green-screen behavior.
+- [ ] `remix-vite-wireup`: Replace CRA with Remix+Vite (real `app/root`, routes, vite plugin, tsconfig includes `app/`, production server build, `package.json` scripts, Playwright `webServer`).
+- [ ] `dedupe-app-src`: Single source for deck/present — Remix routes import shared modules; remove duplicate `app/routes` vs `src` logic.
 
-5. [x] `broadcast-partial-updates`: Harden `BroadcastChannel` handling so navigation-only commands (lyricsNavigation) do not unintentionally clear slide/message.
-6. [x] `lyrics-state-reset`: Reset `LyricsDisplay` internal state when the cast receives a new `SongData` payload.
-7. [x] `deck-edit-reorder-cast-sync`: While in presentation mode, editing/reordering slides should keep the cast screen in sync with the currently-active slide.
+<!-- ralph-open-tasks-end -->
 
-## Priority 3 — Presentation richness (minimal but complete)
+## Optional / blocked (outside open-task window)
 
-8. [x] `alignment-and-background-images`: Honor `horizontalAlign`/`verticalAlign` and background image style fields in the cast renderer.
-9. [x] `image-slide-rendering`: Implement `SlideType.IMAGE` rendering (image behind/around text).
+These do **not** count toward loop exit unless moved inside the markers above.
 
-## Priority 4 — Tests + coverage
+- [ ] `finalize-remix-build-real`: Run `npm install` and production Remix build to replace `/build` stub; network or prebuilt artifact required (**blocked**: network).
 
-10. [x] `unit-tests`: Add/expand Vitest unit tests for `songParser`, lyrics navigation logic, and deck pure helpers. Target “max practical coverage”.
-11. [x] `integration-tests`: Add Vitest + React Testing Library integration tests that verify the builder->cast broadcast pipeline (fake `BroadcastChannel`).
-12. [x] `playwright-smoke`: Add minimal Playwright smoke tests for “send slide from `/deck` updates `/presentation`”.
-13. [x] `coverage-reporting`: Configure test coverage reporting (using Jest/react-scripts in this repo) and add coverage scripts and thresholds.
+## Completed (archive)
 
-## Next priority — Runtime migration
+Prior iterations (legacy plan `.cursor/plans/poster-remix-tests_d601662c.plan.md`):
 
-- [x] migrate-runtime-to-remix: Vendor stub implemented and server updated to prefer vendorized runtime when present. This allows `npm run start:remix` to run in offline mode by serving public/index.html via a minimal stub. Full Remix runtime and a built ../build are still required for production Remix behavior.
-
-Next steps:
-  - When a full Remix runtime is available, add remix, @remix-run/*, vite, @vitejs/plugin-react to package.json devDependencies (change prepared where needed) and run `npm install` then `npm run build:remix` to create a production build under /build.
-  - If network install is unavailable in CI, keep vendor/ or prebuilt /build artifacts committed or cached so offline builds and server starts are possible.
-  - Update .ralph/AGENT.md (or add .ralph/AGENT_VENDOR.md) with vendor preparation instructions and add a CI caching strategy. See .ralph/AGENT_VENDOR.md for exact steps and example commands.
-
-Status: vendor-stub-complete; production Remix build still pending (requires network install or prebuilt /build).
-## Next blocked task
-- [x] finalize-remix-build: Vendorized minimal Remix runtime and committed /build stub to allow offline start. Added `vendor/@remix-run/node` minimal stub and `/build/index.js` offline stub so `npm run start:remix` works in offline/dev mode. Full production Remix build (real `/build`) still pending network install; when available, run `npm install` + `npm run build:remix` to produce and replace the stub.
-
-## Maintenance
-
-- [x] fix-act-deprecation: Silence ReactDOMTestUtils.act deprecation warnings. Update tests to import { act } from 'react' and/or upgrade @testing-library/react to a version that uses React.act internally. (done: tests updated to import act from 'react'; warnings persist due to @testing-library/react internals — upgrade when network access is available.)
-
-
-## Pending network-needed tasks
-- [ ] finalize-remix-build-real: Run `npm install` and `npm run build:remix` to produce a real Remix /build; replace vendor stubs with real build. (blocked: network)
+- [x] Poster specs under `.ralph/specs/*`, loop config, session-plan scaffolding
+- [x] Song XML → single SONG slide + `lyricsNavigation` + LyricsDisplay
+- [x] Deck save/load JSON round-trip, cast rendering + green screen transparency
+- [x] Broadcast partial updates; lyrics reset on new song; reorder sync to cast
+- [x] Alignment + background images; IMAGE slide rendering
+- [x] Unit / integration / Playwright smoke / Jest coverage thresholds
+- [x] Vendor stub + offline `/build/index.js` stub for `start:remix` dev

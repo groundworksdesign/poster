@@ -1,18 +1,19 @@
 # Architecture Overview — Poster
 
 ## Tech stack (current + target)
-- React 18
-- TypeScript
-- Remix + Vite (target migration)
+- React 18 + TypeScript
+- **Now:** Create React App (`react-scripts` / webpack) for `src/`
+- **Target:** Remix + Vite app shell; `app/` becomes the real entry, sharing components with extracted modules
 - BroadcastChannel for window-to-window communication
-- Vitest + React Testing Library (unit/integration)
+- Jest + React Testing Library (current unit/integration)
 - Playwright (minimal smoke)
 
 ## High level runtime architecture
 ```mermaid
 flowchart LR
   subgraph Builder[/deck]
-    DeckBuilder[DeckBuilder UI] -->|postMessage(PresentData)| Channel[BroadcastChannel('presentation')]
+    DeckBuilder[DeckBuilder UI] -->|postMessage PresentData| Channel[BroadcastChannel presentation]
+    DeckBuilder --> ResolveStyle[resolveSlideStyle]
     DeckBuilder --> SongParser[parseSongXML]
   end
 
@@ -24,23 +25,13 @@ flowchart LR
 ```
 
 ## Key modules to keep testable
+- `resolveSlideStyle` merge semantics and edge cases (missing keys, partial overrides).
 - `parseSongXML` and song parsing edge cases.
-- Deck manipulation helpers (add/move/duplicate/delete).
-- Broadcast “partial update semantics”:
-  - navigation commands update only lyrics state
-  - they do not clear the currently-rendered slide unintentionally
-- Lyrics state:
-  - resets when song payload changes
-  - advances exactly 2 lines per command
+- Deck manipulation helpers (add/move/duplicate/delete) and CRUD sync to cast (`lastSentSlideId` or equivalent).
+- Broadcast partial-update semantics for lyrics navigation.
+- Lyrics state: reset when song payload changes; advance two lines per step.
 
 ## Test approach
-- Unit tests for pure logic modules.
-- Integration tests:
-  - Render cast UI
-  - Fake `BroadcastChannel`
-  - Verify the DOM changes as messages are posted.
-- Coverage focus:
-  - hit edge cases in XML parsing
-  - hit navigation boundaries
-  - hit serialization/deserialization round-trips
-
+- Unit tests for pure logic modules (especially style merge + parsers).
+- Integration tests: render cast UI, fake `BroadcastChannel`, assert DOM updates.
+- Playwright: critical two-window flow; update `webServer` when default dev command changes to Remix+Vite.

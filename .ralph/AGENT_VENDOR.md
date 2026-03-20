@@ -2,6 +2,8 @@
 
 This document describes how to produce vendor/ and /build artifacts for offline CI or environments without network access. Add these artifacts to the repository or an artifact store so `npm run start:remix` can run without fetching runtime packages.
 
+Product direction and migration tasks live in **`.cursor/plans/remix_vite_+_deck_ux_7fba078c.plan.md`**; Ralph tracks implementation in **`.ralph/fix_plan_poster.md`** (marked open-task section).
+
 ### Goals
 
 - Produce a real Remix `/build` directory (the output of `remix build`).

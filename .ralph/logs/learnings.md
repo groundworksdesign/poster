@@ -125,3 +125,11 @@ Ran tests (npm run test) — all suites passed (10 suites, 16 tests). Observed R
 
 Inspected server and vendor stubs: vendor/@remix-run/node and /build/index.js present as stubs. Created .ralph/AGENT_VENDOR.md with reproduction steps for online machines. Finalize real Remix build when network available by running npm install and npm run build:remix; commit /build (or publish to artifact store) so offline CI can run.
 
+## 2026-03-20 — Ralph exit + plan source
+
+`ralph.sh` now reads **`planFile`** from `.ralph/config.json` (default: `.cursor/plans/remix_vite_+_deck_ux_7fba078c.plan.md`) and concatenates **plan + PROMPT + fix plan** for `copilot`. Open-task counting uses only lines between **`<!-- ralph-open-tasks-start -->`** and **`<!-- ralph-open-tasks-end -->`** in `.ralph/fix_plan_poster.md`, so archived `- [ ]` lines or long history cannot block exit. If both markers are missing, it falls back to scanning the whole file (legacy). Lines containing `blocked` are still ignored when `ignoreBlockedUncheckedTasks` is true.
+
+### Loop start baseline
+Before a new sprint, reset **`.ralph/config.json`** so **`maxIterations` ≥ 1** (e.g. 20). **`maxIterations: 0`** causes the `while` loop to run zero times — no Copilot runs — while open tasks remain. **`ralph.sh`** now exits with an error if `maxIterations < 1`. Seed **`.ralph/logs/progress.txt`** with a **`LOOP START`** banner (see `.ralph/AGENT.md`) so the agent knows iteration 0 and the next task.
+
+2026-03-20: Added resolveSlideStyle helper and tests; DeckBuilder now sends merged style and SlideDisplay shows effective style. All Jest suites passed.

@@ -2,6 +2,7 @@ import React, { ChangeEvent, useEffect, useState } from 'react';
 import { connect, ChannelType, Connection } from '../Present/Broadcast';
 import SlideDisplay from './SlideDisplay';
 import { PresentData, SlideType, Deck, Slide } from '../Present/PresentTypes';
+import { resolveSlideStyle } from '../utils/resolveSlideStyle';
 import { parseSongXML, createSongSlide } from '../utils/songParser';
 
 export default function DeckBuilder() {
@@ -119,18 +120,12 @@ export default function DeckBuilder() {
 
   const handleSendClick = (props: any) => {
     const safeSlide = (sl: any) => {
-      if (!sl) return sl;
-      // ensure slide has an id so we can track it for sync across edits/reorder
-      (sl as any).id = (sl as any).id ?? genId();
-      const resolvedStyle =
-        sl.style || (deck?.slideStyles && deck.slideStyles[sl.type]) || {
-          backgroundColor: '#000000',
-          color: '#ffffff',
-          fontFamily: 'Arial, sans-serif',
-          fontSize: '24px',
-        };
-      return { ...sl, style: resolvedStyle };
-    };
+    if (!sl) return sl;
+    // ensure slide has an id so we can track it for sync across edits/reorder
+    (sl as any).id = (sl as any).id ?? genId();
+    const resolvedStyle = resolveSlideStyle(deck, sl);
+    return { ...sl, style: resolvedStyle };
+  };
     const slideWithStyle = props.slide ? safeSlide(props.slide) : null;
     connection?.channel.postMessage(new PresentData({ ...props, slide: slideWithStyle }));
     setLastSentSlideId(slideWithStyle?.id ?? null);

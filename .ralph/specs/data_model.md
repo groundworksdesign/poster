@@ -2,38 +2,48 @@
 
 Overview of primary types used across the application.
 
-Deck
-- id: string
-- title: string
-- date?: string
-- location?: string
-- notes?: string
-- useGreenScreen: boolean
-- slideStyles: Record<string, any>
-- slides: Slide[]
+## Deck
+- `title`: string
+- `date`?: string
+- `location`?: string
+- `notes`?: string
+- `useGreenScreen`: boolean
+- **`slideStyles`**: `Record<string, SlideCSS>` — **defaults layer**
+  - Must include a base under the **general** slide type key (e.g. `general`) for deck-wide defaults.
+  - Optional keys per `SlideType` (e.g. `title`, `song`, `image`) for type-specific defaults.
+- `slides`: `Slide[]`
 
-Slide (common fields)
-- id: string
-- type: SlideType ("title" | "general" | "song" | "image")
-- title?: string
-- subTitle?: string
-- message?: string
-- style?: SlideStyle
+## Slide
+- `id`: string (stable; required for reorder/edit/resend sync)
+- `type`: SlideType (`title` | `general` | `song` | `image` | …)
+- `title`?: string
+- `subTitle`?: string
+- **`style`**: `SlideCSS` — **per-slide overrides** (may be sparse; unset keys inherit from merged defaults)
+- `titleFontSize`?, `subTitleFontSize`? (optional explicit sizes)
+- `file`?: string (image/media reference)
+- `lyrics`?: `SongData` (SONG slides)
 
-SlideType.SONG specific
-- lyrics: SongData
+## Effective style (computed, not necessarily persisted)
+```
+effectiveStyle = shallowMerge(
+  deck.slideStyles['general'],
+  deck.slideStyles[slide.type],
+  slide.style
+)
+```
+Last object wins per property. Implement as `resolveSlideStyle(deck, slide)`.
 
-SongData
-- title: string
-- author?: string
-- verses: { number?: number; lines: string[] }[]
+## SongData
+- `title`: string
+- `author`?: string
+- `verses`: `{ number: number; lines: string[] }[]`
 
-PresentData (broadcast payload)
-- slide?: Slide | null
-- message?: string | null
-- useGreenScreen?: boolean
-- data?: { lyricsNavigation?: { command: 'next'|'previous'|'goToVerse'; verse?: number; line?: number } | null } | null
+## PresentData (broadcast payload)
+- `slide`?: Slide | null (typically with **resolved** `style` at send time, or cast recomputes — pick one and document)
+- `message`?: string | null — **not** used for “slide 1 / slide N” on cast for normal sends
+- `useGreenScreen`?: boolean
+- `data`?: `{ lyricsNavigation?: { command: 'next'|'previous'|'goToVerse'; verseIndex?: number } }` for partial updates
 
-Notes:
-- Slide `style` and `slideStyles` capture CSS-like layout fields such as backgroundColor, color, backgroundImage, backgroundSize, backgroundPosition, horizontalAlign, verticalAlign, height, width.
-- `slides` should have stable `id` values to enable re-sending the same slide after reorder/edit operations.
+## Persistence
+- Deck JSON stores `slideStyles` and per-slide fields including override `style` objects.
+- Song XML is parsed at load time into `SongData` on the slide.

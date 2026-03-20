@@ -8,23 +8,26 @@ type Deck = {
   location: string;
   useGreenScreen: boolean;
   notes: string;
+  /** Default + per-type SlideCSS. Must include `general` (or agreed base key). */
   slideStyles: Record<string, SlideCSS>;
   slides: Slide[];
-}
+};
 ```
 
 ## Slide
 ```ts
 type Slide = {
+  id?: string; // should always be present at runtime; stable across edits
   type: SlideType; // 'general' | 'title' | 'song' | 'image' | ...
   title: string;
   subTitle?: string;
-  style: SlideCSS; // resolved/persisted per slide
+  /** Overrides only; merge with deck.slideStyles for display/send */
+  style: SlideCSS;
   titleFontSize?: string;
   subTitleFontSize?: string;
-  file?: string; // image/audio/video file reference (as URL/relative filename)
-  lyrics?: SongData; // only for song slides
-}
+  file?: string; // image/audio/video file reference (URL or relative filename)
+  lyrics?: SongData; // SONG slides
+};
 ```
 
 ## Slide CSS
@@ -40,37 +43,47 @@ type SlideCSS = {
   fontSize?: string;
   fontWeight?: string;
 
-  // background image support (for image slides and/or text overlays)
-  backgroundImage?: string; // URL or relative filename
+  backgroundImage?: string;
   backgroundSize?: string;
   backgroundPosition?: string;
-}
+};
 ```
 
-## Song data model (input via XML)
+## Effective CSS
+Computed helper (pure):
+```ts
+function resolveSlideStyle(deck: Deck, slide: Slide): SlideCSS {
+  const base = deck.slideStyles?.[SlideType.GENERAL] ?? {};
+  const byType = deck.slideStyles?.[slide.type] ?? {};
+  return { ...base, ...byType, ...slide.style };
+}
+```
+(Use the actual enum/string key used in persisted JSON — today `general`, `title`, etc.)
+
+## Song data model
 ```ts
 type SongData = {
   title: string;
   author?: string;
   verses: SongVerse[];
-}
+};
 
 type SongVerse = {
   number: number;
   lines: string[];
-}
+};
 ```
+
+Input: XML file at load time, or **manual** entry in composer (per active plan).
 
 ## Lyrics navigation commands
 ```ts
 type LyricsNavigation =
-  | { command: 'next'; timestamp?: number }
-  | { command: 'previous'; timestamp?: number }
-  | { command: 'goToVerse'; verseIndex: number; timestamp?: number };
+  | { command: 'next' }
+  | { command: 'previous' }
+  | { command: 'goToVerse'; verseIndex: number };
 ```
 
 ## Persistence formats
 - Song XML: parsed into `SongData` at load time.
-- Deck JSON export/import:
-  - stores all slide objects and style fields so a deck can be reloaded later with identical visuals.
-
+- Deck JSON export/import: stores `slideStyles` and slides; overrides live in `slide.style`, defaults in `slideStyles`.

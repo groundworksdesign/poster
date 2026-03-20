@@ -1,80 +1,64 @@
 You are running the Ralph loop for the `poster` repository.
 
 Read these inputs before creating/updating artifacts:
-- `.cursor/plans/poster-remix-tests_d601662c.plan.md` (the roadmap + task breakdown)
-- `.ralph/config.json` (loop constraints and log locations)
+- **`.cursor/plans/remix_vite_+_deck_ux_7fba078c.plan.md`** (active roadmap + acceptance notes; path is also in `.ralph/config.json` as `planFile`)
+- `.ralph/config.json` (loop constraints: `maxIterations`, `planFile`, `fixPlanFile`, `openTasksStartMarker` / `openTasksEndMarker`, `ignoreBlockedUncheckedTasks`, log paths)
 - `.ralph/logs/progress.txt` (what was attempted/completed)
 - `.ralph/logs/learnings.md` (durable learnings)
-- `.ralph/specs/*` (current specs; update if missing or inconsistent)
-- `.ralph/fix_plan_poster.md` (single source of truth for the next prioritized work items)
+- **`.ralph/specs/*`** (specs; **create or update** when the plan introduces new behavior, data rules, or acceptance criteria)
+- **`.ralph/fix_plan_poster.md`** (prioritized execution checklist; **keep aligned with the plan** — add/split tasks as needed, mark `[x]` when done)
 
 CRITICAL: Only modify files within this repository.
 
 What to do every iteration:
-1. Ensure `.ralph/specs/*` covers the major modules implied by the plan (Remix migration, slide composer, cast window, persistence, broadcast pipeline, and testing).
-2. Ensure `.ralph/fix_plan_poster.md` is aligned with the plan and includes only items not yet implemented.
-3. Pick the next highest-priority item from `.ralph/fix_plan_poster.md`.
+1. **Specs:** Ensure `.ralph/specs/*` reflects the active plan (Remix+Vite migration, deck defaults + per-slide overrides, full slide CRUD, cast UX, broadcast pipeline, testing). Update `data_model`, `features`, `architecture`, and `app_spec` when behavior changes.
+2. **Fix plan:** Keep **`.ralph/fix_plan_poster.md`** aligned with the roadmap. Open work lives **between** `<!-- ralph-open-tasks-start -->` and `<!-- ralph-open-tasks-end -->`; `ralph.sh` exits when that section has no unchecked `- [ ]` items (except lines tagged **blocked**, per config).
+3. Pick the **next** open item in the marked section of `.ralph/fix_plan_poster.md`.
 4. Before code changes, search the codebase to confirm what is already implemented (do not assume placeholders).
-5. Implement missing functionality or fix regressions to satisfy the specs for that module.
-6. Run tests/build for the changed unit (and run a full test/build at the end of the iteration).
+5. Implement missing functionality or fix regressions for that item.
+6. Run tests/build for the changed unit (and a broader test/build when appropriate). This repo currently uses **Jest** via `react-scripts` (`npm test`, `npm run build`).
 7. Append a concise entry to `.ralph/logs/progress.txt`.
 8. When you learn something generally useful, append to `.ralph/logs/learnings.md`.
 
 Output expectations:
-- Specs and acceptance criteria should live in `.ralph/specs/*`.
-- The loop should keep `.cursor/plans/` updated with plan snippets that reflect progress and next steps (if the plan needs to change).
+- Specs and acceptance criteria live in **`.ralph/specs/*`**.
+- The Cursor plan file may be updated manually if the roadmap shifts; prefer keeping `.ralph/fix_plan_poster.md` and specs in sync with code reality.
 
-0a. study .ralph/specs/* to learn about the application specifications.
+Loop driver behavior (read `.ralph/config.json`):
+- `ralph.sh` pipes **`planFile` + this PROMPT + fixPlanFile** into `copilot`.
+- Exit when the **marked** open-task section in `fixPlanFile` has zero unchecked items (subject to `ignoreBlockedUncheckedTasks`).
 
-0b. read .ralph/config.json at the beginning of each loop to understand configuration such as max iterations, fleet behaviour, and log file locations.
+Source layout:
+- **Today:** primary app code is under `src/` (CRA). **`app/`** holds a partial Remix scaffold — migration should converge to one implementation (see plan `dedupe-app-src`).
 
-0c. read .ralph/logs/progress.txt at the beginning of each loop to understand what has been accomplished so far.
+0a. Study `.ralph/specs/*` for application specifications.
 
-0d. read .ralph/logs/learnings.md at the beginning of each loop to load durable learnings from previous iterations.
+0b. Read `.ralph/config.json` for loop settings.
 
-0e. The source code of the application is in `src/`.
-CRITICAL: You must ONLY make changes within this poster directory (the project root). Do not modify files outside of this project.
+0c. Read `.ralph/logs/progress.txt` at the beginning of each loop. If the latest block is **`LOOP START`** (no entries below the separator yet), treat this as **iteration 0** for the current plan: implement the **first** unchecked task in the marked section of `fix_plan_poster.md` (today: `style-merge-helper`).
 
-0f. study .ralph/fix_plan_poster.md. Treat .ralph/fix_plan_poster.md as the single source of truth for tasks; always pick the next task from this file and mark items as completed when done.
+0d. Read `.ralph/logs/learnings.md` at the beginning of each loop.
 
-1. Your task is to implement missing functionality (see .ralph/specs/*) and produce a working Remix PWA application using parallel subagents. Follow .ralph/fix_plan_poster.md and choose the most important 10 things. Before making changes search codebase (don't assume not implemented) using subagents. You may use up to 500 parallel subagents for all operations but only 1 subagent for build/tests.
+0e. Treat **`.ralph/fix_plan_poster.md`** as the execution checklist; pick the next task from the **marked** section and mark items completed when done.
 
-2. After implementing functionality or resolving problems, run the tests or build (`npm run build`) for that unit of code that was improved. If functionality is missing then it's your job to add it as per the application specifications. Think hard.
+1. Implement missing functionality per specs and the active plan. Search the codebase before assuming gaps.
 
-2a. At the end of each loop iteration append a concise entry to .ralph/logs/progress.txt describing which tasks were attempted, which tasks were completed (including checkmarks applied in .ralph/fix_plan_poster.md), and any notable results from tests or builds.
+2. After changes, run tests or `npm run build` for the affected area.
 
-2b. When you learn something new that could help future iterations (for example, a build optimisation, a debugging trick, or a pattern that works well), append a new markdown section to .ralph/logs/learnings.md with a short heading and a few sentences capturing that learning.
+2a. Append to `.ralph/logs/progress.txt`: tasks attempted, tasks completed (including checkmarks in `.ralph/fix_plan_poster.md`), test/build results.
 
-3. When you discover a routing, UI issue, or data/model mismatch. Immediately update .ralph/fix_plan_poster.md with your findings using a subagent. When the issue is resolved, update .ralph/fix_plan_poster.md and remove the item using a subagent.
+2b. Append durable notes to `.ralph/logs/learnings.md` when useful.
 
-4. When the build/tests pass update the .ralph/fix_plan_poster.md, then add changed code and .ralph/fix_plan_poster.md with "git add -A" via bash then do a "git commit" with a message that describes the changes you made to the code. After the commit do a "git push" to push the changes to the remote repository.
+3. When you find bugs or scope gaps, update `.ralph/fix_plan_poster.md` (inside or outside the marked section as appropriate). Resolve or document **blocked** work with the word `blocked` on the same line so it can be ignored for exit if configured.
 
-999. Important: When authoring code or components capture the why tests and the backing implementation is important in the documentation.
+4. **Git:** When tests/build pass, commit with a clear message; push if remote is configured (per your workflow).
 
-9999. Important: We want single sources of truth. If tests unrelated to your work fail then it's your job to resolve these tests as part of the increment of change.
+999. Capture why tests matter next to non-trivial implementations.
 
-999999. As soon as there are no build or test errors create a git tag. If there are no git tags start at 0.0.0 and increment patch by 1.
+9999. Prefer a **single source of truth** for deck/present logic; fix unrelated test failures you introduce.
 
-999999999. You may add extra logging if required to be able to debug the issues.
+99999999999. Keep **`.ralph/AGENT.md`** brief and current with build/run commands (not status reports).
 
-9999999999. ALWAYS KEEP .ralph/fix_plan_poster.md up to date with your learnings using a subagent. Especially after wrapping up/finishing your turn.
-
-99999999999. When you learn something new about how to run the app or build make sure you update .ralph/AGENT.md using a subagent but keep it brief. For example if you run commands multiple times before learning the correct command then that file should be updated.
-
-999999999999. IMPORTANT DO NOT IGNORE: The app should be authored in Remix (React/TypeScript).
-
-99999999999999. IMPORTANT when you discover a bug resolve it using subagents even if it is unrelated to the current piece of work after documenting it in .ralph/fix_plan.md
-
-9999999999999999999. Keep .ralph/AGENT.md up to date with information on how to build the app and your learnings to optimise the build/test loop using a subagent.
-
-999999999999999999999. For any bugs you notice, it's important to resolve them or document them in .ralph/fix_plan.md to be resolved using a subagent.
-
-99999999999999999999999999. When .ralph/fix_plan.md becomes large periodically clean out the items that are completed from the file using a subagent.
-
-99999999999999999999999999. If you find inconsistencies in the .ralph/specs/* then use the oracle and then update the specs. Specifically around data models and routing.
-
-9999999999999999999999999999. DO NOT IMPLEMENT PLACEHOLDER OR SIMPLE IMPLEMENTATIONS. WE WANT FULL IMPLEMENTATIONS. DO IT OR I WILL YELL AT YOU
-
-9999999999999999999999999999999. SUPER IMPORTANT DO NOT IGNORE. DO NOT PLACE STATUS REPORT UPDATES INTO .ralph/AGENT.md
+**Note:** Older prompts referenced `.ralph/fix_plan.md` — the canonical file for this repo is **`.ralph/fix_plan_poster.md`**.
 
 /fleet
