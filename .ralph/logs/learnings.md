@@ -135,3 +135,5 @@ Before a new sprint, reset **`.ralph/config.json`** so **`maxIterations` ≥ 1**
 2026-03-20: Added resolveSlideStyle helper and tests; DeckBuilder now sends merged style and SlideDisplay shows effective style. All Jest suites passed.
 
 2026-03-20: Added Deck defaults UI and per-slide editor to DeckBuilder. Editor shows effective values (via resolveSlideStyle) but persists only per-slide overrides to slide.style; each style field has a reset-to-default control. Tests updated and all suites passed.
+## Presenter UX note (2026-03-20)
+Avoid auto-broadcasting UI status messages from the DeckBuilder; explicit sends should carry message when appropriate. Suppressing automatic message broadcasts prevents a persistent top banner on the presentation window.

@@ -27,17 +27,11 @@ export default function DeckBuilder() {
     setMessage('Deck builder connected');
   }, []);
 
-  useEffect(() => {
-    if (connection) {
-      connection.channel.postMessage(
-        new PresentData({
-          slide: null,
-          message: message,
-          useGreenScreen: false,
-        }),
-      );
-    }
-  }, [message]);
+  // Previously the builder auto-sent status messages to the presenter when the local `message` state
+  // changed. That caused slide-number or status banners to appear on the presentation unexpectedly.
+  // Status messages should only be sent explicitly via handleSendClick so normal slide sends don't
+  // show a persistent top-banner. Intentionally do not auto-broadcast `message` changes here.
+  // (Kept the connection alive via the other effect.)
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) setFile(e.target.files[0]);
@@ -167,8 +161,8 @@ export default function DeckBuilder() {
     if (!newDeck || !lastSentSlideId) return;
     const found = newDeck.slides.find((s: any) => (s as any).id === lastSentSlideId);
     if (found) {
-      // re-send updated slide to presenter so presentation stays in sync
-      handleSendClick({ slide: found, message: `Syncing slide ${found.title || ''}`, useGreenScreen: newDeck.useGreenScreen });
+      // re-send updated slide to presenter so presentation stays in sync (no status banner)
+      handleSendClick({ slide: found, useGreenScreen: newDeck.useGreenScreen });
     }
   };
 

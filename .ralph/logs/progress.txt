@@ -13,3 +13,4 @@ LOOP START — 2026-03-20T16:28:00Z
 - [x] style-merge-helper implemented: added src/utils/resolveSlideStyle.ts, unit tests, wired DeckBuilder send and SlideDisplay preview. Tests: all passing. (2026-03-20T17:40:30Z)
 - [x] deck-defaults-ui implemented: added Deck defaults panel and per-slide editor with effective-value display and per-field reset; tests: all passing. (2026-03-20T17:47:57Z)
 - [x] slide-crud-editor implemented: added createNewDeck, addSlide, duplicateSlide, deleteSlide; extended per-slide editor with type selector, IMAGE file URL and SONG lyrics JSON editor. Tests: all passing. (2026-03-20T18:09:16Z)
+- [x] presenter-ux implemented: suppressed builder auto-broadcast of message state; removed 'Syncing slide' status banner on re-send; presentation title overlay honors verticalAlign (top/middle/bottom). Tests: all Jest suites passed. (2026-03-20T18:20:29Z)
