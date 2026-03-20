@@ -14,7 +14,7 @@ Completed items should be marked `[x]` or moved to **Completed (archive)** so th
 - [x] `deck-defaults-ui`: Deck builder “Deck defaults” panel bound to `deck.slideStyles`; per-slide editor shows effective style, persists overrides in `slide.style`, reset-to-default per field.
 - [x] `slide-crud-editor`: New deck from scratch; add / duplicate / delete / reorder slides; type-specific manual editors for GENERAL, TITLE, IMAGE, SONG (incl. lyrics structure).
 - [x] `presenter-ux`: Remove slide-index / “Presenting slide N” from cast (`#message`); title/subtitle overlay follows `verticalAlign` top|middle|bottom; preserve lyrics + green-screen behavior.
-- [ ] `remix-vite-wireup`: Replace CRA with Remix+Vite (real `app/root`, routes, vite plugin, tsconfig includes `app/`, production server build, `package.json` scripts, Playwright `webServer`).
+- [ ] `remix-vite-wireup`: Replace CRA with Remix+Vite (real `app/root`, routes, vite plugin, tsconfig includes `app/`, production server build, `package.json` scripts, Playwright `webServer`) (blocked).
 - [ ] `dedupe-app-src`: Single source for deck/present — Remix routes import shared modules; remove duplicate `app/routes` vs `src` logic.
 
 <!-- ralph-open-tasks-end -->
