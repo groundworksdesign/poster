@@ -244,6 +244,83 @@ export default function DeckBuilder() {
     syncSentSlideIfNeeded(newDeck);
   };
 
+  const createNewDeck = () => {
+    const newDeck: Deck = {
+      title: 'New Deck',
+      date: new Date().toISOString().split('T')[0],
+      location: '',
+      useGreenScreen: false,
+      notes: '',
+      slideStyles: {
+        [SlideType.GENERAL]: {
+          backgroundColor: '#000000',
+          color: '#ffffff',
+          fontFamily: 'Arial, sans-serif',
+          fontSize: '24px',
+        },
+      },
+      slides: [
+        {
+          type: SlideType.TITLE,
+          title: 'Title',
+          subTitle: '',
+          style: {},
+          titleFontSize: '48px',
+          subTitleFontSize: '28px',
+          id: genId(),
+        },
+      ],
+    };
+    setDeck(ensureDeckIds(newDeck));
+    setSelectedSlideIndex(0);
+    setMessage('New deck created');
+  };
+
+  const addSlide = (type: SlideType = SlideType.GENERAL) => {
+    if (!deck) {
+      createNewDeck();
+      return;
+    }
+    const slides = deck.slides.slice();
+    const newSlide: any = {
+      type,
+      title: type === SlideType.TITLE ? 'Title' : 'Slide',
+      subTitle: '',
+      style: {},
+      id: genId(),
+    };
+    if (type === SlideType.SONG) {
+      newSlide.lyrics = { title: 'Song', author: '', verses: [{ number: 1, lines: [''] }] };
+    }
+    slides.push(newSlide);
+    const newDeck = { ...deck, slides };
+    setDeck(newDeck);
+    setSelectedSlideIndex(slides.length - 1);
+    syncSentSlideIfNeeded(newDeck);
+  };
+
+  const duplicateSlide = (index: number) => {
+    if (!deck) return;
+    const slides = deck.slides.slice();
+    const s = { ...(slides[index] as any) };
+    s.id = genId();
+    slides.splice(index + 1, 0, s);
+    const newDeck = { ...deck, slides };
+    setDeck(newDeck);
+    setSelectedSlideIndex(index + 1);
+    syncSentSlideIfNeeded(newDeck);
+  };
+
+  const deleteSlide = (index: number) => {
+    if (!deck) return;
+    const slides = deck.slides.slice();
+    slides.splice(index, 1);
+    const newDeck = { ...deck, slides };
+    setDeck(newDeck);
+    setSelectedSlideIndex(null);
+    syncSentSlideIfNeeded(newDeck);
+  };
+
   const moveSlide = (index: number, direction: 'up' | 'down') => {
     if (!deck) return;
     const slides = deck.slides.slice();
@@ -279,6 +356,21 @@ export default function DeckBuilder() {
         <input id="file" type="file" onChange={handleFileChange} />
         <button id="load" onClick={() => handleUploadClick()} disabled={isLoadingSong}>{isLoadingSong ? 'Loading...' : 'Load'}</button>
         <button id="save" onClick={handleSaveClick}>Save</button>
+        <button onClick={createNewDeck}>New Deck</button>
+        <label style={{ marginLeft: '8px' }}>
+          Add slide:
+          <select id="add-slide-type" onChange={e => { /* handled on click */ }} defaultValue={SlideType.GENERAL}>
+            <option value={SlideType.GENERAL}>GENERAL</option>
+            <option value={SlideType.TITLE}>TITLE</option>
+            <option value={SlideType.IMAGE}>IMAGE</option>
+            <option value={SlideType.SONG}>SONG</option>
+          </select>
+        </label>
+        <button onClick={() => {
+          const sel = (document.getElementById('add-slide-type') as HTMLSelectElement | null);
+          const t = sel ? (sel.value as SlideType) : SlideType.GENERAL;
+          addSlide(t);
+        }} style={{ marginLeft: '8px' }}>Add Slide</button>
         <button onClick={startSong} disabled={!deck || !isSongMode}>Start Song</button>
         <button onClick={rewindSong} disabled={!deck || !isSongMode}>Prev 2 Lines</button>
         <button onClick={advanceSong} disabled={!deck || !isSongMode}>Next 2 Lines</button>
@@ -307,6 +399,8 @@ export default function DeckBuilder() {
                   <span style={{ flex: 1 }}>{slide.title || slide.type || 'Slide'}</span>
                   <button onClick={() => handleSendClick({ slide, message: `Presenting slide ${index + 1}`, useGreenScreen: deck?.useGreenScreen || false })}>Send</button>
                   <button onClick={() => setSelectedSlideIndex(index)}>Edit</button>
+                  <button onClick={() => duplicateSlide(index)}>Duplicate</button>
+                  <button onClick={() => deleteSlide(index)}>Delete</button>
                   <button onClick={() => moveSlide(index, 'up')} disabled={index === 0}>↑</button>
                   <button onClick={() => moveSlide(index, 'down')} disabled={index === (deck!.slides.length - 1)}>↓</button>
                 </div>
@@ -319,31 +413,83 @@ export default function DeckBuilder() {
       {typeof selectedSlideIndex === 'number' && deck && deck.slides[selectedSlideIndex] && (
         <div style={{ marginTop: '12px', padding: '8px', border: '1px solid #ddd' }}>
           <h3>Editing slide {selectedSlideIndex + 1}</h3>
-          <div>
-            <label>Title: <input type="text" value={deck.slides[selectedSlideIndex].title || ''} onChange={e => updateSlideField(selectedSlideIndex, 'title', e.target.value)} /></label>
-          </div>
-          <div>
-            <label>Subtitle: <input type="text" value={deck.slides[selectedSlideIndex].subTitle || ''} onChange={e => updateSlideField(selectedSlideIndex, 'subTitle', e.target.value)} /></label>
-          </div>
-
-          <h4>Style (effective shown; overrides saved to slide.style)</h4>
           {(() => {
-            const slide = deck.slides[selectedSlideIndex];
-            const effective = resolveSlideStyle(deck, slide);
-            const styleKeys: Array<keyof any> = ['backgroundColor', 'color', 'fontFamily', 'fontSize'];
+            const slide = deck.slides[selectedSlideIndex] as any;
             return (
               <div>
-                {styleKeys.map((k) => (
-                  <div key={k as string} style={{ marginTop: '6px' }}>
-                    <label style={{ marginRight: '8px' }}>{k}: </label>
-                    <input type="text" value={(slide.style && (slide.style as any)[k]) || (effective as any)[k] || ''} onChange={e => updateSlideStyle(selectedSlideIndex, k, e.target.value)} />
-                    <button onClick={() => resetSlideStyleField(selectedSlideIndex, k)} style={{ marginLeft: '8px' }}>Reset</button>
-                  </div>
-                ))}
-                <div style={{ marginTop: '8px' }}>
-                  <button onClick={() => resetAllSlideStyleOverrides(selectedSlideIndex)}>Reset all overrides</button>
-                  <button onClick={() => setSelectedSlideIndex(null)} style={{ marginLeft: '8px' }}>Close editor</button>
+                <div>
+                  <label>Type: 
+                    <select value={slide.type} onChange={e => updateSlideField(selectedSlideIndex, 'type', e.target.value as SlideType)}>
+                      <option value={SlideType.GENERAL}>GENERAL</option>
+                      <option value={SlideType.TITLE}>TITLE</option>
+                      <option value={SlideType.IMAGE}>IMAGE</option>
+                      <option value={SlideType.SONG}>SONG</option>
+                    </select>
+                  </label>
                 </div>
+                <div>
+                  <label>Title: <input type="text" value={slide.title || ''} onChange={e => updateSlideField(selectedSlideIndex, 'title', e.target.value)} /></label>
+                </div>
+                <div>
+                  <label>Subtitle: <input type="text" value={slide.subTitle || ''} onChange={e => updateSlideField(selectedSlideIndex, 'subTitle', e.target.value)} /></label>
+                </div>
+
+                {slide.type === SlideType.IMAGE && (
+                  <div>
+                    <label>Image URL/file: <input type="text" value={slide.file || slide.style?.backgroundImage || ''} onChange={e => updateSlideField(selectedSlideIndex, 'file', e.target.value)} /></label>
+                  </div>
+                )}
+
+                {slide.type === SlideType.SONG && (
+                  <div>
+                    <label>Lyrics (JSON):</label>
+                    <div>
+                      <textarea id="lyrics-json" style={{ width: '100%', height: '120px' }} defaultValue={slide.lyrics ? JSON.stringify(slide.lyrics, null, 2) : ''}></textarea>
+                      <div style={{ marginTop: '6px' }}>
+                        <button onClick={() => {
+                          const t = (document.getElementById('lyrics-json') as HTMLTextAreaElement | null);
+                          if (!t) return;
+                          try {
+                            const parsed = JSON.parse(t.value) as SongData;
+                            updateSlideField(selectedSlideIndex, 'lyrics', parsed);
+                          } catch (err) {
+                            setMessage('Invalid Lyrics JSON');
+                          }
+                        }}>Apply Lyrics JSON</button>
+                        <button onClick={() => {
+                          // quick add an empty verse
+                          const s = { ...(deck.slides[selectedSlideIndex] as any) };
+                          const lyrics = s.lyrics || { title: '', author: '', verses: [] };
+                          lyrics.verses = lyrics.verses.concat([{ number: (lyrics.verses.length || 0) + 1, lines: [''] }]);
+                          updateSlideField(selectedSlideIndex, 'lyrics', lyrics);
+                        }} style={{ marginLeft: '8px' }}>Add Verse</button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <h4>Style (effective shown; overrides saved to slide.style)</h4>
+                {(() => {
+                  const effective = resolveSlideStyle(deck, slide);
+                  const styleKeys: Array<keyof any> = ['backgroundColor', 'color', 'fontFamily', 'fontSize', 'verticalAlign'];
+                  return (
+                    <div>
+                      {styleKeys.map((k) => (
+                        <div key={k as string} style={{ marginTop: '6px' }}>
+                          <label style={{ marginRight: '8px' }}>{k}: </label>
+                          <input type="text" value={(slide.style && (slide.style as any)[k]) || (effective as any)[k] || ''} onChange={e => updateSlideStyle(selectedSlideIndex, k, e.target.value)} />
+                          <button onClick={() => resetSlideStyleField(selectedSlideIndex, k)} style={{ marginLeft: '8px' }}>Reset</button>
+                        </div>
+                      ))}
+                      <div style={{ marginTop: '8px' }}>
+                        <button onClick={() => resetAllSlideStyleOverrides(selectedSlideIndex)}>Reset all overrides</button>
+                        <button onClick={() => duplicateSlide(selectedSlideIndex)} style={{ marginLeft: '8px' }}>Duplicate</button>
+                        <button onClick={() => deleteSlide(selectedSlideIndex)} style={{ marginLeft: '8px' }}>Delete</button>
+                        <button onClick={() => setSelectedSlideIndex(null)} style={{ marginLeft: '8px' }}>Close editor</button>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             );
           })()}
