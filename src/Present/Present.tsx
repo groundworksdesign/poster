@@ -55,8 +55,9 @@ export default function Presentation() {
   };
 
   useEffect(() => {
-    connect(ChannelType.PRESENTER, broadcastEventHandler);
+    const connection = connect(ChannelType.PRESENTER, broadcastEventHandler);
     setLoading(false);
+    return () => connection.channel.close();
   }, []);
 
   const toggleFullscreen = () => {
