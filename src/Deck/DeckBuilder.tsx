@@ -14,6 +14,7 @@ export default function DeckBuilder() {
   const [, setCurrentSongIndex] = useState<number>(0);
   const [lastSentSlideId, setLastSentSlideId] = useState<string | null>(null);
   const [selectedSlideIndex, setSelectedSlideIndex] = useState<number | null>(null);
+  const [operatorMessage, setOperatorMessage] = useState<string>('');
 
   const genId = () => (typeof (globalThis as any).crypto !== 'undefined' && typeof (globalThis as any).crypto.randomUUID === 'function') ? (globalThis as any).crypto.randomUUID() : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 
@@ -368,6 +369,44 @@ export default function DeckBuilder() {
         <button onClick={rewindSong} disabled={!deck || !isSongMode}>Prev 2 Lines</button>
         <button onClick={advanceSong} disabled={!deck || !isSongMode}>Next 2 Lines</button>
 
+        {deck && (
+          <div style={{ marginTop: '12px', padding: '8px', border: '1px solid #ddd' }}>
+            <h3>Deck metadata</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label>Title: <input type="text" value={deck.title || ''} onChange={e => setDeck({ ...deck, title: e.target.value })} /></label>
+              <label>Date: <input type="date" value={deck.date || ''} onChange={e => setDeck({ ...deck, date: e.target.value })} /></label>
+              <label>Location: <input type="text" value={deck.location || ''} onChange={e => setDeck({ ...deck, location: e.target.value })} /></label>
+              <label>Notes: <textarea value={deck.notes || ''} onChange={e => setDeck({ ...deck, notes: e.target.value })} style={{ verticalAlign: 'top', width: '300px', height: '60px' }} /></label>
+              <label><input type="checkbox" checked={!!deck.useGreenScreen} onChange={e => { const updated = { ...deck, useGreenScreen: e.target.checked }; setDeck(updated); syncSentSlideIfNeeded(updated); }} /> Green screen</label>
+            </div>
+          </div>
+        )}
+
+        <div style={{ marginTop: '12px', padding: '8px', border: '1px solid #ddd' }}>
+          <h3>Send message</h3>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <input
+              type="text"
+              placeholder="Type message to send..."
+              value={operatorMessage}
+              onChange={e => setOperatorMessage(e.target.value)}
+              disabled={!deck}
+              style={{ width: '300px' }}
+            />
+            <button
+              disabled={!deck || operatorMessage.trim() === ''}
+              onClick={() => {
+                handleSendClick({ message: operatorMessage, useGreenScreen: deck?.useGreenScreen || false });
+                setOperatorMessage('');
+              }}
+            >Send Message</button>
+            <button
+              disabled={!deck}
+              onClick={() => handleSendClick({ message: '', useGreenScreen: deck?.useGreenScreen || false })}
+            >Clear</button>
+          </div>
+        </div>
+
         <div style={{ marginTop: '12px', padding: '8px', border: '1px solid #ddd' }}>
           <h3>Deck defaults (GENERAL)</h3>
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -464,7 +503,7 @@ export default function DeckBuilder() {
                 <h4>Style (effective shown; overrides saved to slide.style)</h4>
                 {(() => {
                   const effective = resolveSlideStyle(deck, slide);
-                  const styleKeys: Array<keyof any> = ['backgroundColor', 'color', 'fontFamily', 'fontSize', 'verticalAlign'];
+                  const styleKeys: Array<keyof any> = ['backgroundColor', 'color', 'fontFamily', 'fontSize', 'horizontalAlign', 'verticalAlign'];
                   return (
                     <div>
                       {styleKeys.map((k) => (
