@@ -57,7 +57,18 @@ export default function Presentation() {
   useEffect(() => {
     const connection = connect(ChannelType.PRESENTER, broadcastEventHandler);
     setLoading(false);
-    return () => connection.channel.close();
+    return () => {
+      try {
+        // ensure we remove the handler before closing to avoid duplicate handlers
+        if (connection && connection.channel) {
+          // clear handler reference then close channel
+          (connection.channel as any).onmessage = null;
+          connection.channel.close();
+        }
+      } catch (e) {
+        // ignore cleanup errors
+      }
+    };
   }, []);
 
   const toggleFullscreen = () => {
