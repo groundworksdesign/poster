@@ -46,7 +46,7 @@ export default function Presentation() {
         setSongData(null);
         setSegmentIndex(0);
       }
-    } else if (present.message) {
+    } else if (present.message || present.message === '') {
       setMessage(present.message);
     }
 
