@@ -17,6 +17,7 @@ export default function Presentation() {
   const [useGreenScreen, setUseGreenScreen] = useState<boolean>(false);
   const [songData, setSongData] = useState<SongData | null>(null);
   const [segmentIndex, setSegmentIndex] = useState<number>(0);
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const broadcastEventHandler = (event: MessageEvent) => {
     const present = event.data as PresentData;
     if (!present) return;
@@ -56,6 +57,28 @@ export default function Presentation() {
   useEffect(() => {
     connect(ChannelType.PRESENTER, broadcastEventHandler);
     setLoading(false);
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen?.().catch(() => {});
+    } else {
+      document.exitFullscreen?.().catch(() => {});
+    }
+  };
+
+  useEffect(() => {
+    const onFullscreenChange = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', onFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', onFullscreenChange);
+  }, []);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'f' || e.key === 'F') toggleFullscreen();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
   }, []);
 
   useEffect(() => {
@@ -104,6 +127,28 @@ export default function Presentation() {
     <h1>Loading...</h1>
   ) : (
     <div style={{ height: '100%', width: '100%' }}>
+      <button
+        onClick={toggleFullscreen}
+        aria-label={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+        style={{
+          position: 'fixed',
+          bottom: '12px',
+          right: '12px',
+          zIndex: 9999,
+          opacity: 0.25,
+          padding: '4px 10px',
+          fontSize: '12px',
+          cursor: 'pointer',
+          background: '#000',
+          color: '#fff',
+          border: '1px solid #fff',
+          borderRadius: '4px',
+        }}
+        onMouseEnter={e => ((e.target as HTMLElement).style.opacity = '0.85')}
+        onMouseLeave={e => ((e.target as HTMLElement).style.opacity = '0.25')}
+      >
+        {isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+      </button>
       <div id="message">{message}</div>
       <div id="slide" style={{ height: '100%', width: '100%' }}>
         {slide?.type === SlideType.SONG && songData ? (
