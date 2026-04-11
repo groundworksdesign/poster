@@ -17,7 +17,7 @@ export default function Presentation() {
   const [useGreenScreen, setUseGreenScreen] = useState<boolean>(false);
   const [songData, setSongData] = useState<SongData | null>(null);
   const [segmentIndex, setSegmentIndex] = useState<number>(0);
-  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(() => !!document.fullscreenElement);
   const broadcastEventHandler = (event: MessageEvent) => {
     const present = event.data as PresentData;
     if (!present) return;
@@ -60,10 +60,15 @@ export default function Presentation() {
   }, []);
 
   const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen?.().catch(() => {});
-    } else {
-      document.exitFullscreen?.().catch(() => {});
+    if (document.fullscreenElement) {
+      if (typeof document.exitFullscreen === 'function') {
+        document.exitFullscreen().catch(() => {});
+      }
+      return;
+    }
+    const el = document.documentElement;
+    if (el && typeof el.requestFullscreen === 'function') {
+      el.requestFullscreen().catch(() => {});
     }
   };
 
@@ -83,8 +88,10 @@ export default function Presentation() {
 
   useEffect(() => {
     const body = document.body;
+    const previous = body.style.backgroundColor;
     if (useGreenScreen) body.style.backgroundColor = '#00b140';
     else body.style.backgroundColor = 'inherit';
+    return () => { body.style.backgroundColor = previous; };
   }, [useGreenScreen]);
 
   const computeContainerStyle = (): React.CSSProperties => {
@@ -147,7 +154,7 @@ export default function Presentation() {
         onMouseEnter={e => ((e.target as HTMLElement).style.opacity = '0.85')}
         onMouseLeave={e => ((e.target as HTMLElement).style.opacity = '0.25')}
       >
-        {isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+        {isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
       </button>
       <div id="message">{message}</div>
       <div id="slide" style={{ height: '100%', width: '100%' }}>
