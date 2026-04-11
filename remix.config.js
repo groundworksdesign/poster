@@ -6,7 +6,6 @@
 module.exports = {
   appDirectory: "app",
   serverBuildTarget: "node-cjs",
-  server: "./server/index.js",
   devServerPort: 8002,
   ignoredRouteFiles: ["**/.*"]
 };

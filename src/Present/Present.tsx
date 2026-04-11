@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { connect, ChannelType, Connection } from './Broadcast';
+import { connect, ChannelType } from './Broadcast';
 import {
   PresentData,
   Slide,
@@ -15,11 +15,8 @@ export default function Presentation() {
   const [slide, setSlide] = useState<Slide | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [useGreenScreen, setUseGreenScreen] = useState<boolean>(false);
-  const [connection, setConnection] = useState<Connection | null | undefined>();
   const [songData, setSongData] = useState<SongData | null>(null);
   const [segmentIndex, setSegmentIndex] = useState<number>(0);
-  const root = document.getElementsByTagName('body');
-
   const broadcastEventHandler = (event: MessageEvent) => {
     const present = event.data as PresentData;
     if (!present) return;
@@ -57,22 +54,17 @@ export default function Presentation() {
   };
 
   useEffect(() => {
-    setConnection(connect(ChannelType.PRESENTER, broadcastEventHandler));
+    connect(ChannelType.PRESENTER, broadcastEventHandler);
     setLoading(false);
   }, []);
 
   useEffect(() => {
-    if (useGreenScreen) root[0].style.backgroundColor = '#00b140';
-    else root[0].style.backgroundColor = 'inherit';
+    const body = document.body;
+    if (useGreenScreen) body.style.backgroundColor = '#00b140';
+    else body.style.backgroundColor = 'inherit';
   }, [useGreenScreen]);
 
   const computeContainerStyle = (): React.CSSProperties => {
-    const hAlign =
-      slide?.style?.horizontalAlign === HorizontalAlign.LEFT
-        ? 'flex-start'
-        : slide?.style?.horizontalAlign === HorizontalAlign.RIGHT
-        ? 'flex-end'
-        : 'center';
     const textAlign = slide?.style?.horizontalAlign ?? 'center';
 
     const backgroundImage =

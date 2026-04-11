@@ -1,7 +1,6 @@
 import React, { ChangeEvent, useEffect, useState } from 'react';
 import { connect, ChannelType, Connection } from '../Present/Broadcast';
-import SlideDisplay from './SlideDisplay';
-import { PresentData, SlideType, Deck, Slide } from '../Present/PresentTypes';
+import { PresentData, SlideType, Deck, SongData } from '../Present/PresentTypes';
 import { resolveSlideStyle } from '../utils/resolveSlideStyle';
 import { parseSongXML, createSongSlide } from '../utils/songParser';
 
@@ -12,7 +11,7 @@ export default function DeckBuilder() {
   const [connection, setConnection] = useState<Connection | null | undefined>(null);
   const [isLoadingSong, setIsLoadingSong] = useState<boolean>(false);
   const [isSongMode, setIsSongMode] = useState<boolean>(false);
-  const [currentSongIndex, setCurrentSongIndex] = useState<number>(0);
+  const [, setCurrentSongIndex] = useState<number>(0);
   const [lastSentSlideId, setLastSentSlideId] = useState<string | null>(null);
   const [selectedSlideIndex, setSelectedSlideIndex] = useState<number | null>(null);
 
@@ -470,7 +469,7 @@ export default function DeckBuilder() {
                     <div>
                       {styleKeys.map((k) => (
                         <div key={k as string} style={{ marginTop: '6px' }}>
-                          <label style={{ marginRight: '8px' }}>{k}: </label>
+                          <label style={{ marginRight: '8px' }}>{`${String(k)}: `}</label>
                           <input type="text" value={(slide.style && (slide.style as any)[k]) || (effective as any)[k] || ''} onChange={e => updateSlideStyle(selectedSlideIndex, k, e.target.value)} />
                           <button onClick={() => resetSlideStyleField(selectedSlideIndex, k)} style={{ marginLeft: '8px' }}>Reset</button>
                         </div>
