@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useEffect, useState } from 'react';
+import React, { ChangeEvent, useEffect, useRef, useState } from 'react';
 import { connect, ChannelType, Connection } from '../Present/Broadcast';
 import { PresentData, SlideType, Deck, SongData } from '../Present/PresentTypes';
 import { resolveSlideStyle } from '../utils/resolveSlideStyle';
@@ -25,6 +25,50 @@ export default function DeckBuilder() {
   useEffect(() => {
     setConnection(connect(ChannelType.BUILDER, event => {}));
     setMessage('Deck builder connected');
+  }, []);
+
+  // Keyboard shortcut handler ref -- always reflects latest state without stale closures
+  const keyHandlerRef = useRef<(e: KeyboardEvent) => void>();
+  keyHandlerRef.current = (e: KeyboardEvent) => {
+    const tag = (document.activeElement as HTMLElement)?.tagName?.toUpperCase();
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+
+    if (isSongMode) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        advanceSong();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        rewindSong();
+      }
+    } else {
+      if (!deck) return;
+      if (e.key === 'ArrowRight' || e.key === 'PageDown') {
+        e.preventDefault();
+        const currentIdx = selectedSlideIndex !== null
+          ? selectedSlideIndex
+          : deck.slides.findIndex((s: any) => (s as any).id === lastSentSlideId);
+        const nextIdx = Math.min((currentIdx < 0 ? -1 : currentIdx) + 1, deck.slides.length - 1);
+        if (nextIdx >= 0) {
+          handleSendClick({ slide: deck.slides[nextIdx], useGreenScreen: deck.useGreenScreen });
+          setSelectedSlideIndex(nextIdx);
+        }
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        e.preventDefault();
+        const currentIdx = selectedSlideIndex !== null
+          ? selectedSlideIndex
+          : deck.slides.findIndex((s: any) => (s as any).id === lastSentSlideId);
+        const prevIdx = Math.max((currentIdx <= 0 ? 0 : currentIdx) - 1, 0);
+        handleSendClick({ slide: deck.slides[prevIdx], useGreenScreen: deck.useGreenScreen });
+        setSelectedSlideIndex(prevIdx);
+      }
+    }
+  };
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => keyHandlerRef.current?.(e);
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
   }, []);
 
   // Previously the builder auto-sent status messages to the presenter when the local `message` state
