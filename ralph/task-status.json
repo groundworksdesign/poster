@@ -1,0 +1,117 @@
+{
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Expose horizontalAlign in slide style editor",
+      "description": "Add horizontalAlign to the slide style editor's styleKeys array in DeckBuilder so operators can set the horizontal component of the 3x3 placement grid. The presenter already reads slide.style.horizontalAlign; the builder must expose it alongside verticalAlign.",
+      "status": "done",
+      "devIterations": 1,
+      "createdAt": "2026-04-11T20:48:19.837Z",
+      "updatedAt": "2026-04-11T20:52:04.307Z"
+    },
+    {
+      "id": 2,
+      "title": "Add deck metadata editing UI",
+      "description": "Add inputs to the DeckBuilder for editing deck-level fields: title, date, location, notes, and a useGreenScreen toggle checkbox. Currently these fields are read-only after load except via manual JSON edits.",
+      "status": "done",
+      "devIterations": 1,
+      "createdAt": "2026-04-11T20:48:19.837Z",
+      "updatedAt": "2026-04-11T20:59:33.740Z"
+    },
+    {
+      "id": 3,
+      "title": "Add operator message send UI",
+      "description": "Add a dedicated text input and Send Message button in DeckBuilder that broadcasts a PresentData with only the message field set (no slide), satisfying design principle 5: supers go on program only when explicitly sent.",
+      "status": "done",
+      "devIterations": 2,
+      "createdAt": "2026-04-11T20:48:19.837Z",
+      "updatedAt": "2026-04-11T21:15:57.996Z"
+    },
+    {
+      "id": 4,
+      "title": "Add keyboard shortcuts for operator navigation",
+      "description": "Implement keyboard event handling in DeckBuilder so the operator can navigate slides (ArrowRight/ArrowLeft or PageDown/PageUp) and step lyrics (ArrowDown/ArrowUp when in song mode) without using the mouse.",
+      "status": "done",
+      "devIterations": 1,
+      "createdAt": "2026-04-11T20:48:19.837Z",
+      "updatedAt": "2026-04-11T21:23:28.020Z"
+    },
+    {
+      "id": 5,
+      "title": "Add fullscreen API to presenter route",
+      "description": "Add a button (or keyboard shortcut F) to the Presentation component that calls document.documentElement.requestFullscreen() so the presenter window can occupy the full capture surface for the video mixer feed.",
+      "status": "done",
+      "devIterations": 2,
+      "createdAt": "2026-04-11T20:48:19.837Z",
+      "updatedAt": "2026-04-11T21:35:29.244Z"
+    },
+    {
+      "id": 6,
+      "title": "Verify and pass lyrics navigation E2E tests",
+      "description": "The Playwright spec in e2e/lyrics-navigation.spec.ts was written but has not been confirmed passing. Run the suite against a live dev server, fix any failures in the presenter or broadcast handling, and ensure all six lyrics-navigation scenarios pass cleanly.",
+      "status": "done",
+      "devIterations": 1,
+      "createdAt": "2026-04-11T20:48:19.837Z",
+      "updatedAt": "2026-04-12T20:07:57.967Z"
+    },
+    {
+      "id": 7,
+      "title": "E2E tests for 3x3 alignment grid",
+      "description": "Write Playwright tests that send slides with each of the 9 horizontal+vertical alignment combinations and assert that the title overlay element has the expected CSS positioning in the presenter view, covering all cells of the upper/center/bottom x left/middle/right grid.",
+      "status": "backlog",
+      "devIterations": 0,
+      "createdAt": "2026-04-11T20:48:19.837Z",
+      "updatedAt": "2026-04-12T20:01:26.167Z"
+    },
+    {
+      "id": 8,
+      "title": "Standalone song JSON import in DeckBuilder",
+      "description": "Extend the file upload handler to accept a standalone song JSON file matching the SongData shape (with title, author, verses, lines) without requiring a full Deck wrapper, auto-creating a single-slide song deck on load.",
+      "status": "backlog",
+      "devIterations": 0,
+      "createdAt": "2026-04-11T20:48:19.837Z",
+      "updatedAt": "2026-04-12T20:01:26.167Z"
+    },
+    {
+      "id": 9,
+      "title": "SQLite library schema and Remix loader scaffolding",
+      "description": "Create the server-side SQLite schema (presentations, songs, assets tables) and stub Remix loader/action routes for the library, setting up the persistence layer so subsequent tasks can implement save, open, and list workflows.",
+      "status": "backlog",
+      "devIterations": 0,
+      "createdAt": "2026-04-11T20:48:19.837Z",
+      "updatedAt": "2026-04-12T20:01:26.167Z"
+    },
+    {
+      "id": 10,
+      "title": "SQLite library save and open deck",
+      "description": "Implement the save deck action (persist current deck JSON and linked song records to SQLite) and the open deck loader (list saved presentations and hydrate the builder from a selected record), wiring them to the DeckBuilder UI.",
+      "status": "backlog",
+      "devIterations": 0,
+      "createdAt": "2026-04-11T20:48:19.837Z",
+      "updatedAt": "2026-04-12T20:01:26.167Z"
+    },
+    {
+      "id": 11,
+      "title": "SQLite library browser UI in DeckBuilder",
+      "description": "Add a library panel to the DeckBuilder that lists saved presentations from SQLite (title, date, location) and lets the operator open, update, or delete them, completing the local working archive workflow from the epic.",
+      "status": "backlog",
+      "devIterations": 0,
+      "createdAt": "2026-04-11T20:48:19.837Z",
+      "updatedAt": "2026-04-12T20:01:26.167Z"
+    }
+  ],
+  "currentTaskNum": 6,
+  "totalLLMCalls": 3,
+  "maxLLMCalls": 500,
+  "nextTask": {
+    "taskId": 6,
+    "content": "Now I have enough context to produce the output.\n\n```json\n[\n  {\n    \"id\": 6,\n    \"title\": \"Verify and pass lyrics navigation E2E tests\",\n    \"description\": \"The Playwright spec in e2e/lyrics-navigation.spec.ts was written but has not been confirmed passing. Run the suite against a live dev server, fix any failures in the presenter or broadcast handling, and ensure all six lyrics-navigation scenarios pass cleanly.\",\n    \"status\": \"backlog\"\n  },\n  {\n    \"id\": 7,\n    \"title\": \"E2E tests for 3x3 alignment grid\",\n    \"description\": \"Write Playwright tests that send slides with each of the 9 horizontal+vertical alignment combinations and assert that the title overlay element has the expected CSS positioning in the presenter view, covering all cells of the upper/center/bottom x left/middle/right grid.\",\n    \"status\": \"backlog\"\n  },\n  {\n    \"id\": 8,\n    \"title\": \"Standalone song JSON import in DeckBuilder\",\n    \"description\": \"Extend the file upload handler to accept a standalone song JSON file matching the SongData shape (with title, author, verses, lines) without requiring a full Deck wrapper, auto-creating a single-slide song deck on load.\",\n    \"status\": \"backlog\"\n  },\n  {\n    \"id\": 9,\n    \"title\": \"SQLite library schema and Remix loader scaffolding\",\n    \"description\": \"Create the server-side SQLite schema (presentations, songs, assets tables) and stub Remix loader/action routes for the library, setting up the persistence layer so subsequent tasks can implement save, open, and list workflows.\",\n    \"status\": \"backlog\"\n  },\n  {\n    \"id\": 10,\n    \"title\": \"SQLite library save and open deck\",\n    \"description\": \"Implement the save deck action (persist current deck JSON and linked song records to SQLite) and the open deck loader (list saved presentations and hydrate the builder from a selected record), wiring them to the DeckBuilder UI.\",\n    \"status\": \"backlog\"\n  },\n  {\n    \"id\": 11,\n    \"title\": \"SQLite library browser UI in DeckBuilder\",\n    \"description\": \"Add a library panel to the DeckBuilder that lists saved presentations from SQLite (title, date, location) and lets the operator open, update, or delete them, completing the local working archive workflow from the epic.\",\n    \"status\": \"backlog\"\n  }\n]\n```\n\n---\n\n## Task 6: Verify and Pass Lyrics Navigation E2E Tests\n\n### What and Why\n\nTask 6 covers confirming that `e2e/lyrics-navigation.spec.ts` passes against a running instance of the app. The spec was authored (devIterations: 1) and placed in `inQa` status, but it has not been confirmed green. Before layering more E2E coverage on top (task 7), the existing lyrics suite must be stable -- a failing baseline makes regressions invisible and undermines the QA signal for tasks 8-11.\n\n### What the Tests Cover\n\nThe spec in `e2e/lyrics-navigation.spec.ts` contains six scenarios:\n\n1. Initial song send shows lines 1 and 2 only.\n2. One `next` command advances to lines 3 and 4.\n3. Two `next` commands reach lines 5 and 6 (verse 2).\n4. A `previous` command after one `next` returns to lines 1 and 2.\n5. A `previous` at segment 0 does not underflow (still shows lines 1 and 2).\n6. Re-sending the same song slide resets the segment to 0 (shows lines 1 and 2 again).\n\nEach test uses `BroadcastChannel` via `page.evaluate` from the operator page to simulate real operator actions, matching the same pattern as `playwright-smoke.spec.ts`.\n\n### Implementation Guidance\n\n1. **Baseline run.** Start the dev server (`npm run dev` or the Express server), then run:\n   ```\n   npx playwright test e2e/lyrics-navigation.spec.ts --project=chromium\n   ```\n   Capture the exact failure output for each failing test.\n\n2. **Diagnose failures.** Common root causes to check:\n   - The `#lyrics` DOM element does not exist or is rendered under a different selector in `src/Present/LyricsDisplay.tsx` or `src/Present/Present.tsx`. Confirm the element ID matches.\n   - The `lyricsNavigation` message shape (`{ data: { lyricsNavigation: { command: 'next' | 'previous' } } }`) is not handled by the BroadcastChannel listener in `src/Present/Broadcast.ts`. Confirm the listener reads `data.lyricsNavigation` and updates the segment index.\n   - Segment-reset logic on new song send: when a `PresentData` message carries a `slide` of type `song`, the segment index must reset to 0. Check the state update path in `Present.tsx`.\n   - Timing: if tests are flaky rather than consistently failing, add explicit `await` waits for the `#lyrics` content to appear before asserting.\n\n3. **Fixes.** Make only the minimal changes in `src/Present/` needed to satisfy the assertions. Do not change the test file itself unless there is a genuine spec bug (e.g., a selector that never existed in the presenter markup).\n\n4. **Re-run full suite.** After fixes:\n   ```\n   npx playwright test e2e/lyrics-navigation.spec.ts\n   ```\n   All six tests must pass across all configured browser projects (or at minimum Chromium as the target browser for the video-mixer use case).\n\n5. **Regression check.** Run the existing smoke tests to confirm nothing regressed:\n   ```\n   npx playwright test e2e/playwright-smoke.spec.ts\n   ```\n\n### Acceptance Criteria\n\n- All six tests in `e2e/lyrics-navigation.spec.ts` pass with exit code 0.\n- No pre-existing passing tests in `e2e/` regress.\n- The `#lyrics` selector resolves reliably in the presenter page.\n- Segment navigation state (`next`, `previous`, reset on re-send) behaves exactly as specified in the test scenarios.\n- No changes are made to the test file itself unless correcting a genuine structural bug (selector mismatch, wrong channel name, etc.) -- and any such correction is documented in the commit message.\n\n---\n\n## Remaining Planned Tasks\n- Verify and pass lyrics navigation E2E tests\n- E2E tests for 3x3 alignment grid\n- Standalone song JSON import in DeckBuilder\n- SQLite library schema and Remix loader scaffolding\n- SQLite library save and open deck\n- SQLite library browser UI in DeckBuilder\n\n<task-id>6</task-id>\n\nThe CRA server is running. Now run the tests:\n\nAll 6 tests pass. Let me also run the smoke tests to confirm no regressions:\n\nAll tests pass. Let me clean up the background CRA server process:\n\n",
+    "updatedAt": "2026-04-12T20:01:26.193Z"
+  },
+  "feedback": {
+    "taskId": 6,
+    "content": "Running Playwright E2E for the lyrics navigation spec and the smoke suite to verify task 6 stability and regression safety. This confirms the six lyrics scenarios pass and no regressions occurred.\n\nCalling intent and executing tests now.\n\nInspecting package.json to determine the correct dev server command before starting it, so tests run against the expected server.\n\n<status>verified</status>\n\n",
+    "updatedAt": "2026-04-12T20:07:57.957Z"
+  },
+  "lastUpdated": "2026-04-12T20:07:57.967Z"
+}
