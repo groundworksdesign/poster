@@ -176,7 +176,7 @@ export default function Presentation() {
               <LyricsDisplay song={songData} segmentIndex={segmentIndex} />
             </div>
             {(slide?.title || slide?.subTitle) && (
-              <div style={getTitleOverlayStyle()}>
+              <div data-testid="slide-overlay" style={getTitleOverlayStyle()}>
                 <div style={{ fontSize: slide?.titleFontSize ?? slide?.style?.fontSize }}>{slide?.title}</div>
                 <div style={{ fontSize: slide?.subTitleFontSize ?? slide?.style?.fontSize }}>{slide?.subTitle}</div>
               </div>
@@ -186,7 +186,7 @@ export default function Presentation() {
           <div id="image-slide" style={{ ...computeContainerStyle(), position: 'relative' }}>
             <div style={{ textAlign: 'inherit', color: slide?.style?.color }} />
             {(slide?.title || slide?.subTitle) && (
-              <div style={getTitleOverlayStyle()}>
+              <div data-testid="slide-overlay" style={getTitleOverlayStyle()}>
                 <div style={{ fontSize: slide?.titleFontSize ?? slide?.style?.fontSize }}>{slide?.title}</div>
                 <div style={{ fontSize: slide?.subTitleFontSize ?? slide?.style?.fontSize }}>{slide?.subTitle}</div>
               </div>
@@ -195,7 +195,7 @@ export default function Presentation() {
         ) : (
           <div id="content" style={{ ...computeContainerStyle(), position: 'relative' }}>
             {(slide?.title || slide?.subTitle) && (
-              <div style={getTitleOverlayStyle()}>
+              <div data-testid="slide-overlay" style={getTitleOverlayStyle()}>
                 <div style={{ fontSize: slide?.titleFontSize ?? slide?.style?.fontSize }}>{slide?.title}</div>
                 <div style={{ fontSize: slide?.subTitleFontSize ?? slide?.style?.fontSize }}>{slide?.subTitle}</div>
               </div>
