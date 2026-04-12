@@ -3,6 +3,7 @@ import { connect, ChannelType, Connection } from '../Present/Broadcast';
 import { PresentData, SlideType, Deck, SongData } from '../Present/PresentTypes';
 import { resolveSlideStyle } from '../utils/resolveSlideStyle';
 import { parseSongXML, createSongSlide, isSongData } from '../utils/songParser';
+import LibraryPanel from './LibraryPanel';
 
 export default function DeckBuilder() {
   const [message, setMessage] = useState<string | null>(null);
@@ -16,6 +17,8 @@ export default function DeckBuilder() {
   const [selectedSlideIndex, setSelectedSlideIndex] = useState<number | null>(null);
   const [operatorMessage, setOperatorMessage] = useState<string>('');
   const [libraryId, setLibraryId] = useState<string | null>(null);
+  const [showLibrary, setShowLibrary] = useState<boolean>(false);
+  const [libraryRefreshKey, setLibraryRefreshKey] = useState<number>(0);
 
   const genId = () => (typeof (globalThis as any).crypto !== 'undefined' && typeof (globalThis as any).crypto.randomUUID === 'function') ? (globalThis as any).crypto.randomUUID() : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 
@@ -446,6 +449,7 @@ export default function DeckBuilder() {
       const data = await res.json();
       setLibraryId(data.id);
       setMessage(wasUpdate ? 'Library updated.' : 'Saved to library.');
+      setLibraryRefreshKey(k => k + 1);
     } catch (e) {
       setMessage(`Library save error: ${e instanceof Error ? e.message : 'Unknown'}`);
     }
@@ -466,6 +470,7 @@ export default function DeckBuilder() {
       setCurrentSongIndex(0);
       setSelectedSlideIndex(null);
       setLastSentSlideId(null);
+      setShowLibrary(false);
       setMessage('Opened from library.');
     } catch (e) {
       setMessage(`Open error: ${e instanceof Error ? e.message : 'Unknown'}`);
@@ -480,6 +485,7 @@ export default function DeckBuilder() {
         <button id="load" onClick={() => handleUploadClick()} disabled={isLoadingSong}>{isLoadingSong ? 'Loading...' : 'Load'}</button>
         <button id="save" onClick={handleSaveClick}>Save</button>
         <button id="save-to-library" onClick={handleSaveToLibrary} disabled={!deck}>Save to Library</button>
+        <button id="toggle-library" onClick={() => setShowLibrary(v => !v)}>Library</button>
         <button onClick={createNewDeck}>New Deck</button>
         <label style={{ marginLeft: '8px' }}>
           Add slide:
@@ -660,6 +666,17 @@ export default function DeckBuilder() {
 
       <div id="status" style={{ marginTop: '12px' }}>{message}</div>
       {libraryId && <div data-testid="library-id" style={{ fontSize: '11px', color: '#888' }}>Library ID: {libraryId}</div>}
+      {showLibrary && (
+        <LibraryPanel
+          onOpen={openFromLibrary}
+          onDeleted={(id) => {
+            if (id === libraryId) setLibraryId(null);
+            setLibraryRefreshKey(k => k + 1);
+          }}
+          currentLibraryId={libraryId}
+          refreshKey={libraryRefreshKey}
+        />
+      )}
     </>
   );
 }

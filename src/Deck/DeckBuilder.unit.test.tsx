@@ -11,6 +11,18 @@ jest.mock('../Present/Broadcast', () => ({
   ChannelType: { BUILDER: 0, PRESENTER: 1 },
 }));
 
+// Mock fetch for library panel rendering
+beforeEach(() => {
+  jest.spyOn(global, 'fetch').mockResolvedValue({
+    ok: true,
+    json: async () => [],
+  } as Response);
+});
+
+afterEach(() => {
+  jest.restoreAllMocks();
+});
+
 import DeckBuilder from './DeckBuilder';
 
 test('DeckBuilder shows header and handles save with no deck', () => {
@@ -28,4 +40,22 @@ test('DeckBuilder shows header and handles save with no deck', () => {
   });
 
   expect(screen.getByText('No deck to save')).toBeInTheDocument();
+});
+
+test('Library toggle button shows and hides library panel', async () => {
+  render(<DeckBuilder />);
+
+  expect(screen.queryByTestId('library-panel')).not.toBeInTheDocument();
+
+  act(() => {
+    fireEvent.click(screen.getByRole('button', { name: /^library$/i }));
+  });
+
+  expect(screen.getByTestId('library-panel')).toBeInTheDocument();
+
+  act(() => {
+    fireEvent.click(screen.getByRole('button', { name: /^library$/i }));
+  });
+
+  expect(screen.queryByTestId('library-panel')).not.toBeInTheDocument();
 });
