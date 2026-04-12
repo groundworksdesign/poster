@@ -100,6 +100,17 @@ export const createSongSlide = (songData: SongData, existingStyle: any) => {
   };
 };
 
+export const isSongData = (obj: unknown): obj is SongData => {
+  if (!obj || typeof obj !== 'object') return false;
+  const o = obj as Record<string, unknown>;
+  if (typeof o.title !== 'string' || !o.title) return false;
+  if (!Array.isArray(o.verses) || o.verses.length === 0) return false;
+  if (!Array.isArray((o.verses[0] as any)?.lines)) return false;
+  // A Deck has a `slides` array -- exclude it so we don't misclassify a deck
+  if (Array.isArray(o.slides)) return false;
+  return true;
+};
+
 // NEW: create slides showing 2 lines at a time across all verses
 export const createSongSlides = (songData: SongData, existingStyle: any) => {
   const allLines: { verse: number; text: string }[] = [];

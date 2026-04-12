@@ -2,7 +2,7 @@ import React, { ChangeEvent, useEffect, useRef, useState } from 'react';
 import { connect, ChannelType, Connection } from '../Present/Broadcast';
 import { PresentData, SlideType, Deck, SongData } from '../Present/PresentTypes';
 import { resolveSlideStyle } from '../utils/resolveSlideStyle';
-import { parseSongXML, createSongSlide } from '../utils/songParser';
+import { parseSongXML, createSongSlide, isSongData } from '../utils/songParser';
 
 export default function DeckBuilder() {
   const [message, setMessage] = useState<string | null>(null);
@@ -138,10 +138,47 @@ export default function DeckBuilder() {
     } else if (fileName.endsWith('.json')) {
       reader.addEventListener('load', () => {
         try {
-          const parsed = JSON.parse(reader.result as string) as Deck;
-          setDeck(ensureDeckIds(parsed));
-          setIsSongMode(false);
-          setMessage('Loaded JSON deck');
+          const parsed = JSON.parse(reader.result as string);
+
+          if (isSongData(parsed)) {
+            const baseStyle = {
+              backgroundColor: '#000000',
+              color: '#ffffff',
+              fontFamily: 'Arial, sans-serif',
+              fontSize: '28px',
+              height: '100%',
+              width: '100%',
+            };
+            const songSlide = createSongSlide(parsed as SongData, baseStyle);
+            (songSlide as any).id = (songSlide as any).id ?? genId();
+            const newDeck: Deck = {
+              title: `Song: ${parsed.title}`,
+              date: new Date().toISOString().split('T')[0],
+              location: '',
+              useGreenScreen: false,
+              notes: `Loaded from ${file.name}`,
+              slideStyles: {
+                [SlideType.GENERAL]: {
+                  backgroundColor: '#000000',
+                  color: '#ffffff',
+                  fontFamily: 'Arial, sans-serif',
+                  fontSize: '24px',
+                },
+                [SlideType.SONG]: baseStyle,
+              },
+              slides: [songSlide],
+            };
+            setDeck(ensureDeckIds(newDeck));
+            setIsSongMode(true);
+            setCurrentSongIndex(0);
+            setMessage(`Loaded song: ${parsed.title}`);
+          } else if (parsed && typeof parsed === 'object' && Array.isArray((parsed as any).slides)) {
+            setDeck(ensureDeckIds(parsed as Deck));
+            setIsSongMode(false);
+            setMessage('Loaded JSON deck');
+          } else {
+            setMessage('Invalid JSON: not a deck or song file');
+          }
         } catch (err) {
           setMessage('Invalid JSON');
         }
