@@ -15,6 +15,7 @@ export default function DeckBuilder() {
   const [lastSentSlideId, setLastSentSlideId] = useState<string | null>(null);
   const [selectedSlideIndex, setSelectedSlideIndex] = useState<number | null>(null);
   const [operatorMessage, setOperatorMessage] = useState<string>('');
+  const [libraryId, setLibraryId] = useState<string | null>(null);
 
   const genId = () => (typeof (globalThis as any).crypto !== 'undefined' && typeof (globalThis as any).crypto.randomUUID === 'function') ? (globalThis as any).crypto.randomUUID() : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 
@@ -424,6 +425,53 @@ export default function DeckBuilder() {
     setMessage('Deck downloaded');
   };
 
+  const handleSaveToLibrary = async () => {
+    if (!deck) {
+      setMessage('No deck to save');
+      return;
+    }
+    try {
+      const wasUpdate = !!libraryId;
+      const body = libraryId ? { ...deck, id: libraryId } : deck;
+      const res = await fetch('/library/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        setMessage(`Library save failed: ${(err as any).error || res.status}`);
+        return;
+      }
+      const data = await res.json();
+      setLibraryId(data.id);
+      setMessage(wasUpdate ? 'Library updated.' : 'Saved to library.');
+    } catch (e) {
+      setMessage(`Library save error: ${e instanceof Error ? e.message : 'Unknown'}`);
+    }
+  };
+
+  const openFromLibrary = async (id: string) => {
+    try {
+      const res = await fetch(`/library/open/${id}`);
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        setMessage(`Open failed: ${(err as any).error || res.status}`);
+        return;
+      }
+      const loadedDeck = await res.json();
+      setDeck(ensureDeckIds(loadedDeck));
+      setLibraryId(id);
+      setIsSongMode(false);
+      setCurrentSongIndex(0);
+      setSelectedSlideIndex(null);
+      setLastSentSlideId(null);
+      setMessage('Opened from library.');
+    } catch (e) {
+      setMessage(`Open error: ${e instanceof Error ? e.message : 'Unknown'}`);
+    }
+  };
+
   return (
     <>
       <h1>Deck</h1>
@@ -431,6 +479,7 @@ export default function DeckBuilder() {
         <input id="file" type="file" onChange={handleFileChange} />
         <button id="load" onClick={() => handleUploadClick()} disabled={isLoadingSong}>{isLoadingSong ? 'Loading...' : 'Load'}</button>
         <button id="save" onClick={handleSaveClick}>Save</button>
+        <button id="save-to-library" onClick={handleSaveToLibrary} disabled={!deck}>Save to Library</button>
         <button onClick={createNewDeck}>New Deck</button>
         <label style={{ marginLeft: '8px' }}>
           Add slide:
@@ -610,6 +659,7 @@ export default function DeckBuilder() {
       )}
 
       <div id="status" style={{ marginTop: '12px' }}>{message}</div>
+      {libraryId && <div data-testid="library-id" style={{ fontSize: '11px', color: '#888' }}>Library ID: {libraryId}</div>}
     </>
   );
 }

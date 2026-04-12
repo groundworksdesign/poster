@@ -24,7 +24,7 @@ test('DeckBuilder shows header and handles save with no deck', () => {
 
   // click save and assert message
   act(() => {
-    fireEvent.click(screen.getByRole('button', { name: /save/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
   });
 
   expect(screen.getByText('No deck to save')).toBeInTheDocument();
