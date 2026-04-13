@@ -9,6 +9,7 @@ import {
   VerticalAlign,
 } from './PresentTypes';
 import LyricsDisplay from './LyricsDisplay';
+import SafeAreaOverlay from './SafeAreaOverlay';
 
 export default function Presentation() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -18,6 +19,13 @@ export default function Presentation() {
   const [songData, setSongData] = useState<SongData | null>(null);
   const [segmentIndex, setSegmentIndex] = useState<number>(0);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(() => !!document.fullscreenElement);
+  // Broadcast-safe overlay: activated by ?safearea=1 query param or S key toggle
+  // NOTE: capture the presenter URL without this param for a clean program feed.
+  const [showSafeArea, setShowSafeArea] = useState<boolean>(() => {
+    const params = new URLSearchParams(window.location.search);
+    const v = params.get('safearea');
+    return v === '1' || v === 'true';
+  });
   const broadcastEventHandler = (event: MessageEvent) => {
     const present = event.data as PresentData;
     if (!present) return;
@@ -93,6 +101,10 @@ export default function Presentation() {
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'f' || e.key === 'F') toggleFullscreen();
+      // S toggles the broadcast-safe overlay (only when focus is not in an input)
+      if ((e.key === 's' || e.key === 'S') && !(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)) {
+        setShowSafeArea(prev => !prev);
+      }
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
@@ -145,7 +157,7 @@ export default function Presentation() {
   const display = loading ? (
     <h1>Loading...</h1>
   ) : (
-    <div style={{ height: '100%', width: '100%' }}>
+    <div style={{ height: '100%', width: '100%', position: 'relative' }}>
       <button
         onClick={toggleFullscreen}
         aria-label={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
@@ -203,6 +215,9 @@ export default function Presentation() {
           </div>
         )}
       </div>
+      {/* Broadcast-safe overlay: use ?safearea=1 or press S to toggle.
+          Keep the clean program feed URL free of this param for mixer capture. */}
+      <SafeAreaOverlay visible={showSafeArea} />
     </div>
   );
 
