@@ -3,6 +3,7 @@ import { connect, ChannelType, Connection } from '../Present/Broadcast';
 import { PresentData, SlideType, Deck, SongData } from '../Present/PresentTypes';
 import { resolveSlideStyle } from '../utils/resolveSlideStyle';
 import { parseSongXML, createSongSlide, isSongData } from '../utils/songParser';
+import { validateDeck } from '../utils/deckValidator';
 import LibraryPanel from './LibraryPanel';
 
 export default function DeckBuilder() {
@@ -176,15 +177,18 @@ export default function DeckBuilder() {
             setIsSongMode(true);
             setCurrentSongIndex(0);
             setMessage(`Loaded song: ${parsed.title}`);
-          } else if (parsed && typeof parsed === 'object' && Array.isArray((parsed as any).slides)) {
-            setDeck(ensureDeckIds(parsed as Deck));
-            setIsSongMode(false);
-            setMessage('Loaded JSON deck');
           } else {
-            setMessage('Invalid JSON: not a deck or song file');
+            const validationError = validateDeck(parsed);
+            if (validationError) {
+              setMessage(validationError);
+            } else {
+              setDeck(ensureDeckIds(parsed as Deck));
+              setIsSongMode(false);
+              setMessage('Loaded JSON deck');
+            }
           }
         } catch (err) {
-          setMessage('Invalid JSON');
+          setMessage('Could not parse file as JSON. Check that the file is valid JSON.');
         }
       });
       reader.readAsText(file);
