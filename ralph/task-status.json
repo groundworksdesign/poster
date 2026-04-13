@@ -130,10 +130,10 @@
       "id": 15,
       "title": "Save-to-library option on file import",
       "description": "After a successful JSON deck or XML song import, offer an optional 'Save to Library' action in the DeckBuilder so the uploaded file becomes a first-class library record, completing the epic's Import workflow for the Local Library (SQLite) section.",
-      "status": "inQa",
-      "devIterations": 2,
+      "status": "done",
+      "devIterations": 3,
       "createdAt": "2026-04-13T14:51:13.534Z",
-      "updatedAt": "2026-04-13T15:13:04.569Z"
+      "updatedAt": "2026-04-13T15:26:25.346Z"
     },
     {
       "id": 16,
@@ -146,7 +146,7 @@
     }
   ],
   "currentTaskNum": 15,
-  "totalLLMCalls": 13,
+  "totalLLMCalls": 16,
   "maxLLMCalls": 500,
   "nextTask": {
     "taskId": 15,
@@ -155,8 +155,8 @@
   },
   "feedback": {
     "taskId": 15,
-    "content": "Running TypeScript check and unit tests, and inspecting DeckBuilder and its unit tests to verify the save-to-library prompt implementation. I'll run npx tsc --noEmit and npm test, and open src/Deck/DeckBuilder.tsx and its unit test file.\n\n# Feedback\nThe implementation is functionally correct and passes checks (npx tsc --noEmit; npm test — 67 passed). DeckBuilder.tsx contains the boolean state, the prompt UI (data-testid=\"import-save-prompt\") and buttons with ids import-save-to-library / import-skip-save-to-library; Save calls /library/save and Skip simply hides the prompt. createNewDeck and openFromLibrary clear the prompt.\n\nRemaining issues to address:\n- Unit test missing for XML (.xml) song import prompting — add a test that uploads an .xml file and asserts the prompt appears.\n- No unit test asserting openFromLibrary (library-open) does not show the prompt. Requirements text is ambiguous about libraryId behavior; add tests clarifying the intended behavior (open-from-library shouldn’t prompt; importing while a library deck is open should prompt).\n\n",
-    "updatedAt": "2026-04-13T15:11:39.949Z"
+    "content": "Running TypeScript check and unit tests to verify the new import/save-to-library prompt implementation. This will confirm type-safety and that all unit tests pass. Running tsc then npm test. I'll report results and provide verification or feedback.\n\n<status>verified</status>\n\nMarking the task complete so the project workflow records that the implementation and verification (TypeScript check and unit tests) are finished. Calling report_intent together with task_complete to register intent and finalize the task.\n\n",
+    "updatedAt": "2026-04-13T15:26:25.336Z"
   },
-  "lastUpdated": "2026-04-13T15:13:04.569Z"
+  "lastUpdated": "2026-04-13T15:26:25.346Z"
 }
