@@ -20,6 +20,7 @@ export default function DeckBuilder() {
   const [libraryId, setLibraryId] = useState<string | null>(null);
   const [showLibrary, setShowLibrary] = useState<boolean>(false);
   const [libraryRefreshKey, setLibraryRefreshKey] = useState<number>(0);
+  const [showSaveToLibraryPrompt, setShowSaveToLibraryPrompt] = useState<boolean>(false);
 
   const genId = () => (typeof (globalThis as any).crypto !== 'undefined' && typeof (globalThis as any).crypto.randomUUID === 'function') ? (globalThis as any).crypto.randomUUID() : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 
@@ -131,6 +132,8 @@ export default function DeckBuilder() {
           setDeck(ensureDeckIds(newDeck));
           setIsSongMode(true);
           setCurrentSongIndex(0);
+          setLibraryId(null);
+          setShowSaveToLibraryPrompt(true);
           setMessage(`Loaded song: ${songData.title}`);
         } catch (error) {
           setMessage(`Error parsing XML: ${error instanceof Error ? error.message : 'Unknown'}`);
@@ -176,14 +179,26 @@ export default function DeckBuilder() {
             setDeck(ensureDeckIds(newDeck));
             setIsSongMode(true);
             setCurrentSongIndex(0);
+            setLibraryId(null);
+            setShowSaveToLibraryPrompt(true);
             setMessage(`Loaded song: ${parsed.title}`);
           } else {
             const validationError = validateDeck(parsed);
             if (validationError) {
               setMessage(validationError);
             } else {
-              setDeck(ensureDeckIds(parsed as Deck));
+              const parsedDeck = parsed as Deck;
+              setDeck(ensureDeckIds(parsedDeck));
               setIsSongMode(false);
+              // If the imported JSON deck already contains an id, treat it as a library record
+              const importedLibraryId = (parsedDeck as any).id ?? null;
+              if (importedLibraryId) {
+                setLibraryId(importedLibraryId);
+                setShowSaveToLibraryPrompt(false);
+              } else {
+                setLibraryId(null);
+                setShowSaveToLibraryPrompt(true);
+              }
               setMessage('Loaded JSON deck');
             }
           }
@@ -356,6 +371,8 @@ export default function DeckBuilder() {
     };
     setDeck(ensureDeckIds(newDeck));
     setSelectedSlideIndex(0);
+    setLibraryId(null);
+    setShowSaveToLibraryPrompt(false);
     setMessage('New deck created');
   };
 
@@ -474,6 +491,7 @@ export default function DeckBuilder() {
       setCurrentSongIndex(0);
       setSelectedSlideIndex(null);
       setLastSentSlideId(null);
+      setShowSaveToLibraryPrompt(false);
       setShowLibrary(false);
       setMessage('Opened from library.');
     } catch (e) {
@@ -669,6 +687,13 @@ export default function DeckBuilder() {
       )}
 
       <div id="status" style={{ marginTop: '12px' }}>{message}</div>
+      {showSaveToLibraryPrompt && (
+        <div data-testid="import-save-prompt" style={{ marginTop: '8px', padding: '8px', border: '1px solid #aaa', display: 'inline-flex', gap: '8px', alignItems: 'center' }}>
+          <span>Save this import to the library?</span>
+          <button id="import-save-to-library" onClick={async () => { setShowSaveToLibraryPrompt(false); await handleSaveToLibrary(); }}>Save to Library</button>
+          <button id="import-skip-save-to-library" onClick={() => setShowSaveToLibraryPrompt(false)}>Skip</button>
+        </div>
+      )}
       {libraryId && <div data-testid="library-id" style={{ fontSize: '11px', color: '#888' }}>Library ID: {libraryId}</div>}
       {showLibrary && (
         <LibraryPanel
