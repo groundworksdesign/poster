@@ -5,9 +5,8 @@ import {
   unstable_parseMultipartFormData,
 } from '@remix-run/node';
 import fs from 'fs';
-import os from 'os';
 import path from 'path';
-import { replaceDb } from '../utils/db.server';
+import { replaceDb, dbPath } from '../utils/db.server';
 
 // SQLite file magic header: "SQLite format 3" followed by a null byte
 const SQLITE_MAGIC = Buffer.from('SQLite format 3\0');
@@ -44,7 +43,7 @@ export const action: ActionFunction = async ({ request }) => {
     return json({ error: 'File is not a valid SQLite database' }, { status: 400 });
   }
 
-  const tempPath = path.join(os.tmpdir(), `poster-restore-${Date.now()}.sqlite`);
+  const tempPath = path.join(path.dirname(dbPath), `poster-restore-${Date.now()}.sqlite`);
   try {
     fs.writeFileSync(tempPath, buffer);
     replaceDb(tempPath);
