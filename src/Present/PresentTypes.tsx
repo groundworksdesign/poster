@@ -88,6 +88,7 @@ export class PresentData {
 }
 
 export type Deck = {
+  schemaVersion?: number;
   title: string;
   date: string;
   location: string;

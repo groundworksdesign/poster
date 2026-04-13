@@ -154,3 +154,79 @@ test('imported JSON deck with id does not show prompt and sets libraryId', async
   await waitFor(() => expect(screen.getByTestId('library-id')).toBeInTheDocument());
   expect(screen.getByTestId('library-id')).toHaveTextContent('Library ID: lib-123');
 });
+
+test('new deck includes schemaVersion 1', async () => {
+  render(<DeckBuilder />);
+
+  // Click "New Deck" to create a fresh deck
+  act(() => {
+    fireEvent.click(screen.getByRole('button', { name: /new deck/i }));
+  });
+
+  // Set up URL mocks (JSDOM does not provide URL.createObjectURL)
+  let capturedBlob: Blob | undefined;
+  (global.URL as any).createObjectURL = jest.fn((b: Blob) => {
+    capturedBlob = b;
+    return 'blob:mock';
+  });
+  (global.URL as any).revokeObjectURL = jest.fn();
+  const appendSpy = jest.spyOn(document.body, 'appendChild').mockImplementation((n: any) => n);
+
+  act(() => {
+    fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
+  });
+
+  expect(capturedBlob).toBeDefined();
+  const text = await new Promise<string>((resolve) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.readAsText(capturedBlob!);
+  });
+  const saved = JSON.parse(text);
+  expect(saved.schemaVersion).toBe(1);
+
+  appendSpy.mockRestore();
+  delete (global.URL as any).createObjectURL;
+  delete (global.URL as any).revokeObjectURL;
+});
+
+test('imported JSON deck without schemaVersion defaults to 1', async () => {
+  render(<DeckBuilder />);
+  // VALID_DECK has no schemaVersion field
+  await loadFile(makeJsonFile(VALID_DECK));
+  await waitFor(() => screen.getByTestId('import-save-prompt'));
+
+  // Set up URL mocks
+  let capturedBlob: Blob | undefined;
+  (global.URL as any).createObjectURL = jest.fn((b: Blob) => {
+    capturedBlob = b;
+    return 'blob:mock';
+  });
+  (global.URL as any).revokeObjectURL = jest.fn();
+  const appendSpy = jest.spyOn(document.body, 'appendChild').mockImplementation((n: any) => n);
+
+  act(() => { fireEvent.click(screen.getByRole('button', { name: /^save$/i })); });
+
+  expect(capturedBlob).toBeDefined();
+  const text = await new Promise<string>((resolve) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.readAsText(capturedBlob!);
+  });
+  const saved = JSON.parse(text);
+  expect(saved.schemaVersion).toBe(1);
+
+  appendSpy.mockRestore();
+  delete (global.URL as any).createObjectURL;
+  delete (global.URL as any).revokeObjectURL;
+});
+
+test('imported JSON deck with future schemaVersion emits console warning', async () => {
+  const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+  render(<DeckBuilder />);
+  const futureDeck = { ...VALID_DECK, schemaVersion: 999 };
+  await loadFile(makeJsonFile(futureDeck));
+  await waitFor(() => screen.getByTestId('import-save-prompt'));
+  expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('schemaVersion 999'));
+  warnSpy.mockRestore();
+});

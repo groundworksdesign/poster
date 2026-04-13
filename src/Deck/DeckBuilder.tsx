@@ -4,6 +4,7 @@ import { PresentData, SlideType, Deck, SongData } from '../Present/PresentTypes'
 import { resolveSlideStyle } from '../utils/resolveSlideStyle';
 import { parseSongXML, createSongSlide, isSongData } from '../utils/songParser';
 import { validateDeck } from '../utils/deckValidator';
+import { CURRENT_SCHEMA_VERSION } from '../utils/schema';
 import LibraryPanel from './LibraryPanel';
 
 export default function DeckBuilder() {
@@ -112,6 +113,7 @@ export default function DeckBuilder() {
           (songSlide as any).id = (songSlide as any).id ?? genId();
 
           const newDeck: Deck = {
+            schemaVersion: CURRENT_SCHEMA_VERSION,
             title: `Song: ${songData.title}`,
             date: new Date().toISOString().split('T')[0],
             location: '',
@@ -160,6 +162,7 @@ export default function DeckBuilder() {
             const songSlide = createSongSlide(parsed as SongData, baseStyle);
             (songSlide as any).id = (songSlide as any).id ?? genId();
             const newDeck: Deck = {
+              schemaVersion: CURRENT_SCHEMA_VERSION,
               title: `Song: ${parsed.title}`,
               date: new Date().toISOString().split('T')[0],
               location: '',
@@ -187,7 +190,15 @@ export default function DeckBuilder() {
             if (validationError) {
               setMessage(validationError);
             } else {
-              const parsedDeck = parsed as Deck;
+              // Normalize schemaVersion: default to 1 for files that predate versioning.
+              const importedVersion = (parsed as any).schemaVersion ?? 1;
+              if (importedVersion > CURRENT_SCHEMA_VERSION) {
+                console.warn(
+                  `Imported deck has schemaVersion ${importedVersion} which is newer than the current version (${CURRENT_SCHEMA_VERSION}). ` +
+                  'Some fields may not be recognized. Consider updating the app.'
+                );
+              }
+              const parsedDeck: Deck = { ...(parsed as Deck), schemaVersion: importedVersion };
               setDeck(ensureDeckIds(parsedDeck));
               setIsSongMode(false);
               // If the imported JSON deck already contains an id, treat it as a library record
@@ -344,6 +355,7 @@ export default function DeckBuilder() {
 
   const createNewDeck = () => {
     const newDeck: Deck = {
+      schemaVersion: CURRENT_SCHEMA_VERSION,
       title: 'New Deck',
       date: new Date().toISOString().split('T')[0],
       location: '',
@@ -485,7 +497,16 @@ export default function DeckBuilder() {
         return;
       }
       const loadedDeck = await res.json();
-      setDeck(ensureDeckIds(loadedDeck));
+      // Normalize schemaVersion for records saved before versioning was introduced.
+      const openedVersion = loadedDeck.schemaVersion ?? 1;
+      if (openedVersion > CURRENT_SCHEMA_VERSION) {
+        console.warn(
+          `Library deck has schemaVersion ${openedVersion} which is newer than the current version (${CURRENT_SCHEMA_VERSION}). ` +
+          'Some fields may not be recognized. Consider updating the app.'
+        );
+      }
+      const normalizedDeck: Deck = { ...loadedDeck, schemaVersion: openedVersion };
+      setDeck(ensureDeckIds(normalizedDeck));
       setLibraryId(id);
       setIsSongMode(false);
       setCurrentSongIndex(0);
