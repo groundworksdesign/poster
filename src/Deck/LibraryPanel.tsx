@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 
 export type LibraryEntry = {
   id: string;
@@ -27,6 +27,9 @@ export default function LibraryPanel({ onOpen, onDeleted, currentLibraryId, refr
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [exportError, setExportError] = useState<{ id: string; message: string } | null>(null);
+  const [restoreStatus, setRestoreStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [restoring, setRestoring] = useState(false);
+  const restoreInputRef = useRef<HTMLInputElement>(null);
 
   const fetchEntries = useCallback(async () => {
     setLoading(true);
@@ -89,6 +92,29 @@ export default function LibraryPanel({ onOpen, onDeleted, currentLibraryId, refr
     }
   };
 
+  const handleRestore = async (file: File) => {
+    if (!window.confirm(`Restore database from "${file.name}"? This will replace your current library. Continue?`)) return;
+    setRestoring(true);
+    setRestoreStatus(null);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await fetch('/library/restore', { method: 'POST', body: formData });
+      const data = await res.json() as { ok?: boolean; error?: string };
+      if (!res.ok) {
+        setRestoreStatus({ type: 'error', message: data.error ?? `Restore failed (${res.status})` });
+        return;
+      }
+      setRestoreStatus({ type: 'success', message: 'Database restored successfully.' });
+      await fetchEntries();
+    } catch {
+      setRestoreStatus({ type: 'error', message: 'Network error during restore.' });
+    } finally {
+      setRestoring(false);
+      if (restoreInputRef.current) restoreInputRef.current.value = '';
+    }
+  };
+
   return (
     <div data-testid="library-panel" style={{ marginTop: '12px', padding: '8px', border: '1px solid #aaa', background: '#f9f9f9' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
@@ -104,6 +130,44 @@ export default function LibraryPanel({ onOpen, onDeleted, currentLibraryId, refr
           {exportError.message}
         </div>
       )}
+      {restoreStatus && (
+        <div
+          data-testid="restore-status"
+          style={{ color: restoreStatus.type === 'error' ? '#c00' : '#060', marginBottom: '8px', fontSize: '12px' }}
+        >
+          {restoreStatus.message}
+        </div>
+      )}
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', borderTop: '1px solid #ddd', paddingTop: '8px' }}>
+        <a
+          data-testid="library-backup-btn"
+          href="/library/backup"
+          download="poster.sqlite"
+          style={{ fontSize: '11px', padding: '2px 6px', border: '1px solid #aaa', borderRadius: '3px', textDecoration: 'none', color: 'inherit', background: '#fff' }}
+        >
+          Backup Database
+        </a>
+        <input
+          ref={restoreInputRef}
+          data-testid="library-restore-input"
+          type="file"
+          accept=".sqlite"
+          style={{ display: 'none' }}
+          onChange={e => {
+            const file = e.target.files?.[0];
+            if (file) handleRestore(file);
+          }}
+        />
+        <button
+          data-testid="library-restore-btn"
+          onClick={() => restoreInputRef.current?.click()}
+          disabled={restoring}
+          style={{ fontSize: '11px' }}
+        >
+          {restoring ? 'Restoring...' : 'Restore Database'}
+        </button>
+      </div>
 
       {!loading && entries.length === 0 && !error && (
         <div data-testid="library-empty">No saved presentations.</div>

@@ -90,3 +90,82 @@ test('shows empty state message when no entries', async () => {
 
   expect(screen.getByText('No saved presentations.')).toBeInTheDocument();
 });
+
+test('renders backup link with correct href', async () => {
+  render(<LibraryPanel onOpen={jest.fn()} currentLibraryId={null} />);
+
+  await waitFor(() => {
+    expect(screen.getAllByTestId('library-entry')).toHaveLength(2);
+  });
+
+  const backupLink = screen.getByTestId('library-backup-btn');
+  expect(backupLink).toBeInTheDocument();
+  expect(backupLink).toHaveAttribute('href', '/library/backup');
+});
+
+test('renders restore button', async () => {
+  render(<LibraryPanel onOpen={jest.fn()} currentLibraryId={null} />);
+
+  await waitFor(() => {
+    expect(screen.getAllByTestId('library-entry')).toHaveLength(2);
+  });
+
+  expect(screen.getByTestId('library-restore-btn')).toBeInTheDocument();
+});
+
+test('restore flow: shows success status and refreshes list on successful restore', async () => {
+  jest.spyOn(window, 'confirm').mockReturnValue(true);
+
+  const fetchMock = jest.spyOn(global, 'fetch')
+    .mockResolvedValueOnce({ ok: true, json: async () => mockEntries } as Response) // initial load
+    .mockResolvedValueOnce({ ok: true, json: async () => ({ ok: true }) } as Response) // POST /library/restore
+    .mockResolvedValueOnce({ ok: true, json: async () => mockEntries } as Response); // re-fetch after restore
+
+  render(<LibraryPanel onOpen={jest.fn()} currentLibraryId={null} />);
+
+  await waitFor(() => {
+    expect(screen.getByTestId('library-restore-btn')).toBeInTheDocument();
+  });
+
+  // Simulate file selection by directly invoking handleRestore via the hidden input
+  const file = new File([Buffer.from('SQLite format 3\0' + 'x'.repeat(100))], 'backup.sqlite', { type: 'application/octet-stream' });
+  const input = screen.getByTestId('library-restore-input') as HTMLInputElement;
+
+  await act(async () => {
+    fireEvent.change(input, { target: { files: [file] } });
+  });
+
+  await waitFor(() => {
+    expect(screen.getByTestId('restore-status')).toBeInTheDocument();
+  });
+
+  expect(screen.getByTestId('restore-status')).toHaveTextContent('Database restored successfully.');
+  expect(fetchMock).toHaveBeenCalledWith('/library/restore', expect.objectContaining({ method: 'POST' }));
+});
+
+test('restore flow: shows error status on failed restore', async () => {
+  jest.spyOn(window, 'confirm').mockReturnValue(true);
+
+  jest.spyOn(global, 'fetch')
+    .mockResolvedValueOnce({ ok: true, json: async () => mockEntries } as Response) // initial load
+    .mockResolvedValueOnce({ ok: false, status: 400, json: async () => ({ error: 'File is not a valid SQLite database' }) } as Response); // failed restore
+
+  render(<LibraryPanel onOpen={jest.fn()} currentLibraryId={null} />);
+
+  await waitFor(() => {
+    expect(screen.getByTestId('library-restore-btn')).toBeInTheDocument();
+  });
+
+  const file = new File(['not a sqlite file'], 'bad.sqlite', { type: 'application/octet-stream' });
+  const input = screen.getByTestId('library-restore-input') as HTMLInputElement;
+
+  await act(async () => {
+    fireEvent.change(input, { target: { files: [file] } });
+  });
+
+  await waitFor(() => {
+    expect(screen.getByTestId('restore-status')).toBeInTheDocument();
+  });
+
+  expect(screen.getByTestId('restore-status')).toHaveTextContent('File is not a valid SQLite database');
+});
