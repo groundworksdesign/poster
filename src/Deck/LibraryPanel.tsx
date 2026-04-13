@@ -15,10 +15,18 @@ interface LibraryPanelProps {
   refreshKey?: number;
 }
 
+function slugify(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '') || 'deck';
+}
+
 export default function LibraryPanel({ onOpen, onDeleted, currentLibraryId, refreshKey = 0 }: LibraryPanelProps) {
   const [entries, setEntries] = useState<LibraryEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [exportError, setExportError] = useState<{ id: string; message: string } | null>(null);
 
   const fetchEntries = useCallback(async () => {
     setLoading(true);
@@ -57,6 +65,30 @@ export default function LibraryPanel({ onOpen, onDeleted, currentLibraryId, refr
     }
   };
 
+  const handleExport = async (entry: LibraryEntry) => {
+    setExportError(null);
+    try {
+      const res = await fetch(`/library/open/${entry.id}`);
+      if (!res.ok) {
+        setExportError({ id: entry.id, message: `Export failed (${res.status})` });
+        return;
+      }
+      const data: unknown = await res.json();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const filename = entry.title ? `${slugify(entry.title)}.json` : `deck-${entry.id}.json`;
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      setExportError({ id: entry.id, message: `Export failed for "${entry.title || entry.id}"` });
+    }
+  };
+
   return (
     <div data-testid="library-panel" style={{ marginTop: '12px', padding: '8px', border: '1px solid #aaa', background: '#f9f9f9' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
@@ -67,6 +99,11 @@ export default function LibraryPanel({ onOpen, onDeleted, currentLibraryId, refr
       </div>
 
       {error && <div style={{ color: 'red', marginBottom: '8px' }}>{error}</div>}
+      {exportError && (
+        <div style={{ color: '#c00', marginBottom: '8px', fontSize: '12px' }}>
+          {exportError.message}
+        </div>
+      )}
 
       {!loading && entries.length === 0 && !error && (
         <div data-testid="library-empty">No saved presentations.</div>
@@ -104,6 +141,13 @@ export default function LibraryPanel({ onOpen, onDeleted, currentLibraryId, refr
                     style={{ marginRight: '4px' }}
                   >
                     Open
+                  </button>
+                  <button
+                    data-testid="library-export-btn"
+                    onClick={() => handleExport(entry)}
+                    style={{ marginRight: '4px' }}
+                  >
+                    Export
                   </button>
                   <button
                     data-testid="library-delete-btn"
