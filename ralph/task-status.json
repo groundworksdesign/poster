@@ -164,10 +164,10 @@
       "id": 18,
       "title": "SQLite library backup and restore",
       "description": "Add a Backup button to the LibraryPanel that triggers a download of the raw poster.sqlite file, and an Import Database button that accepts a .sqlite file upload and replaces the current database, completing the backup/restore workflow called out in the Local Library (SQLite) section of the epic.",
-      "status": "inQa",
+      "status": "inProgress",
       "devIterations": 1,
       "createdAt": "2026-04-13T15:55:05.682Z",
-      "updatedAt": "2026-04-13T16:08:11.201Z"
+      "updatedAt": "2026-04-13T16:16:20.533Z"
     },
     {
       "id": 19,
@@ -198,7 +198,7 @@
     }
   ],
   "currentTaskNum": 18,
-  "totalLLMCalls": 23,
+  "totalLLMCalls": 24,
   "maxLLMCalls": 500,
   "nextTask": {
     "taskId": 18,
@@ -207,8 +207,8 @@
   },
   "feedback": {
     "taskId": 18,
-    "content": "",
-    "updatedAt": "2026-04-13T16:05:47.048Z"
+    "content": "Running repository searches to find backup/restore routes, poster.sqlite references, LibraryPanel changes, and related tests so the implementation can be verified. Parallel search speeds inspection.\n\nDisplaying the backup/restore server routes, the LibraryPanel component, its unit test, and DB util to verify correctness and error handling.\n\n# Feedback\nImplementation is functionally complete (backup route, restore route, LibraryPanel UI, and unit tests). Type check and unit tests pass. However several reliability/resource concerns need addressing before marking this verified:\n\n- app/utils/db.server.ts (replaceDb): closes the live DB, then calls fs.renameSync(newFilePath, dbPath). If rename fails (e.g., tmp on a different filesystem) the original DB remains closed and the server can become unusable. Ensure a safe fallback: create temp file in same directory as dbPath or copy-then-rename, and guarantee the original DB is reopened on failure.\n- Restore upload memory use: app/routes/library.restore.tsx uses unstable_createMemoryUploadHandler and buffers the entire file in memory; app/routes/library.backup.tsx reads the whole DB into memory. For large DBs this risks OOM. Prefer a disk-streaming upload handler (write to a temp file as it uploads) and stream the DB file for downloads (createReadStream).\n- Error recovery: on restore errors the temp file is unlinked but there’s no attempt to reopen the original DB if replaceDb partially failed. Add robust try/catch/finally logic to always leave a working DB connection.\n- Testing gap: current tests mock fetch and cover the UI. Add integration or e2e tests that exercise the real /library/restore and /library/backup endpoints (use a temp POSTER_DB_PATH during tests) and assert the server remains operational after failed restore scenarios (including cross-filesystem rename failures).\n- Minor: relying on unstable_* APIs is OK short-term; document choice or migrate when stable equivalents exist.\n\nAddressing these points will improve robustness and make the feature safe to run in production.\n\nApplying targeted edits to harden backup/restore: stream backup, write restore temp in DB directory, and make replaceDb robust against cross-device renames. Running edits now.\n\n",
+    "updatedAt": "2026-04-13T16:16:20.527Z"
   },
-  "lastUpdated": "2026-04-13T16:08:11.201Z"
+  "lastUpdated": "2026-04-13T16:16:20.533Z"
 }

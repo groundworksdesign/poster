@@ -1,7 +1,7 @@
 import type { ActionFunction } from '@remix-run/node';
 import {
   json,
-  unstable_createMemoryUploadHandler,
+  unstable_createFileUploadHandler,
   unstable_parseMultipartFormData,
 } from '@remix-run/node';
 import fs from 'fs';
@@ -23,32 +23,72 @@ export const action: ActionFunction = async ({ request }) => {
 
   let formData: FormData;
   try {
-    const handler = unstable_createMemoryUploadHandler({
-      maxPartSize: 100 * 1024 * 1024, // 100 MB
+    // Write upload directly to disk in the same directory as the live DB to
+    // avoid cross-device rename issues and reduce memory pressure for large files.
+    const handler = unstable_createFileUploadHandler({
+      directory: path.dirname(dbPath),
+      maxPartSize: 200 * 1024 * 1024, // 200 MB per part
     });
     formData = await unstable_parseMultipartFormData(request, handler);
-  } catch {
+  } catch (e) {
     return json({ error: 'Failed to parse upload' }, { status: 400 });
   }
 
-  const file = formData.get('file') as File | null;
-  if (!file || file.size === 0) {
+  const fileEntry = formData.get('file') as any;
+  if (!fileEntry) {
     return json({ error: 'No file provided' }, { status: 400 });
   }
 
-  const arrayBuffer = await file.arrayBuffer();
-  const buffer = Buffer.from(arrayBuffer);
+  // When using the file upload handler, Remix writes the file to disk and
+  // exposes a `filepath` property on the file entry. Fall back to in-memory
+  // buffer if not present (defensive).
+  const uploadedPath: string | undefined = fileEntry.filepath || fileEntry.path;
 
-  if (!isSqliteFile(buffer)) {
-    return json({ error: 'File is not a valid SQLite database' }, { status: 400 });
+  if (!uploadedPath || !fs.existsSync(uploadedPath)) {
+    // Defensive: try reading as Buffer (older runtimes or in-memory handler)
+    try {
+      const arrayBuffer = await (fileEntry as File).arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      if (!isSqliteFile(buffer)) {
+        return json({ error: 'File is not a valid SQLite database' }, { status: 400 });
+      }
+      // Write buffer to a temp file in DB directory
+      const tempPath = path.join(path.dirname(dbPath), `poster-restore-${Date.now()}.sqlite`);
+      fs.writeFileSync(tempPath, buffer);
+      try {
+        replaceDb(tempPath);
+      } catch (err) {
+        try { fs.unlinkSync(tempPath); } catch { /* ignore */ }
+        return json({ error: 'Failed to restore database' }, { status: 500 });
+      }
+
+      return json({ ok: true });
+    } catch (err) {
+      return json({ error: 'Failed to process uploaded file' }, { status: 400 });
+    }
   }
 
-  const tempPath = path.join(path.dirname(dbPath), `poster-restore-${Date.now()}.sqlite`);
+  // Validate the first 16 bytes from the on-disk upload
   try {
-    fs.writeFileSync(tempPath, buffer);
-    replaceDb(tempPath);
-  } catch {
-    try { fs.unlinkSync(tempPath); } catch { /* ignore */ }
+    const fd = fs.openSync(uploadedPath, 'r');
+    const header = Buffer.alloc(16);
+    fs.readSync(fd, header, 0, 16, 0);
+    fs.closeSync(fd);
+
+    if (!isSqliteFile(header)) {
+      try { fs.unlinkSync(uploadedPath); } catch { /* ignore */ }
+      return json({ error: 'File is not a valid SQLite database' }, { status: 400 });
+    }
+  } catch (err) {
+    try { fs.unlinkSync(uploadedPath); } catch { /* ignore */ }
+    return json({ error: 'Failed to validate uploaded file' }, { status: 400 });
+  }
+
+  // Attempt to atomically replace the DB with the uploaded file
+  try {
+    replaceDb(uploadedPath);
+  } catch (err) {
+    try { fs.unlinkSync(uploadedPath); } catch { /* ignore */ }
     return json({ error: 'Failed to restore database' }, { status: 500 });
   }
 
