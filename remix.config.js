@@ -5,7 +5,19 @@
 /** @type {import('@remix-run/dev').AppConfig} */
 module.exports = {
   appDirectory: "app",
-  serverBuildTarget: "node-cjs",
-  devServerPort: 8002,
-  ignoredRouteFiles: ["**/.*"]
+  ignoredRouteFiles: ["**/.*"],
+  // Replace the removed `serverBuildTarget: "node-cjs"` with explicit options.
+  serverModuleFormat: "cjs",
+  serverPlatform: "node",
+  future: {
+    v2_errorBoundary: true,
+    v2_normalizeFormMethod: true,
+    v2_meta: true,
+    v2_headers: true,
+    v2_routeConvention: true,
+    // `v2_dev` replaces the removed `devServerPort` option; pass the port here.
+    v2_dev: {
+      port: 8002,
+    },
+  },
 };

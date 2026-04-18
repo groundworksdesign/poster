@@ -1,13 +1,16 @@
-import Database from 'better-sqlite3';
 import fs from 'fs';
 import path from 'path';
+import type { Database as SqliteDatabase } from 'better-sqlite3';
 import { initSchema } from './schema.server';
 
 export const dbPath = process.env.POSTER_DB_PATH
   ? process.env.POSTER_DB_PATH
   : path.join(process.cwd(), 'poster.sqlite');
 
-function openDb(filePath: string): InstanceType<typeof Database> {
+function openDb(filePath: string): SqliteDatabase {
+  // Require here so `better-sqlite3` native bindings load only when the DB is used,
+  // not when this module is imported by unrelated routes.
+  const Database = require('better-sqlite3') as typeof import('better-sqlite3');
   const database = new Database(filePath);
   database.pragma('journal_mode = WAL');
   database.pragma('foreign_keys = ON');
@@ -15,15 +18,23 @@ function openDb(filePath: string): InstanceType<typeof Database> {
   return database;
 }
 
-let currentDb = openDb(dbPath);
+let currentDb: SqliteDatabase | null = null;
+
+function getDb(): SqliteDatabase {
+  if (!currentDb) {
+    currentDb = openDb(dbPath);
+  }
+  return currentDb;
+}
 
 // Proxy that always delegates to the current db instance so callers
 // continue to work after replaceDb() swaps the underlying connection.
-const dbProxy = new Proxy({} as InstanceType<typeof Database>, {
+const dbProxy = new Proxy({} as SqliteDatabase, {
   get(_target, prop) {
-    const value = (currentDb as any)[prop];
+    const db = getDb();
+    const value = (db as any)[prop];
     if (typeof value === 'function') {
-      return value.bind(currentDb);
+      return value.bind(db);
     }
     return value;
   },
@@ -51,10 +62,11 @@ export function replaceDb(newFilePath: string): void {
   // Attempt to close the current DB, replace the file, and reopen.
   try {
     try {
-      currentDb.close();
+      currentDb?.close();
     } catch (closeErr) {
       // ignore close errors
     }
+    currentDb = null;
 
     try {
       fs.renameSync(candidatePath, dbPath);

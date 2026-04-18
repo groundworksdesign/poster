@@ -1,0 +1,32 @@
+import { test, expect } from '@playwright/test';
+
+/**
+ * Regression: Remix SSR must not 500. A bad `isbot` major (v5+) breaks default import in
+ * @remix-run/dev entry.server → blank / error document in the browser.
+ */
+test.describe('Remix dev', () => {
+  test('/deck renders deck UI (no server 500)', async ({ page }) => {
+    const failures: string[] = [];
+    page.on('response', res => {
+      if (res.status() >= 500) {
+        failures.push(`${res.status()} ${res.url()}`);
+      }
+    });
+    page.on('pageerror', err => failures.push(`pageerror: ${err.message}`));
+
+    const res = await page.goto('/deck', { waitUntil: 'networkidle' });
+    expect(res?.status(), `document status (failures: ${failures.join('; ')})`).toBeLessThan(500);
+
+    await expect(page.getByText(/Deck builder connected|Load deck|Deck/i).first()).toBeVisible({
+      timeout: 15000,
+    });
+
+    expect(failures, 'no 5xx or uncaught errors').toEqual([]);
+  });
+
+  test('diagnostic: / should redirect or show app shell', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    const hasRootOutlet = (await page.locator('body').textContent())?.length;
+    expect(hasRootOutlet ?? 0, 'body should not be empty after navigation').toBeGreaterThan(0);
+  });
+});

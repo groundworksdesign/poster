@@ -6,6 +6,7 @@ const e2eOrigin = `http://127.0.0.1:${E2E_PORT}`;
 
 export default defineConfig({
   testDir: './e2e',
+  testIgnore: /remix-.*\.spec\.ts/,
   timeout: 90 * 1000,
   expect: { timeout: 10000 },
   fullyParallel: true,

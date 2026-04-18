@@ -1,7 +1,17 @@
 import React, { ChangeEvent, useEffect, useRef, useState } from 'react';
 import { connect, ChannelType, Connection } from '../Present/Broadcast';
-import { PresentData, SlideType, Deck, SongData } from '../Present/PresentTypes';
+import {
+  PresentData,
+  Slide,
+  SlideType,
+  Deck,
+  SongData,
+  HorizontalAlign,
+  VerticalAlign,
+} from '../Present/PresentTypes';
 import { resolveSlideStyle } from '../utils/resolveSlideStyle';
+import { maybeNormalizeStyleColor } from '../utils/normalizeCssColor';
+import { buildStagedSongSlide, getSongStageCount } from '../utils/stagedSongSlide';
 import { parseSongXML, createSongSlide, isSongData } from '../utils/songParser';
 import { validateDeck } from '../utils/deckValidator';
 import { CURRENT_SCHEMA_VERSION } from '../utils/schema';
@@ -22,6 +32,8 @@ export default function DeckBuilder() {
   const [showLibrary, setShowLibrary] = useState<boolean>(false);
   const [libraryRefreshKey, setLibraryRefreshKey] = useState<number>(0);
   const [showSaveToLibraryPrompt, setShowSaveToLibraryPrompt] = useState<boolean>(false);
+  /** Last stage index sent via Advance/Reverse per song slide id (0 = title, 1+ = lyric pairs). */
+  const [songLastStagedById, setSongLastStagedById] = useState<Record<string, number>>({});
 
   const genId = () => (typeof (globalThis as any).crypto !== 'undefined' && typeof (globalThis as any).crypto.randomUUID === 'function') ? (globalThis as any).crypto.randomUUID() : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 
@@ -241,6 +253,58 @@ export default function DeckBuilder() {
     setLastSentSlideId(slideWithStyle?.id ?? null);
   };
 
+  const handleSongStageAdvance = (slideRef: any) => {
+    if (!deck) return;
+    const full = (
+      slideRef.id
+        ? deck.slides.find((s: any) => (s as any).id === slideRef.id)
+        : deck.slides.find(s => s === slideRef)
+    ) as Slide | undefined;
+    if (!full || full.type !== SlideType.SONG || !full.lyrics) return;
+    const id = (full as any).id as string | undefined;
+    if (!id) return;
+    const total = getSongStageCount(full);
+    const last = songLastStagedById[id];
+    const nextStage = last === undefined ? 0 : (last + 1) % total;
+    const staged = buildStagedSongSlide(full, nextStage);
+    handleSendClick({ slide: staged, useGreenScreen: deck.useGreenScreen });
+    setSongLastStagedById(s => ({ ...s, [id]: nextStage }));
+  };
+
+  const handleSongStageReverse = (slideRef: any) => {
+    if (!deck) return;
+    const full = (
+      slideRef.id
+        ? deck.slides.find((s: any) => (s as any).id === slideRef.id)
+        : deck.slides.find(s => s === slideRef)
+    ) as Slide | undefined;
+    if (!full || full.type !== SlideType.SONG || !full.lyrics) return;
+    const id = (full as any).id as string | undefined;
+    if (!id) return;
+    const last = songLastStagedById[id];
+    if (last === undefined || last === 0) return;
+    const prevStage = last - 1;
+    const staged = buildStagedSongSlide(full, prevStage);
+    handleSendClick({ slide: staged, useGreenScreen: deck.useGreenScreen });
+    setSongLastStagedById(s => ({ ...s, [id]: prevStage }));
+  };
+
+  /** Jump to title/subtitle stage (stage 0) in one step. */
+  const handleSongFullRewind = (slideRef: any) => {
+    if (!deck) return;
+    const full = (
+      slideRef.id
+        ? deck.slides.find((s: any) => (s as any).id === slideRef.id)
+        : deck.slides.find(s => s === slideRef)
+    ) as Slide | undefined;
+    if (!full || full.type !== SlideType.SONG || !full.lyrics) return;
+    const id = (full as any).id as string | undefined;
+    if (!id) return;
+    const staged = buildStagedSongSlide(full, 0);
+    handleSendClick({ slide: staged, useGreenScreen: deck.useGreenScreen });
+    setSongLastStagedById(s => ({ ...s, [id]: 0 }));
+  };
+
   const sendLyricsNavigation = (command: 'next' | 'previous' | 'goToVerse', verseIndex?: number) => {
     const nav = command === 'goToVerse' ? { command, verseIndex } : { command };
     connection?.channel.postMessage(new PresentData({ data: { lyricsNavigation: nav } }));
@@ -249,8 +313,15 @@ export default function DeckBuilder() {
   const startSong = () => {
     if (!deck || !isSongMode) return;
     setCurrentSongIndex(0);
-    const first = deck.slides[0];
-    handleSendClick({ slide: first, message: `Song start`, useGreenScreen: deck.useGreenScreen });
+    const first = deck.slides[0] as Slide;
+    const id = (first as any).id as string | undefined;
+    if (first.type === SlideType.SONG && first.lyrics && id) {
+      const staged = buildStagedSongSlide(first, 0);
+      handleSendClick({ slide: staged, message: `Song start`, useGreenScreen: deck.useGreenScreen });
+      setSongLastStagedById(s => ({ ...s, [id]: 0 }));
+    } else {
+      handleSendClick({ slide: first, message: `Song start`, useGreenScreen: deck.useGreenScreen });
+    }
   };
 
   const advanceSong = () => {
@@ -275,6 +346,7 @@ export default function DeckBuilder() {
   const syncSentSlideIfNeeded = (newDeck: Deck | null) => {
     if (!newDeck || !lastSentSlideId) return;
     const found = newDeck.slides.find((s: any) => (s as any).id === lastSentSlideId);
+    if (found && found.type === SlideType.SONG) return;
     if (found) {
       // re-send updated slide to presenter so presentation stays in sync (no status banner)
       handleSendClick({ slide: found, useGreenScreen: newDeck.useGreenScreen });
@@ -284,9 +356,11 @@ export default function DeckBuilder() {
   // Deck defaults helpers
   const updateDeckDefaultStyle = (key: keyof any, value: any) => {
     if (!deck) return;
+    const normalized =
+      typeof value === 'string' ? maybeNormalizeStyleColor(String(key), value) : value;
     const newSlideStyles = { ...(deck.slideStyles || {}) } as Record<string, any>;
     const general = newSlideStyles[SlideType.GENERAL] || {};
-    newSlideStyles[SlideType.GENERAL] = { ...general, [key]: value };
+    newSlideStyles[SlideType.GENERAL] = { ...general, [key]: normalized };
     const newDeck = { ...deck, slideStyles: newSlideStyles };
     setDeck(newDeck);
     syncSentSlideIfNeeded(newDeck);
@@ -305,10 +379,18 @@ export default function DeckBuilder() {
     if (!deck) return;
     const slides = deck.slides.slice();
     const slide = { ...slides[index] } as any;
+    const slideId = slide.id as string | undefined;
     (slide as any)[field] = value;
     slides[index] = slide;
     const newDeck = { ...deck, slides };
     setDeck(newDeck);
+    if (field === 'lyrics' && slideId) {
+      setSongLastStagedById(s => {
+        const next = { ...s };
+        delete next[slideId];
+        return next;
+      });
+    }
     syncSentSlideIfNeeded(newDeck);
   };
 
@@ -320,7 +402,9 @@ export default function DeckBuilder() {
     if (value === '' || value === null || value === undefined) {
       delete style[key as string];
     } else {
-      style[key as string] = value;
+      const stored =
+        typeof value === 'string' ? maybeNormalizeStyleColor(String(key), value) : value;
+      style[key as string] = stored;
     }
     slide.style = style;
     slides[index] = slide;
@@ -385,6 +469,7 @@ export default function DeckBuilder() {
     setSelectedSlideIndex(0);
     setLibraryId(null);
     setShowSaveToLibraryPrompt(false);
+    setSongLastStagedById({});
     setMessage('New deck created');
   };
 
@@ -512,6 +597,7 @@ export default function DeckBuilder() {
       setCurrentSongIndex(0);
       setSelectedSlideIndex(null);
       setLastSentSlideId(null);
+      setSongLastStagedById({});
       setShowSaveToLibraryPrompt(false);
       setShowLibrary(false);
       setMessage('Opened from library.');
@@ -608,7 +694,43 @@ export default function DeckBuilder() {
                 <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
                   <strong>{index + 1}.</strong>
                   <span style={{ flex: 1 }}>{slide.title || slide.type || 'Slide'}</span>
-                  <button onClick={() => handleSendClick({ slide, useGreenScreen: deck?.useGreenScreen || false })}>Send</button>
+                  <button
+                    onClick={() => {
+                      const sid = (slide as any).id as string | undefined;
+                      if (slide.type === SlideType.SONG && slide.lyrics && sid && deck) {
+                        const full = deck.slides.find((s: any) => s.id === sid) as Slide;
+                        const staged = buildStagedSongSlide(full, 0);
+                        handleSendClick({ slide: staged, useGreenScreen: deck.useGreenScreen });
+                        setSongLastStagedById(st => ({ ...st, [sid]: 0 }));
+                      } else {
+                        handleSendClick({ slide, useGreenScreen: deck?.useGreenScreen || false });
+                      }
+                    }}
+                  >
+                    Send
+                  </button>
+                  {slide.type === SlideType.SONG && slide.lyrics && (slide as any).id ? (
+                    <>
+                      <button
+                        type="button"
+                        title="Full rewind to title"
+                        onClick={() => handleSongFullRewind(slide)}
+                      >
+                        |&lt;--
+                      </button>
+                      <button
+                        type="button"
+                        disabled={
+                          songLastStagedById[(slide as any).id] === undefined ||
+                          songLastStagedById[(slide as any).id] === 0
+                        }
+                        onClick={() => handleSongStageReverse(slide)}
+                      >
+                        Reverse
+                      </button>
+                      <button type="button" onClick={() => handleSongStageAdvance(slide)}>Advance</button>
+                    </>
+                  ) : null}
                   <button onClick={() => setSelectedSlideIndex(index)}>Edit</button>
                   <button onClick={() => duplicateSlide(index)}>Duplicate</button>
                   <button onClick={() => deleteSlide(index)}>Delete</button>
@@ -682,17 +804,90 @@ export default function DeckBuilder() {
                 <h4>Style (effective shown; overrides saved to slide.style)</h4>
                 {(() => {
                   const effective = resolveSlideStyle(deck, slide);
-                  const styleKeys: Array<keyof any> = ['backgroundColor', 'color', 'fontFamily', 'fontSize', 'horizontalAlign', 'verticalAlign'];
+                  const textStyleKeys: Array<'backgroundColor' | 'color' | 'fontFamily' | 'fontSize'> = [
+                    'backgroundColor',
+                    'color',
+                    'fontFamily',
+                    'fontSize',
+                  ];
+                  const rawH = slide.style?.horizontalAlign ?? effective.horizontalAlign ?? HorizontalAlign.CENTER;
+                  const selectHorizontal =
+                    rawH === HorizontalAlign.LEFT || rawH === HorizontalAlign.CENTER || rawH === HorizontalAlign.RIGHT
+                      ? rawH
+                      : HorizontalAlign.CENTER;
+                  const rawV = slide.style?.verticalAlign ?? effective.verticalAlign ?? VerticalAlign.MIDDLE;
+                  const selectVertical =
+                    rawV === VerticalAlign.TOP || rawV === VerticalAlign.MIDDLE || rawV === VerticalAlign.BOTTOM
+                      ? rawV
+                      : VerticalAlign.MIDDLE;
                   return (
                     <div>
-                      {styleKeys.map((k) => (
-                        <div key={k as string} style={{ marginTop: '6px' }}>
-                          <label style={{ marginRight: '8px' }}>{`${String(k)}: `}</label>
-                          <input type="text" value={(slide.style && (slide.style as any)[k]) || (effective as any)[k] || ''} onChange={e => updateSlideStyle(selectedSlideIndex, k, e.target.value)} />
-                          <button onClick={() => resetSlideStyleField(selectedSlideIndex, k)} style={{ marginLeft: '8px' }}>Reset</button>
+                      {textStyleKeys.map((k) => (
+                        <div key={k} style={{ marginTop: '6px' }}>
+                          <label style={{ marginRight: '8px' }}>{`${k}: `}</label>
+                          <input
+                            type="text"
+                            value={(slide.style && slide.style[k]) || (effective as any)[k] || ''}
+                            onChange={e => updateSlideStyle(selectedSlideIndex, k, e.target.value)}
+                          />
+                          <button type="button" onClick={() => resetSlideStyleField(selectedSlideIndex, k)} style={{ marginLeft: '8px' }}>Reset</button>
                         </div>
                       ))}
+                      <div style={{ marginTop: '6px' }}>
+                        <label style={{ marginRight: '8px' }}>Horizontal alignment: </label>
+                        <select
+                          value={selectHorizontal}
+                          onChange={e => updateSlideStyle(selectedSlideIndex, 'horizontalAlign', e.target.value)}
+                        >
+                          <option value={HorizontalAlign.LEFT}>Left</option>
+                          <option value={HorizontalAlign.CENTER}>Center</option>
+                          <option value={HorizontalAlign.RIGHT}>Right</option>
+                        </select>
+                        <button type="button" onClick={() => resetSlideStyleField(selectedSlideIndex, 'horizontalAlign')} style={{ marginLeft: '8px' }}>Reset</button>
+                      </div>
+                      <div style={{ marginTop: '6px' }}>
+                        <label style={{ marginRight: '8px' }}>Vertical alignment: </label>
+                        <select
+                          value={selectVertical}
+                          onChange={e => updateSlideStyle(selectedSlideIndex, 'verticalAlign', e.target.value)}
+                        >
+                          <option value={VerticalAlign.TOP}>Top</option>
+                          <option value={VerticalAlign.MIDDLE}>Middle</option>
+                          <option value={VerticalAlign.BOTTOM}>Bottom</option>
+                        </select>
+                        <button type="button" onClick={() => resetSlideStyleField(selectedSlideIndex, 'verticalAlign')} style={{ marginLeft: '8px' }}>Reset</button>
+                      </div>
                       <div style={{ marginTop: '8px' }}>
+                        {slide.type === SlideType.SONG && slide.lyrics && slide.id ? (
+                          <>
+                            <button
+                              type="button"
+                              title="Full rewind to title"
+                              onClick={() => handleSongFullRewind(slide)}
+                              style={{ marginRight: '8px' }}
+                            >
+                              |&lt;-- Full rewind
+                            </button>
+                            <button
+                              type="button"
+                              disabled={
+                                songLastStagedById[slide.id] === undefined ||
+                                songLastStagedById[slide.id] === 0
+                              }
+                              onClick={() => handleSongStageReverse(slide)}
+                              style={{ marginRight: '8px' }}
+                            >
+                              Reverse (staged)
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleSongStageAdvance(slide)}
+                              style={{ marginRight: '8px' }}
+                            >
+                              Advance (staged)
+                            </button>
+                          </>
+                        ) : null}
                         <button onClick={() => resetAllSlideStyleOverrides(selectedSlideIndex)}>Reset all overrides</button>
                         <button onClick={() => duplicateSlide(selectedSlideIndex)} style={{ marginLeft: '8px' }}>Duplicate</button>
                         <button onClick={() => deleteSlide(selectedSlideIndex)} style={{ marginLeft: '8px' }}>Delete</button>

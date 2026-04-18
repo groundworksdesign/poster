@@ -11,6 +11,12 @@ import {
 import LyricsDisplay from './LyricsDisplay';
 import SafeAreaOverlay from './SafeAreaOverlay';
 
+function flexAlignFromHorizontal(h?: HorizontalAlign): React.CSSProperties['alignItems'] {
+  if (h === HorizontalAlign.LEFT) return 'flex-start';
+  if (h === HorizontalAlign.RIGHT) return 'flex-end';
+  return 'center';
+}
+
 export default function Presentation() {
   const [loading, setLoading] = useState<boolean>(true);
   const [slide, setSlide] = useState<Slide | null>(null);
@@ -18,14 +24,10 @@ export default function Presentation() {
   const [useGreenScreen, setUseGreenScreen] = useState<boolean>(false);
   const [songData, setSongData] = useState<SongData | null>(null);
   const [segmentIndex, setSegmentIndex] = useState<number>(0);
-  const [isFullscreen, setIsFullscreen] = useState<boolean>(() => !!document.fullscreenElement);
   // Broadcast-safe overlay: activated by ?safearea=1 query param or S key toggle
   // NOTE: capture the presenter URL without this param for a clean program feed.
-  const [showSafeArea, setShowSafeArea] = useState<boolean>(() => {
-    const params = new URLSearchParams(window.location.search);
-    const v = params.get('safearea');
-    return v === '1' || v === 'true';
-  });
+  const [showSafeArea, setShowSafeArea] = useState<boolean>(false);
+  const [inFullscreen, setInFullscreen] = useState<boolean>(false);
   const broadcastEventHandler = (event: MessageEvent) => {
     const present = event.data as PresentData;
     if (!present) return;
@@ -93,9 +95,68 @@ export default function Presentation() {
   };
 
   useEffect(() => {
-    const onFullscreenChange = () => setIsFullscreen(!!document.fullscreenElement);
-    document.addEventListener('fullscreenchange', onFullscreenChange);
-    return () => document.removeEventListener('fullscreenchange', onFullscreenChange);
+    const params = new URLSearchParams(window.location.search);
+    const v = params.get('safearea');
+    setShowSafeArea(v === '1' || v === 'true');
+  }, []);
+
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const syncFullscreenChrome = () => {
+      const fs = !!document.fullscreenElement;
+      setInFullscreen(fs);
+      if (fs) {
+        html.style.overflow = 'hidden';
+        html.style.overflowX = 'hidden';
+        html.style.overflowY = 'hidden';
+        body.style.overflow = 'hidden';
+        body.style.overflowX = 'hidden';
+        body.style.overflowY = 'hidden';
+        html.style.width = '100%';
+        html.style.maxWidth = '100%';
+        body.style.width = '100%';
+        body.style.maxWidth = '100%';
+        html.style.margin = '0';
+        body.style.margin = '0';
+        html.style.overscrollBehavior = 'none';
+        body.style.overscrollBehavior = 'none';
+      } else {
+        html.style.overflow = '';
+        html.style.overflowX = '';
+        html.style.overflowY = '';
+        body.style.overflow = '';
+        body.style.overflowX = '';
+        body.style.overflowY = '';
+        html.style.width = '';
+        html.style.maxWidth = '';
+        body.style.width = '';
+        body.style.maxWidth = '';
+        html.style.margin = '';
+        body.style.margin = '';
+        html.style.overscrollBehavior = '';
+        body.style.overscrollBehavior = '';
+      }
+    };
+    document.addEventListener('fullscreenchange', syncFullscreenChrome);
+    syncFullscreenChrome();
+    return () => {
+      document.removeEventListener('fullscreenchange', syncFullscreenChrome);
+      html.style.overflow = '';
+      html.style.overflowX = '';
+      html.style.overflowY = '';
+      body.style.overflow = '';
+      body.style.overflowX = '';
+      body.style.overflowY = '';
+      html.style.width = '';
+      html.style.maxWidth = '';
+      body.style.width = '';
+      body.style.maxWidth = '';
+      html.style.margin = '';
+      body.style.margin = '';
+      html.style.overscrollBehavior = '';
+      body.style.overscrollBehavior = '';
+    };
   }, []);
 
   useEffect(() => {
@@ -108,6 +169,22 @@ export default function Presentation() {
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
+
+  useEffect(() => {
+    const body = document.body;
+    const html = document.documentElement;
+    const prevBodyMargin = body.style.margin;
+    const prevBodyH = body.style.height;
+    const prevHtmlH = html.style.height;
+    body.style.margin = '0';
+    body.style.height = '100%';
+    html.style.height = '100%';
+    return () => {
+      body.style.margin = prevBodyMargin;
+      body.style.height = prevBodyH;
+      html.style.height = prevHtmlH;
+    };
   }, []);
 
   useEffect(() => {
@@ -128,13 +205,17 @@ export default function Presentation() {
         : slide?.style?.backgroundImage);
 
     return {
+      boxSizing: 'border-box',
       textAlign,
       backgroundColor: useGreenScreen ? 'transparent' : slide?.style?.backgroundColor,
       color: slide?.style?.color,
       width: slide?.style?.width ?? '100%',
-      height: slide?.style?.height ?? '100%',
+      height: '100%',
+      minHeight: 0,
+      maxWidth: '100%',
       fontFamily: slide?.style?.fontFamily,
-      padding: '20px',
+      padding: 0,
+      margin: 0,
       backgroundImage: backgroundImage ? `url(${backgroundImage})` : undefined,
       backgroundSize: slide?.style?.backgroundSize ?? 'cover',
       backgroundPosition: slide?.style?.backgroundPosition ?? 'center',
@@ -142,76 +223,204 @@ export default function Presentation() {
     } as React.CSSProperties;
   };
 
+  /** Absolutely positioned title (image / non-song slides). */
   const getTitleOverlayStyle = (): React.CSSProperties => {
     const v = slide?.style?.verticalAlign;
     const h = slide?.style?.horizontalAlign;
-    const alignItems = h === HorizontalAlign.LEFT ? 'flex-start' : h === HorizontalAlign.RIGHT ? 'flex-end' : 'center';
+    const alignItems = flexAlignFromHorizontal(h);
     const textAlign = slide?.style?.horizontalAlign ?? 'center';
-    const base: any = { position: 'absolute', left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems, textAlign };
-    if (v === VerticalAlign.TOP) base.top = '20px';
-    else if (v === VerticalAlign.BOTTOM) base.bottom = '20px';
-    else { base.top = '50%'; base.transform = 'translateY(-50%)'; }
-    return base as React.CSSProperties;
+    const base: React.CSSProperties = {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      width: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems,
+      textAlign,
+      zIndex: 2,
+      boxSizing: 'border-box',
+    };
+    if (useGreenScreen && slide?.style?.backgroundColor) {
+      base.backgroundColor = slide.style.backgroundColor;
+      base.padding = '8px 0';
+    }
+    if (v === VerticalAlign.TOP) base.top = 0;
+    else if (v === VerticalAlign.BOTTOM) base.bottom = 0;
+    else {
+      base.top = '50%';
+      base.transform = 'translateY(-50%)';
+    }
+    return base;
   };
+
+  const renderTitleOverlay = () =>
+    (slide?.title || slide?.subTitle) && (
+      <div data-testid="slide-overlay" style={getTitleOverlayStyle()}>
+        <div style={{ fontSize: slide?.titleFontSize ?? slide?.style?.fontSize }}>{slide?.title}</div>
+        <div style={{ fontSize: slide?.subTitleFontSize ?? slide?.style?.fontSize }}>{slide?.subTitle}</div>
+      </div>
+    );
+
+  const songShellStyle: React.CSSProperties = {
+    ...computeContainerStyle(),
+    position: 'relative',
+    flex: 1,
+    minHeight: 0,
+    display: 'flex',
+    flexDirection: 'column',
+    width: '100%',
+  };
+
+  const justifyForSongVertical = (v?: VerticalAlign): React.CSSProperties['justifyContent'] => {
+    if (v === VerticalAlign.TOP) return 'flex-start';
+    if (v === VerticalAlign.BOTTOM) return 'flex-end';
+    return 'center';
+  };
+
+  /** Slide-colored band in green-screen mode; transparent when the shell already paints the background. */
+  const songContentPanelStyle = (opts?: { flexFill?: boolean }): React.CSSProperties => {
+    const bg = slide?.style?.backgroundColor;
+    const base: React.CSSProperties = {
+      width: '100%',
+      boxSizing: 'border-box',
+      ...(useGreenScreen && bg
+        ? {
+            backgroundColor: bg,
+            color: slide?.style?.color,
+            padding: '20px 16px',
+          }
+        : {}),
+    };
+    if (opts?.flexFill) {
+      base.flex = 1;
+      base.minHeight = 0;
+      base.display = 'flex';
+      base.flexDirection = 'column';
+    }
+    return base;
+  };
+
+  /** First song stage: title + subtitle only, typography similar to a TITLE slide. */
+  const renderSongTitleIntro = () =>
+    (slide?.title || slide?.subTitle) && (
+      <div
+        data-testid="slide-overlay"
+        style={{
+          ...songContentPanelStyle(),
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: flexAlignFromHorizontal(slide?.style?.horizontalAlign),
+          textAlign: (slide?.style?.horizontalAlign ?? 'center') as React.CSSProperties['textAlign'],
+          gap: '0.35em',
+        }}
+      >
+        {slide?.title ? (
+          <div
+            style={{
+              fontSize: slide.titleFontSize ?? 'clamp(36px, 7vw, 72px)',
+              fontWeight: 600,
+              lineHeight: 1.15,
+            }}
+          >
+            {slide.title}
+          </div>
+        ) : null}
+        {slide?.subTitle ? (
+          <div
+            style={{
+              fontSize: slide.subTitleFontSize ?? 'clamp(20px, 3.5vw, 40px)',
+              fontWeight: 400,
+              lineHeight: 1.2,
+              opacity: 0.95,
+            }}
+          >
+            {slide.subTitle}
+          </div>
+        ) : null}
+      </div>
+    );
 
   const display = loading ? (
     <h1>Loading...</h1>
   ) : (
-    <div style={{ height: '100%', width: '100%', position: 'relative' }}>
-      <button
-        onClick={toggleFullscreen}
-        aria-label={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+    <div
+      style={{
+        minHeight: '100vh',
+        height: '100vh',
+        width: '100%',
+        maxWidth: '100%',
+        minWidth: 0,
+        margin: 0,
+        padding: 0,
+        position: 'relative',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: inFullscreen ? 'hidden' : undefined,
+        overflowX: inFullscreen ? 'hidden' : undefined,
+        boxSizing: 'border-box',
+      }}
+    >
+      <div id="message" style={{ flexShrink: 0 }}>{message}</div>
+      <div
+        id="slide"
         style={{
-          position: 'fixed',
-          bottom: '12px',
-          right: '12px',
-          zIndex: 9999,
-          opacity: 0.25,
-          padding: '4px 10px',
-          fontSize: '12px',
-          cursor: 'pointer',
-          background: '#000',
-          color: '#fff',
-          border: '1px solid #fff',
-          borderRadius: '4px',
+          flex: 1,
+          minHeight: 0,
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          boxSizing: 'border-box',
+          overflowX: inFullscreen ? 'hidden' : undefined,
         }}
-        onMouseEnter={e => ((e.target as HTMLElement).style.opacity = '0.85')}
-        onMouseLeave={e => ((e.target as HTMLElement).style.opacity = '0.25')}
       >
-        {isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
-      </button>
-      <div id="message">{message}</div>
-      <div id="slide" style={{ height: '100%', width: '100%' }}>
-        {slide?.type === SlideType.SONG && songData ? (
-          <div id="song" style={{ ...computeContainerStyle(), position: 'relative' }}>
-            <div style={{ height: '100%', width: '100%' }}>
-              <LyricsDisplay song={songData} segmentIndex={segmentIndex} />
-            </div>
-            {(slide?.title || slide?.subTitle) && (
-              <div data-testid="slide-overlay" style={getTitleOverlayStyle()}>
-                <div style={{ fontSize: slide?.titleFontSize ?? slide?.style?.fontSize }}>{slide?.title}</div>
-                <div style={{ fontSize: slide?.subTitleFontSize ?? slide?.style?.fontSize }}>{slide?.subTitle}</div>
+        {slide?.type === SlideType.SONG ? (
+          (() => {
+            const hasLyrics =
+              !!songData &&
+              songData.verses.some(v => v.lines.some(l => (l ?? '').trim() !== ''));
+            const v = slide?.style?.verticalAlign ?? VerticalAlign.MIDDLE;
+            const ha = slide?.style?.horizontalAlign;
+            const va = slide?.style?.verticalAlign;
+            const useLyricsFill = v === VerticalAlign.TOP;
+            return (
+              <div id="song" style={songShellStyle}>
+                <div
+                  style={{
+                    flex: 1,
+                    minHeight: 0,
+                    width: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: justifyForSongVertical(v),
+                    alignItems: 'stretch',
+                  }}
+                >
+                  {hasLyrics && songData ? (
+                    <div style={songContentPanelStyle({ flexFill: useLyricsFill })}>
+                      <LyricsDisplay
+                        song={songData}
+                        segmentIndex={segmentIndex}
+                        horizontalAlign={ha}
+                        verticalAlign={va}
+                        fillHeight={useLyricsFill}
+                      />
+                    </div>
+                  ) : (
+                    renderSongTitleIntro()
+                  )}
+                </div>
               </div>
-            )}
-          </div>
+            );
+          })()
         ) : slide?.type === SlideType.IMAGE ? (
-          <div id="image-slide" style={{ ...computeContainerStyle(), position: 'relative' }}>
+          <div id="image-slide" style={{ ...computeContainerStyle(), position: 'relative', flex: 1, minHeight: 0 }}>
             <div style={{ textAlign: 'inherit', color: slide?.style?.color }} />
-            {(slide?.title || slide?.subTitle) && (
-              <div data-testid="slide-overlay" style={getTitleOverlayStyle()}>
-                <div style={{ fontSize: slide?.titleFontSize ?? slide?.style?.fontSize }}>{slide?.title}</div>
-                <div style={{ fontSize: slide?.subTitleFontSize ?? slide?.style?.fontSize }}>{slide?.subTitle}</div>
-              </div>
-            )}
+            {renderTitleOverlay()}
           </div>
         ) : (
-          <div id="content" style={{ ...computeContainerStyle(), position: 'relative' }}>
-            {(slide?.title || slide?.subTitle) && (
-              <div data-testid="slide-overlay" style={getTitleOverlayStyle()}>
-                <div style={{ fontSize: slide?.titleFontSize ?? slide?.style?.fontSize }}>{slide?.title}</div>
-                <div style={{ fontSize: slide?.subTitleFontSize ?? slide?.style?.fontSize }}>{slide?.subTitle}</div>
-              </div>
-            )}
+          <div id="content" style={{ ...computeContainerStyle(), position: 'relative', flex: 1, minHeight: 0 }}>
+            {renderTitleOverlay()}
           </div>
         )}
       </div>
