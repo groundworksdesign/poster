@@ -1,7 +1,19 @@
 import Database from 'better-sqlite3';
 import { initSchema } from '../../app/utils/schema.server';
 
-describe('initSchema', () => {
+function sqliteBindingsAvailable(): boolean {
+  try {
+    const d = new Database(':memory:');
+    d.close();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+const describeSqlite = sqliteBindingsAvailable() ? describe : describe.skip;
+
+describeSqlite('initSchema', () => {
   let db: InstanceType<typeof Database>;
 
   beforeEach(() => {
@@ -10,7 +22,7 @@ describe('initSchema', () => {
   });
 
   afterEach(() => {
-    db.close();
+    db?.close();
   });
 
   it('creates presentations, songs, and assets tables', () => {

@@ -18,8 +18,7 @@ export default defineConfig({
     viewport: { width: 1280, height: 720 },
     trace: 'on-first-retry',
   },
-  // Use CRA dev server so index.html gets webpack-injected bundles. `node server/index.js` serves
-  // raw `public/index.html` (no <script src>) → blank #root. See e2e/diagnostic-blank-page.spec.ts.
+  // CRA dev (`start:cra`) copies `public/cra-index.html` → `public/index.html` then webpack injects bundles.
   webServer: {
     command: `PORT=${E2E_PORT} npm run start:cra`,
     url: `${e2eOrigin}/deck`,

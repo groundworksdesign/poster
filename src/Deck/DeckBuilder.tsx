@@ -16,6 +16,7 @@ import { parseSongXML, createSongSlide, isSongData } from '../utils/songParser';
 import { validateDeck } from '../utils/deckValidator';
 import { CURRENT_SCHEMA_VERSION } from '../utils/schema';
 import LibraryPanel from './LibraryPanel';
+import { remixDataUrl, REMIX_ROUTE_ID } from '../utils/remixDataUrl';
 
 export default function DeckBuilder() {
   const [message, setMessage] = useState<string | null>(null);
@@ -137,6 +138,8 @@ export default function DeckBuilder() {
                 color: '#ffffff',
                 fontFamily: 'Arial, sans-serif',
                 fontSize: '24px',
+                horizontalAlign: HorizontalAlign.CENTER,
+                verticalAlign: VerticalAlign.MIDDLE,
               },
               [SlideType.SONG]: baseStyle,
             },
@@ -186,6 +189,8 @@ export default function DeckBuilder() {
                   color: '#ffffff',
                   fontFamily: 'Arial, sans-serif',
                   fontSize: '24px',
+                  horizontalAlign: HorizontalAlign.CENTER,
+                  verticalAlign: VerticalAlign.MIDDLE,
                 },
                 [SlideType.SONG]: baseStyle,
               },
@@ -451,6 +456,8 @@ export default function DeckBuilder() {
           color: '#ffffff',
           fontFamily: 'Arial, sans-serif',
           fontSize: '24px',
+          horizontalAlign: HorizontalAlign.CENTER,
+          verticalAlign: VerticalAlign.MIDDLE,
         },
       },
       slides: [
@@ -554,7 +561,7 @@ export default function DeckBuilder() {
     try {
       const wasUpdate = !!libraryId;
       const body = libraryId ? { ...deck, id: libraryId } : deck;
-      const res = await fetch('/library/save', {
+      const res = await fetch(remixDataUrl('/library/save', REMIX_ROUTE_ID.librarySave), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
@@ -575,7 +582,7 @@ export default function DeckBuilder() {
 
   const openFromLibrary = async (id: string) => {
     try {
-      const res = await fetch(`/library/open/${id}`);
+      const res = await fetch(remixDataUrl(`/library/open/${id}`, REMIX_ROUTE_ID.libraryOpen));
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         setMessage(`Open failed: ${(err as any).error || res.status}`);
@@ -679,6 +686,45 @@ export default function DeckBuilder() {
             <label>Color: <input type="text" value={deck?.slideStyles?.[SlideType.GENERAL]?.color || ''} onChange={e => updateDeckDefaultStyle('color', e.target.value)} /></label>
             <label>Font: <input type="text" value={deck?.slideStyles?.[SlideType.GENERAL]?.fontFamily || ''} onChange={e => updateDeckDefaultStyle('fontFamily', e.target.value)} /></label>
             <label>Font size: <input type="text" value={deck?.slideStyles?.[SlideType.GENERAL]?.fontSize || ''} onChange={e => updateDeckDefaultStyle('fontSize', e.target.value)} /></label>
+            {deck && (() => {
+              const g = deck.slideStyles?.[SlideType.GENERAL] || {};
+              const rawH = g.horizontalAlign ?? HorizontalAlign.CENTER;
+              const deckSelectH =
+                rawH === HorizontalAlign.LEFT || rawH === HorizontalAlign.CENTER || rawH === HorizontalAlign.RIGHT
+                  ? rawH
+                  : HorizontalAlign.CENTER;
+              const rawV = g.verticalAlign ?? VerticalAlign.MIDDLE;
+              const deckSelectV =
+                rawV === VerticalAlign.TOP || rawV === VerticalAlign.MIDDLE || rawV === VerticalAlign.BOTTOM
+                  ? rawV
+                  : VerticalAlign.MIDDLE;
+              return (
+                <>
+                  <label>
+                    Horizontal alignment:{' '}
+                    <select
+                      value={deckSelectH}
+                      onChange={e => updateDeckDefaultStyle('horizontalAlign', e.target.value as HorizontalAlign)}
+                    >
+                      <option value={HorizontalAlign.LEFT}>Left</option>
+                      <option value={HorizontalAlign.CENTER}>Center</option>
+                      <option value={HorizontalAlign.RIGHT}>Right</option>
+                    </select>
+                  </label>
+                  <label>
+                    Vertical alignment:{' '}
+                    <select
+                      value={deckSelectV}
+                      onChange={e => updateDeckDefaultStyle('verticalAlign', e.target.value as VerticalAlign)}
+                    >
+                      <option value={VerticalAlign.TOP}>Top</option>
+                      <option value={VerticalAlign.MIDDLE}>Middle</option>
+                      <option value={VerticalAlign.BOTTOM}>Bottom</option>
+                    </select>
+                  </label>
+                </>
+              );
+            })()}
             <button onClick={() => resetDeckGeneralDefaults()}>Clear GENERAL defaults</button>
           </div>
         </div>

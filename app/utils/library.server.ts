@@ -1,8 +1,17 @@
-import type { Database } from 'better-sqlite3';
-import db from './db.server';
+import { tryGetSqliteDb } from './db.server';
+import * as jsonLibrary from './library-json.server';
 import type { Deck } from '../../src/Present/PresentTypes';
 
 type SaveBody = Deck & { id?: string };
+
+/** `better-sqlite3` or Node `node:sqlite` DatabaseSync — same prepare/run/get API. */
+type SqliteDb = {
+  prepare: (sql: string) => {
+    run: (...params: unknown[]) => unknown;
+    get: (...params: unknown[]) => unknown;
+    all: (...params: unknown[]) => unknown;
+  };
+};
 
 function generateId(): string {
   return typeof (globalThis as any).crypto !== 'undefined' && typeof (globalThis as any).crypto.randomUUID === 'function'
@@ -10,7 +19,7 @@ function generateId(): string {
     : Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
 
-export function upsertPresentationWithDb(database: Database, body: SaveBody): string {
+export function upsertPresentationWithDb(database: SqliteDb, body: SaveBody): string {
   const now = new Date().toISOString();
   const providedId = body.id && typeof body.id === 'string' && body.id.length > 0 ? body.id : null;
 
@@ -59,5 +68,9 @@ export function upsertPresentationWithDb(database: Database, body: SaveBody): st
 }
 
 export function upsertPresentation(body: SaveBody): string {
-  return upsertPresentationWithDb(db, body);
+  const sqlite = tryGetSqliteDb();
+  if (sqlite) {
+    return upsertPresentationWithDb(sqlite, body);
+  }
+  return jsonLibrary.jsonLibraryUpsert(body);
 }

@@ -60,7 +60,10 @@ test('delete flow calls fetch DELETE and onDeleted', async () => {
     fireEvent.click(screen.getAllByTestId('library-delete-btn')[0]);
   });
 
-  expect(fetchMock).toHaveBeenCalledWith('/library/delete/id-1', { method: 'DELETE' });
+  expect(fetchMock).toHaveBeenCalledWith(
+    expect.stringContaining('/library/delete/id-1'),
+    expect.objectContaining({ method: 'DELETE' }),
+  );
   expect(onDeleted).toHaveBeenCalledWith('id-1');
 });
 
@@ -140,7 +143,10 @@ test('restore flow: shows success status and refreshes list on successful restor
   });
 
   expect(screen.getByTestId('restore-status')).toHaveTextContent('Database restored successfully.');
-  expect(fetchMock).toHaveBeenCalledWith('/library/restore', expect.objectContaining({ method: 'POST' }));
+  expect(fetchMock).toHaveBeenCalledWith(
+    expect.stringContaining('/library/restore'),
+    expect.objectContaining({ method: 'POST' }),
+  );
 });
 
 test('restore flow: shows error status on failed restore', async () => {

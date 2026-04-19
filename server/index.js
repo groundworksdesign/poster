@@ -1,53 +1,52 @@
 const express = require("express");
 const path = require("path");
+const { createRequestHandler } = require("@remix-run/express");
 
 const app = express();
 
-// Serve static files from /public by default
-app.use(express.static("public"));
+// Serve hashed Remix client assets and other files from /public.
+// `index: false` is required: otherwise `GET /` serves `public/index.html` (the CRA
+// shell with an empty #root and no bundles) before Remix can SSR the app — a blank page.
+app.use(express.static("public", { index: false }));
 
-// Try to load Remix's request handler; prefer vendorized stub if present, otherwise try installed package.
-let createRequestHandler;
+let build;
 try {
-  try {
-    // Prefer a local vendorized runtime when present
-    // eslint-disable-next-line global-require
-    createRequestHandler = require("../vendor/@remix-run/node").createRequestHandler;
-    console.log("Using vendorized @remix-run/node stub");
-  } catch (e) {
-    // eslint-disable-next-line global-require
-    createRequestHandler = require("@remix-run/node").createRequestHandler;
-  }
-} catch (err) {
-  console.warn("@remix-run/node not found — falling back to static SPA server. Install remix and @remix-run/node to enable full Remix server behavior.");
+  build = require("../build");
+} catch (e) {
+  build = undefined;
 }
 
-if (createRequestHandler) {
-  app.all("*", (req, res, next) => {
-    // If a real Remix build exists at ../build use it, otherwise the vendor stub will ignore the build and serve index.html.
-    let build;
-    try {
-      build = require("../build");
-    } catch (e) {
-      build = undefined;
-    }
-
-    const handler = createRequestHandler({
-      build,
-      mode: process.env.NODE_ENV,
-    });
-    return handler(req, res, next);
+let remixHandler;
+if (build) {
+  remixHandler = createRequestHandler({
+    build,
+    mode: process.env.NODE_ENV,
   });
+  app.all("*", remixHandler);
 } else {
-  // Serve index.html for all routes as a fallback for SPA behavior (useful when remix packages are not installed)
-  app.get("*", (req, res) => {
-    const indexPath = path.join(__dirname, "..", "public", "index.html");
-    res.sendFile(indexPath, err => {
-      if (err) {
-        res.status(500).send("Server configuration incomplete: Remix server unavailable and public/index.html not found.");
-      }
+  let createStubHandler;
+  try {
+    // eslint-disable-next-line global-require
+    createStubHandler = require("../vendor/@remix-run/node").createRequestHandler;
+  } catch (e) {
+    createStubHandler = null;
+  }
+
+  if (createStubHandler) {
+    console.warn(
+      "Remix build not found at ./build — using vendor stub (serves public/cra-index.html only). Run `pnpm run build:remix`.",
+    );
+    app.all("*", createStubHandler());
+  } else {
+    app.get("*", (req, res) => {
+      const craIndex = path.join(__dirname, "..", "public", "cra-index.html");
+      res.sendFile(craIndex, (err) => {
+        if (err) {
+          res.status(500).send("Server configuration incomplete: no Remix build and no CRA template.");
+        }
+      });
     });
-  });
+  }
 }
 
 const port = process.env.PORT || 3000;

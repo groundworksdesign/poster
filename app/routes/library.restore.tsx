@@ -6,7 +6,8 @@ import {
 } from '@remix-run/node';
 import fs from 'fs';
 import path from 'path';
-import { replaceDb, dbPath } from '../utils/db.server';
+import { replaceDb, dbPath, tryGetSqliteDb } from '../utils/db.server';
+import { replaceLibraryFromJsonText } from '../utils/library-json.server';
 
 // SQLite file magic header: "SQLite format 3" followed by a null byte
 const SQLITE_MAGIC = Buffer.from('SQLite format 3\0');
@@ -14,6 +15,16 @@ const SQLITE_MAGIC = Buffer.from('SQLite format 3\0');
 function isSqliteFile(buffer: Buffer): boolean {
   if (buffer.length < 16) return false;
   return buffer.slice(0, 16).equals(SQLITE_MAGIC);
+}
+
+function tryRestoreLibraryJson(buffer: Buffer): { ok: true } | { ok: false; error: string } {
+  try {
+    const text = buffer.toString('utf8');
+    replaceLibraryFromJsonText(text);
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'Invalid JSON library' };
+  }
 }
 
 export const action: ActionFunction = async ({ request }) => {
@@ -50,7 +61,14 @@ export const action: ActionFunction = async ({ request }) => {
       const arrayBuffer = await (fileEntry as File).arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
       if (!isSqliteFile(buffer)) {
-        return json({ error: 'File is not a valid SQLite database' }, { status: 400 });
+        const jsonAttempt = tryRestoreLibraryJson(buffer);
+        if (jsonAttempt.ok) {
+          return json({ ok: true, format: 'json' });
+        }
+        return json(
+          { error: `Not a SQLite database. ${jsonAttempt.error}` },
+          { status: 400 },
+        );
       }
       // Write buffer to a temp file in DB directory
       const tempPath = path.join(path.dirname(dbPath), `poster-restore-${Date.now()}.sqlite`);
@@ -59,6 +77,12 @@ export const action: ActionFunction = async ({ request }) => {
         replaceDb(tempPath);
       } catch (err) {
         try { fs.unlinkSync(tempPath); } catch { /* ignore */ }
+        if (!tryGetSqliteDb()) {
+          return json(
+            { error: 'SQLite native module unavailable; use a poster.library.json export to restore.' },
+            { status: 503 },
+          );
+        }
         return json({ error: 'Failed to restore database' }, { status: 500 });
       }
 
@@ -76,8 +100,15 @@ export const action: ActionFunction = async ({ request }) => {
     fs.closeSync(fd);
 
     if (!isSqliteFile(header)) {
-      try { fs.unlinkSync(uploadedPath); } catch { /* ignore */ }
-      return json({ error: 'File is not a valid SQLite database' }, { status: 400 });
+      try {
+        const body = fs.readFileSync(uploadedPath, 'utf8');
+        replaceLibraryFromJsonText(body);
+        try { fs.unlinkSync(uploadedPath); } catch { /* ignore */ }
+        return json({ ok: true, format: 'json' });
+      } catch {
+        try { fs.unlinkSync(uploadedPath); } catch { /* ignore */ }
+        return json({ error: 'File is not a valid SQLite database or library JSON' }, { status: 400 });
+      }
     }
   } catch (err) {
     try { fs.unlinkSync(uploadedPath); } catch { /* ignore */ }
@@ -89,6 +120,12 @@ export const action: ActionFunction = async ({ request }) => {
     replaceDb(uploadedPath);
   } catch (err) {
     try { fs.unlinkSync(uploadedPath); } catch { /* ignore */ }
+    if (!tryGetSqliteDb()) {
+      return json(
+        { error: 'SQLite native module unavailable; use a poster.library.json export to restore.' },
+        { status: 503 },
+      );
+    }
     return json({ error: 'Failed to restore database' }, { status: 500 });
   }
 

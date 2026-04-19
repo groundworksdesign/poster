@@ -1,5 +1,3 @@
-import type { Database } from 'better-sqlite3';
-
 export interface PresentationRow {
   id: string;
   title: string;
@@ -29,7 +27,8 @@ export interface AssetRow {
   created_at: string;
 }
 
-export function initSchema(db: Database): void {
+/** Works with `better-sqlite3` or Node's built-in `node:sqlite` (`DatabaseSync`). */
+export function initSchema(db: { exec: (sql: string) => void }): void {
   db.exec(`
     CREATE TABLE IF NOT EXISTS presentations (
       id             TEXT PRIMARY KEY,

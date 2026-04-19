@@ -110,7 +110,7 @@ test('clicking Skip dismisses the import-save prompt without calling /library/sa
   act(() => { fireEvent.click(screen.getByRole('button', { name: /skip/i })); });
 
   expect(screen.queryByTestId('import-save-prompt')).not.toBeInTheDocument();
-  expect(fetchSpy).not.toHaveBeenCalledWith('/library/save', expect.anything());
+  expect(fetchSpy).not.toHaveBeenCalledWith(expect.stringContaining('/library/save'), expect.anything());
 });
 
 test('clicking Save to Library from import prompt calls /library/save and dismisses prompt', async () => {
@@ -128,7 +128,10 @@ test('clicking Save to Library from import prompt calls /library/save and dismis
   });
 
   await waitFor(() => expect(screen.queryByTestId('import-save-prompt')).not.toBeInTheDocument());
-  expect(global.fetch).toHaveBeenCalledWith('/library/save', expect.objectContaining({ method: 'POST' }));
+  expect(global.fetch).toHaveBeenCalledWith(
+    expect.stringContaining('/library/save'),
+    expect.objectContaining({ method: 'POST' }),
+  );
 });
 
 test('import validation error does not show import-save prompt', async () => {

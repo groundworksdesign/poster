@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@remix-run/express": "1.19.3",
     "@remix-run/node": "^1.19.0",
     "@remix-run/react": "^1.19.3",
     "@remix-run/serve": "^1.19.3",
@@ -16,6 +17,7 @@
     "baseline-browser-mapping": "^2.10.9",
     "better-sqlite3": "^12.9.0",
     "caniuse-lite": "^1.0.30001780",
+    "express": "^4.22.1",
     "isbot": "^3.8.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -37,7 +39,8 @@
   "scripts": {
     "dev": "remix dev",
     "start": "node ./server/index.js",
-    "start:cra": "BROWSER=none react-scripts start",
+    "start:cra": "node scripts/sync-cra-index.cjs && BROWSER=none react-scripts start",
+    "prebuild": "node scripts/sync-cra-index.cjs",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "test:coverage": "react-scripts test --coverage --watchAll=false",
@@ -49,7 +52,8 @@
     "start:spa": "node ./server/index.js",
     "vendor:prepare": "echo \"Vendorization placeholder: add vendor/ dir or prebuilt /build artifacts\"",
     "test:e2e": "playwright test",
-    "test:e2e:remix": "playwright test --config=playwright.remix.config.ts"
+    "test:e2e:remix": "playwright test --config=playwright.remix.config.ts",
+    "rebuild:sqlite": "pnpm rebuild better-sqlite3"
   },
   "jest": {
     "collectCoverageFrom": [

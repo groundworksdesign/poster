@@ -17,7 +17,8 @@ module.exports = {
     v2_routeConvention: true,
     // `v2_dev` replaces the removed `devServerPort` option; pass the port here.
     v2_dev: {
-      port: 8002,
+      // Avoid clashing with other local Remix / tools that bind :8002.
+      port: Number(process.env.REMIX_DEV_WS_PORT || 8022),
     },
   },
 };

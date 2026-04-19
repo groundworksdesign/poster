@@ -9,6 +9,18 @@ function makeDb() {
   return db;
 }
 
+function sqliteBindingsAvailable(): boolean {
+  try {
+    const d = new Database(':memory:');
+    d.close();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+const describeSqlite = sqliteBindingsAvailable() ? describe : describe.skip;
+
 const baseDeck = {
   title: 'Sunday Service',
   date: '2026-04-13',
@@ -19,7 +31,7 @@ const baseDeck = {
   slides: [],
 };
 
-describe('upsertPresentationWithDb', () => {
+describeSqlite('upsertPresentationWithDb', () => {
   let db: InstanceType<typeof Database>;
 
   beforeEach(() => {

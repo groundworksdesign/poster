@@ -24,9 +24,10 @@ test.describe('Remix dev', () => {
     expect(failures, 'no 5xx or uncaught errors').toEqual([]);
   });
 
-  test('diagnostic: / should redirect or show app shell', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
-    const hasRootOutlet = (await page.locator('body').textContent())?.length;
-    expect(hasRootOutlet ?? 0, 'body should not be empty after navigation').toBeGreaterThan(0);
+  test('home / renders Poster (root index route)', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'networkidle' });
+    await expect(page.getByRole('heading', { name: 'Poster', level: 1 })).toBeVisible({
+      timeout: 15000,
+    });
   });
 });

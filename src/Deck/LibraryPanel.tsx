@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { remixDataUrl, REMIX_ROUTE_ID } from '../utils/remixDataUrl';
 
 export type LibraryEntry = {
   id: string;
@@ -35,7 +36,7 @@ export default function LibraryPanel({ onOpen, onDeleted, currentLibraryId, refr
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('/library');
+      const res = await fetch(remixDataUrl('/library', REMIX_ROUTE_ID.library));
       if (!res.ok) {
         setError(`Failed to load library (${res.status})`);
         return;
@@ -56,7 +57,10 @@ export default function LibraryPanel({ onOpen, onDeleted, currentLibraryId, refr
   const handleDelete = async (entry: LibraryEntry) => {
     if (!window.confirm(`Delete "${entry.title || 'this presentation'}"?`)) return;
     try {
-      const res = await fetch(`/library/delete/${entry.id}`, { method: 'DELETE' });
+      const res = await fetch(
+        remixDataUrl(`/library/delete/${entry.id}`, REMIX_ROUTE_ID.libraryDelete),
+        { method: 'DELETE' },
+      );
       if (!res.ok) {
         alert(`Delete failed (${res.status})`);
         return;
@@ -71,7 +75,7 @@ export default function LibraryPanel({ onOpen, onDeleted, currentLibraryId, refr
   const handleExport = async (entry: LibraryEntry) => {
     setExportError(null);
     try {
-      const res = await fetch(`/library/open/${entry.id}`);
+      const res = await fetch(remixDataUrl(`/library/open/${entry.id}`, REMIX_ROUTE_ID.libraryOpen));
       if (!res.ok) {
         setExportError({ id: entry.id, message: `Export failed (${res.status})` });
         return;
@@ -99,7 +103,10 @@ export default function LibraryPanel({ onOpen, onDeleted, currentLibraryId, refr
     try {
       const formData = new FormData();
       formData.append('file', file);
-      const res = await fetch('/library/restore', { method: 'POST', body: formData });
+      const res = await fetch(remixDataUrl('/library/restore', REMIX_ROUTE_ID.libraryRestore), {
+        method: 'POST',
+        body: formData,
+      });
       const data = await res.json() as { ok?: boolean; error?: string };
       if (!res.ok) {
         setRestoreStatus({ type: 'error', message: data.error ?? `Restore failed (${res.status})` });

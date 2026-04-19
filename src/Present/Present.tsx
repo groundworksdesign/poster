@@ -214,6 +214,7 @@ export default function Presentation() {
       minHeight: 0,
       maxWidth: '100%',
       fontFamily: slide?.style?.fontFamily,
+      fontSize: slide?.style?.fontSize,
       padding: 0,
       margin: 0,
       backgroundImage: backgroundImage ? `url(${backgroundImage})` : undefined,
@@ -301,7 +302,7 @@ export default function Presentation() {
     return base;
   };
 
-  /** First song stage: title + subtitle only, typography similar to a TITLE slide. */
+  /** First song stage: title + subtitle only; font sizes match general slide overlay. */
   const renderSongTitleIntro = () =>
     (slide?.title || slide?.subTitle) && (
       <div
@@ -316,25 +317,12 @@ export default function Presentation() {
         }}
       >
         {slide?.title ? (
-          <div
-            style={{
-              fontSize: slide.titleFontSize ?? 'clamp(36px, 7vw, 72px)',
-              fontWeight: 600,
-              lineHeight: 1.15,
-            }}
-          >
+          <div style={{ fontSize: slide.titleFontSize ?? slide?.style?.fontSize, lineHeight: 1.15 }}>
             {slide.title}
           </div>
         ) : null}
         {slide?.subTitle ? (
-          <div
-            style={{
-              fontSize: slide.subTitleFontSize ?? 'clamp(20px, 3.5vw, 40px)',
-              fontWeight: 400,
-              lineHeight: 1.2,
-              opacity: 0.95,
-            }}
-          >
+          <div style={{ fontSize: slide.subTitleFontSize ?? slide?.style?.fontSize, lineHeight: 1.2 }}>
             {slide.subTitle}
           </div>
         ) : null}
@@ -404,6 +392,7 @@ export default function Presentation() {
                         horizontalAlign={ha}
                         verticalAlign={va}
                         fillHeight={useLyricsFill}
+                        fontSize={slide?.style?.fontSize}
                       />
                     </div>
                   ) : (

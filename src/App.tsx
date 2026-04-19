@@ -1,6 +1,7 @@
 import React from 'react';
 import './App.css';
 import DeckBuilder from './Deck/DeckBuilder';
+import HomePage from './HomePage';
 import Presentation from './Present/Present';
 
 import { Routes, Route, Outlet, Link } from 'react-router-dom';
@@ -11,6 +12,7 @@ export default function App() {
       <div className="content">
         <Routes>
           <Route path="/" element={<Layout />}>
+            <Route index element={<HomePage />} />
             <Route path="deck" element={<DeckBuilder />} />
           </Route>
           <Route path="presentation" element={<Presentation />} />

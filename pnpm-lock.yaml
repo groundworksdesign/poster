@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@remix-run/express':
+        specifier: 1.19.3
+        version: 1.19.3(express@4.22.1)
       '@remix-run/node':
         specifier: ^1.19.0
         version: 1.19.3
@@ -47,6 +50,9 @@ importers:
       caniuse-lite:
         specifier: ^1.0.30001780
         version: 1.0.30001788
+      express:
+        specifier: ^4.22.1
+        version: 4.22.1
       isbot:
         specifier: ^3.8.0
         version: 3.8.0

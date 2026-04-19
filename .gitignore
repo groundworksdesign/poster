@@ -12,6 +12,9 @@
 /build
 !/build/index.js
 
+# CRA: generated from public/cra-index.html by scripts/sync-cra-index.cjs (must not be committed — Remix would serve it for `/`).
+public/index.html
+
 # misc
 .DS_Store
 .env.local
@@ -27,3 +30,6 @@ yarn-error.log*
 *.sqlite
 *.sqlite-wal
 *.sqlite-shm
+
+# JSON library fallback (when better-sqlite3 is unavailable)
+poster.library.json

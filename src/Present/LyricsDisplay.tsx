@@ -25,6 +25,7 @@ export default function LyricsDisplay({
   horizontalAlign,
   verticalAlign,
   fillHeight,
+  fontSize,
 }: {
   song?: SongData | null;
   segmentIndex: number;
@@ -32,6 +33,8 @@ export default function LyricsDisplay({
   verticalAlign?: VerticalAlign;
   /** When true, stretch to parent height so vertical alignment has room to move. */
   fillHeight?: boolean;
+  /** Resolved slide font size (matches general slide body); lines inherit if omitted. */
+  fontSize?: string;
 }) {
   if (!song) return null;
   const lines = song.verses.flatMap(v => v.lines);
@@ -43,7 +46,7 @@ export default function LyricsDisplay({
   const h = horizontalAlign;
   const v = verticalAlign;
   const lineStyle: React.CSSProperties = {
-    fontSize: '48px',
+    ...(fontSize ? { fontSize } : {}),
     lineHeight: 1.1,
     maxWidth: '100%',
     boxSizing: 'border-box',
