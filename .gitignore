@@ -12,6 +12,17 @@
 /build
 !/build/index.js
 
+# Remix: browser bundles + HMR output (regenerated; hashed names cause constant git churn)
+/public/build/
+
+# Tooling caches that may appear in the repo root
+/.cache/
+
+# Playwright output (local test runs)
+/test-results/
+/playwright-report/
+/blob-report/
+
 # CRA: generated from public/cra-index.html by scripts/sync-cra-index.cjs (must not be committed — Remix would serve it for `/`).
 public/index.html
 

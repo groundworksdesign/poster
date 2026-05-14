@@ -17,6 +17,9 @@ function flexAlignFromHorizontal(h?: HorizontalAlign): React.CSSProperties['alig
   return 'center';
 }
 
+/** Non-title slides share this frame height; title slides use the full #slide area. */
+const NON_TITLE_PROGRAM_HEIGHT = '72%';
+
 export default function Presentation() {
   const [loading, setLoading] = useState<boolean>(true);
   const [slide, setSlide] = useState<Slide | null>(null);
@@ -195,6 +198,22 @@ export default function Presentation() {
     return () => { body.style.backgroundColor = previous; };
   }, [useGreenScreen]);
 
+  const isTitleSlideType = slide?.type === SlideType.TITLE;
+
+  /** Flex sizing for the program slide frame: full raster for title, uniform band for all other types. */
+  const slideFrameStyle = (): React.CSSProperties => {
+    if (isTitleSlideType) {
+      return { flex: 1, minHeight: 0, alignSelf: 'stretch' };
+    }
+    return {
+      flex: '0 0 auto',
+      height: NON_TITLE_PROGRAM_HEIGHT,
+      maxHeight: NON_TITLE_PROGRAM_HEIGHT,
+      minHeight: 0,
+      alignSelf: 'stretch',
+    };
+  };
+
   const computeContainerStyle = (): React.CSSProperties => {
     const textAlign = slide?.style?.horizontalAlign ?? 'center';
 
@@ -209,9 +228,7 @@ export default function Presentation() {
       textAlign,
       backgroundColor: useGreenScreen ? 'transparent' : slide?.style?.backgroundColor,
       color: slide?.style?.color,
-      width: slide?.style?.width ?? '100%',
-      height: '100%',
-      minHeight: 0,
+      width: '100%',
       maxWidth: '100%',
       fontFamily: slide?.style?.fontFamily,
       fontSize: slide?.style?.fontSize,
@@ -266,8 +283,7 @@ export default function Presentation() {
   const songShellStyle: React.CSSProperties = {
     ...computeContainerStyle(),
     position: 'relative',
-    flex: 1,
-    minHeight: 0,
+    ...slideFrameStyle(),
     display: 'flex',
     flexDirection: 'column',
     width: '100%',
@@ -358,6 +374,7 @@ export default function Presentation() {
           width: '100%',
           display: 'flex',
           flexDirection: 'column',
+          justifyContent: isTitleSlideType ? 'flex-start' : 'flex-end',
           boxSizing: 'border-box',
           overflowX: inFullscreen ? 'hidden' : undefined,
         }}
@@ -403,12 +420,12 @@ export default function Presentation() {
             );
           })()
         ) : slide?.type === SlideType.IMAGE ? (
-          <div id="image-slide" style={{ ...computeContainerStyle(), position: 'relative', flex: 1, minHeight: 0 }}>
+          <div id="image-slide" style={{ ...computeContainerStyle(), position: 'relative', ...slideFrameStyle() }}>
             <div style={{ textAlign: 'inherit', color: slide?.style?.color }} />
             {renderTitleOverlay()}
           </div>
         ) : (
-          <div id="content" style={{ ...computeContainerStyle(), position: 'relative', flex: 1, minHeight: 0 }}>
+          <div id="content" style={{ ...computeContainerStyle(), position: 'relative', ...slideFrameStyle() }}>
             {renderTitleOverlay()}
           </div>
         )}
