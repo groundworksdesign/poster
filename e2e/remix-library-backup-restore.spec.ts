@@ -1,27 +1,28 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * E2E tests for the SQLite library backup and restore workflow.
+ * Remix dev E2E: library backup/restore via LibraryPanel on `/` (home).
  *
- * The backup and restore endpoints are server routes. page.route() intercepts
- * and mocks those calls so the UI flow runs without a real SQLite file.
- * LibraryPanel lives on the home page (`/`); `/deck` no longer exposes
- * `#toggle-library`.
- *
- * Traceability: ralph/epic.md "Local library (SQLite)" -> backup/restore workflow (task 18).
+ * Mirrors `library-backup-restore.spec.ts` but runs under `playwright.remix.config.ts`
+ * (baseURL = Remix port, `remix dev`). Uses pathname route predicates so `_data`
+ * query params from remixDataUrl() are intercepted like `home-library.spec.ts`.
  */
 
-// Minimal SQLite magic header bytes (first 16 bytes of a valid SQLite3 file).
 const SQLITE_MAGIC = Buffer.from('SQLite format 3\0');
 
-/** Wire all standard library API mocks (pathname match; works with ?_data= from remixDataUrl). */
+/** Wire standard library API mocks so LibraryPanel loads on home. */
 async function setupBaseMocks(page: import('@playwright/test').Page) {
   await page.route(
     (url) => url.pathname === '/library/save',
     async (route) => {
-      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ id: 'mock-id' }) });
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ id: 'mock-id' }),
+      });
     },
   );
+
   await page.route(
     (url) => url.pathname.startsWith('/library/open/'),
     async (route) => {
@@ -32,17 +33,27 @@ async function setupBaseMocks(page: import('@playwright/test').Page) {
       });
     },
   );
+
   await page.route(
     (url) => url.pathname.startsWith('/library/delete/'),
     async (route) => {
-      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true }) });
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ ok: true }),
+      });
     },
   );
+
   await page.route(
     (url) => url.pathname === '/library',
     async (route) => {
       if (route.request().method() === 'GET') {
-        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify([]),
+        });
       } else {
         await route.continue();
       }
@@ -50,14 +61,10 @@ async function setupBaseMocks(page: import('@playwright/test').Page) {
   );
 }
 
-test.describe('Library backup and restore', () => {
-  test('backup button initiates a .sqlite file download', async ({ page, baseURL }) => {
-    const base = baseURL ?? 'http://127.0.0.1:3001';
-
+test.describe('Library backup and restore (remix dev, home LibraryPanel)', () => {
+  test('backup button initiates a .sqlite file download', async ({ page }) => {
     await setupBaseMocks(page);
 
-    // Mock the backup endpoint to return a binary SQLite payload with
-    // Content-Disposition: attachment so the browser treats it as a download.
     await page.route(
       (url) => url.pathname === '/library/backup',
       async (route) => {
@@ -72,40 +79,39 @@ test.describe('Library backup and restore', () => {
       },
     );
 
-    await page.goto(`${base}/`);
+    await page.goto('/');
+
     await expect(page.locator('[data-testid="library-panel"]')).toBeVisible({ timeout: 8000 });
 
-    // Wait for the download event before clicking the anchor.
     const [download] = await Promise.all([
       page.waitForEvent('download'),
       page.locator('[data-testid="library-backup-btn"]').click(),
     ]);
 
-    // The suggested filename must end in .sqlite and reference "poster".
     const filename = download.suggestedFilename();
     expect(filename).toMatch(/\.sqlite$/i);
     expect(filename.toLowerCase()).toContain('poster');
   });
 
-  test('restore with a valid .sqlite file shows success status', async ({ page, baseURL }) => {
-    const base = baseURL ?? 'http://127.0.0.1:3001';
-
+  test('restore with a valid .sqlite file shows success status', async ({ page }) => {
     await setupBaseMocks(page);
 
     await page.route(
       (url) => url.pathname === '/library/restore',
       async (route) => {
-        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true }) });
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ ok: true }),
+        });
       },
     );
 
-    await page.goto(`${base}/`);
+    await page.goto('/');
     await expect(page.locator('[data-testid="library-panel"]')).toBeVisible({ timeout: 8000 });
 
-    // Accept the confirmation dialog that handleRestore() shows before calling the endpoint.
     page.on('dialog', (dialog) => dialog.accept());
 
-    // Playwright can set files on hidden inputs directly.
     await page.locator('[data-testid="library-restore-input"]').setInputFiles({
       name: 'test.sqlite',
       mimeType: 'application/octet-stream',
@@ -116,9 +122,7 @@ test.describe('Library backup and restore', () => {
     await expect(page.locator('[data-testid="restore-status"]')).toContainText(/restored successfully/i);
   });
 
-  test('restore failure shows error status from server response', async ({ page, baseURL }) => {
-    const base = baseURL ?? 'http://127.0.0.1:3001';
-
+  test('restore failure shows error status from server response', async ({ page }) => {
     await setupBaseMocks(page);
 
     await page.route(
@@ -132,7 +136,7 @@ test.describe('Library backup and restore', () => {
       },
     );
 
-    await page.goto(`${base}/`);
+    await page.goto('/');
     await expect(page.locator('[data-testid="library-panel"]')).toBeVisible({ timeout: 8000 });
 
     page.on('dialog', (dialog) => dialog.accept());
@@ -148,9 +152,7 @@ test.describe('Library backup and restore', () => {
     await expect(page.locator('[data-testid="restore-status"]')).not.toContainText(/restored successfully/i);
   });
 
-  test('restore dismissed by confirm dialog does not call the endpoint', async ({ page, baseURL }) => {
-    const base = baseURL ?? 'http://127.0.0.1:3001';
-
+  test('restore dismissed by confirm dialog does not call the endpoint', async ({ page }) => {
     await setupBaseMocks(page);
 
     let restoreCalled = false;
@@ -162,10 +164,9 @@ test.describe('Library backup and restore', () => {
       },
     );
 
-    await page.goto(`${base}/`);
+    await page.goto('/');
     await expect(page.locator('[data-testid="library-panel"]')).toBeVisible({ timeout: 8000 });
 
-    // Dismiss the confirmation dialog so the fetch is never called.
     page.on('dialog', (dialog) => dialog.dismiss());
 
     await page.locator('[data-testid="library-restore-input"]').setInputFiles({
@@ -174,7 +175,6 @@ test.describe('Library backup and restore', () => {
       buffer: SQLITE_MAGIC,
     });
 
-    // Short wait to allow any async code to run if the guard failed.
     await page.waitForTimeout(1000);
 
     expect(restoreCalled).toBe(false);

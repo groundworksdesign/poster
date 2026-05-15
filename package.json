@@ -42,7 +42,7 @@
     "vite": "^5.0.0"
   },
   "scripts": {
-    "dev": "remix dev",
+    "dev": "node scripts/ensure-remix-public-index.cjs && remix dev",
     "start": "node ./server/index.js",
     "start:cra": "node scripts/sync-cra-index.cjs && BROWSER=none react-scripts start",
     "prebuild": "node scripts/sync-cra-index.cjs",
@@ -51,7 +51,7 @@
     "test:coverage": "react-scripts test --coverage --watchAll=false",
     "coverage": "react-scripts test --coverage --watchAll=false",
     "eject": "react-scripts eject",
-    "dev:remix": "remix dev",
+    "dev:remix": "node scripts/ensure-remix-public-index.cjs && remix dev",
     "build:remix": "remix build",
     "start:remix": "node ./server/index.js",
     "start:spa": "node ./server/index.js",

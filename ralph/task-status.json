@@ -321,20 +321,47 @@
       "devIterations": 1,
       "createdAt": "2026-05-15T15:10:36.965Z",
       "updatedAt": "2026-05-15T15:16:17.778Z"
+    },
+    {
+      "id": 36,
+      "title": "Remix E2E for library backup and restore",
+      "description": "Move or duplicate the backup/restore Playwright coverage so it runs under the Remix config (remix dev, baseURL on the Remix port), navigates to `/` where `LibraryPanel` is mounted, and drops reliance on removed `#toggle-library` on `/deck`. Keep or extend route mocks so list/save/open/delete/backup/restore behave like existing remix specs; ensure `pnpm run test:e2e:remix` passes including all scenarios.",
+      "status": "done",
+      "devIterations": 1,
+      "createdAt": "2026-05-15T15:16:55.462Z",
+      "updatedAt": "2026-05-15T15:22:10.433Z"
+    },
+    {
+      "id": 37,
+      "title": "Run Remix Playwright suite in PR CI",
+      "description": "Add a GitHub Actions job (or extend an existing workflow) that installs Playwright browsers, runs `pnpm run test:e2e:remix` with frozen lockfile, and fails the workflow on test failure so backup/restore and other Remix-only specs stay green after merges.",
+      "status": "backlog",
+      "devIterations": 0,
+      "createdAt": "2026-05-15T15:16:55.462Z",
+      "updatedAt": "2026-05-15T15:16:55.462Z"
+    },
+    {
+      "id": 38,
+      "title": "Add root requirements.md for acceptance",
+      "description": "Create `requirements.md` at the repo root summarizing product acceptance aligned with `ralph/epic.md`, canonical epic plans under `docs/epics/`, and operator behavior documented in `README.md`, so future task loops have a single requirements entry point.",
+      "status": "backlog",
+      "devIterations": 0,
+      "createdAt": "2026-05-15T15:16:55.462Z",
+      "updatedAt": "2026-05-15T15:16:55.462Z"
     }
   ],
-  "currentTaskNum": 35,
-  "totalLLMCalls": 11,
+  "currentTaskNum": 36,
+  "totalLLMCalls": 14,
   "maxLLMCalls": 500,
   "nextTask": {
-    "taskId": 35,
-    "content": "## Task: Document packaging, CI, and releases\n\nExtend README (and optionally sync docs/epics/epic-002-theme-install-reorg.plan.md frontmatter todos) so operators know how to run portable packaging locally, produce Electron installers, locate PR workflow artifacts, and trigger semver-tag release uploads.",
-    "updatedAt": "2026-05-15T15:13:43.245Z"
+    "taskId": 36,
+    "content": "## Task: Remix E2E for library backup and restore\n\nMove or duplicate the backup/restore Playwright coverage so it runs under the Remix config (remix dev, baseURL on the Remix port), navigates to `/` where `LibraryPanel` is mounted, and drops reliance on removed `#toggle-library` on `/deck`. Keep or extend route mocks so list/save/open/delete/backup/restore behave like existing remix specs; ensure `pnpm run test:e2e:remix` passes including all scenarios.",
+    "updatedAt": "2026-05-15T15:16:55.489Z"
   },
   "feedback": {
-    "taskId": 35,
-    "content": "Cross-checked `README.md` against `.github/workflows/pr.yml`, `.github/workflows/release.yml`, `scripts/package-portable.mjs`, `electron-builder.yml`, and `package.json` scripts.\n\nThe README covers local portable packaging (`pnpm run package:portable`, `scripts/package-portable.mjs`, `--sha` / `--tag`, output paths, `PORTABLE.md`, Windows startup), local Electron builds (`pnpm run build:electron`, `dist/electron/`, config file, unsigned builds), finding PR artifacts (workflow name, Checks → Artifacts, naming aligned with `upload-artifact` names, `retention-days: 30`), and release uploads (`release.yml` tag trigger `v*.*.*`, version alignment with `package.json`, tag/push steps, `softprops/action-gh-release`, staging artifact name prefixes).\n\n`docs/epics/epic-002-theme-install-reorg.plan.md` frontmatter includes `session_note` pointing operators at `README.md` and todos are marked done.\n\n```\n<status>verified</status>\n```\n",
-    "updatedAt": "2026-05-15T15:16:17.764Z"
+    "taskId": 36,
+    "content": "The Remix backup/restore work matches the task: `e2e/remix-library-backup-restore.spec.ts` exercises the four scenarios on `/` with pathname-based mocks (aligned with Remix `_data` URLs), `playwright.remix.config.ts` uses the Remix dev server and `baseURL` on the Remix port, and `e2e/library-backup-restore.spec.ts` is aligned with home `LibraryPanel` instead of `#toggle-library`. `pnpm run test:e2e:remix` completed successfully (23 tests passed, including all four remix backup/restore cases).\n\n```\n<status>verified</status>\n```\n",
+    "updatedAt": "2026-05-15T15:22:10.421Z"
   },
-  "lastUpdated": "2026-05-15T15:16:17.778Z"
+  "lastUpdated": "2026-05-15T15:22:10.433Z"
 }

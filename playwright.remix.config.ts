@@ -4,6 +4,7 @@ import { defineConfig, devices } from '@playwright/test';
 const REMIX_PORT = Number(process.env.REMIX_PORT || process.env.PORT || 3000);
 const origin = `http://127.0.0.1:${REMIX_PORT}`;
 const repoRoot = path.join(__dirname);
+const ensureRemixPublicIndex = path.join(repoRoot, 'scripts', 'ensure-remix-public-index.cjs');
 
 /**
  * E2E against `remix dev` (not CRA). Root playwright.config.ts uses start:cra on 3001.
@@ -23,7 +24,7 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
   webServer: {
-    command: `PORT=${REMIX_PORT} pnpm exec remix dev`,
+    command: `node "${ensureRemixPublicIndex}" && PORT=${REMIX_PORT} pnpm exec remix dev`,
     cwd: repoRoot,
     url: `${origin}/deck`,
     reuseExistingServer: !process.env.CI,
