@@ -32,7 +32,7 @@ const baseDeck = {
 };
 
 describeSqlite('upsertPresentationWithDb', () => {
-  let db: InstanceType<typeof Database>;
+  let db: any;
 
   beforeEach(() => {
     db = makeDb();
