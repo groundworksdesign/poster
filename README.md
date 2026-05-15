@@ -83,7 +83,78 @@ pnpm run rebuild:sqlite
 | `pnpm run test:e2e:remix` | Playwright against Remix dev (`playwright.remix.config.ts`) |
 | `pnpm run build` | CRA production build to `build/` |
 | `pnpm run build:remix` | Remix production build |
+| `pnpm run package:portable` | Zip a **portable** server bundle to `dist/` (requires `build/`; see below) |
+| `pnpm run build:electron` | Build desktop **installers** with electron-builder (`dist/electron/`) |
+| `pnpm run electron` | Launch the Electron shell against this repo (same `main` as packaging) |
 | `pnpm run eject` | CRA eject (irreversible); rarely needed |
+
+## Portable zip packaging (local)
+
+The portable archive is meant to be built on the **same OS** you deploy to: `better-sqlite3` is native, so do not copy `node_modules` from Windows into a macOS zip (CI builds one zip per runner).
+
+**Canonical packager** (used by GitHub Actions): `scripts/package-portable.mjs`.
+
+From the repo root, after a production Remix build:
+
+```bash
+pnpm install
+pnpm rebuild better-sqlite3
+pnpm run build:remix
+pnpm run package:portable
+```
+
+Optional CLI (short git SHA and release tag are embedded in the filename when passed):
+
+```bash
+node scripts/package-portable.mjs --sha "$(git rev-parse --short HEAD)"
+node scripts/package-portable.mjs --sha abc1234 --tag v0.2.0
+```
+
+**Output:** `dist/poster-portable-<linux|win|mac>-<sha>.zip`, or `dist/poster-portable-<os>-<tag>-<sha>.zip` when `--tag` is set.
+
+**Run after unzip:** see `PORTABLE.md` inside the archive (typically `PORT=3000 node server/index.js`). On Windows, use `set PORT=3000 && node server\index.js`.
+
+A legacy shell helper `scripts/package-portable.sh` may still exist; prefer `package-portable.mjs` and `pnpm run package:portable` so behavior matches CI.
+
+## Electron installers (local)
+
+Configuration lives in `electron-builder.yml` (targets: macOS DMG x64/arm64, Windows NSIS x64, Linux deb + AppImage x64). `npmRebuild: true` makes electron-builder rebuild native modules for Electron’s ABI.
+
+```bash
+pnpm install
+pnpm rebuild better-sqlite3
+pnpm run build:remix
+pnpm run build:electron
+```
+
+Installer files land under **`dist/electron/`** (for example `.dmg`, `.exe`, `.deb`, `.AppImage`). Names follow `artifactName` in `electron-builder.yml` (by default `Poster-<version>-<os>-<arch>.<ext>` using `package.json` `version`).
+
+Local builds and CI use `CSC_IDENTITY_AUTO_DISCOVERY=false`, so macOS and Windows artifacts are **unsigned** unless you configure signing separately.
+
+## CI: PR workflow artifacts
+
+The **PR Build** workflow (`.github/workflows/pr.yml`) runs on every pull request.
+
+- **Portable zip** job matrix (`ubuntu-latest`, `windows-latest`, `macos-latest`) uploads one zip per OS with artifact names like `poster-portable-<runner>-<full-commit-sha>`.
+- **Electron installers** job matrix uploads staged installers (DMG, NSIS exe, deb, AppImage when produced) with names like `poster-electron-<runner>-pr-<PR#>-<full-commit-sha>`.
+
+Open the PR on GitHub, then **Checks** → select the workflow run → **Artifacts** (retention is limited; see the workflow `retention-days`).
+
+## Releases: semver tags and GitHub Release assets
+
+The **Release** workflow (`.github/workflows/release.yml`) runs when you push a **semver tag** matching `v*.*.*` (examples: `v0.2.0`, `v1.0.0`).
+
+1. Align `package.json` `version` with the release you are tagging (e.g. `0.2.0` for tag `v0.2.0`) so filenames and the shipped app version stay consistent.
+2. Create and push the tag:
+
+   ```bash
+   git tag v0.2.0
+   git push origin v0.2.0
+   ```
+
+3. The workflow builds the same **portable zips** and **Electron installers** as PR CI, then the `publish-release` job attaches everything to the **GitHub Release** for that tag (via `softprops/action-gh-release`).
+
+Intermediate artifacts use names containing `poster-portable-release-...` and `poster-electron-release-...`; published release assets are the bundled files from those jobs.
 
 ## Learn more
 

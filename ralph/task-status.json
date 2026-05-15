@@ -316,25 +316,25 @@
     {
       "id": 35,
       "title": "Document packaging, CI, and releases",
-      "description": "After release assets are automated, update README with how to run the portable packager locally, build Electron installers, where PR artifacts appear, and how semver tags trigger release asset uploads; optionally sync docs/epics/epic-002 frontmatter todo statuses with shipped work.",
-      "status": "backlog",
-      "devIterations": 0,
+      "description": "Extend README (and optionally sync docs/epics/epic-002-theme-install-reorg.plan.md frontmatter todos) so operators know how to run portable packaging locally, produce Electron installers, locate PR workflow artifacts, and trigger semver-tag release uploads.",
+      "status": "done",
+      "devIterations": 1,
       "createdAt": "2026-05-15T15:10:36.965Z",
-      "updatedAt": "2026-05-15T15:10:36.965Z"
+      "updatedAt": "2026-05-15T15:16:17.778Z"
     }
   ],
-  "currentTaskNum": 34,
-  "totalLLMCalls": 8,
+  "currentTaskNum": 35,
+  "totalLLMCalls": 11,
   "maxLLMCalls": 500,
   "nextTask": {
-    "taskId": 34,
-    "content": "## Task: Release workflow for GitHub Release assets\n\nAdd a tag-driven GitHub Actions workflow (e.g. on semver v*.*.* pushes) that repeats portable zip packaging and per-OS Electron installer builds like the PR pipeline, then uploads every produced artifact to the GitHub Release for that tag using a supported release-assets action, with contents write permission and filenames that include the tag or package version.",
-    "updatedAt": "2026-05-15T15:10:36.996Z"
+    "taskId": 35,
+    "content": "## Task: Document packaging, CI, and releases\n\nExtend README (and optionally sync docs/epics/epic-002-theme-install-reorg.plan.md frontmatter todos) so operators know how to run portable packaging locally, produce Electron installers, locate PR workflow artifacts, and trigger semver-tag release uploads.",
+    "updatedAt": "2026-05-15T15:13:43.245Z"
   },
   "feedback": {
-    "taskId": 34,
-    "content": "The release workflow satisfies the assignment: tags `v*.*.*` trigger per-OS jobs that mirror the PR pipeline (`pnpm install` / `pnpm rebuild better-sqlite3` / `build:remix` / portable `--tag ${{ github.ref_name }}` plus `build:electron`), stage artifacts with names including the tag and full SHA (`poster-*-release-${{ matrix.os }}-...`), aggregate them via `download-artifact` (`merge-multiple: true`, scoped pattern), and publish with `softprops/action-gh-release@v2` under `contents: write`. Portable zips embed the tag in the filename (`package-portable.mjs`); Electron outputs use `${version}` from `package.json` per `electron-builder.yml`, which still satisfies “tag **or** package version” across the artifact set.\n\n```\n<status>verified</status>\n```\n",
-    "updatedAt": "2026-05-15T15:13:04.204Z"
+    "taskId": 35,
+    "content": "Cross-checked `README.md` against `.github/workflows/pr.yml`, `.github/workflows/release.yml`, `scripts/package-portable.mjs`, `electron-builder.yml`, and `package.json` scripts.\n\nThe README covers local portable packaging (`pnpm run package:portable`, `scripts/package-portable.mjs`, `--sha` / `--tag`, output paths, `PORTABLE.md`, Windows startup), local Electron builds (`pnpm run build:electron`, `dist/electron/`, config file, unsigned builds), finding PR artifacts (workflow name, Checks → Artifacts, naming aligned with `upload-artifact` names, `retention-days: 30`), and release uploads (`release.yml` tag trigger `v*.*.*`, version alignment with `package.json`, tag/push steps, `softprops/action-gh-release`, staging artifact name prefixes).\n\n`docs/epics/epic-002-theme-install-reorg.plan.md` frontmatter includes `session_note` pointing operators at `README.md` and todos are marked done.\n\n```\n<status>verified</status>\n```\n",
+    "updatedAt": "2026-05-15T15:16:17.764Z"
   },
-  "lastUpdated": "2026-05-15T15:13:04.214Z"
+  "lastUpdated": "2026-05-15T15:16:17.778Z"
 }

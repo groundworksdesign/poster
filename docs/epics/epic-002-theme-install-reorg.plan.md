@@ -1,25 +1,25 @@
 ---
 epic: "002"
 title: "Theme, install layout, portable packaging, Electron, and release CI"
-status: planned
+status: done
 canonical_plan: true
-session_note: "This file is the live epic plan; update it here for the rest of this session (not only .cursor/plans)."
+session_note: "Packaging, CI, and release operator docs live in README.md (Portable zip, Electron installers, CI artifacts, Releases)."
 todos:
   - id: themes
     content: "CSS variables + [data-theme] palettes (Dracula, Tokyo Night, dark blue, GitHub dark); HomePage picker + localStorage (+ optional root FOUC script)"
-    status: pending
+    status: done
   - id: home-library
     content: "Mount LibraryPanel on HomePage; DeckBuilder ?open= + ?focusImport=; trim duplicate deck library toggle; update unit/e2e tests"
-    status: pending
+    status: done
   - id: portable-zip
     content: "scripts/package-portable + PR CI matrix (ubuntu/win/mac) with prod node_modules + rebuild sqlite; upload-artifact"
-    status: pending
+    status: done
   - id: electron
     content: "electron main + electron-builder producing real per-OS installers (dmg, exe, deb/AppImage) with npmRebuild; same artifact shape on PR and on release"
-    status: pending
+    status: done
   - id: release-ci
     content: "PR workflow uploads portable zips + per-OS installers as artifacts; main/release workflow attaches the same installer set to semver GitHub Release"
-    status: pending
+    status: done
 ---
 
 # Epic 002 — Theme, home library, portable zip, Electron, release CI
@@ -32,15 +32,16 @@ Surface slide **library** actions (list, open, export, delete, backup, restore) 
 
 - **Canonical plan**: `docs/epics/epic-002-theme-install-reorg.plan.md`
 - During implementation work in this repo, **prefer updating this file** when the epic scope or decisions change (keep todos in frontmatter in sync).
+- **Operator docs** (local portable zip, Electron builds, PR artifacts, tag releases): root **`README.md`**.
 
 ## Current state (baseline)
 
-- **Home**: `src/HomePage.tsx` (via `app/routes/_index.tsx`) — copy + links to `/deck` and `/presentation` only.
-- **Library UI**: `src/Deck/LibraryPanel.tsx` — list, Open/Export/Delete, Backup (`GET /library/backup`), Restore (`POST /library/restore`). Mounted only from `src/Deck/DeckBuilder.tsx` behind `showLibrary`.
+- **Home**: `src/HomePage.tsx` — themes + `LibraryPanel`; links and CTAs to `/deck` (including `?open=` / `?focusImport=`) and `/presentation`.
+- **Library UI**: `src/Deck/LibraryPanel.tsx` — also used from home; deck route trims duplicate full-panel UX per epic.
 - **Import**: file input + Load in `DeckBuilder` (JSON/XML; logic stays deck-side).
-- **Theming**: `src/App.css` uses fixed light colors for `.home-page*`; `app/root.tsx` has no theme attribute.
+- **Theming**: `src/themes.css` / `[data-theme]` palettes; home picker persists `poster-theme` in `localStorage`.
 - **Server**: `server/index.js` + Remix `build/`; `pnpm run build:remix` then `pnpm start` (`package.json`).
-- **CI**: no `.github/workflows` in tree yet (greenfield).
+- **CI**: `.github/workflows/pr.yml` (portable zip + Electron installers per OS, `upload-artifact`); `.github/workflows/release.yml` (tag `v*.*.*`, attach same artifact types to GitHub Release).
 - **Native module**: `better-sqlite3` requires **OS-matched** binaries. Portable zips and Electron bundles must be built per platform (CI matrix), not one “universal” zip.
 
 ```mermaid
