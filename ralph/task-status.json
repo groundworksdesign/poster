@@ -335,10 +335,10 @@
       "id": 37,
       "title": "Run Remix Playwright suite in PR CI",
       "description": "Add a GitHub Actions job (or extend an existing workflow) that installs Playwright browsers, runs `pnpm run test:e2e:remix` with frozen lockfile, and fails the workflow on test failure so backup/restore and other Remix-only specs stay green after merges.",
-      "status": "backlog",
-      "devIterations": 0,
+      "status": "done",
+      "devIterations": 1,
       "createdAt": "2026-05-15T15:16:55.462Z",
-      "updatedAt": "2026-05-15T15:16:55.462Z"
+      "updatedAt": "2026-05-15T15:24:03.448Z"
     },
     {
       "id": 38,
@@ -347,21 +347,21 @@
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-05-15T15:16:55.462Z",
-      "updatedAt": "2026-05-15T15:16:55.462Z"
+      "updatedAt": "2026-05-15T15:22:36.405Z"
     }
   ],
-  "currentTaskNum": 36,
-  "totalLLMCalls": 14,
+  "currentTaskNum": 37,
+  "totalLLMCalls": 17,
   "maxLLMCalls": 500,
   "nextTask": {
-    "taskId": 36,
-    "content": "## Task: Remix E2E for library backup and restore\n\nMove or duplicate the backup/restore Playwright coverage so it runs under the Remix config (remix dev, baseURL on the Remix port), navigates to `/` where `LibraryPanel` is mounted, and drops reliance on removed `#toggle-library` on `/deck`. Keep or extend route mocks so list/save/open/delete/backup/restore behave like existing remix specs; ensure `pnpm run test:e2e:remix` passes including all scenarios.",
-    "updatedAt": "2026-05-15T15:16:55.489Z"
+    "taskId": 37,
+    "content": "## Task: Run Remix Playwright suite in PR CI\n\nAdd a GitHub Actions job (or extend an existing workflow) that installs Playwright browsers, runs `pnpm run test:e2e:remix` with frozen lockfile, and fails the workflow on test failure so backup/restore and other Remix-only specs stay green after merges.",
+    "updatedAt": "2026-05-15T15:22:36.427Z"
   },
   "feedback": {
-    "taskId": 36,
-    "content": "The Remix backup/restore work matches the task: `e2e/remix-library-backup-restore.spec.ts` exercises the four scenarios on `/` with pathname-based mocks (aligned with Remix `_data` URLs), `playwright.remix.config.ts` uses the Remix dev server and `baseURL` on the Remix port, and `e2e/library-backup-restore.spec.ts` is aligned with home `LibraryPanel` instead of `#toggle-library`. `pnpm run test:e2e:remix` completed successfully (23 tests passed, including all four remix backup/restore cases).\n\n```\n<status>verified</status>\n```\n",
-    "updatedAt": "2026-05-15T15:22:10.421Z"
+    "taskId": 37,
+    "content": "Implementation checks out:\n\n- **PR workflow** (`.github/workflows/pr.yml`): `remix-e2e` runs on `pull_request`, uses `pnpm install --frozen-lockfile`, runs `pnpm exec playwright install --with-deps chromium`, then `pnpm run test:e2e:remix`. No `continue-on-error`, so failing tests fail the workflow.\n- **`package.json`**: `test:e2e:remix` points at `playwright.remix.config.ts`.\n- **`playwright.remix.config.ts`**: Starts Remix via `webServer`, limits tests to `remix-*.spec.ts`, uses Chromium only (matches CI browser install).\n\nLocal run: `pnpm run test:e2e:remix` completed with **23 passed**, including `remix-library-backup-restore.spec.ts`.\n\n```\n<status>verified</status>\n```\n",
+    "updatedAt": "2026-05-15T15:24:03.436Z"
   },
-  "lastUpdated": "2026-05-15T15:22:10.433Z"
+  "lastUpdated": "2026-05-15T15:24:03.448Z"
 }
