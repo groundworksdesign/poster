@@ -9,7 +9,7 @@ export const meta: V2_MetaFunction = () => [
 ];
 
 // Inline script applied before paint to restore saved theme and avoid FOUC.
-const themeInitScript = `(function(){try{var t=localStorage.getItem('poster-theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}})();`;
+const themeInitScript = `(function(){try{var t=localStorage.getItem('poster-theme');if(t)document.documentElement.dataset.theme = t;}catch(e){}})();`;
 
 export default function App() {
   return (

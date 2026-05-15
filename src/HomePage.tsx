@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import './App.css';
 
 /**
@@ -19,10 +19,55 @@ function openPresentationWindow(e: React.MouseEvent<HTMLAnchorElement>) {
   }
 }
 
+const THEMES = [
+  { id: 'light', label: 'Light' },
+  { id: 'dracula', label: 'Dracula' },
+  { id: 'tokyo-night', label: 'Tokyo Night' },
+  { id: 'dark-blue', label: 'Dark Blue' },
+  { id: 'github-dark', label: 'GitHub Dark' },
+];
+
 export default function HomePage() {
+  const [theme, setTheme] = useState<string>(() => {
+    try {
+      return localStorage.getItem('poster-theme') || 'light';
+    } catch (e) {
+      return 'light';
+    }
+  });
+
+  useEffect(() => {
+    try {
+      if (theme) {
+        document.documentElement.dataset.theme = theme;
+        localStorage.setItem('poster-theme', theme);
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, [theme]);
+
   return (
     <main className="home-page">
       <h1>Poster</h1>
+
+      <div className="home-page-theme-picker" style={{ marginBottom: 12 }}>
+        <label style={{ fontSize: 14 }}>
+          Theme:{' '}
+          <select
+            value={theme}
+            onChange={(e) => setTheme(e.target.value)}
+            aria-label="Select theme"
+          >
+            {THEMES.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+
       <p className="home-page-lead">
         Poster is a two-part app: you run the <strong>deck builder</strong> to load or edit slides
         and send them to the <strong>presentation</strong> view. Both tabs talk to each other in
