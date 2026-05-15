@@ -15,7 +15,6 @@ import { buildStagedSongSlide, getSongStageCount } from '../utils/stagedSongSlid
 import { parseSongXML, createSongSlide, isSongData } from '../utils/songParser';
 import { validateDeck } from '../utils/deckValidator';
 import { CURRENT_SCHEMA_VERSION } from '../utils/schema';
-import LibraryPanel from './LibraryPanel';
 import { remixDataUrl, REMIX_ROUTE_ID } from '../utils/remixDataUrl';
 
 export default function DeckBuilder() {
@@ -30,7 +29,6 @@ export default function DeckBuilder() {
   const [selectedSlideIndex, setSelectedSlideIndex] = useState<number | null>(null);
   const [operatorMessage, setOperatorMessage] = useState<string>('');
   const [libraryId, setLibraryId] = useState<string | null>(null);
-  const [showLibrary, setShowLibrary] = useState<boolean>(false);
   const [libraryRefreshKey, setLibraryRefreshKey] = useState<number>(0);
   const [showSaveToLibraryPrompt, setShowSaveToLibraryPrompt] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -607,7 +605,6 @@ export default function DeckBuilder() {
       setLastSentSlideId(null);
       setSongLastStagedById({});
       setShowSaveToLibraryPrompt(false);
-      setShowLibrary(false);
       setMessage('Opened from library.');
     } catch (e) {
       setMessage(`Open error: ${e instanceof Error ? e.message : 'Unknown'}`);
@@ -647,7 +644,6 @@ export default function DeckBuilder() {
         <button id="load" onClick={() => handleUploadClick()} disabled={isLoadingSong}>{isLoadingSong ? 'Loading...' : 'Load'}</button>
         <button id="save" onClick={handleSaveClick}>Save</button>
         <button id="save-to-library" onClick={handleSaveToLibrary} disabled={!deck}>Save to Library</button>
-        <button id="toggle-library" onClick={() => setShowLibrary(v => !v)}>Library</button>
         <button onClick={createNewDeck}>New Deck</button>
         <label style={{ marginLeft: '8px' }}>
           Add slide:
@@ -983,17 +979,7 @@ export default function DeckBuilder() {
         </div>
       )}
       {libraryId && <div data-testid="library-id" style={{ fontSize: '11px', color: '#888' }}>Library ID: {libraryId}</div>}
-      {showLibrary && (
-        <LibraryPanel
-          onOpen={openFromLibrary}
-          onDeleted={(id) => {
-            if (id === libraryId) setLibraryId(null);
-            setLibraryRefreshKey(k => k + 1);
-          }}
-          currentLibraryId={libraryId}
-          refreshKey={libraryRefreshKey}
-        />
-      )}
+      {/* Library panel moved to HomePage — DeckBuilder keeps Save/Load controls on /deck */}
     </>
   );
 }

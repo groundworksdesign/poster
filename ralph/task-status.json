@@ -227,10 +227,10 @@
       "id": 27,
       "title": "Clean up DeckBuilder duplicate library toggle",
       "description": "Remove or de-emphasize the duplicate Library toggle/panel from DeckBuilder now that LibraryPanel lives on the home page. Keep Save to Library and Load on /deck. Update existing unit and E2E tests (LibraryPanel.unit.test.tsx, e2e/library.spec.ts) to reflect the reorganized UI.",
-      "status": "backlog",
-      "devIterations": 0,
+      "status": "done",
+      "devIterations": 2,
       "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T03:58:56.508Z"
+      "updatedAt": "2026-05-15T04:10:24.496Z"
     },
     {
       "id": 28,
@@ -239,7 +239,7 @@
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T03:58:56.508Z"
+      "updatedAt": "2026-05-15T04:02:13.839Z"
     },
     {
       "id": 16,
@@ -248,7 +248,7 @@
       "status": "backlog",
       "devIterations": 1,
       "createdAt": "2026-04-13T14:51:13.534Z",
-      "updatedAt": "2026-05-15T03:58:56.508Z",
+      "updatedAt": "2026-05-15T04:02:13.839Z",
       "blocked": {
         "summary": "Playwright E2E run blocked by unavailable CRA dev server (port 3001)",
         "impact": "Cannot execute E2E spec to verify tests pass; Playwright tests time out without running SPA served by CRA",
@@ -266,7 +266,7 @@
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-04-13T16:47:19.445Z",
-      "updatedAt": "2026-05-15T03:58:56.508Z"
+      "updatedAt": "2026-05-15T04:02:13.839Z"
     },
     {
       "id": 29,
@@ -275,7 +275,7 @@
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T03:58:56.508Z"
+      "updatedAt": "2026-05-15T04:02:13.839Z"
     },
     {
       "id": 30,
@@ -284,7 +284,7 @@
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T03:58:56.508Z"
+      "updatedAt": "2026-05-15T04:02:13.839Z"
     },
     {
       "id": 31,
@@ -293,7 +293,7 @@
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T03:58:56.508Z"
+      "updatedAt": "2026-05-15T04:02:13.839Z"
     },
     {
       "id": 32,
@@ -302,7 +302,7 @@
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T03:58:56.508Z"
+      "updatedAt": "2026-05-15T04:02:13.839Z"
     },
     {
       "id": 33,
@@ -311,7 +311,7 @@
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T03:58:56.508Z"
+      "updatedAt": "2026-05-15T04:02:13.839Z"
     },
     {
       "id": 34,
@@ -320,21 +320,21 @@
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T03:58:56.508Z"
+      "updatedAt": "2026-05-15T04:02:13.839Z"
     }
   ],
-  "currentTaskNum": 26,
-  "totalLLMCalls": 10,
+  "currentTaskNum": 27,
+  "totalLLMCalls": 15,
   "maxLLMCalls": 500,
   "nextTask": {
-    "taskId": 26,
-    "content": "## Task: Mount LibraryPanel on HomePage\n\nRender LibraryPanel on src/HomePage.tsx with onOpen navigating to /deck?open=<id>. Update DeckBuilder to read the open search param, load the matching library record, and strip the param from the URL. Add a link/button to /deck?focusImport=1 from home and handle that param in DeckBuilder to trigger the file input once.",
-    "updatedAt": "2026-05-15T03:58:56.532Z"
+    "taskId": 27,
+    "content": "## Task: Clean up DeckBuilder duplicate library toggle\n\nRemove or de-emphasize the duplicate Library toggle/panel from DeckBuilder now that LibraryPanel lives on the home page. Keep Save to Library and Load on /deck. Update existing unit and E2E tests (LibraryPanel.unit.test.tsx, e2e/library.spec.ts) to reflect the reorganized UI.",
+    "updatedAt": "2026-05-15T04:02:13.868Z"
   },
   "feedback": {
-    "taskId": 26,
-    "content": "<status>verified</status>\n\n",
-    "updatedAt": "2026-05-15T04:01:03.259Z"
+    "taskId": 27,
+    "content": "Inspecting DeckBuilder, LibraryPanel, and related tests and searching the repo for references to the library toggle and import query params to verify the duplicate toggle was removed. Running parallel file reads and code searches now.\n\nRunning unit tests for DeckBuilder and LibraryPanel to verify no regressions.\n\n<status>verified</status>\n\nMarking the review as complete and recording a short verification summary with task_complete.\n\n",
+    "updatedAt": "2026-05-15T04:10:24.485Z"
   },
-  "lastUpdated": "2026-05-15T04:01:03.273Z"
+  "lastUpdated": "2026-05-15T04:10:24.496Z"
 }

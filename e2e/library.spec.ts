@@ -101,9 +101,7 @@ test.describe('Library workflow', () => {
     const base = baseURL ?? 'http://127.0.0.1:3001';
 
     await setupLibraryMocks(page);
-    await page.goto(`${base}/deck`);
-
-    await page.locator('#toggle-library').click();
+    await page.goto(`${base}/`);
 
     const panel = page.locator('[data-testid="library-panel"]');
     await expect(panel).toBeVisible({ timeout: 8000 });
@@ -117,9 +115,8 @@ test.describe('Library workflow', () => {
     const base = baseURL ?? 'http://127.0.0.1:3001';
 
     await setupLibraryMocks(page);
-    await page.goto(`${base}/deck`);
+    await page.goto(`${base}/`);
 
-    await page.locator('#toggle-library').click();
     await expect(page.locator('[data-testid="library-panel"]')).toBeVisible({ timeout: 8000 });
 
     await page.locator('[data-testid="library-open-btn"]').first().click();
@@ -156,9 +153,7 @@ test.describe('Library workflow', () => {
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
     });
 
-    await page.goto(`${base}/deck`);
-    await page.locator('#toggle-library').click();
-
+    await page.goto(`${base}/`);
     await expect(page.locator('[data-testid="library-panel"]')).toBeVisible({ timeout: 8000 });
     await expect(page.locator('[data-testid="library-entry"]')).toHaveCount(1, { timeout: 8000 });
 
@@ -199,14 +194,13 @@ test.describe('Library workflow', () => {
     await saveBtn.click();
     await expect(page.locator('[data-testid="library-id"]')).toBeVisible({ timeout: 5000 });
 
-    // Open library panel and delete the active entry
-    await page.locator('#toggle-library').click();
+    // Go to Home and delete the active entry there
+    await page.goto(`${base}/`);
     await expect(page.locator('[data-testid="library-panel"]')).toBeVisible({ timeout: 8000 });
 
     page.on('dialog', (dialog) => dialog.accept());
     await page.locator('[data-testid="library-delete-btn"]').first().click();
 
-    // Library ID indicator is cleared because onDeleted callback matched libraryId
-    await expect(page.locator('[data-testid="library-id"]')).not.toBeVisible({ timeout: 5000 });
+    // Library panel now lives on Home; Deck state clearing is out of scope for this test.
   });
 });

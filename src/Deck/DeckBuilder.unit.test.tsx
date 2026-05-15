@@ -70,22 +70,11 @@ test('DeckBuilder shows header and handles save with no deck', () => {
   expect(screen.getByText('No deck to save')).toBeInTheDocument();
 });
 
-test('Library toggle button shows and hides library panel', async () => {
+test('does not render Library toggle; Save and Load remain', () => {
   render(<DeckBuilder />);
-
-  expect(screen.queryByTestId('library-panel')).not.toBeInTheDocument();
-
-  act(() => {
-    fireEvent.click(screen.getByRole('button', { name: /^library$/i }));
-  });
-
-  expect(screen.getByTestId('library-panel')).toBeInTheDocument();
-
-  act(() => {
-    fireEvent.click(screen.getByRole('button', { name: /^library$/i }));
-  });
-
-  expect(screen.queryByTestId('library-panel')).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: /^library$/i })).not.toBeInTheDocument();
+  expect(screen.getByRole('button', { name: /^save$/i })).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: /^load$/i })).toBeInTheDocument();
 });
 
 test('import-save prompt appears after valid JSON deck import', async () => {
