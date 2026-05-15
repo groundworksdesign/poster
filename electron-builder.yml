@@ -11,7 +11,7 @@ extends: null
 # would produce binaries for the wrong ABI. Instead, the CI pipeline rebuilds
 # better-sqlite3 for the system Node (pnpm rebuild better-sqlite3) before
 # invoking electron-builder, so the modules in node_modules are already correct.
-npmRebuild: false
+npmRebuild: true
 
 # Output directory (kept separate from portable-zip dist/)
 directories:
