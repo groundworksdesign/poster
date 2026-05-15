@@ -1,7 +1,11 @@
+@import './themes.css';
+
 .App {
   text-align: center;
   height: 100%;
   width: 100%;
+  background-color: var(--color-bg);
+  color: var(--color-fg);
 }
 
 .content {
@@ -64,14 +68,14 @@ ul {
 .home-page-lead {
   margin: 0 0 1rem;
   line-height: 1.5;
-  color: #333;
+  color: var(--color-fg-muted);
 }
 
 .home-page-steps {
   margin: 0 0 1.25rem;
   padding-left: 1.35rem;
   line-height: 1.5;
-  color: #333;
+  color: var(--color-fg-muted);
 }
 
 .home-page-steps li {
@@ -91,21 +95,21 @@ ul {
   border-radius: 6px;
   font-weight: 500;
   text-decoration: none;
-  border: 1px solid #1a1a1a;
-  color: #1a1a1a;
-  background: #fff;
+  border: 1px solid var(--color-border);
+  color: var(--color-fg);
+  background: var(--color-bg-surface);
 }
 
 .home-page-link:hover {
-  background: #f4f4f4;
+  background: var(--color-link-hover-bg);
 }
 
 .home-page-link--deck {
-  border-color: #0d47a1;
-  color: #0d47a1;
+  border-color: var(--color-accent);
+  color: var(--color-link);
 }
 
 .home-page-link--present {
-  border-color: #1b5e20;
-  color: #1b5e20;
+  border-color: var(--color-link-present);
+  color: var(--color-link-present);
 }
