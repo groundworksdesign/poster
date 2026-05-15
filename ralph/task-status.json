@@ -236,10 +236,10 @@
       "id": 28,
       "title": "Add home-library E2E coverage",
       "description": "Write or extend Playwright tests in e2e/home-library.spec.ts covering: opening a deck from the home library panel navigates to /deck?open=, the focusImport link opens the file input, and library CRUD actions on the home page do not regress the DeckBuilder library flows.",
-      "status": "backlog",
-      "devIterations": 0,
+      "status": "done",
+      "devIterations": 1,
       "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T04:02:13.839Z"
+      "updatedAt": "2026-05-15T05:00:00.000Z"
     },
     {
       "id": 16,
