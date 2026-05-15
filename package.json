@@ -53,7 +53,8 @@
     "vendor:prepare": "echo \"Vendorization placeholder: add vendor/ dir or prebuilt /build artifacts\"",
     "test:e2e": "playwright test",
     "test:e2e:remix": "playwright test --config=playwright.remix.config.ts",
-    "rebuild:sqlite": "pnpm rebuild better-sqlite3"
+    "rebuild:sqlite": "pnpm rebuild better-sqlite3",
+    "package:portable": "node scripts/package-portable.mjs"
   },
   "jest": {
     "collectCoverageFrom": [
