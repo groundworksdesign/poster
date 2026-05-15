@@ -344,24 +344,24 @@
       "id": 38,
       "title": "Add root requirements.md for acceptance",
       "description": "Create `requirements.md` at the repo root summarizing product acceptance aligned with `ralph/epic.md`, canonical epic plans under `docs/epics/`, and operator behavior documented in `README.md`, so future task loops have a single requirements entry point.",
-      "status": "backlog",
-      "devIterations": 0,
+      "status": "done",
+      "devIterations": 1,
       "createdAt": "2026-05-15T15:16:55.462Z",
-      "updatedAt": "2026-05-15T15:22:36.405Z"
+      "updatedAt": "2026-05-15T15:48:10.984Z"
     }
   ],
-  "currentTaskNum": 37,
-  "totalLLMCalls": 17,
+  "currentTaskNum": 38,
+  "totalLLMCalls": 1,
   "maxLLMCalls": 500,
   "nextTask": {
-    "taskId": 37,
-    "content": "## Task: Run Remix Playwright suite in PR CI\n\nAdd a GitHub Actions job (or extend an existing workflow) that installs Playwright browsers, runs `pnpm run test:e2e:remix` with frozen lockfile, and fails the workflow on test failure so backup/restore and other Remix-only specs stay green after merges.",
-    "updatedAt": "2026-05-15T15:22:36.427Z"
+    "taskId": 38,
+    "content": "## Task: Add root requirements.md for acceptance\n\nCreate `requirements.md` at the repo root summarizing product acceptance aligned with `ralph/epic.md`, canonical epic plans under `docs/epics/`, and operator behavior documented in `README.md`, so future task loops have a single requirements entry point.",
+    "updatedAt": "2026-05-15T15:47:18.818Z"
   },
   "feedback": {
-    "taskId": 37,
-    "content": "Implementation checks out:\n\n- **PR workflow** (`.github/workflows/pr.yml`): `remix-e2e` runs on `pull_request`, uses `pnpm install --frozen-lockfile`, runs `pnpm exec playwright install --with-deps chromium`, then `pnpm run test:e2e:remix`. No `continue-on-error`, so failing tests fail the workflow.\n- **`package.json`**: `test:e2e:remix` points at `playwright.remix.config.ts`.\n- **`playwright.remix.config.ts`**: Starts Remix via `webServer`, limits tests to `remix-*.spec.ts`, uses Chromium only (matches CI browser install).\n\nLocal run: `pnpm run test:e2e:remix` completed with **23 passed**, including `remix-library-backup-restore.spec.ts`.\n\n```\n<status>verified</status>\n```\n",
-    "updatedAt": "2026-05-15T15:24:03.436Z"
+    "taskId": 38,
+    "content": "<status>verified</status>\n\nCompleting the review and marking the task complete (reporting intent while calling task_complete).\n\n",
+    "updatedAt": "2026-05-15T15:48:10.974Z"
   },
-  "lastUpdated": "2026-05-15T15:24:03.448Z"
+  "lastUpdated": "2026-05-15T15:48:10.984Z"
 }
