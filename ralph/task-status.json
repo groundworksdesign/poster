@@ -306,26 +306,35 @@
     },
     {
       "id": 34,
-      "title": "Release CI workflow attaching artifacts to GitHub Release",
-      "description": "Add a release workflow triggered on pushed semver tags (v*.*.*) that repeats the portable zip packaging and Electron installer builds per runner OS and uploads combined outputs to the corresponding GitHub Release using a supported release asset action.",
+      "title": "Release workflow for GitHub Release assets",
+      "description": "Add a tag-driven GitHub Actions workflow (e.g. on semver v*.*.* pushes) that repeats portable zip packaging and per-OS Electron installer builds like the PR pipeline, then uploads every produced artifact to the GitHub Release for that tag using a supported release-assets action, with contents write permission and filenames that include the tag or package version.",
+      "status": "done",
+      "devIterations": 1,
+      "createdAt": "2026-05-15T03:48:04.797Z",
+      "updatedAt": "2026-05-15T15:13:04.214Z"
+    },
+    {
+      "id": 35,
+      "title": "Document packaging, CI, and releases",
+      "description": "After release assets are automated, update README with how to run the portable packager locally, build Electron installers, where PR artifacts appear, and how semver tags trigger release asset uploads; optionally sync docs/epics/epic-002 frontmatter todo statuses with shipped work.",
       "status": "backlog",
       "devIterations": 0,
-      "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T14:53:37.073Z"
+      "createdAt": "2026-05-15T15:10:36.965Z",
+      "updatedAt": "2026-05-15T15:10:36.965Z"
     }
   ],
-  "currentTaskNum": 33,
-  "totalLLMCalls": 5,
+  "currentTaskNum": 34,
+  "totalLLMCalls": 8,
   "maxLLMCalls": 500,
   "nextTask": {
-    "taskId": 33,
-    "content": "## Task: PR CI matrix for Electron installers\n\nExtend GitHub Actions for pull_request so electron-builder runs on ubuntu-latest, windows-latest, and macos-latest jobs that install with pnpm --frozen-lockfile, rebuild better-sqlite3, build Remix, produce per-OS installers (DMG on macOS, NSIS exe on Windows, deb and AppImage targets on Linux as configured), and upload all outputs with distinguishable artifact names.",
-    "updatedAt": "2026-05-15T14:53:37.106Z"
+    "taskId": 34,
+    "content": "## Task: Release workflow for GitHub Release assets\n\nAdd a tag-driven GitHub Actions workflow (e.g. on semver v*.*.* pushes) that repeats portable zip packaging and per-OS Electron installer builds like the PR pipeline, then uploads every produced artifact to the GitHub Release for that tag using a supported release-assets action, with contents write permission and filenames that include the tag or package version.",
+    "updatedAt": "2026-05-15T15:10:36.996Z"
   },
   "feedback": {
-    "taskId": 33,
-    "content": "Here is the assessment:\n\n**Coverage**\n\n- `.github/workflows/pr.yml` defines `electron-installers` with `matrix.os: [ubuntu-latest, windows-latest, macos-latest]`.\n- Steps match the brief: `pnpm install --frozen-lockfile`, `pnpm rebuild better-sqlite3`, `pnpm run build:remix`, `pnpm run build:electron`.\n- `electron-builder.yml` sets `npmRebuild: true`, DMG (mac), NSIS (Windows `.exe`), and Linux `.deb` + AppImage.\n- Artifacts use distinct names: `poster-electron-${{ matrix.os }}-pr-${{ github.event.pull_request.number }}-${{ github.sha }}`.\n- Staging collects `.dmg`, `.exe`, `.deb`, and `.AppImage` under `dist/electron-installers/` before upload.\n- `CSC_IDENTITY_AUTO_DISCOVERY: false` is appropriate for unsigned CI mac builds.\n\n**Sanity check**\n\n- Local run completed successfully: `pnpm install --frozen-lockfile`, `pnpm run build:remix`, and `pnpm run build:electron` exited 0 and produced DMGs under `dist/electron/`.\n\nNo gaps relative to the stated task.\n\n```\n<status>verified</status>\n```\n",
-    "updatedAt": "2026-05-15T15:10:00.574Z"
+    "taskId": 34,
+    "content": "The release workflow satisfies the assignment: tags `v*.*.*` trigger per-OS jobs that mirror the PR pipeline (`pnpm install` / `pnpm rebuild better-sqlite3` / `build:remix` / portable `--tag ${{ github.ref_name }}` plus `build:electron`), stage artifacts with names including the tag and full SHA (`poster-*-release-${{ matrix.os }}-...`), aggregate them via `download-artifact` (`merge-multiple: true`, scoped pattern), and publish with `softprops/action-gh-release@v2` under `contents: write`. Portable zips embed the tag in the filename (`package-portable.mjs`); Electron outputs use `${version}` from `package.json` per `electron-builder.yml`, which still satisfies “tag **or** package version” across the artifact set.\n\n```\n<status>verified</status>\n```\n",
+    "updatedAt": "2026-05-15T15:13:04.204Z"
   },
-  "lastUpdated": "2026-05-15T15:10:00.586Z"
+  "lastUpdated": "2026-05-15T15:13:04.214Z"
 }

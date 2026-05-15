@@ -7,10 +7,11 @@
  * production node_modules rebuilt for the current OS and Node version.
  *
  * Usage:
- *   node scripts/package-portable.mjs [--sha <git-sha>]
+ *   node scripts/package-portable.mjs [--sha <git-sha>] [--tag <release-tag>]
  *
  * Output:
  *   dist/poster-portable-<os>-<sha>.zip
+ *   dist/poster-portable-<os>-<tag>-<sha>.zip  (when --tag is set)
  *
  * Prerequisites:
  *   - pnpm run build:remix must have been run first (build/ must exist)
@@ -61,9 +62,12 @@ function runCapture(cmd, opts = {}) {
 
 const args = process.argv.slice(2);
 let shaOverride = null;
+let tagOverride = null;
 for (let i = 0; i < args.length; i++) {
   if (args[i] === "--sha" && args[i + 1]) {
     shaOverride = args[++i];
+  } else if (args[i] === "--tag" && args[i + 1]) {
+    tagOverride = args[++i];
   }
 }
 
@@ -209,7 +213,8 @@ try {
     "",
     "## Notes",
     "",
-    `This build was produced for OS: ${osSlug}, git SHA: ${gitSha}.`,
+    `This build was produced for OS: ${osSlug}, git SHA: ${gitSha}.` +
+      (tagOverride ? ` Release tag: ${tagOverride}.` : ""),
     "The node_modules/ directory was rebuilt for the host OS and Node version",
     "that created this zip. Do not mix node_modules from different operating",
     "systems — always use the zip that matches your target OS.",
@@ -229,7 +234,10 @@ try {
   const distDir = join(ROOT, "dist");
   mkdirSync(distDir, { recursive: true });
 
-  const zipName = `poster-portable-${osSlug}-${gitSha}.zip`;
+  const zipBase = tagOverride
+    ? `poster-portable-${osSlug}-${tagOverride}-${gitSha}`
+    : `poster-portable-${osSlug}-${gitSha}`;
+  const zipName = `${zipBase}.zip`;
   const zipPath = join(distDir, zipName);
 
   // Remove existing zip with same name

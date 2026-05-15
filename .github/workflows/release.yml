@@ -1,0 +1,169 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+# Build jobs only read the repo; publishing attaches assets with elevated token.
+permissions:
+  contents: read
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Portable zip (per OS) — same steps as PR Build, plus tag in zip basename
+  # ---------------------------------------------------------------------------
+  portable-zip:
+    name: Portable zip (${{ matrix.os }}) for ${{ github.ref_name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+      fail-fast: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Rebuild better-sqlite3 for runner OS
+        run: pnpm rebuild better-sqlite3
+
+      - name: Build Remix app
+        run: pnpm run build:remix
+
+      - name: Package portable zip
+        shell: bash
+        run: |
+          set -euo pipefail
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+          node scripts/package-portable.mjs --sha "$SHORT_SHA" --tag "${{ github.ref_name }}"
+
+      - name: Upload portable zip (staging artifact)
+        uses: actions/upload-artifact@v4
+        with:
+          name: poster-portable-release-${{ matrix.os }}-${{ github.ref_name }}-${{ github.sha }}
+          path: dist/poster-portable-*.zip
+          retention-days: 90
+          if-no-files-found: error
+
+  # ---------------------------------------------------------------------------
+  # Electron installers (per OS)
+  # ---------------------------------------------------------------------------
+  electron-installers:
+    name: Electron installers (${{ matrix.os }}) for ${{ github.ref_name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+      fail-fast: false
+
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Rebuild better-sqlite3 for runner OS
+        run: pnpm rebuild better-sqlite3
+
+      - name: Build Remix app
+        run: pnpm run build:remix
+
+      - name: Build Electron installers
+        run: pnpm run build:electron
+
+      - name: Stage installer files for artifact upload
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist/electron-installers
+          shopt -s nullglob
+          files=(
+            dist/electron/*.dmg
+            dist/electron/*.exe
+            dist/electron/*.deb
+            dist/electron/*.AppImage
+          )
+          copied=0
+          for f in "${files[@]}"; do
+            if [ -f "$f" ]; then
+              cp "$f" dist/electron-installers/
+              copied=$((copied + 1))
+            fi
+          done
+          if [ "$copied" -eq 0 ]; then
+            echo "No installer files found under dist/electron/"
+            ls -la dist/electron || true
+            exit 1
+          fi
+          ls -la dist/electron-installers/
+
+      - name: Upload Electron installers (staging artifact)
+        uses: actions/upload-artifact@v4
+        with:
+          name: poster-electron-release-${{ matrix.os }}-${{ github.ref_name }}-${{ github.sha }}
+          path: dist/electron-installers/
+          retention-days: 90
+          if-no-files-found: error
+
+  # ---------------------------------------------------------------------------
+  # Attach all matrix outputs to the GitHub Release for this tag
+  # ---------------------------------------------------------------------------
+  publish-release:
+    name: Publish GitHub Release assets
+    needs: [portable-zip, electron-installers]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download packaged artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          # Names: poster-portable-release-<runner>-<tag>-<sha>, poster-electron-release-<runner>-<tag>-<sha>
+          pattern: poster-*-${{ github.ref_name }}-${{ github.sha }}
+          merge-multiple: true
+          if-no-files-found: error
+
+      - name: List files to publish
+        run: ls -la release-assets
+
+      - name: Upload assets to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: |
+            release-assets/*
