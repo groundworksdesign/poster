@@ -209,10 +209,10 @@
       "id": 25,
       "title": "Theme picker on HomePage with persistence",
       "description": "Add a theme picker UI to src/HomePage.tsx that sets document.documentElement.dataset.theme and saves the selection to localStorage under poster-theme. Add an optional inline script in app/root.tsx to restore the theme before paint and reduce FOUC.",
-      "status": "backlog",
-      "devIterations": 0,
+      "status": "done",
+      "devIterations": 1,
       "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T03:48:04.797Z"
+      "updatedAt": "2026-05-15T03:53:09.188Z"
     },
     {
       "id": 26,
@@ -221,7 +221,7 @@
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T03:48:04.797Z"
+      "updatedAt": "2026-05-15T03:50:56.708Z"
     },
     {
       "id": 27,
@@ -230,7 +230,7 @@
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T03:48:04.797Z"
+      "updatedAt": "2026-05-15T03:50:56.708Z"
     },
     {
       "id": 28,
@@ -239,7 +239,7 @@
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T03:48:04.797Z"
+      "updatedAt": "2026-05-15T03:50:56.708Z"
     },
     {
       "id": 16,
@@ -248,7 +248,7 @@
       "status": "backlog",
       "devIterations": 1,
       "createdAt": "2026-04-13T14:51:13.534Z",
-      "updatedAt": "2026-05-15T03:48:04.797Z",
+      "updatedAt": "2026-05-15T03:50:56.708Z",
       "blocked": {
         "summary": "Playwright E2E run blocked by unavailable CRA dev server (port 3001)",
         "impact": "Cannot execute E2E spec to verify tests pass; Playwright tests time out without running SPA served by CRA",
@@ -266,7 +266,7 @@
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-04-13T16:47:19.445Z",
-      "updatedAt": "2026-05-15T03:48:04.797Z"
+      "updatedAt": "2026-05-15T03:50:56.708Z"
     },
     {
       "id": 29,
@@ -275,7 +275,7 @@
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T03:48:04.797Z"
+      "updatedAt": "2026-05-15T03:50:56.708Z"
     },
     {
       "id": 30,
@@ -284,7 +284,7 @@
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T03:48:04.797Z"
+      "updatedAt": "2026-05-15T03:50:56.708Z"
     },
     {
       "id": 31,
@@ -293,7 +293,7 @@
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T03:48:04.797Z"
+      "updatedAt": "2026-05-15T03:50:56.708Z"
     },
     {
       "id": 32,
@@ -302,7 +302,7 @@
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T03:48:04.797Z"
+      "updatedAt": "2026-05-15T03:50:56.708Z"
     },
     {
       "id": 33,
@@ -311,7 +311,7 @@
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T03:48:04.797Z"
+      "updatedAt": "2026-05-15T03:50:56.708Z"
     },
     {
       "id": 34,
@@ -320,21 +320,21 @@
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T03:48:04.797Z"
+      "updatedAt": "2026-05-15T03:50:56.708Z"
     }
   ],
-  "currentTaskNum": 24,
-  "totalLLMCalls": 4,
+  "currentTaskNum": 25,
+  "totalLLMCalls": 7,
   "maxLLMCalls": 500,
   "nextTask": {
-    "taskId": 24,
-    "content": "## Task: CSS custom properties and four dark themes\n\nIntroduce CSS custom properties for all hardcoded color values in src/App.css, then define four [data-theme] palettes: dracula, tokyo-night, dark-blue, and github-dark. Migrate .home-page* and other fixed colors to var(--) references.",
-    "updatedAt": "2026-05-15T03:48:04.820Z"
+    "taskId": 25,
+    "content": "## Task: Theme picker on HomePage with persistence\n\nAdd a theme picker UI to src/HomePage.tsx that sets document.documentElement.dataset.theme and saves the selection to localStorage under poster-theme. Add an optional inline script in app/root.tsx to restore the theme before paint and reduce FOUC.",
+    "updatedAt": "2026-05-15T03:50:56.748Z"
   },
   "feedback": {
-    "taskId": 24,
-    "content": "Reading the repository for CSS files to inspect App.css and any theme definitions, so the review checks CSS variable migration and theme palettes. Running a glob for *.css while reporting intent.\n\nReading src/App.css, src/index.css, and src/themes.css to verify migration to CSS variables and presence of the four [data-theme] palettes. Running parallel file reads.\n\n<status>verified</status>\n\n",
-    "updatedAt": "2026-05-15T03:49:44.076Z"
+    "taskId": 25,
+    "content": "Reading HomePage, root, and App.css and searching the repo for poster-theme/data-theme uses to verify the picker and inline script are present before paint. Running file reads and ripgrep searches in parallel.\n\n<status>verified</status>\n\nMarking task complete and recording verification summary.\n\n",
+    "updatedAt": "2026-05-15T03:53:09.170Z"
   },
-  "lastUpdated": "2026-05-15T03:49:44.110Z"
+  "lastUpdated": "2026-05-15T03:53:09.188Z"
 }
