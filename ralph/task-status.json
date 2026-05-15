@@ -235,29 +235,20 @@
     {
       "id": 28,
       "title": "Add home-library E2E coverage",
-      "description": "Write or extend Playwright tests in e2e/home-library.spec.ts covering: opening a deck from the home library panel navigates to /deck?open=, the focusImport link opens the file input, and library CRUD actions on the home page do not regress the DeckBuilder library flows.",
+      "description": "Write Playwright tests in e2e/home-library.spec.ts covering: opening a deck from the home LibraryPanel navigates to /deck?open=<id>, the focusImport CTA link routes to /deck?focusImport=1, and library list/delete actions on the home page do not regress existing DeckBuilder library flows.",
       "status": "done",
       "devIterations": 1,
       "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T05:00:00.000Z"
+      "updatedAt": "2026-05-15T04:55:57.226Z"
     },
     {
       "id": 16,
       "title": "E2E tests for import validation and save-to-library",
       "description": "Write Playwright tests covering the import validation error paths (missing title, missing slides, unknown slide type) and the save-to-library import workflow, ensuring both features are exercised end-to-end against the Remix dev server.",
-      "status": "backlog",
+      "status": "done",
       "devIterations": 1,
       "createdAt": "2026-04-13T14:51:13.534Z",
-      "updatedAt": "2026-05-15T04:02:13.839Z",
-      "blocked": {
-        "summary": "Playwright E2E run blocked by unavailable CRA dev server (port 3001)",
-        "impact": "Cannot execute E2E spec to verify tests pass; Playwright tests time out without running SPA served by CRA",
-        "nextStep": "Start the CRA dev server on the E2E port (3001) or free/change the port before running Playwright",
-        "needs": "Access to start the CRA dev server or instructions to use a different E2E_PORT and confirm server is reachable at http://127.0.0.1:3001",
-        "capturedAt": "2026-04-13T15:49:49.291Z",
-        "resolved": true,
-        "resolvedAt": "2026-05-15T03:33:43.345Z"
-      }
+      "updatedAt": "2026-05-15T05:08:56.206Z"
     },
     {
       "id": 23,
@@ -266,7 +257,7 @@
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-04-13T16:47:19.445Z",
-      "updatedAt": "2026-05-15T04:02:13.839Z"
+      "updatedAt": "2026-05-15T04:55:57.226Z"
     },
     {
       "id": 29,
@@ -275,7 +266,7 @@
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T04:02:13.839Z"
+      "updatedAt": "2026-05-15T04:55:57.226Z"
     },
     {
       "id": 30,
@@ -284,7 +275,7 @@
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T04:02:13.839Z"
+      "updatedAt": "2026-05-15T04:55:57.226Z"
     },
     {
       "id": 31,
@@ -293,7 +284,7 @@
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T04:02:13.839Z"
+      "updatedAt": "2026-05-15T04:55:57.226Z"
     },
     {
       "id": 32,
@@ -302,7 +293,7 @@
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T04:02:13.839Z"
+      "updatedAt": "2026-05-15T04:55:57.226Z"
     },
     {
       "id": 33,
@@ -311,7 +302,7 @@
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T04:02:13.839Z"
+      "updatedAt": "2026-05-15T04:55:57.226Z"
     },
     {
       "id": 34,
@@ -320,21 +311,21 @@
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T04:02:13.839Z"
+      "updatedAt": "2026-05-15T04:55:57.226Z"
     }
   ],
-  "currentTaskNum": 27,
-  "totalLLMCalls": 15,
+  "currentTaskNum": 16,
+  "totalLLMCalls": 18,
   "maxLLMCalls": 500,
   "nextTask": {
-    "taskId": 27,
-    "content": "## Task: Clean up DeckBuilder duplicate library toggle\n\nRemove or de-emphasize the duplicate Library toggle/panel from DeckBuilder now that LibraryPanel lives on the home page. Keep Save to Library and Load on /deck. Update existing unit and E2E tests (LibraryPanel.unit.test.tsx, e2e/library.spec.ts) to reflect the reorganized UI.",
-    "updatedAt": "2026-05-15T04:02:13.868Z"
+    "taskId": 16,
+    "content": "## Task: E2E tests for import validation and save-to-library\n\nWrite Playwright tests covering the import validation error paths (missing title, missing slides, unknown slide type) and the save-to-library import workflow, ensuring both features are exercised end-to-end against the Remix dev server.",
+    "updatedAt": "2026-05-15T04:55:57.249Z"
   },
   "feedback": {
-    "taskId": 27,
-    "content": "Inspecting DeckBuilder, LibraryPanel, and related tests and searching the repo for references to the library toggle and import query params to verify the duplicate toggle was removed. Running parallel file reads and code searches now.\n\nRunning unit tests for DeckBuilder and LibraryPanel to verify no regressions.\n\n<status>verified</status>\n\nMarking the review as complete and recording a short verification summary with task_complete.\n\n",
-    "updatedAt": "2026-05-15T04:10:24.485Z"
+    "taskId": 16,
+    "content": "Searching the repo for Playwright e2e specs and reading package.json to determine how to run the tests; will then run the Playwright suite if present. Running tests. I'll scan e2e files and grep for import/save-to-library references first.\n\n<status>verified</status>\n\nMarking task complete and recording a short summary of verification before closing the task. Calling task_complete now to register completion.\n\n",
+    "updatedAt": "2026-05-15T05:08:56.196Z"
   },
-  "lastUpdated": "2026-05-15T04:10:24.496Z"
+  "lastUpdated": "2026-05-15T05:08:56.206Z"
 }
