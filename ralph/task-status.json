@@ -254,10 +254,10 @@
       "id": 23,
       "title": "Visual regression tests for presenter layouts",
       "description": "Add Playwright screenshot-based visual regression tests that capture the presenter view for each of the 9 alignment grid cells and for green screen mode, locking pixel-level layout so future style changes do not silently break broadcast-critical output positioning.",
-      "status": "backlog",
-      "devIterations": 0,
+      "status": "done",
+      "devIterations": 1,
       "createdAt": "2026-04-13T16:47:19.445Z",
-      "updatedAt": "2026-05-15T04:55:57.226Z"
+      "updatedAt": "2026-05-15T05:31:12.408Z"
     },
     {
       "id": 29,
@@ -266,7 +266,7 @@
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T04:55:57.226Z"
+      "updatedAt": "2026-05-15T05:28:53.415Z"
     },
     {
       "id": 30,
@@ -275,7 +275,7 @@
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T04:55:57.226Z"
+      "updatedAt": "2026-05-15T05:28:53.415Z"
     },
     {
       "id": 31,
@@ -284,7 +284,7 @@
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T04:55:57.226Z"
+      "updatedAt": "2026-05-15T05:28:53.415Z"
     },
     {
       "id": 32,
@@ -293,7 +293,7 @@
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T04:55:57.226Z"
+      "updatedAt": "2026-05-15T05:28:53.415Z"
     },
     {
       "id": 33,
@@ -302,7 +302,7 @@
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T04:55:57.226Z"
+      "updatedAt": "2026-05-15T05:28:53.415Z"
     },
     {
       "id": 34,
@@ -311,21 +311,21 @@
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T04:55:57.226Z"
+      "updatedAt": "2026-05-15T05:28:53.415Z"
     }
   ],
-  "currentTaskNum": 16,
-  "totalLLMCalls": 18,
+  "currentTaskNum": 23,
+  "totalLLMCalls": 21,
   "maxLLMCalls": 500,
   "nextTask": {
-    "taskId": 16,
-    "content": "## Task: E2E tests for import validation and save-to-library\n\nWrite Playwright tests covering the import validation error paths (missing title, missing slides, unknown slide type) and the save-to-library import workflow, ensuring both features are exercised end-to-end against the Remix dev server.",
-    "updatedAt": "2026-05-15T04:55:57.249Z"
+    "taskId": 23,
+    "content": "## Task: Visual regression tests for presenter layouts\n\nAdd Playwright screenshot-based visual regression tests that capture the presenter view for each of the 9 alignment grid cells and for green screen mode, locking pixel-level layout so future style changes do not silently break broadcast-critical output positioning.",
+    "updatedAt": "2026-05-15T05:28:53.438Z"
   },
   "feedback": {
-    "taskId": 16,
-    "content": "Searching the repo for Playwright e2e specs and reading package.json to determine how to run the tests; will then run the Playwright suite if present. Running tests. I'll scan e2e files and grep for import/save-to-library references first.\n\n<status>verified</status>\n\nMarking task complete and recording a short summary of verification before closing the task. Calling task_complete now to register completion.\n\n",
-    "updatedAt": "2026-05-15T05:08:56.196Z"
+    "taskId": 23,
+    "content": "<status>verified</status>\n\n",
+    "updatedAt": "2026-05-15T05:31:12.397Z"
   },
-  "lastUpdated": "2026-05-15T05:08:56.206Z"
+  "lastUpdated": "2026-05-15T05:31:12.408Z"
 }
