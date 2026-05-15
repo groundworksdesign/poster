@@ -7,5 +7,10 @@
   "qaReasoningEffort": "high",
   "autoCommit": true,
   "planFrequency": 1,
-  "minBacklogSize": 3
+  "minBacklogSize": 3,
+  "agentBackend": "copilot",
+  "epicFile": "docs/epics/epic-002-theme-install-reorg.plan.md",
+  "requirementsFile": "",
+  "pauseAfterPlan": false,
+  "taskColumnSort": "updatedAtDesc"
 }

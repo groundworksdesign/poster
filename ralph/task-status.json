@@ -136,22 +136,6 @@
       "updatedAt": "2026-04-13T15:26:25.346Z"
     },
     {
-      "id": 16,
-      "title": "E2E tests for import validation and save-to-library",
-      "description": "Write Playwright tests covering the import validation error paths (missing title, missing slides, unknown slide type) and the save-to-library import workflow, ensuring both features are exercised end-to-end.",
-      "status": "blocked",
-      "devIterations": 1,
-      "createdAt": "2026-04-13T14:51:13.534Z",
-      "updatedAt": "2026-04-13T15:49:49.293Z",
-      "blocked": {
-        "summary": "Playwright E2E run blocked by unavailable CRA dev server (port 3001)",
-        "impact": "Cannot execute E2E spec to verify tests pass; Playwright tests time out without running SPA served by CRA",
-        "nextStep": "Start the CRA dev server on the E2E port (3001) or free/change the port before running Playwright",
-        "needs": "Access to start the CRA dev server or instructions to use a different E2E_PORT and confirm server is reachable at http://127.0.0.1:3001",
-        "capturedAt": "2026-04-13T15:49:49.291Z"
-      }
-    },
-    {
       "id": 17,
       "title": "Verify import-validation E2E spec passes",
       "description": "The spec at e2e/import-validation-save-to-library.spec.ts was written as part of task 16 but could not be verified because the CRA dev server was unavailable. Start the CRA dev server on the configured E2E port and confirm all tests in that spec pass cleanly with no regressions in other suites.",
@@ -200,10 +184,80 @@
       "id": 22,
       "title": "E2E tests for backup and restore",
       "description": "Write Playwright tests covering the SQLite library backup download flow and the restore (database upload/replace) flow added in task 18, ensuring both the Backup and Import Database buttons function end-to-end with no regressions in existing library tests.",
-      "status": "inProgress",
-      "devIterations": 0,
+      "status": "blocked",
+      "devIterations": 1,
       "createdAt": "2026-04-13T16:47:19.445Z",
-      "updatedAt": "2026-04-13T16:56:58.603Z"
+      "updatedAt": "2026-05-15T03:42:52.355Z",
+      "blocked": {
+        "summary": "Playwright webServer (CRA dev) exits early",
+        "impact": "Cannot run Playwright e2e tests locally, so backup/restore tests cannot be executed/verified in CI here",
+        "nextStep": "Install dependencies and start the CRA dev server successfully (npm ci / pnpm install, ensure Node version and env), then run playwright test",
+        "needs": "Run `npm ci` (or `pnpm install`) and `npx playwright install --with-deps`; ensure `npm run start:cra` succeeds locally",
+        "capturedAt": "2026-05-15T03:42:52.351Z"
+      }
+    },
+    {
+      "id": 24,
+      "title": "CSS custom properties and four dark themes",
+      "description": "Introduce CSS custom properties for all hardcoded color values in src/App.css, then define four [data-theme] palettes: dracula, tokyo-night, dark-blue, and github-dark. Migrate .home-page* and other fixed colors to var(--) references.",
+      "status": "done",
+      "devIterations": 1,
+      "createdAt": "2026-05-15T03:48:04.797Z",
+      "updatedAt": "2026-05-15T03:49:44.110Z"
+    },
+    {
+      "id": 25,
+      "title": "Theme picker on HomePage with persistence",
+      "description": "Add a theme picker UI to src/HomePage.tsx that sets document.documentElement.dataset.theme and saves the selection to localStorage under poster-theme. Add an optional inline script in app/root.tsx to restore the theme before paint and reduce FOUC.",
+      "status": "backlog",
+      "devIterations": 0,
+      "createdAt": "2026-05-15T03:48:04.797Z",
+      "updatedAt": "2026-05-15T03:48:04.797Z"
+    },
+    {
+      "id": 26,
+      "title": "Mount LibraryPanel on HomePage",
+      "description": "Render LibraryPanel on src/HomePage.tsx with onOpen navigating to /deck?open=<id>. Update DeckBuilder to read the open search param, load the matching library record, and strip the param from the URL. Add a link/button to /deck?focusImport=1 from home and handle that param in DeckBuilder to trigger the file input once.",
+      "status": "backlog",
+      "devIterations": 0,
+      "createdAt": "2026-05-15T03:48:04.797Z",
+      "updatedAt": "2026-05-15T03:48:04.797Z"
+    },
+    {
+      "id": 27,
+      "title": "Clean up DeckBuilder duplicate library toggle",
+      "description": "Remove or de-emphasize the duplicate Library toggle/panel from DeckBuilder now that LibraryPanel lives on the home page. Keep Save to Library and Load on /deck. Update existing unit and E2E tests (LibraryPanel.unit.test.tsx, e2e/library.spec.ts) to reflect the reorganized UI.",
+      "status": "backlog",
+      "devIterations": 0,
+      "createdAt": "2026-05-15T03:48:04.797Z",
+      "updatedAt": "2026-05-15T03:48:04.797Z"
+    },
+    {
+      "id": 28,
+      "title": "Add home-library E2E coverage",
+      "description": "Write or extend Playwright tests in e2e/home-library.spec.ts covering: opening a deck from the home library panel navigates to /deck?open=, the focusImport link opens the file input, and library CRUD actions on the home page do not regress the DeckBuilder library flows.",
+      "status": "backlog",
+      "devIterations": 0,
+      "createdAt": "2026-05-15T03:48:04.797Z",
+      "updatedAt": "2026-05-15T03:48:04.797Z"
+    },
+    {
+      "id": 16,
+      "title": "E2E tests for import validation and save-to-library",
+      "description": "Write Playwright tests covering the import validation error paths (missing title, missing slides, unknown slide type) and the save-to-library import workflow, ensuring both features are exercised end-to-end against the Remix dev server.",
+      "status": "backlog",
+      "devIterations": 1,
+      "createdAt": "2026-04-13T14:51:13.534Z",
+      "updatedAt": "2026-05-15T03:48:04.797Z",
+      "blocked": {
+        "summary": "Playwright E2E run blocked by unavailable CRA dev server (port 3001)",
+        "impact": "Cannot execute E2E spec to verify tests pass; Playwright tests time out without running SPA served by CRA",
+        "nextStep": "Start the CRA dev server on the E2E port (3001) or free/change the port before running Playwright",
+        "needs": "Access to start the CRA dev server or instructions to use a different E2E_PORT and confirm server is reachable at http://127.0.0.1:3001",
+        "capturedAt": "2026-04-13T15:49:49.291Z",
+        "resolved": true,
+        "resolvedAt": "2026-05-15T03:33:43.345Z"
+      }
     },
     {
       "id": 23,
@@ -212,21 +266,75 @@
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-04-13T16:47:19.445Z",
-      "updatedAt": "2026-04-13T16:56:58.590Z"
+      "updatedAt": "2026-05-15T03:48:04.797Z"
+    },
+    {
+      "id": 29,
+      "title": "Portable zip packager script",
+      "description": "Create scripts/package-portable.sh (or .mjs) that builds a zip containing build/, server/, public/, package.json, pnpm-lock.yaml, and prod node_modules (rebuilt for the runner OS). Name artifacts poster-portable-<os>-<sha>.zip and include a PORTABLE.md with startup instructions.",
+      "status": "backlog",
+      "devIterations": 0,
+      "createdAt": "2026-05-15T03:48:04.797Z",
+      "updatedAt": "2026-05-15T03:48:04.797Z"
+    },
+    {
+      "id": 30,
+      "title": "PR CI workflow for portable zip",
+      "description": "Add .github/workflows/pr.yml with a matrix across ubuntu-latest, windows-latest, and macos-latest that installs dependencies, runs pnpm rebuild better-sqlite3, builds the Remix app, calls the portable packager script, and uploads each zip as a workflow artifact.",
+      "status": "backlog",
+      "devIterations": 0,
+      "createdAt": "2026-05-15T03:48:04.797Z",
+      "updatedAt": "2026-05-15T03:48:04.797Z"
+    },
+    {
+      "id": 31,
+      "title": "Electron main process entry point",
+      "description": "Create electron/main.cjs that resolves paths from app.getAppPath()/resourcesPath, finds an ephemeral port, spawns a Node child process running server/index.js, and opens a BrowserWindow pointing at http://127.0.0.1:<port>/ with contextIsolation: true and nodeIntegration: false.",
+      "status": "backlog",
+      "devIterations": 0,
+      "createdAt": "2026-05-15T03:48:04.797Z",
+      "updatedAt": "2026-05-15T03:48:04.797Z"
+    },
+    {
+      "id": 32,
+      "title": "electron-builder config for per-OS installers",
+      "description": "Add electron-builder configuration (package.json or electron-builder.yml) targeting DMG for macOS, NSIS .exe for Windows, and .deb and/or AppImage for Linux. Set npmRebuild: true, include the Remix build and server directories in the package, and align artifactName with semver from package.json.",
+      "status": "backlog",
+      "devIterations": 0,
+      "createdAt": "2026-05-15T03:48:04.797Z",
+      "updatedAt": "2026-05-15T03:48:04.797Z"
+    },
+    {
+      "id": 33,
+      "title": "PR CI matrix for Electron installers",
+      "description": "Extend .github/workflows/pr.yml (or add a separate workflow) to run electron-builder on macos-latest, windows-latest, and ubuntu-latest for each PR, producing DMG, NSIS exe, and deb/AppImage artifacts, then uploading them with actions/upload-artifact.",
+      "status": "backlog",
+      "devIterations": 0,
+      "createdAt": "2026-05-15T03:48:04.797Z",
+      "updatedAt": "2026-05-15T03:48:04.797Z"
+    },
+    {
+      "id": 34,
+      "title": "Release CI workflow attaching artifacts to GitHub Release",
+      "description": "Add .github/workflows/release.yml triggered on push of version tags (v*.*.*) that builds the same portable zips and Electron installers as the PR workflow, then attaches all artifacts to the GitHub Release using the release upload API (e.g. softprops/action-gh-release).",
+      "status": "backlog",
+      "devIterations": 0,
+      "createdAt": "2026-05-15T03:48:04.797Z",
+      "updatedAt": "2026-05-15T03:48:04.797Z"
     }
   ],
-  "currentTaskNum": 22,
-  "totalLLMCalls": 36,
+  "currentTaskNum": 24,
+  "totalLLMCalls": 4,
   "maxLLMCalls": 500,
   "nextTask": {
-    "taskId": 22,
-    "content": "Now I have sufficient context to produce the output.\n\n```json\n[\n  {\n    \"id\": 22,\n    \"title\": \"E2E tests for backup and restore\",\n    \"description\": \"Write Playwright tests covering the SQLite library backup download flow and the restore (database upload/replace) flow added in task 18, ensuring both the Backup and Import Database buttons function end-to-end with no regressions in existing library tests.\",\n    \"status\": \"backlog\"\n  },\n  {\n    \"id\": 23,\n    \"title\": \"Visual regression tests for presenter layouts\",\n    \"description\": \"Add Playwright screenshot-based visual regression tests that capture the presenter view for each of the 9 alignment grid cells and for green screen mode, locking pixel-level layout so future style changes do not silently break broadcast-critical output positioning.\",\n    \"status\": \"backlog\"\n  }\n]\n```\n\n---\n\n## Task 22 -- E2E Tests for Backup and Restore\n\n### What needs to be done and why it matters\n\nTask 18 implemented a Backup Database button (`<a data-testid=\"library-backup-btn\" href=\"/library/backup\">`) and a Restore Database button (`<button data-testid=\"library-restore-btn\">`) backed by a hidden file input (`<input data-testid=\"library-restore-input\" type=\"file\" accept=\".sqlite\">`). The restore POSTs a FormData payload to `/library/restore`. A `data-testid=\"restore-status\"` element confirms success or failure.\n\nNo Playwright spec currently exercises these flows. Without E2E coverage, a regression in the route handler or UI wiring could go undetected before a production show. This task closes that gap by adding a dedicated spec that uses `page.route()` to mock `/library/backup` and `/library/restore`, following the exact same intercept pattern used in `e2e/library.spec.ts`.\n\n---\n\n### Implementation guidance\n\n#### 1. File location and naming\n\nCreate `e2e/library-backup-restore.spec.ts`. Keep it as a standalone file so it can be run independently or as part of the full suite.\n\n#### 2. Mock strategy (follow library.spec.ts patterns)\n\nUse `page.route()` for both endpoints:\n\n- **`GET /library/backup`** -- fulfill with a small valid binary-ish body (e.g. a Buffer containing a few bytes, or a base64-encoded SQLite magic header `53514c697465 ...`), `Content-Type: application/octet-stream`, `Content-Disposition: attachment; filename=\"poster.sqlite\"`, status 200. The actual file contents do not matter for the download-trigger test; what matters is that the UI initiates the download.\n- **`POST /library/restore`** -- fulfill with `{ ok: true }` on success, or `{ error: \"Restore failed\" }` on error (status 500), depending on the test scenario.\n- **`GET /library`** -- fulfill with `[]` (empty list) to keep the panel in a clean state. Restore success should trigger a library re-fetch; mock it returning a non-empty list for the post-restore assertion if needed.\n\nAlso mock `/library/save` and `/library/open/**` and `/library/delete/**` as in the existing helper so the panel loads cleanly.\n\n#### 3. Test cases to write\n\n**Test 1 -- Backup button initiates a download**\n\n1. Navigate to `/deck`.\n2. Click `#toggle-library` to open the panel.\n3. Intercept the download event using `page.waitForEvent('download')` before clicking the backup link.\n4. Click `[data-testid=\"library-backup-btn\"]`.\n5. Await the download event.\n6. Assert `download.suggestedFilename()` contains `poster` and ends with `.sqlite`.\n7. No error state should appear.\n\n> Note: Because the backup button is an `<a href=\"/library/backup\">` anchor, Playwright's download event fires automatically when the response carries a `Content-Disposition: attachment` header. Route-intercept with `route.fulfill({ ... })` honors this header.\n\n**Test 2 -- Restore with a valid .sqlite file shows success status**\n\n1. Navigate to `/deck` and open the library panel.\n2. Mock `POST /library/restore` to return `{ ok: true }` (status 200).\n3. Use `page.locator('[data-testid=\"library-restore-input\"]').setInputFiles(...)` to set a dummy `.sqlite` file (create an in-memory buffer: `{ name: 'test.sqlite', mimeType: 'application/octet-stream', buffer: Buffer.from('SQLite format 3\\0') }`). Playwright's `setInputFiles` with a named buffer object does not require a real file on disk.\n4. Because the component shows a `window.confirm` dialog before calling the endpoint, register `page.on('dialog', d => d.accept())` before triggering the input change.\n5. Wait for `[data-testid=\"restore-status\"]` to be visible.\n6. Assert it contains the text `restored successfully` (case-insensitive).\n\n**Test 3 -- Restore failure shows error status**\n\n1. Navigate to `/deck` and open the library panel.\n2. Mock `POST /library/restore` to return `{ error: \"Disk full\" }` (status 500).\n3. Set the file input with a dummy buffer as in Test 2.\n4. Accept the confirm dialog.\n5. Wait for `[data-testid=\"restore-status\"]` to be visible.\n6. Assert it contains `Disk full` or a generic failure phrase; confirm the element does NOT contain `restored successfully`.\n\n**Test 4 -- Restore dismissed by confirm dialog does NOT call the endpoint**\n\n1. Navigate to `/deck` and open the library panel.\n2. Register `page.on('dialog', d => d.dismiss())` to cancel the confirm.\n3. Track whether `POST /library/restore` was called (use a `let called = false` flag inside the route handler).\n4. Set the file input with the dummy buffer.\n5. Wait 1 second (short `page.waitForTimeout(1000)`).\n6. Assert `called` is `false` (the endpoint was never reached).\n7. Assert `[data-testid=\"restore-status\"]` is not visible.\n\n#### 4. Playwright config\n\nThe spec should run against the same baseURL (`http://127.0.0.1:3001`) used by all other specs. No changes to `playwright.config.ts` should be necessary. Confirm the spec is picked up by the existing glob (`e2e/**/*.spec.ts`).\n\n#### 5. TypeScript\n\nThe file must pass `npx tsc --noEmit` without new errors. Import `{ test, expect }` from `'@playwright/test'` and `path`, `fs` from Node for any fixture files, matching the import style in `e2e/library.spec.ts`.\n\n---\n\n### Testing steps\n\n1. Start the CRA dev server (`npm start` or the configured E2E server) so it is reachable at the configured baseURL.\n2. Run `npx playwright test e2e/library-backup-restore.spec.ts --reporter=list` and confirm all four tests pass.\n3. Run the full Playwright suite (`npx playwright test --reporter=list`) and confirm no regressions in the existing library, lyrics-navigation, alignment-grid, or import-validation specs.\n4. Run `npx tsc --noEmit` and confirm zero new TypeScript errors.\n5. Run `npm test -- --watchAll=false` (Jest/RTL) and confirm all existing unit tests continue to pass.\n\n---\n\n### Acceptance criteria\n\n- A new spec `e2e/library-backup-restore.spec.ts` exists with at least four tests covering: backup download trigger, restore success, restore error, and restore cancel.\n- The backup test asserts the download event fires and `suggestedFilename()` ends in `.sqlite`.\n- The restore success test asserts `[data-testid=\"restore-status\"]` contains a success message.\n- The restore error test asserts `[data-testid=\"restore-status\"]` contains an error message.\n- The cancel test asserts `POST /library/restore` is never called when the operator dismisses the confirm dialog.\n- All four new tests pass cleanly against the CRA dev server with route mocking (no live SQLite required).\n- All existing Playwright tests pass without modification.\n- `npx tsc --noEmit` reports zero errors.\n- No changes to production source files are required; if a test reveals a genuine bug in the backup/restore UI, fix it and document the fix in the test file comment.\n\n---\n\n## Remaining Planned Tasks\n- E2E tests for backup and restore\n- Visual regression tests for presenter layouts\n\n<task-id>22</task-id>\n\nNow I have everything I need. Let me write the spec:\n\nNow verify TypeScript compiles cleanly and then run the tests:\n\nGood, unit tests pass. Now let me run the new Playwright spec:\n\nAll 4 tests pass. Let me also run the full Playwright suite to check for regressions:\n\nThe pre-existing `smoke.spec.js` failure is unrelated to my changes -- it was already failing before (legacy JS spec looking for a `#content` element that no longer exists). All 4 new backup/restore tests pass, and all other 31 tests pass.\n\nLet me commit:\n\n",
-    "updatedAt": "2026-04-13T16:56:58.613Z"
+    "taskId": 24,
+    "content": "## Task: CSS custom properties and four dark themes\n\nIntroduce CSS custom properties for all hardcoded color values in src/App.css, then define four [data-theme] palettes: dracula, tokyo-night, dark-blue, and github-dark. Migrate .home-page* and other fixed colors to var(--) references.",
+    "updatedAt": "2026-05-15T03:48:04.820Z"
   },
   "feedback": {
-    "taskId": 22,
-    "content": "",
-    "updatedAt": "2026-04-13T16:56:58.621Z"
+    "taskId": 24,
+    "content": "Reading the repository for CSS files to inspect App.css and any theme definitions, so the review checks CSS variable migration and theme palettes. Running a glob for *.css while reporting intent.\n\nReading src/App.css, src/index.css, and src/themes.css to verify migration to CSS variables and presence of the four [data-theme] palettes. Running parallel file reads.\n\n<status>verified</status>\n\n",
+    "updatedAt": "2026-05-15T03:49:44.076Z"
   },
-  "lastUpdated": "2026-04-13T16:56:58.621Z"
+  "lastUpdated": "2026-05-15T03:49:44.110Z"
 }
