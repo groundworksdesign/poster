@@ -298,34 +298,34 @@
     {
       "id": 33,
       "title": "PR CI matrix for Electron installers",
-      "description": "Extend .github/workflows/pr.yml (or add a separate workflow) to run electron-builder on macos-latest, windows-latest, and ubuntu-latest for each PR, producing DMG, NSIS exe, and deb/AppImage artifacts, then uploading them with actions/upload-artifact.",
-      "status": "backlog",
-      "devIterations": 0,
+      "description": "Extend GitHub Actions for pull_request so electron-builder runs on ubuntu-latest, windows-latest, and macos-latest jobs that install with pnpm --frozen-lockfile, rebuild better-sqlite3, build Remix, produce per-OS installers (DMG on macOS, NSIS exe on Windows, deb and AppImage targets on Linux as configured), and upload all outputs with distinguishable artifact names.",
+      "status": "done",
+      "devIterations": 1,
       "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T06:31:31.784Z"
+      "updatedAt": "2026-05-15T15:10:00.586Z"
     },
     {
       "id": 34,
       "title": "Release CI workflow attaching artifacts to GitHub Release",
-      "description": "Add .github/workflows/release.yml triggered on push of version tags (v*.*.*) that builds the same portable zips and Electron installers as the PR workflow, then attaches all artifacts to the GitHub Release using the release upload API (e.g. softprops/action-gh-release).",
+      "description": "Add a release workflow triggered on pushed semver tags (v*.*.*) that repeats the portable zip packaging and Electron installer builds per runner OS and uploads combined outputs to the corresponding GitHub Release using a supported release asset action.",
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T06:31:31.784Z"
+      "updatedAt": "2026-05-15T14:53:37.073Z"
     }
   ],
-  "currentTaskNum": 32,
-  "totalLLMCalls": 2,
+  "currentTaskNum": 33,
+  "totalLLMCalls": 5,
   "maxLLMCalls": 500,
   "nextTask": {
-    "taskId": 32,
-    "content": "## Task: electron-builder config for per-OS installers\n\nAdd electron-builder configuration (package.json or electron-builder.yml) targeting DMG for macOS, NSIS .exe for Windows, and .deb and/or AppImage for Linux. Set npmRebuild: true, include the Remix build and server directories in the package, and align artifactName with semver from package.json.",
-    "updatedAt": "2026-05-15T14:27:30.984Z"
+    "taskId": 33,
+    "content": "## Task: PR CI matrix for Electron installers\n\nExtend GitHub Actions for pull_request so electron-builder runs on ubuntu-latest, windows-latest, and macos-latest jobs that install with pnpm --frozen-lockfile, rebuild better-sqlite3, build Remix, produce per-OS installers (DMG on macOS, NSIS exe on Windows, deb and AppImage targets on Linux as configured), and upload all outputs with distinguishable artifact names.",
+    "updatedAt": "2026-05-15T14:53:37.106Z"
   },
   "feedback": {
-    "taskId": 32,
-    "content": "Here’s the assessment.\n\n**Task:** electron-builder config for per-OS installers — DMG (mac), NSIS (Windows), `.deb` / AppImage (Linux); `npmRebuild: true`; include Remix `build/` and `server/`; `artifactName` aligned with semver from `package.json`.\n\n**Findings:**\n\n- **`electron-builder.yml`** sets **`npmRebuild: true`** (lines 18–18).\n- **macOS:** `mac.target` → **dmg** for **x64** and **arm64** (lines 53–58).\n- **Windows:** `win.target` → **nsis** for **x64** (lines 66–70) — NSIS produces a **.exe** installer; **`artifactName`** uses **`${ext}`**, which resolves correctly per target.\n- **Linux:** **deb** and **AppImage** for **x64** (lines 79–86), with **maintainer** / metadata for `.deb` (lines 87–91).\n- **Contents:** `files` includes **`server/**`**, **`build/**`**, **`public/**`**, **`electron/**`**, **`package.json`**, **`node_modules/**`**, with sensible excludes (lines 33–49).\n- **Semver naming:** **`artifactName: \"${productName}-${version}-${os}-${arch}.${ext}\"`** — in electron-builder, **`${version}`** is taken from **`package.json`** by default, which matches “align with semver from package.json” (and matches `\"version\": \"0.1.0\"` in `package.json`).\n- **`package.json`** does not duplicate or override builder config in a conflicting way; **`main`** points at **`electron/main.cjs`**, consistent with the YAML comments.\n\nNo gaps were found relative to this task’s requirements.\n\n```\n<status>verified</status>\n```\n",
-    "updatedAt": "2026-05-15T14:53:01.307Z"
+    "taskId": 33,
+    "content": "Here is the assessment:\n\n**Coverage**\n\n- `.github/workflows/pr.yml` defines `electron-installers` with `matrix.os: [ubuntu-latest, windows-latest, macos-latest]`.\n- Steps match the brief: `pnpm install --frozen-lockfile`, `pnpm rebuild better-sqlite3`, `pnpm run build:remix`, `pnpm run build:electron`.\n- `electron-builder.yml` sets `npmRebuild: true`, DMG (mac), NSIS (Windows `.exe`), and Linux `.deb` + AppImage.\n- Artifacts use distinct names: `poster-electron-${{ matrix.os }}-pr-${{ github.event.pull_request.number }}-${{ github.sha }}`.\n- Staging collects `.dmg`, `.exe`, `.deb`, and `.AppImage` under `dist/electron-installers/` before upload.\n- `CSC_IDENTITY_AUTO_DISCOVERY: false` is appropriate for unsigned CI mac builds.\n\n**Sanity check**\n\n- Local run completed successfully: `pnpm install --frozen-lockfile`, `pnpm run build:remix`, and `pnpm run build:electron` exited 0 and produced DMGs under `dist/electron/`.\n\nNo gaps relative to the stated task.\n\n```\n<status>verified</status>\n```\n",
+    "updatedAt": "2026-05-15T15:10:00.574Z"
   },
-  "lastUpdated": "2026-05-15T14:53:01.318Z"
+  "lastUpdated": "2026-05-15T15:10:00.586Z"
 }
