@@ -290,10 +290,10 @@
       "id": 32,
       "title": "electron-builder config for per-OS installers",
       "description": "Add electron-builder configuration (package.json or electron-builder.yml) targeting DMG for macOS, NSIS .exe for Windows, and .deb and/or AppImage for Linux. Set npmRebuild: true, include the Remix build and server directories in the package, and align artifactName with semver from package.json.",
-      "status": "backlog",
-      "devIterations": 0,
+      "status": "done",
+      "devIterations": 1,
       "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T06:06:09.530Z"
+      "updatedAt": "2026-05-15T14:53:01.318Z"
     },
     {
       "id": 33,
@@ -302,7 +302,7 @@
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T06:06:09.530Z"
+      "updatedAt": "2026-05-15T06:31:31.784Z"
     },
     {
       "id": 34,
@@ -311,21 +311,21 @@
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T06:06:09.530Z"
+      "updatedAt": "2026-05-15T06:31:31.784Z"
     }
   ],
-  "currentTaskNum": 31,
-  "totalLLMCalls": 30,
+  "currentTaskNum": 32,
+  "totalLLMCalls": 2,
   "maxLLMCalls": 500,
   "nextTask": {
-    "taskId": 31,
-    "content": "## Task: Electron main process entry point\n\nCreate electron/main.cjs that resolves paths from app.getAppPath()/resourcesPath, finds an ephemeral port, spawns a Node child process running server/index.js, and opens a BrowserWindow pointing at http://127.0.0.1:<port>/ with contextIsolation: true and nodeIntegration: false.",
-    "updatedAt": "2026-05-15T06:06:09.562Z"
+    "taskId": 32,
+    "content": "## Task: electron-builder config for per-OS installers\n\nAdd electron-builder configuration (package.json or electron-builder.yml) targeting DMG for macOS, NSIS .exe for Windows, and .deb and/or AppImage for Linux. Set npmRebuild: true, include the Remix build and server directories in the package, and align artifactName with semver from package.json.",
+    "updatedAt": "2026-05-15T14:27:30.984Z"
   },
   "feedback": {
-    "taskId": 31,
-    "content": "Searching the repository for an electron main file to review (looking in electron/ and similar paths). Running a parallel search and reporting intent.\n\n<status>verified</status>\n\nRecording completion: marking the task done because electron/main.cjs was inspected and meets the requirements (resolves app path for dev/packaged, selects an ephemeral port, spawns Node to run server/index.js with PORT env, waits for HTTP readiness, opens a BrowserWindow at http://127.0.0.1:<port>/ with contextIsolation:true and nodeIntegration:false). Proceeding to record completion.\n\n",
-    "updatedAt": "2026-05-15T06:08:24.616Z"
+    "taskId": 32,
+    "content": "Here’s the assessment.\n\n**Task:** electron-builder config for per-OS installers — DMG (mac), NSIS (Windows), `.deb` / AppImage (Linux); `npmRebuild: true`; include Remix `build/` and `server/`; `artifactName` aligned with semver from `package.json`.\n\n**Findings:**\n\n- **`electron-builder.yml`** sets **`npmRebuild: true`** (lines 18–18).\n- **macOS:** `mac.target` → **dmg** for **x64** and **arm64** (lines 53–58).\n- **Windows:** `win.target` → **nsis** for **x64** (lines 66–70) — NSIS produces a **.exe** installer; **`artifactName`** uses **`${ext}`**, which resolves correctly per target.\n- **Linux:** **deb** and **AppImage** for **x64** (lines 79–86), with **maintainer** / metadata for `.deb` (lines 87–91).\n- **Contents:** `files` includes **`server/**`**, **`build/**`**, **`public/**`**, **`electron/**`**, **`package.json`**, **`node_modules/**`**, with sensible excludes (lines 33–49).\n- **Semver naming:** **`artifactName: \"${productName}-${version}-${os}-${arch}.${ext}\"`** — in electron-builder, **`${version}`** is taken from **`package.json`** by default, which matches “align with semver from package.json” (and matches `\"version\": \"0.1.0\"` in `package.json`).\n- **`package.json`** does not duplicate or override builder config in a conflicting way; **`main`** points at **`electron/main.cjs`**, consistent with the YAML comments.\n\nNo gaps were found relative to this task’s requirements.\n\n```\n<status>verified</status>\n```\n",
+    "updatedAt": "2026-05-15T14:53:01.307Z"
   },
-  "lastUpdated": "2026-05-15T06:08:24.628Z"
+  "lastUpdated": "2026-05-15T14:53:01.318Z"
 }

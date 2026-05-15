@@ -5,6 +5,10 @@ productName: Poster
 # electron/main.cjs entry (not the CRA public/electron.js convention).
 extends: null
 
+# Electron major in package.json is chosen so better-sqlite3 has prebuilds (or
+# compiles cleanly) for that line; bump Electron and sqlite together when newer
+# ABI support ships upstream.
+
 # Packaging note: electron/main.cjs spawns a child Node.js process to run
 # server/index.js. The current implementation launches Electron's bundled Node
 # (process.execPath), so native modules must be rebuilt for Electron's ABI.
@@ -21,8 +25,7 @@ asar: false
 directories:
   output: dist/electron
 
-# Artifact naming: app-version-os-arch.ext
-# On PR matrix each OS leg produces a unique name automatically.
+# Artifact naming: semver ${version} is read from package.json by default.
 artifactName: "${productName}-${version}-${os}-${arch}.${ext}"
 
 # Files to include in the packaged app
@@ -84,3 +87,5 @@ linux:
   # Required for .deb
   maintainer: Groundworks Design
   category: Office
+  synopsis: Live slide presentations and operator deck builder
+  description: Poster serves the Remix UI and library APIs from an embedded Express server.

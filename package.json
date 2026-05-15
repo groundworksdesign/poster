@@ -35,7 +35,7 @@
     "@types/better-sqlite3": "^7.6.13",
     "@types/testing-library__jest-dom": "^5.14.9",
     "@vitejs/plugin-react": "^4.0.0",
-    "electron": "^42.1.0",
+    "electron": "^40.10.0",
     "electron-builder": "^26.8.1",
     "playwright": "^1.44.3",
     "remix": "^1.19.0",
