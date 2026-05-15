@@ -5,13 +5,17 @@ productName: Poster
 # electron/main.cjs entry (not the CRA public/electron.js convention).
 extends: null
 
-# Architecture note: electron/main.cjs spawns a CHILD Node.js process to run
-# server/index.js, so better-sqlite3 runs under the system Node runtime -- not
-# under Electron's bundled Node runtime. Rebuilding native modules for Electron
-# would produce binaries for the wrong ABI. Instead, the CI pipeline rebuilds
-# better-sqlite3 for the system Node (pnpm rebuild better-sqlite3) before
-# invoking electron-builder, so the modules in node_modules are already correct.
+# Packaging note: electron/main.cjs spawns a child Node.js process to run
+# server/index.js. The current implementation launches Electron's bundled Node
+# (process.execPath), so native modules must be rebuilt for Electron's ABI.
+# npmRebuild: true instructs electron-builder to rebuild native modules for
+# Electron during packaging. CI should run `pnpm install --production` then
+# `pnpm rebuild` as needed before packaging for reproducible artifacts.
 npmRebuild: true
+
+# Disable packing into asar so the child Node process can access server files
+# and native modules on disk (avoids requiring asar unpack patterns).
+asar: false
 
 # Output directory (kept separate from portable-zip dist/)
 directories:
@@ -22,13 +26,14 @@ directories:
 artifactName: "${productName}-${version}-${os}-${arch}.${ext}"
 
 # Files to include in the packaged app
-# electron-builder prunes to production deps by default; explicitly exclude dev files.
+# electron-builder prunes to production deps by default; include node_modules explicitly
 files:
   - electron/**
   - server/**
   - build/**
   - public/**
   - package.json
+  - node_modules/**
   - "!src/**"
   - "!e2e/**"
   - "!scripts/**"
