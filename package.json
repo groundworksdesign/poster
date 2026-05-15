@@ -2,6 +2,8 @@
   "name": "poster",
   "version": "0.1.0",
   "private": true,
+  "description": "Live slide presentation tool with operator deck builder and presenter view.",
+  "author": "Groundworks Design",
   "main": "electron/main.cjs",
   "dependencies": {
     "@remix-run/express": "1.19.3",
@@ -34,6 +36,7 @@
     "@types/testing-library__jest-dom": "^5.14.9",
     "@vitejs/plugin-react": "^4.0.0",
     "electron": "^42.1.0",
+    "electron-builder": "^26.8.1",
     "playwright": "^1.44.3",
     "remix": "^1.19.0",
     "vite": "^5.0.0"
@@ -57,7 +60,9 @@
     "test:e2e:remix": "playwright test --config=playwright.remix.config.ts",
     "rebuild:sqlite": "pnpm rebuild better-sqlite3",
     "package:portable": "node scripts/package-portable.mjs",
-    "electron": "electron ."
+    "electron": "electron .",
+    "build:electron": "electron-builder build",
+    "build:electron:dir": "electron-builder build --dir"
   },
   "jest": {
     "collectCoverageFrom": [

@@ -1,0 +1,81 @@
+appId: com.groundworksdesign.poster
+productName: Poster
+
+# Disable the auto-detected react-cra preset: this project uses a custom
+# electron/main.cjs entry (not the CRA public/electron.js convention).
+extends: null
+
+# Architecture note: electron/main.cjs spawns a CHILD Node.js process to run
+# server/index.js, so better-sqlite3 runs under the system Node runtime -- not
+# under Electron's bundled Node runtime. Rebuilding native modules for Electron
+# would produce binaries for the wrong ABI. Instead, the CI pipeline rebuilds
+# better-sqlite3 for the system Node (pnpm rebuild better-sqlite3) before
+# invoking electron-builder, so the modules in node_modules are already correct.
+npmRebuild: false
+
+# Output directory (kept separate from portable-zip dist/)
+directories:
+  output: dist/electron
+
+# Artifact naming: app-version-os-arch.ext
+# On PR matrix each OS leg produces a unique name automatically.
+artifactName: "${productName}-${version}-${os}-${arch}.${ext}"
+
+# Files to include in the packaged app
+# electron-builder prunes to production deps by default; explicitly exclude dev files.
+files:
+  - electron/**
+  - server/**
+  - build/**
+  - public/**
+  - package.json
+  - "!src/**"
+  - "!e2e/**"
+  - "!scripts/**"
+  - "!docs/**"
+  - "!*.spec.*"
+  - "!*.test.*"
+  - "!playwright.config.*"
+  - "!remix.config.*"
+  - "!tsconfig*"
+  - "!.github/**"
+
+# ---- Per-platform targets ----
+
+mac:
+  target:
+    - target: dmg
+      arch:
+        - x64
+        - arm64
+
+# DMG window settings (top-level, not under mac)
+dmg:
+  window:
+    width: 540
+    height: 380
+
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  # Use existing favicon.ico if present
+  installerIcon: public/favicon.ico
+  uninstallerIcon: public/favicon.ico
+
+linux:
+  target:
+    - target: deb
+      arch:
+        - x64
+    - target: AppImage
+      arch:
+        - x64
+  # Required for .deb
+  maintainer: Groundworks Design
+  category: Office
