@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
+import LibraryPanel from './Deck/LibraryPanel';
 
 /**
  * Opens the presentation in a dedicated window (second screen / projector).
@@ -35,6 +36,11 @@ export default function HomePage() {
       return 'light';
     }
   });
+  const [libraryRefreshKey, setLibraryRefreshKey] = useState(0);
+
+  const handleOpenFromLibrary = (id: string) => {
+    window.location.assign('/deck?open=' + encodeURIComponent(id));
+  };
 
   useEffect(() => {
     try {
@@ -103,6 +109,23 @@ export default function HomePage() {
         >
           Open presentation (new window)
         </a>
+        <a
+          className="home-page-link home-page-link--import"
+          href="/deck?focusImport=1"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Import a file
+        </a>
+      </div>
+
+      <div className="home-page-library">
+        <LibraryPanel
+          onOpen={handleOpenFromLibrary}
+          onDeleted={() => setLibraryRefreshKey(k => k + 1)}
+          currentLibraryId={null}
+          refreshKey={libraryRefreshKey}
+        />
       </div>
     </main>
   );

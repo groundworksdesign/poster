@@ -33,6 +33,7 @@ export default function DeckBuilder() {
   const [showLibrary, setShowLibrary] = useState<boolean>(false);
   const [libraryRefreshKey, setLibraryRefreshKey] = useState<number>(0);
   const [showSaveToLibraryPrompt, setShowSaveToLibraryPrompt] = useState<boolean>(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   /** Last stage index sent via Advance/Reverse per song slide id (0 = title, 1+ = lyric pairs). */
   const [songLastStagedById, setSongLastStagedById] = useState<Record<string, number>>({});
 
@@ -613,11 +614,36 @@ export default function DeckBuilder() {
     }
   };
 
+  // On mount: handle ?open=<id> (open a library record) and ?focusImport=1 (trigger file picker).
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const openId = params.get('open');
+    const focusImport = params.get('focusImport');
+    if (openId) {
+      const stripped = new URLSearchParams(params);
+      stripped.delete('open');
+      const newSearch = stripped.toString();
+      window.history.replaceState(null, '', window.location.pathname + (newSearch ? '?' + newSearch : ''));
+      openFromLibrary(openId);
+    }
+    if (focusImport) {
+      const stripped = new URLSearchParams(params);
+      stripped.delete('focusImport');
+      const newSearch = stripped.toString();
+      window.history.replaceState(null, '', window.location.pathname + (newSearch ? '?' + newSearch : ''));
+      // Trigger file picker after a short delay so the component is fully mounted
+      setTimeout(() => {
+        fileInputRef.current?.click();
+      }, 100);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <>
       <h1>Deck</h1>
       <div>
-        <input id="file" type="file" onChange={handleFileChange} />
+        <input ref={fileInputRef} id="file" type="file" onChange={handleFileChange} />
         <button id="load" onClick={() => handleUploadClick()} disabled={isLoadingSong}>{isLoadingSong ? 'Loading...' : 'Load'}</button>
         <button id="save" onClick={handleSaveClick}>Save</button>
         <button id="save-to-library" onClick={handleSaveToLibrary} disabled={!deck}>Save to Library</button>

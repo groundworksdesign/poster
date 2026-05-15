@@ -113,3 +113,15 @@ ul {
   border-color: var(--color-link-present);
   color: var(--color-link-present);
 }
+
+.home-page-link--import {
+  border-color: var(--color-border);
+  color: var(--color-fg-muted);
+}
+
+.home-page-library {
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--color-border);
+  max-width: 54rem;
+}

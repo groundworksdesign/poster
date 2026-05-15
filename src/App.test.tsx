@@ -9,5 +9,5 @@ test('renders Deck link in navigation', () => {
       <App />
     </MemoryRouter>,
   );
-  expect(screen.getByText(/Deck/i)).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: 'Deck' })).toBeInTheDocument();
 });
