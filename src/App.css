@@ -12,6 +12,22 @@
   --color-link: #0d47a1;
   --color-link-present: #1b5e20;
   --color-link-hover-bg: #f4f4f4;
+  --color-danger: #c62828;
+  --color-success: #2e7d32;
+  --color-highlight: #e3f2fd;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  --font-mono: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+  --page-content-max: min(80rem, 96vw);
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background-color: var(--color-bg);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
 }
 
 /* Dracula */
@@ -25,6 +41,11 @@
   --color-link: #8be9fd;
   --color-link-present: #50fa7b;
   --color-link-hover-bg: #383a4a;
+  --color-danger: #ff5555;
+  --color-success: #50fa7b;
+  --color-highlight: #383a4a;
+  --font-sans: Georgia, 'Times New Roman', Times, serif;
+  --font-mono: 'Courier New', Courier, monospace;
 }
 
 /* Tokyo Night */
@@ -38,6 +59,11 @@
   --color-link: #7dcfff;
   --color-link-present: #9ece6a;
   --color-link-hover-bg: #1e2030;
+  --color-danger: #f7768e;
+  --color-success: #9ece6a;
+  --color-highlight: #1e2030;
+  --font-sans: 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-mono: 'Cascadia Code', 'Consolas', 'Courier New', monospace;
 }
 
 /* Dark Blue */
@@ -51,6 +77,11 @@
   --color-link: #64ffda;
   --color-link-present: #a8ff78;
   --color-link-hover-bg: #0a1628;
+  --color-danger: #ff6b6b;
+  --color-success: #a8ff78;
+  --color-highlight: #0a1628;
+  --font-sans: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-mono: 'SF Mono', Menlo, Monaco, Consolas, monospace;
 }
 
 /* GitHub Dark */
@@ -64,6 +95,11 @@
   --color-link: #58a6ff;
   --color-link-present: #3fb950;
   --color-link-hover-bg: #1c2128;
+  --color-danger: #f85149;
+  --color-success: #3fb950;
+  --color-highlight: #1c2128;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
 }
 
 
@@ -120,16 +156,39 @@ ul {
 }
 
 .home-page {
-  max-width: 40rem;
+  max-width: var(--page-content-max);
   margin: 0 auto;
-  padding: 1.5rem 1rem 2rem;
+  padding: 1.5rem 2rem 2rem;
   text-align: left;
+  background-color: var(--color-bg);
+  color: var(--color-fg);
+  min-height: 100vh;
 }
 
 .home-page h1 {
   font-size: 1.75rem;
   font-weight: 600;
   margin: 0 0 1rem;
+  color: var(--color-fg);
+}
+
+.home-page-theme-picker {
+  margin-bottom: 12px;
+}
+
+.home-page-theme-picker label {
+  font-size: 14px;
+  color: var(--color-fg);
+}
+
+.home-page-theme-picker select {
+  margin-left: 0.35rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-bg-surface);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
 }
 
 .home-page-lead {
@@ -190,5 +249,170 @@ ul {
   margin-top: 1.75rem;
   padding-top: 1.25rem;
   border-top: 1px solid var(--color-border);
-  max-width: 54rem;
+}
+
+/* Library panel (home and deck) */
+.library-panel {
+  margin-top: 12px;
+  padding: 8px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-surface);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+}
+
+.library-panel-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.library-panel-toolbar strong {
+  color: var(--color-fg);
+}
+
+.library-panel-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  border-top: 1px solid var(--color-border);
+  padding-top: 8px;
+}
+
+.library-panel-error {
+  color: var(--color-danger);
+  margin-bottom: 8px;
+}
+
+.library-panel-success {
+  color: var(--color-success);
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+
+.library-panel-empty {
+  color: var(--color-fg-muted);
+}
+
+.library-panel table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 13px;
+}
+
+.library-panel th {
+  text-align: left;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-fg-muted);
+}
+
+.library-panel td {
+  padding: 4px 8px;
+}
+
+.library-panel tr.library-current {
+  background: var(--color-highlight);
+}
+
+.library-panel button,
+.library-panel a.library-backup-link {
+  font-size: 11px;
+  padding: 2px 6px;
+  border: 1px solid var(--color-border);
+  border-radius: 3px;
+  background: var(--color-bg);
+  color: var(--color-fg);
+  text-decoration: none;
+  cursor: pointer;
+  font-family: var(--font-sans);
+}
+
+.library-panel button:hover,
+.library-panel a.library-backup-link:hover {
+  background: var(--color-link-hover-bg);
+}
+
+.library-panel button.library-delete-btn {
+  color: var(--color-danger);
+}
+
+/* Deck builder page */
+.deck-page {
+  max-width: var(--page-content-max);
+  margin: 0 auto;
+  padding: 1rem 2rem 2rem;
+  min-height: 100vh;
+  background-color: var(--color-bg);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+}
+
+.deck-page-nav {
+  margin-bottom: 0.75rem;
+}
+
+.deck-page-home-link {
+  display: inline-block;
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  font-weight: 500;
+  text-decoration: none;
+  border: 1px solid var(--color-border);
+  color: var(--color-link);
+  background: var(--color-bg-surface);
+}
+
+.deck-page-home-link:hover {
+  background: var(--color-link-hover-bg);
+}
+
+.deck-page h1,
+.deck-page h2,
+.deck-page h3 {
+  color: var(--color-fg);
+}
+
+.deck-page-panel {
+  margin-top: 12px;
+  padding: 8px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-surface);
+}
+
+.deck-page input,
+.deck-page textarea,
+.deck-page select {
+  background: var(--color-bg);
+  color: var(--color-fg);
+  border: 1px solid var(--color-border);
+  font-family: var(--font-sans);
+}
+
+.deck-page input[type='text'],
+.deck-page input:not([type]),
+.deck-page textarea {
+  min-width: 12rem;
+  max-width: 100%;
+}
+
+.deck-page .deck-field-wide {
+  width: min(48rem, 100%);
+}
+
+.deck-page .deck-field-message {
+  width: min(36rem, 100%);
+}
+
+.deck-page button {
+  font-family: var(--font-sans);
+}
+
+.deck-slide-item {
+  border: 1px solid var(--color-border);
+  margin: 4px 0;
+  padding: 6px;
+  background: var(--color-bg-surface);
 }

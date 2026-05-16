@@ -123,35 +123,35 @@ export default function LibraryPanel({ onOpen, onDeleted, currentLibraryId, refr
   };
 
   return (
-    <div data-testid="library-panel" style={{ marginTop: '12px', padding: '8px', border: '1px solid #aaa', background: '#f9f9f9' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+    <div data-testid="library-panel" className="library-panel">
+      <div className="library-panel-toolbar">
         <strong>Saved Presentations</strong>
-        <button onClick={fetchEntries} disabled={loading} style={{ fontSize: '11px' }}>
+        <button onClick={fetchEntries} disabled={loading}>
           {loading ? 'Loading...' : 'Refresh'}
         </button>
       </div>
 
-      {error && <div style={{ color: 'red', marginBottom: '8px' }}>{error}</div>}
+      {error && <div className="library-panel-error">{error}</div>}
       {exportError && (
-        <div style={{ color: '#c00', marginBottom: '8px', fontSize: '12px' }}>
+        <div className="library-panel-error" style={{ fontSize: '12px' }}>
           {exportError.message}
         </div>
       )}
       {restoreStatus && (
         <div
           data-testid="restore-status"
-          style={{ color: restoreStatus.type === 'error' ? '#c00' : '#060', marginBottom: '8px', fontSize: '12px' }}
+          className={restoreStatus.type === 'error' ? 'library-panel-error' : 'library-panel-success'}
         >
           {restoreStatus.message}
         </div>
       )}
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', borderTop: '1px solid #ddd', paddingTop: '8px' }}>
+      <div className="library-panel-actions">
         <a
           data-testid="library-backup-btn"
           href="/library/backup"
           download="poster.sqlite"
-          style={{ fontSize: '11px', padding: '2px 6px', border: '1px solid #aaa', borderRadius: '3px', textDecoration: 'none', color: 'inherit', background: '#fff' }}
+          className="library-backup-link"
         >
           Backup Database
         </a>
@@ -170,25 +170,24 @@ export default function LibraryPanel({ onOpen, onDeleted, currentLibraryId, refr
           data-testid="library-restore-btn"
           onClick={() => restoreInputRef.current?.click()}
           disabled={restoring}
-          style={{ fontSize: '11px' }}
         >
           {restoring ? 'Restoring...' : 'Restore Database'}
         </button>
       </div>
 
       {!loading && entries.length === 0 && !error && (
-        <div data-testid="library-empty">No saved presentations.</div>
+        <div data-testid="library-empty" className="library-panel-empty">No saved presentations.</div>
       )}
 
       {entries.length > 0 && (
-        <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: '13px' }}>
+        <table>
           <thead>
             <tr>
-              <th style={{ textAlign: 'left', padding: '4px 8px', borderBottom: '1px solid #ccc' }}>Title</th>
-              <th style={{ textAlign: 'left', padding: '4px 8px', borderBottom: '1px solid #ccc' }}>Date</th>
-              <th style={{ textAlign: 'left', padding: '4px 8px', borderBottom: '1px solid #ccc' }}>Location</th>
-              <th style={{ textAlign: 'left', padding: '4px 8px', borderBottom: '1px solid #ccc' }}>Saved</th>
-              <th style={{ padding: '4px 8px', borderBottom: '1px solid #ccc' }}></th>
+              <th>Title</th>
+              <th>Date</th>
+              <th>Location</th>
+              <th>Saved</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -197,15 +196,14 @@ export default function LibraryPanel({ onOpen, onDeleted, currentLibraryId, refr
                 key={entry.id}
                 data-testid="library-entry"
                 className={entry.id === currentLibraryId ? 'library-current' : undefined}
-                style={entry.id === currentLibraryId ? { background: '#e8f4e8' } : undefined}
               >
-                <td style={{ padding: '4px 8px' }}>{entry.title || '(untitled)'}</td>
-                <td style={{ padding: '4px 8px' }}>{entry.date || ''}</td>
-                <td style={{ padding: '4px 8px' }}>{entry.location || ''}</td>
-                <td style={{ padding: '4px 8px' }}>
+                <td>{entry.title || '(untitled)'}</td>
+                <td>{entry.date || ''}</td>
+                <td>{entry.location || ''}</td>
+                <td>
                   {entry.created_at ? new Date(entry.created_at).toLocaleDateString() : ''}
                 </td>
-                <td style={{ padding: '4px 8px', whiteSpace: 'nowrap' }}>
+                <td style={{ whiteSpace: 'nowrap' }}>
                   <button
                     data-testid="library-open-btn"
                     onClick={() => onOpen(entry.id)}
@@ -222,8 +220,8 @@ export default function LibraryPanel({ onOpen, onDeleted, currentLibraryId, refr
                   </button>
                   <button
                     data-testid="library-delete-btn"
+                    className="library-delete-btn"
                     onClick={() => handleDelete(entry)}
-                    style={{ color: '#c00' }}
                   >
                     Delete
                   </button>

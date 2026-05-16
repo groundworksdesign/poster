@@ -114,7 +114,7 @@ test.describe('Home-page LibraryPanel integration', () => {
     await expect(entries.first()).toContainText(MOCK_ENTRY.title);
   });
 
-  test('clicking Open on home navigates to /deck?open=<id>', async ({ page, baseURL }) => {
+  test('clicking Open on home opens /deck?open=<id> in a new tab', async ({ page, baseURL }) => {
     const base = baseURL ?? 'http://127.0.0.1:3000';
 
     await setupLibraryMocks(page);
@@ -123,16 +123,19 @@ test.describe('Home-page LibraryPanel integration', () => {
     await expect(page.locator('[data-testid="library-panel"]')).toBeVisible({ timeout: 8000 });
     await expect(page.locator('[data-testid="library-entry"]')).toHaveCount(1, { timeout: 8000 });
 
-    // Click Open -- HomePage calls window.location.assign('/deck?open=<id>')
-    await Promise.all([
-      page.waitForURL(/\/deck\?open=/, { timeout: 10000 }),
+    const [deckPage] = await Promise.all([
+      page.context().waitForEvent('page'),
       page.locator('[data-testid="library-open-btn"]').first().click(),
     ]);
 
-    const url = page.url();
-    expect(url).toContain('/deck');
-    expect(url).toContain('open=');
-    expect(decodeURIComponent(url)).toContain(MOCK_ENTRY.id);
+    await deckPage.waitForURL(/\/deck\?open=/, { timeout: 10000 });
+    const deckUrl = deckPage.url();
+    expect(deckUrl).toContain('/deck');
+    expect(deckUrl).toContain('open=');
+    expect(decodeURIComponent(deckUrl)).toContain(MOCK_ENTRY.id);
+
+    expect(page.url()).not.toContain('/deck');
+    await deckPage.close();
   });
 
   test('"Import a file" CTA link targets /deck?focusImport=1', async ({ page, baseURL }) => {

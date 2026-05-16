@@ -1,4 +1,5 @@
 import React, { ChangeEvent, useEffect, useRef, useState } from 'react';
+import { useTheme } from '../utils/useTheme';
 import { connect, ChannelType, Connection } from '../Present/Broadcast';
 import {
   PresentData,
@@ -18,6 +19,7 @@ import { CURRENT_SCHEMA_VERSION } from '../utils/schema';
 import { remixDataUrl, REMIX_ROUTE_ID } from '../utils/remixDataUrl';
 
 export default function DeckBuilder() {
+  useTheme();
   const [message, setMessage] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [deck, setDeck] = useState<Deck | null>(null);
@@ -637,7 +639,10 @@ export default function DeckBuilder() {
   }, []);
 
   return (
-    <>
+    <main className="deck-page">
+      <nav className="deck-page-nav">
+        <a href="/" className="deck-page-home-link">← Home</a>
+      </nav>
       <h1>Deck</h1>
       <div>
         <input ref={fileInputRef} id="file" type="file" onChange={handleFileChange} />
@@ -670,7 +675,7 @@ export default function DeckBuilder() {
               <label>Title: <input type="text" value={deck.title || ''} onChange={e => setDeck({ ...deck, title: e.target.value })} /></label>
               <label>Date: <input type="date" value={deck.date || ''} onChange={e => setDeck({ ...deck, date: e.target.value })} /></label>
               <label>Location: <input type="text" value={deck.location || ''} onChange={e => setDeck({ ...deck, location: e.target.value })} /></label>
-              <label>Notes: <textarea value={deck.notes || ''} onChange={e => setDeck({ ...deck, notes: e.target.value })} style={{ verticalAlign: 'top', width: '300px', height: '60px' }} /></label>
+              <label>Notes: <textarea className="deck-field-wide" value={deck.notes || ''} onChange={e => setDeck({ ...deck, notes: e.target.value })} style={{ verticalAlign: 'top', height: '60px' }} /></label>
               <label><input type="checkbox" checked={!!deck.useGreenScreen} onChange={e => { const updated = { ...deck, useGreenScreen: e.target.checked }; setDeck(updated); syncSentSlideIfNeeded(updated); }} /> Green screen</label>
             </div>
           </div>
@@ -685,7 +690,7 @@ export default function DeckBuilder() {
               value={operatorMessage}
               onChange={e => setOperatorMessage(e.target.value)}
               disabled={!deck}
-              style={{ width: '300px' }}
+              className="deck-field-message"
             />
             <button
               disabled={!deck || operatorMessage.trim() === ''}
@@ -980,6 +985,6 @@ export default function DeckBuilder() {
       )}
       {libraryId && <div data-testid="library-id" style={{ fontSize: '11px', color: '#888' }}>Library ID: {libraryId}</div>}
       {/* Library panel moved to HomePage — DeckBuilder keeps Save/Load controls on /deck */}
-    </>
+    </main>
   );
 }

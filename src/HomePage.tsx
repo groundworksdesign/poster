@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import './App.css';
+import React, { useState } from 'react';
 import LibraryPanel from './Deck/LibraryPanel';
+import { THEMES, useTheme, type ThemeId } from './utils/useTheme';
 
 /**
  * Opens the presentation in a dedicated window (second screen / projector).
@@ -20,49 +20,30 @@ function openPresentationWindow(e: React.MouseEvent<HTMLAnchorElement>) {
   }
 }
 
-const THEMES = [
-  { id: 'light', label: 'Light' },
-  { id: 'dracula', label: 'Dracula' },
-  { id: 'tokyo-night', label: 'Tokyo Night' },
-  { id: 'dark-blue', label: 'Dark Blue' },
-  { id: 'github-dark', label: 'GitHub Dark' },
-];
-
 export default function HomePage() {
-  const [theme, setTheme] = useState<string>(() => {
-    try {
-      return localStorage.getItem('poster-theme') || 'light';
-    } catch (e) {
-      return 'light';
-    }
-  });
+  const [theme, setTheme] = useTheme();
   const [libraryRefreshKey, setLibraryRefreshKey] = useState(0);
 
   const handleOpenFromLibrary = (id: string) => {
-    window.location.assign('/deck?open=' + encodeURIComponent(id));
-  };
-
-  useEffect(() => {
-    try {
-      if (theme) {
-        document.documentElement.dataset.theme = theme;
-        localStorage.setItem('poster-theme', theme);
-      }
-    } catch (e) {
-      // ignore
+    const url = '/deck?open=' + encodeURIComponent(id);
+    const tab = window.open(url, '_blank', 'noopener,noreferrer');
+    if (tab) {
+      tab.opener = null;
+    } else {
+      window.location.assign(url);
     }
-  }, [theme]);
+  };
 
   return (
     <main className="home-page">
       <h1>Poster</h1>
 
-      <div className="home-page-theme-picker" style={{ marginBottom: 12 }}>
-        <label style={{ fontSize: 14 }}>
+      <div className="home-page-theme-picker">
+        <label>
           Theme:{' '}
           <select
             value={theme}
-            onChange={(e) => setTheme(e.target.value)}
+            onChange={(e) => setTheme(e.target.value as ThemeId)}
             aria-label="Select theme"
           >
             {THEMES.map((t) => (

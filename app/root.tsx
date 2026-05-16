@@ -1,6 +1,11 @@
 import React from "react";
-import type { V2_MetaFunction } from "@remix-run/node";
+import type { LinksFunction, V2_MetaFunction } from "@remix-run/node";
 import { Links, LiveReload, Meta, Outlet, Scripts, ScrollRestoration } from "@remix-run/react";
+import appStylesheet from "../src/App.css";
+
+export const links: LinksFunction = () => [
+  { rel: "stylesheet", href: appStylesheet },
+];
 
 export const meta: V2_MetaFunction = () => [
   { charset: "utf-8" },
@@ -9,7 +14,7 @@ export const meta: V2_MetaFunction = () => [
 ];
 
 // Inline script applied before paint to restore saved theme and avoid FOUC.
-const themeInitScript = `(function(){try{var t=localStorage.getItem('poster-theme');if(t)document.documentElement.dataset.theme = t;}catch(e){}})();`;
+const themeInitScript = `(function(){try{var t=localStorage.getItem('poster-theme');if(t&&t!=='light')document.documentElement.dataset.theme=t;else delete document.documentElement.dataset.theme;}catch(e){}})();`;
 
 export default function App() {
   return (
