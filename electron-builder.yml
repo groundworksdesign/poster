@@ -12,10 +12,10 @@ extends: null
 # Packaging note: electron/main.cjs spawns a child Node.js process to run
 # server/index.js. The current implementation launches Electron's bundled Node
 # (process.execPath), so native modules must be rebuilt for Electron's ABI.
-# npmRebuild: true instructs electron-builder to rebuild native modules for
-# Electron during packaging. CI should run `pnpm install --production` then
-# `pnpm rebuild` as needed before packaging for reproducible artifacts.
-npmRebuild: true
+# CI pre-rebuilds better-sqlite3; skip electron-builder dependency collection/
+# rebuild so pnpm dependency tree parsing does not fail during packaging.
+npmRebuild: false
+nodeGypRebuild: false
 
 # Disable packing into asar so the child Node process can access server files
 # and native modules on disk (avoids requiring asar unpack patterns).
@@ -29,14 +29,12 @@ directories:
 artifactName: "${productName}-${version}-${os}-${arch}.${ext}"
 
 # Files to include in the packaged app
-# electron-builder prunes to production deps by default; include node_modules explicitly
 files:
   - electron/**
   - server/**
   - build/**
   - public/**
   - package.json
-  - node_modules/**
   - "!src/**"
   - "!e2e/**"
   - "!scripts/**"
