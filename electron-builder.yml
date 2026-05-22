@@ -12,8 +12,9 @@ extends: null
 # Packaging note: electron/main.cjs spawns a child Node.js process to run
 # server/index.js. The current implementation launches Electron's bundled Node
 # (process.execPath), so native modules must be rebuilt for Electron's ABI.
-# CI pre-rebuilds better-sqlite3; delegate node_modules handling to
-# scripts/electron-before-build.cjs so pnpm dependency tree parsing is skipped.
+# CI pre-rebuilds better-sqlite3 in .github/workflows/pr.yml.
+# The beforeBuild hook delegates dependency handling externally to avoid
+# pnpm dependency tree parsing failures.
 nodeGypRebuild: false
 beforeBuild: ./scripts/electron-before-build.cjs
 
