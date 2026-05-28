@@ -111,7 +111,6 @@ jobs:
     env:
       # PR workflows do not ship Apple or Windows code-signing secrets
       CSC_IDENTITY_AUTO_DISCOVERY: false
-      GH_TOKEN: ${{ github.token }}
 
     steps:
       - name: Checkout
@@ -138,9 +137,7 @@ jobs:
         run: pnpm run build:remix
 
       - name: Build Electron installers
-        run: |
-          ulimit -n 4096 2>/dev/null || true
-          pnpm run build:electron
+        run: pnpm run build:electron
 
       # electron-builder also leaves unpacked app trees under dist/electron/; upload only deliverables.
       - name: Stage installer files for artifact upload
