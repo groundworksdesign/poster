@@ -1,0 +1,9 @@
+name: Test Hello
+on:
+  push:
+    branches: ['**']
+jobs:
+  hello:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hello world
