@@ -264,6 +264,10 @@ jobs:
   # Attach all matrix outputs to the GitHub Release (pre-release or final)
   # ---------------------------------------------------------------------------
   publish:
+    # Always run as long as version resolution succeeded, even if individual
+    # build jobs (e.g. electron-installers) failed — we publish whatever was
+    # built successfully.
+    if: ${{ always() && needs.resolve-version.result == 'success' && !cancelled() }}
     name: Publish ${{ needs.resolve-version.outputs.version }}
     needs: [portable-zip, electron-installers, resolve-version]
     runs-on: ubuntu-latest
