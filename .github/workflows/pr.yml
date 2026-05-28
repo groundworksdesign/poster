@@ -40,6 +40,14 @@ jobs:
       - name: Run Remix E2E
         run: pnpm exec playwright test --config=playwright.remix.config.ts --update-snapshots
 
+      - name: Upload generated snapshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: poster-remix-snapshots-linux
+          path: e2e/remix-visual-regression.spec.ts-snapshots/
+          retention-days: 7
+          if-no-files-found: warn
+
   # ---------------------------------------------------------------------------
   # Portable zip (per OS)
   # ---------------------------------------------------------------------------
