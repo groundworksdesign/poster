@@ -41,6 +41,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
+          echo "DEBUG: sha=${{ github.sha }} ref=${{ github.ref }} ref_type=${{ github.ref_type }} ref_name=${{ github.ref_name }} pwd=$(pwd)"
 
           if [ '${{ github.ref_type }}' = 'tag' ]; then
             # -----------------------------------------------------------------
