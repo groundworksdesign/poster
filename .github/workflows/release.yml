@@ -2,7 +2,7 @@ name: Release
 
 on:
   push:
-    branches: [main, reorg-documentation] # TODO: remove reorg-documentation before merging
+    branches: [main]
     tags:
       - "v*.*.*"
 
