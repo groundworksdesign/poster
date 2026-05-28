@@ -8,6 +8,12 @@
  *
  * Usage:
  *   node scripts/package-portable.mjs [--sha <git-sha>] [--tag <release-tag>]
+ *                                    [--node-modules <path>]
+ *
+ * When --node-modules is given the script skips the production install and
+ * copies that directory as-is.  This is the CI fast path — the workflow
+ * pre-builds a flat production node_modules with pnpm --shamefully-hoist so
+ * the expensive install/rebuild step is done once instead of per-matrix-job.
  *
  * Output:
  *   dist/poster-portable-<os>-<sha>.zip
@@ -63,11 +69,14 @@ function runCapture(cmd, opts = {}) {
 const args = process.argv.slice(2);
 let shaOverride = null;
 let tagOverride = null;
+let nodeModulesOverride = null;
 for (let i = 0; i < args.length; i++) {
   if (args[i] === "--sha" && args[i + 1]) {
     shaOverride = args[++i];
   } else if (args[i] === "--tag" && args[i + 1]) {
     tagOverride = args[++i];
+  } else if (args[i] === "--node-modules" && args[i + 1]) {
+    nodeModulesOverride = args[++i];
   }
 }
 
@@ -154,24 +163,31 @@ try {
   }
 
   // -------------------------------------------------------------------------
-  // Install production dependencies in staging
+  // Install / copy production dependencies into staging
   // -------------------------------------------------------------------------
-  // pnpm --shamefully-hoist produces a flat node_modules (no symlinks) that
-  // survives zip/unzip on all platforms, while being much faster than npm ci
-  // because it reuses pnpm's already-populated global store.  Falls back to
-  // npm if pnpm is not available.
-  const hasPnpm = runCapture("pnpm --version");
-  if (hasPnpm) {
-    log("Installing production dependencies with pnpm (flat layout via --shamefully-hoist)...");
-    run("pnpm install --prod --shamefully-hoist --frozen-lockfile", { cwd: stagingDir });
+  // CI fast path: the workflow pre-builds a flat production node_modules and
+  // passes the path via --node-modules.  We copy it here (much cheaper than
+  // running install from scratch per OS-matrix job).
+  if (nodeModulesOverride) {
+    log("Copying pre-built production node_modules from " + nodeModulesOverride + " ...");
+    const srcModules = resolve(ROOT, nodeModulesOverride);
+    cpSync(srcModules, join(stagingDir, "node_modules"), { recursive: true });
   } else {
-    log("Installing production dependencies with npm (flat layout for zip portability)...");
-    run("npm ci --omit=dev --ignore-scripts --legacy-peer-deps", { cwd: stagingDir });
-  }
+    // pnpm --shamefully-hoist produces a flat node_modules (no symlinks)
+    // that survives zip/unzip, while being faster than npm ci.
+    const hasPnpm = runCapture("pnpm --version");
+    if (hasPnpm) {
+      log("Installing production dependencies with pnpm (flat layout via --shamefully-hoist)...");
+      run("pnpm install --prod --shamefully-hoist --frozen-lockfile", { cwd: stagingDir });
+    } else {
+      log("Installing production dependencies with npm (flat layout for zip portability)...");
+      run("npm ci --omit=dev --ignore-scripts --legacy-peer-deps", { cwd: stagingDir });
+    }
 
-  log("Rebuilding better-sqlite3 for current OS...");
-  if (existsSync(join(stagingDir, "node_modules", "better-sqlite3"))) {
-    run("pnpm rebuild better-sqlite3", { cwd: stagingDir });
+    log("Rebuilding better-sqlite3 for current OS...");
+    if (existsSync(join(stagingDir, "node_modules", "better-sqlite3"))) {
+      run("pnpm rebuild better-sqlite3", { cwd: stagingDir });
+    }
   }
 
   // -------------------------------------------------------------------------

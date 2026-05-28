@@ -77,8 +77,16 @@ jobs:
       - name: Build Remix app
         run: pnpm run build:remix
 
+      - name: Build production node_modules (flat layout for portable zip)
+        run: |
+          mkdir -p dist/portable-prod
+          cp package.json pnpm-lock.yaml dist/portable-prod/
+          cd dist/portable-prod
+          pnpm install --prod --shamefully-hoist --frozen-lockfile
+          pnpm rebuild better-sqlite3
+
       - name: Package portable zip
-        run: node scripts/package-portable.mjs --sha ${{ github.sha }}
+        run: node scripts/package-portable.mjs --sha ${{ github.sha }} --node-modules dist/portable-prod/node_modules
 
       - name: Upload portable zip artifact
         uses: actions/upload-artifact@v4
