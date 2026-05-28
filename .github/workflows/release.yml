@@ -154,6 +154,7 @@ jobs:
         run: pnpm run build:remix
 
       - name: Build production node_modules (flat layout for portable zip)
+        shell: bash
         run: |
           mkdir -p dist/portable-prod
           cp package.json pnpm-lock.yaml dist/portable-prod/
