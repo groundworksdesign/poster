@@ -72,22 +72,27 @@ jobs:
             COMMIT_MSG=$(git log --format=%B -n1 "${{ github.sha }}")
             echo "A5 msg=${COMMIT_MSG:0:40}..."
 
+            echo "A6"
             ALL_TEXT=$(printf '%s\n%s' "$PR_BODY" "$COMMIT_MSG")
+            echo "A7 len=${#ALL_TEXT}"
             BUMP="patch"
             if echo "$ALL_TEXT" | grep -qiE '\+semver:\s?(breaking|major)'; then
               BUMP="major"
             elif echo "$ALL_TEXT" | grep -qiE '\+semver:\s?(feature|minor)'; then
               BUMP="minor"
             fi
+            echo "A8 bump=$BUMP"
 
             # Apply bump
             IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VER"
+            echo "A9 major=$MAJOR minor=$MINOR patch=$PATCH"
             case "$BUMP" in
               major) ((MAJOR++)); MINOR=0; PATCH=0 ;;
               minor) ((MINOR++)); PATCH=0 ;;
               patch) ((PATCH++)) ;;
             esac
             NEW_VER="${MAJOR}.${MINOR}.${PATCH}"
+            echo "A10 new_ver=$NEW_VER"
 
             # Find highest pre-release number for this base version
             MAX_PR=0
@@ -97,24 +102,32 @@ jobs:
             done
             NEXT_PR=$((MAX_PR + 1))
             TAG_NAME="v${NEW_VER}-pr.${NEXT_PR}"
+            echo "A11 tag=$TAG_NAME"
 
             # Write version to package.json
+            echo "A12"
             node -e "
               const p = require('./package.json');
               p.version = '$NEW_VER';
               require('fs').writeFileSync('package.json', JSON.stringify(p, null, 2) + '\n');
             "
+            echo "A13"
 
             # Commit [skip ci] and push
             git config user.name 'github-actions[bot]'
             git config user.email 'github-actions[bot]@users.noreply.github.com'
+            echo "A14"
             git add package.json
+            echo "A15"
             git commit -m "Bump version to $NEW_VER [skip ci]"
+            echo "A16"
             git push origin "refs/heads/${{ github.ref_name }}"
+            echo "A17"
 
             # Create and push pre-release tag
             git tag "$TAG_NAME"
             git push origin "$TAG_NAME"
+            echo "A18 done"
 
             echo "version=$TAG_NAME" >> "$GITHUB_OUTPUT"
             echo "is_prerelease=true" >> "$GITHUB_OUTPUT"
