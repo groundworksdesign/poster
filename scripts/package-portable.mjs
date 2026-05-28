@@ -156,24 +156,22 @@ try {
   // -------------------------------------------------------------------------
   // Install production dependencies in staging
   // -------------------------------------------------------------------------
-  // NOTE: We use npm (not pnpm) for the staging install because pnpm uses a
-  // symlink-based virtual store (.pnpm/) that zip resolves into real files,
-  // breaking Node module resolution after unzip. npm ci creates a flat
-  // node_modules that survives zip/unzip on all platforms.
-  log("Installing production dependencies with npm (flat layout for zip portability)...");
-
-  // npm ci requires package-lock.json; we copied it above if present.
-  // If only pnpm-lock.yaml is available, fall back to npm install.
-  const hasNpmLockInStaging = existsSync(join(stagingDir, "package-lock.json"));
-  if (hasNpmLockInStaging) {
-    run("npm ci --omit=dev --ignore-scripts --legacy-peer-deps", { cwd: stagingDir });
+  // pnpm --shamefully-hoist produces a flat node_modules (no symlinks) that
+  // survives zip/unzip on all platforms, while being much faster than npm ci
+  // because it reuses pnpm's already-populated global store.  Falls back to
+  // npm if pnpm is not available.
+  const hasPnpm = runCapture("pnpm --version");
+  if (hasPnpm) {
+    log("Installing production dependencies with pnpm (flat layout via --shamefully-hoist)...");
+    run("pnpm install --prod --shamefully-hoist --frozen-lockfile", { cwd: stagingDir });
   } else {
-    run("npm install --omit=dev --ignore-scripts --legacy-peer-deps", { cwd: stagingDir });
+    log("Installing production dependencies with npm (flat layout for zip portability)...");
+    run("npm ci --omit=dev --ignore-scripts --legacy-peer-deps", { cwd: stagingDir });
   }
 
   log("Rebuilding better-sqlite3 for current OS...");
   if (existsSync(join(stagingDir, "node_modules", "better-sqlite3"))) {
-    run("npm rebuild better-sqlite3", { cwd: stagingDir });
+    run("pnpm rebuild better-sqlite3", { cwd: stagingDir });
   }
 
   // -------------------------------------------------------------------------
@@ -248,16 +246,24 @@ try {
   log(`Creating zip: ${zipPath}`);
 
   if (process.platform === "win32") {
-    // Windows: use PowerShell Compress-Archive
-    // We need to zip contents of stagingDir (not the stagingDir folder itself)
-    const psCmd =
-      `Compress-Archive -Path '${stagingDir}\\*' -DestinationPath '${zipPath}' -Force`;
-    const result = spawnSync("powershell", ["-NoProfile", "-Command", psCmd], {
+    // Windows: use 7-Zip (pre-installed on GitHub Actions runners) — much
+    // faster than PowerShell Compress-Archive.
+    const sevenZip = "C:\\Program Files\\7-Zip\\7z.exe";
+    const result = spawnSync(sevenZip, ["a", "-tzip", zipPath, "."], {
       stdio: "inherit",
       cwd: stagingDir,
     });
     if (result.status !== 0) {
-      die("Compress-Archive failed. Ensure PowerShell is available.");
+      // Fall back to PowerShell Compress-Archive
+      const psCmd =
+        `Compress-Archive -Path '${stagingDir}\\*' -DestinationPath '${zipPath}' -Force`;
+      const psResult = spawnSync("powershell", ["-NoProfile", "-Command", psCmd], {
+        stdio: "inherit",
+        cwd: stagingDir,
+      });
+      if (psResult.status !== 0) {
+        die("Compress-Archive failed. Ensure PowerShell is available.");
+      }
     }
   } else {
     // Mac/Linux: use zip utility
