@@ -140,21 +140,43 @@ The **PR Build** workflow (`.github/workflows/pr.yml`) runs on every pull reques
 
 Open the PR on GitHub, then **Checks** → select the workflow run → **Artifacts** (retention is limited; see the workflow `retention-days`).
 
-## Releases: semver tags and GitHub Release assets
+## Releases
 
-The **Release** workflow (`.github/workflows/release.yml`) runs when you push a **semver tag** matching `v*.*.*` (examples: `v0.2.0`, `v1.0.0`).
+The **Release** workflow (`.github/workflows/release.yml`) handles two flows: automatic **pre-releases** on push to `main` and manual **final releases** on tag push.
 
-1. Align `package.json` `version` with the release you are tagging (e.g. `0.2.0` for tag `v0.2.0`) so filenames and the shipped app version stay consistent.
-2. Create and push the tag:
+### Pre-releases (automatic)
 
+Pushing to `main` (typically a PR merge) triggers a pre-release. The workflow:
+
+1. Reads the PR description and merge commit message for a `+semver:` annotation (see rules below).
+2. Applies the version bump to `package.json`, commits it with `[skip ci]`, and creates a pre-release tag `v<version>-pr.<N>`.
+3. Builds **portable zips** and **Electron installers** and attaches them to a GitHub **Pre-release**.
+
+### `+semver:` annotation rules
+
+Include one of these in the **PR description** or **merge commit message** to control the next version. The first matched annotation wins (major > minor > patch).
+
+| Annotation | Semver bump | Example (`0.1.0` →) |
+|---|---|---|
+| `+semver:major` or `+semver:breaking` | Major | `1.0.0` |
+| `+semver:minor` or `+semver:feature` | Minor | `0.2.0` |
+| `+semver:patch` or `+semver:fix` | Patch | `0.1.1` |
+| *(absent)* | Patch (default) | `0.1.1` |
+
+### Final releases (manual)
+
+When you're ready to ship the accumulated pre-release changes:
+
+1. Push a semver tag matching the desired version:
    ```bash
    git tag v0.2.0
    git push origin v0.2.0
    ```
+2. The workflow cleans up any pre-releases matching `v<version>-pr.*`, builds artifacts, and creates a **GitHub Release** with auto-generated release notes.
 
-3. The workflow builds the same **portable zips** and **Electron installers** as PR CI, then the `publish-release` job attaches everything to the **GitHub Release** for that tag (via `softprops/action-gh-release`).
+### Artifacts
 
-Intermediate artifacts use names containing `poster-portable-release-...` and `poster-electron-release-...`; published release assets are the bundled files from those jobs.
+Each run of the Release workflow builds the same **portable zips** (one per OS) and **Electron installers** (DMG, NSIS exe, deb, AppImage) as the PR workflow. The `publish` job attaches them to the GitHub Release or Pre-release. Intermediate artifact names use the resolved version tag (e.g. `poster-portable-release-ubuntu-latest-v0.2.0-pr.3-<sha>`).
 
 ## Learn more
 

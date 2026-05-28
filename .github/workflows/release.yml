@@ -2,19 +2,124 @@ name: Release
 
 on:
   push:
+    branches: [main]
     tags:
       - "v*.*.*"
+    tags-ignore:
+      - "v*-pr.*"
 
-# Build jobs only read the repo; publishing attaches assets with elevated token.
+# Default: build jobs only read the repo. Publish and resolve-version elevate as needed.
 permissions:
   contents: read
 
 jobs:
   # ---------------------------------------------------------------------------
-  # Portable zip (per OS) — same steps as PR Build, plus tag in zip basename
+  # Resolve the version: tag push → final release tag; main push → pre-release
+  # with +semver: detection, package.json bump, and pre-release tag creation.
+  # ---------------------------------------------------------------------------
+  resolve-version:
+    name: Resolve version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.resolve.outputs.version }}
+      is_prerelease: ${{ steps.resolve.outputs.is_prerelease }}
+      commit_sha: ${{ steps.resolve.outputs.commit_sha }}
+    permissions:
+      contents: write
+      pull-requests: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve version
+        id: resolve
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          if [ '${{ github.ref_type }}' = 'tag' ]; then
+            # -----------------------------------------------------------------
+            # Tag push — final release. Use the tag name as-is.
+            # -----------------------------------------------------------------
+            echo "version=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+            echo "is_prerelease=false" >> "$GITHUB_OUTPUT"
+
+          else
+            # -----------------------------------------------------------------
+            # Main push — pre-release. Detect +semver:, bump package.json,
+            # commit [skip ci], push, create and push pre-release tag.
+            # -----------------------------------------------------------------
+            CURRENT_VER=$(node -p "require('./package.json').version")
+
+            # Find merged PR
+            PR_NUMBER=$(gh api "/repos/${{ github.repository }}/commits/${{ github.sha }}/pulls" \
+              --jq '.[0].number // empty')
+
+            # PR body + merge commit body
+            PR_BODY=""
+            [ -n "$PR_NUMBER" ] && PR_BODY=$(gh api "/repos/${{ github.repository }}/pulls/$PR_NUMBER" \
+              --jq '.body // empty')
+            COMMIT_MSG=$(git log --format=%B -n1 "${{ github.sha }}")
+
+            ALL_TEXT=$(printf '%s\n%s' "$PR_BODY" "$COMMIT_MSG")
+            BUMP="patch"
+            if echo "$ALL_TEXT" | grep -qiE '\+semver:\s?(breaking|major)'; then
+              BUMP="major"
+            elif echo "$ALL_TEXT" | grep -qiE '\+semver:\s?(feature|minor)'; then
+              BUMP="minor"
+            fi
+
+            # Apply bump
+            IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VER"
+            case "$BUMP" in
+              major) ((MAJOR++)); MINOR=0; PATCH=0 ;;
+              minor) ((MINOR++)); PATCH=0 ;;
+              patch) ((PATCH++)) ;;
+            esac
+            NEW_VER="${MAJOR}.${MINOR}.${PATCH}"
+
+            # Find highest pre-release number for this base version
+            MAX_PR=0
+            for TAG in $(git tag -l "v${NEW_VER}-pr.*"); do
+              PR_NUM="${TAG##*-pr.}"
+              [ "$PR_NUM" -gt "$MAX_PR" ] && MAX_PR="$PR_NUM"
+            done
+            NEXT_PR=$((MAX_PR + 1))
+            TAG_NAME="v${NEW_VER}-pr.${NEXT_PR}"
+
+            # Write version to package.json
+            node -e "
+              const p = require('./package.json');
+              p.version = '$NEW_VER';
+              require('fs').writeFileSync('package.json', JSON.stringify(p, null, 2) + '\n');
+            "
+
+            # Commit [skip ci] and push
+            git config user.name 'github-actions[bot]'
+            git config user.email 'github-actions[bot]@users.noreply.github.com'
+            git add package.json
+            git commit -m "Bump version to $NEW_VER [skip ci]"
+            git push origin main
+
+            # Create and push pre-release tag
+            git tag "$TAG_NAME"
+            git push origin "$TAG_NAME"
+
+            echo "version=$TAG_NAME" >> "$GITHUB_OUTPUT"
+            echo "is_prerelease=true" >> "$GITHUB_OUTPUT"
+            echo "commit_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          fi
+
+  # ---------------------------------------------------------------------------
+  # Portable zip (per OS) — same steps as PR Build, uses resolved version
   # ---------------------------------------------------------------------------
   portable-zip:
-    name: Portable zip (${{ matrix.os }}) for ${{ github.ref_name }}
+    name: Portable zip (${{ matrix.os }}) for ${{ needs.resolve-version.outputs.version }}
+    needs: [resolve-version]
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -24,6 +129,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.resolve-version.outputs.commit_sha || github.ref }}
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v3
@@ -50,12 +157,14 @@ jobs:
         run: |
           set -euo pipefail
           SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
-          node scripts/package-portable.mjs --sha "$SHORT_SHA" --tag "${{ github.ref_name }}"
+          node scripts/package-portable.mjs \
+            --sha "$SHORT_SHA" \
+            --tag "${{ needs.resolve-version.outputs.version }}"
 
       - name: Upload portable zip (staging artifact)
         uses: actions/upload-artifact@v4
         with:
-          name: poster-portable-release-${{ matrix.os }}-${{ github.ref_name }}-${{ github.sha }}
+          name: poster-portable-release-${{ matrix.os }}-${{ needs.resolve-version.outputs.version }}-${{ github.sha }}
           path: dist/poster-portable-*.zip
           retention-days: 90
           if-no-files-found: error
@@ -64,7 +173,8 @@ jobs:
   # Electron installers (per OS)
   # ---------------------------------------------------------------------------
   electron-installers:
-    name: Electron installers (${{ matrix.os }}) for ${{ github.ref_name }}
+    name: Electron installers (${{ matrix.os }}) for ${{ needs.resolve-version.outputs.version }}
+    needs: [resolve-version]
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -77,6 +187,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.resolve-version.outputs.commit_sha || github.ref }}
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v3
@@ -130,17 +242,17 @@ jobs:
       - name: Upload Electron installers (staging artifact)
         uses: actions/upload-artifact@v4
         with:
-          name: poster-electron-release-${{ matrix.os }}-${{ github.ref_name }}-${{ github.sha }}
+          name: poster-electron-release-${{ matrix.os }}-${{ needs.resolve-version.outputs.version }}-${{ github.sha }}
           path: dist/electron-installers/
           retention-days: 90
           if-no-files-found: error
 
   # ---------------------------------------------------------------------------
-  # Attach all matrix outputs to the GitHub Release for this tag
+  # Attach all matrix outputs to the GitHub Release (pre-release or final)
   # ---------------------------------------------------------------------------
-  publish-release:
-    name: Publish GitHub Release assets
-    needs: [portable-zip, electron-installers]
+  publish:
+    name: Publish ${{ needs.resolve-version.outputs.version }}
+    needs: [portable-zip, electron-installers, resolve-version]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -150,19 +262,44 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: release-assets
-          # Names: poster-portable-release-<runner>-<tag>-<sha>, poster-electron-release-<runner>-<tag>-<sha>
-          pattern: poster-*-${{ github.ref_name }}-${{ github.sha }}
+          pattern: poster-*-${{ needs.resolve-version.outputs.version }}-${{ github.sha }}
           merge-multiple: true
           if-no-files-found: error
 
       - name: List files to publish
         run: ls -la release-assets
 
+      - name: Delete pre-releases with same base version (final release only)
+        if: needs.resolve-version.outputs.is_prerelease == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          BASE=$(echo '${{ github.ref_name }}' | sed 's/^v//')
+          echo "Cleaning up pre-releases matching v${BASE}-pr.*"
+
+          # Delete GitHub Releases
+          gh api "/repos/${{ github.repository }}/releases" --jq \
+            '.[] | select(.tag_name | startswith("v'"${BASE}"'-pr.")) | .id' \
+            | while read id; do
+              echo "  Deleting release $id"
+              gh api -X DELETE "/repos/${{ github.repository }}/releases/$id" || true
+            done
+
+          # Delete git refs (tags)
+          gh api "/repos/${{ github.repository }}/git/refs/tags" --jq \
+            '.[] | select(.ref | startswith("refs/tags/v'"${BASE}"'-pr.")) | .ref' \
+            | while read ref; do
+              echo "  Deleting tag ref $ref"
+              gh api -X DELETE "/repos/${{ github.repository }}/git/refs/$ref" || true
+            done
+
       - name: Upload assets to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_name }}
-          name: ${{ github.ref_name }}
+          tag_name: ${{ needs.resolve-version.outputs.version }}
+          name: ${{ needs.resolve-version.outputs.version }}
+          prerelease: ${{ needs.resolve-version.outputs.is_prerelease == 'true' && 'true' || '' }}
           generate_release_notes: true
           fail_on_unmatched_files: true
           files: |
