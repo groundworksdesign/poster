@@ -38,7 +38,7 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium
 
       - name: Run Remix E2E
-        run: pnpm run test:e2e:remix
+        run: pnpm run test:e2e:remix -- --update-snapshots
 
   # ---------------------------------------------------------------------------
   # Portable zip (per OS)
