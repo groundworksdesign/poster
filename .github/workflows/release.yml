@@ -104,7 +104,7 @@ jobs:
             git config user.email 'github-actions[bot]@users.noreply.github.com'
             git add package.json
             git commit -m "Bump version to $NEW_VER [skip ci]"
-            git push origin main
+            git push origin "refs/heads/${{ github.ref_name }}"
 
             # Create and push pre-release tag
             git tag "$TAG_NAME"
