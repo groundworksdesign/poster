@@ -1,0 +1,166 @@
+name: PR Build
+
+on:
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Remix Playwright E2E (Chromium; remix dev webServer)
+  # ---------------------------------------------------------------------------
+  remix-e2e:
+    name: Remix E2E (Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Rebuild better-sqlite3 for runner OS
+        run: pnpm rebuild better-sqlite3
+
+      - name: Install Playwright Chromium (+ system deps)
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run Remix E2E
+        run: pnpm run test:e2e:remix
+
+  # ---------------------------------------------------------------------------
+  # Portable zip (per OS)
+  # ---------------------------------------------------------------------------
+  portable-zip:
+    name: Portable zip (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+      fail-fast: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Rebuild better-sqlite3 for runner OS
+        run: pnpm rebuild better-sqlite3
+
+      - name: Build Remix app
+        run: pnpm run build:remix
+
+      - name: Build production node_modules (flat layout for portable zip)
+        shell: bash
+        run: |
+          mkdir -p dist/portable-prod
+          cp package.json pnpm-lock.yaml dist/portable-prod/
+          cd dist/portable-prod
+          pnpm install --prod --shamefully-hoist --frozen-lockfile
+          pnpm rebuild better-sqlite3
+
+      - name: Package portable zip
+        run: node scripts/package-portable.mjs --sha ${{ github.sha }} --node-modules dist/portable-prod/node_modules
+
+      # Verify packaging succeeded; do not upload artifacts (400MB+ zips burn Actions storage).
+      - name: Verify portable zip output
+        shell: bash
+        run: |
+          set -euo pipefail
+          ls -lh dist/poster-portable-*.zip
+
+  # ---------------------------------------------------------------------------
+  # Electron installers (per OS): DMG (mac), NSIS exe (win), deb + AppImage (linux)
+  # ---------------------------------------------------------------------------
+  electron-installers:
+    name: Electron installers (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+      fail-fast: false
+
+    env:
+      # PR workflows do not ship Apple or Windows code-signing secrets
+      CSC_IDENTITY_AUTO_DISCOVERY: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Rebuild better-sqlite3 for runner OS
+        run: pnpm rebuild better-sqlite3
+
+      - name: Build Remix app
+        run: pnpm run build:remix
+
+      - name: Build Electron installers
+        run: pnpm run build:electron
+
+      # electron-builder also leaves unpacked app trees under dist/electron/; verify deliverables only.
+      - name: Verify Electron installer output
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist/electron-installers
+          shopt -s nullglob
+          files=(
+            dist/electron/*.dmg
+            dist/electron/*.exe
+            dist/electron/*.deb
+            dist/electron/*.AppImage
+          )
+          copied=0
+          for f in "${files[@]}"; do
+            if [ -f "$f" ]; then
+              cp "$f" dist/electron-installers/
+              copied=$((copied + 1))
+            fi
+          done
+          if [ "$copied" -eq 0 ]; then
+            echo "No installer files found under dist/electron/"
+            ls -la dist/electron || true
+            exit 1
+          fi
+          ls -la dist/electron-installers/

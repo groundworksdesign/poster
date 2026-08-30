@@ -1,0 +1,90 @@
+appId: com.groundworksdesign.poster
+productName: Poster
+
+# Disable the auto-detected react-cra preset: this project uses a custom
+# electron/main.cjs entry (not the CRA public/electron.js convention).
+extends: null
+
+# Electron major in package.json is chosen so better-sqlite3 has prebuilds (or
+# compiles cleanly) for that line; bump Electron and sqlite together when newer
+# ABI support ships upstream.
+
+# Packaging note: electron/main.cjs spawns a child Node.js process to run
+# server/index.js. The current implementation launches Electron's bundled Node
+# (process.execPath), so native modules must be rebuilt for Electron's ABI.
+# CI pre-rebuilds better-sqlite3 in .github/workflows/pr.yml.
+# The beforeBuild hook delegates dependency handling externally to avoid
+# pnpm dependency tree parsing failures.
+nodeGypRebuild: false
+beforeBuild: ./scripts/electron-before-build.cjs
+
+# Disable packing into asar so the child Node process can access server files
+# and native modules on disk (avoids requiring asar unpack patterns).
+asar: false
+
+# Output directory (kept separate from portable-zip dist/)
+directories:
+  output: dist/electron
+
+# Artifact naming: semver ${version} is read from package.json by default.
+artifactName: "${productName}-${version}-${os}-${arch}.${ext}"
+
+# Files to include in the packaged app
+files:
+  - electron/**
+  - server/**
+  - build/**
+  - public/**
+  - package.json
+  - "!src/**"
+  - "!e2e/**"
+  - "!scripts/**"
+  - "!docs/**"
+  - "!*.spec.*"
+  - "!*.test.*"
+  - "!playwright.config.*"
+  - "!remix.config.*"
+  - "!tsconfig*"
+  - "!.github/**"
+
+# ---- Per-platform targets ----
+
+mac:
+  target:
+    - target: dmg
+      arch:
+        - x64
+        - arm64
+
+# DMG window settings (top-level, not under mac)
+dmg:
+  window:
+    width: 540
+    height: 380
+
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  # Use existing favicon.ico if present
+  installerIcon: public/favicon.ico
+  uninstallerIcon: public/favicon.ico
+
+linux:
+  target:
+    - target: deb
+      arch:
+        - x64
+    - target: AppImage
+      arch:
+        - x64
+  # Required for .deb
+  maintainer: Groundworks Design
+  category: Office
+  synopsis: Live slide presentations and operator deck builder
+  description: Poster serves the Remix UI and library APIs from an embedded Express server.

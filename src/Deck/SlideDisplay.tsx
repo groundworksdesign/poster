@@ -4,6 +4,7 @@ import {
   SlideType,
   PresentDataProps,
 } from '../Present/PresentTypes';
+import { resolveSlideStyle } from '../utils/resolveSlideStyle';
 
 export default function SlideDisplay({
   deck,
@@ -14,12 +15,9 @@ export default function SlideDisplay({
   slide: Slide;
   sendAction: (props: PresentDataProps) => void;
 }) {
-  const style = {
-    ...deck?.slideStyles[SlideType.GENERAL.toString()],
-    ...deck?.slideStyles[slide.type.toString()],
-  };
+  const effectiveStyle = resolveSlideStyle(deck, slide);
   const props = {
-    slide: { ...slide, style: style },
+    slide: { ...slide, style: effectiveStyle },
     useGreenScreen: deck?.useGreenScreen,
   } as PresentDataProps;
 

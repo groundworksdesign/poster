@@ -1,19 +1,35 @@
-import React from 'react';
+import React from "react";
+import type { LinksFunction, V2_MetaFunction } from "@remix-run/node";
+import { Links, LiveReload, Meta, Outlet, Scripts, ScrollRestoration } from "@remix-run/react";
+import appStylesheet from "../src/App.css";
 
-// Minimal Remix root scaffold for future migration
-export default function Root() {
+export const links: LinksFunction = () => [
+  { rel: "stylesheet", href: appStylesheet },
+];
+
+export const meta: V2_MetaFunction = () => [
+  { charset: "utf-8" },
+  { title: "Poster" },
+  { name: "viewport", content: "width=device-width,initial-scale=1" },
+];
+
+// Inline script applied before paint to restore saved theme and avoid FOUC.
+const themeInitScript = `(function(){try{var t=localStorage.getItem('poster-theme');if(t&&t!=='light')document.documentElement.dataset.theme=t;else delete document.documentElement.dataset.theme;}catch(e){}})();`;
+
+export default function App() {
   return (
-    <html>
+    <html lang="en">
       <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width,initial-scale=1" />
-        <title>Poster (Remix scaffold)</title>
+        <Meta />
+        <Links />
+        {/* eslint-disable-next-line react/no-danger */}
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body>
-        <div id="app-root">
-          <h1>Poster Remix scaffold</h1>
-          <p>This folder contains ported route components: <code>/routes/deck</code> and <code>/routes/presentation</code>.</p>
-        </div>
+        <Outlet />
+        <ScrollRestoration />
+        <Scripts />
+        <LiveReload />
       </body>
     </html>
   );

@@ -1,0 +1,77 @@
+/* ============================================================
+   Poster design tokens
+   Default palette: light/neutral (no data-theme attribute)
+   ============================================================ */
+
+:root {
+  --color-bg: #ffffff;
+  --color-bg-surface: #f4f4f4;
+  --color-fg: #1a1a1a;
+  --color-fg-muted: #333333;
+  --color-border: #1a1a1a;
+  --color-accent: #0d47a1;
+  --color-link: #0d47a1;
+  --color-link-present: #1b5e20;
+  --color-link-hover-bg: #f4f4f4;
+}
+
+/* ============================================================
+   Dracula
+   https://draculatheme.com/contribute
+   ============================================================ */
+[data-theme="dracula"] {
+  --color-bg: #282a36;
+  --color-bg-surface: #44475a;
+  --color-fg: #f8f8f2;
+  --color-fg-muted: #6272a4;
+  --color-border: #6272a4;
+  --color-accent: #bd93f9;
+  --color-link: #8be9fd;
+  --color-link-present: #50fa7b;
+  --color-link-hover-bg: #383a4a;
+}
+
+/* ============================================================
+   Tokyo Night
+   ============================================================ */
+[data-theme="tokyo-night"] {
+  --color-bg: #1a1b26;
+  --color-bg-surface: #24283b;
+  --color-fg: #c0caf5;
+  --color-fg-muted: #565f89;
+  --color-border: #2c2e3e;
+  --color-accent: #7aa2f7;
+  --color-link: #7dcfff;
+  --color-link-present: #9ece6a;
+  --color-link-hover-bg: #1e2030;
+}
+
+/* ============================================================
+   Dark Blue (navy)
+   ============================================================ */
+[data-theme="dark-blue"] {
+  --color-bg: #0d1b2a;
+  --color-bg-surface: #112240;
+  --color-fg: #ccd6f6;
+  --color-fg-muted: #8892b0;
+  --color-border: #1d3461;
+  --color-accent: #64ffda;
+  --color-link: #64ffda;
+  --color-link-present: #a8ff78;
+  --color-link-hover-bg: #0a1628;
+}
+
+/* ============================================================
+   GitHub Dark
+   ============================================================ */
+[data-theme="github-dark"] {
+  --color-bg: #0d1117;
+  --color-bg-surface: #161b22;
+  --color-fg: #e6edf3;
+  --color-fg-muted: #848d97;
+  --color-border: #30363d;
+  --color-accent: #58a6ff;
+  --color-link: #58a6ff;
+  --color-link-present: #3fb950;
+  --color-link-hover-bg: #1c2128;
+}

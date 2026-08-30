@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { connect, ChannelType, Connection } from './Broadcast';
+import { connect, ChannelType } from './Broadcast';
 import {
   PresentData,
   Slide,
@@ -9,17 +9,28 @@ import {
   VerticalAlign,
 } from './PresentTypes';
 import LyricsDisplay from './LyricsDisplay';
+import SafeAreaOverlay from './SafeAreaOverlay';
+
+function flexAlignFromHorizontal(h?: HorizontalAlign): React.CSSProperties['alignItems'] {
+  if (h === HorizontalAlign.LEFT) return 'flex-start';
+  if (h === HorizontalAlign.RIGHT) return 'flex-end';
+  return 'center';
+}
+
+/** Non-title slides share this frame height; title slides use the full #slide area. */
+const NON_TITLE_PROGRAM_HEIGHT = '72%';
 
 export default function Presentation() {
   const [loading, setLoading] = useState<boolean>(true);
   const [slide, setSlide] = useState<Slide | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [useGreenScreen, setUseGreenScreen] = useState<boolean>(false);
-  const [connection, setConnection] = useState<Connection | null | undefined>();
   const [songData, setSongData] = useState<SongData | null>(null);
   const [segmentIndex, setSegmentIndex] = useState<number>(0);
-  const root = document.getElementsByTagName('body');
-
+  // Broadcast-safe overlay: activated by ?safearea=1 query param or S key toggle
+  // NOTE: capture the presenter URL without this param for a clean program feed.
+  const [showSafeArea, setShowSafeArea] = useState<boolean>(false);
+  const [inFullscreen, setInFullscreen] = useState<boolean>(false);
   const broadcastEventHandler = (event: MessageEvent) => {
     const present = event.data as PresentData;
     if (!present) return;
@@ -49,7 +60,7 @@ export default function Presentation() {
         setSongData(null);
         setSegmentIndex(0);
       }
-    } else if (present.message) {
+    } else if (present.message || present.message === '') {
       setMessage(present.message);
     }
 
@@ -57,28 +68,153 @@ export default function Presentation() {
   };
 
   useEffect(() => {
-    setConnection(connect(ChannelType.PRESENTER, broadcastEventHandler));
+    const connection = connect(ChannelType.PRESENTER, broadcastEventHandler);
     setLoading(false);
+    return () => {
+      try {
+        // ensure we remove the handler before closing to avoid duplicate handlers
+        if (connection && connection.channel) {
+          // clear handler reference then close channel
+          (connection.channel as any).onmessage = null;
+          connection.channel.close();
+        }
+      } catch (e) {
+        // ignore cleanup errors
+      }
+    };
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (document.fullscreenElement) {
+      if (typeof document.exitFullscreen === 'function') {
+        document.exitFullscreen().catch(() => {});
+      }
+      return;
+    }
+    const el = document.documentElement;
+    if (el && typeof el.requestFullscreen === 'function') {
+      el.requestFullscreen().catch(() => {});
+    }
+  };
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const v = params.get('safearea');
+    setShowSafeArea(v === '1' || v === 'true');
   }, []);
 
   useEffect(() => {
-    if (useGreenScreen) root[0].style.backgroundColor = '#00b140';
-    else root[0].style.backgroundColor = 'inherit';
+    const html = document.documentElement;
+    const body = document.body;
+    const syncFullscreenChrome = () => {
+      const fs = !!document.fullscreenElement;
+      setInFullscreen(fs);
+      if (fs) {
+        html.style.overflow = 'hidden';
+        html.style.overflowX = 'hidden';
+        html.style.overflowY = 'hidden';
+        body.style.overflow = 'hidden';
+        body.style.overflowX = 'hidden';
+        body.style.overflowY = 'hidden';
+        html.style.width = '100%';
+        html.style.maxWidth = '100%';
+        body.style.width = '100%';
+        body.style.maxWidth = '100%';
+        html.style.margin = '0';
+        body.style.margin = '0';
+        html.style.overscrollBehavior = 'none';
+        body.style.overscrollBehavior = 'none';
+      } else {
+        html.style.overflow = '';
+        html.style.overflowX = '';
+        html.style.overflowY = '';
+        body.style.overflow = '';
+        body.style.overflowX = '';
+        body.style.overflowY = '';
+        html.style.width = '';
+        html.style.maxWidth = '';
+        body.style.width = '';
+        body.style.maxWidth = '';
+        html.style.margin = '';
+        body.style.margin = '';
+        html.style.overscrollBehavior = '';
+        body.style.overscrollBehavior = '';
+      }
+    };
+    document.addEventListener('fullscreenchange', syncFullscreenChrome);
+    syncFullscreenChrome();
+    return () => {
+      document.removeEventListener('fullscreenchange', syncFullscreenChrome);
+      html.style.overflow = '';
+      html.style.overflowX = '';
+      html.style.overflowY = '';
+      body.style.overflow = '';
+      body.style.overflowX = '';
+      body.style.overflowY = '';
+      html.style.width = '';
+      html.style.maxWidth = '';
+      body.style.width = '';
+      body.style.maxWidth = '';
+      html.style.margin = '';
+      body.style.margin = '';
+      html.style.overscrollBehavior = '';
+      body.style.overscrollBehavior = '';
+    };
+  }, []);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'f' || e.key === 'F') toggleFullscreen();
+      // S toggles the broadcast-safe overlay (only when focus is not in an input)
+      if ((e.key === 's' || e.key === 'S') && !(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)) {
+        setShowSafeArea(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
+
+  useEffect(() => {
+    const body = document.body;
+    const html = document.documentElement;
+    const prevBodyMargin = body.style.margin;
+    const prevBodyH = body.style.height;
+    const prevHtmlH = html.style.height;
+    body.style.margin = '0';
+    body.style.height = '100%';
+    html.style.height = '100%';
+    return () => {
+      body.style.margin = prevBodyMargin;
+      body.style.height = prevBodyH;
+      html.style.height = prevHtmlH;
+    };
+  }, []);
+
+  useEffect(() => {
+    const body = document.body;
+    const previous = body.style.backgroundColor;
+    if (useGreenScreen) body.style.backgroundColor = '#00b140';
+    else body.style.backgroundColor = 'inherit';
+    return () => { body.style.backgroundColor = previous; };
   }, [useGreenScreen]);
 
+  const isTitleSlideType = slide?.type === SlideType.TITLE;
+
+  /** Flex sizing for the program slide frame: full raster for title, uniform band for all other types. */
+  const slideFrameStyle = (): React.CSSProperties => {
+    if (isTitleSlideType) {
+      return { flex: 1, minHeight: 0, alignSelf: 'stretch' };
+    }
+    return {
+      flex: '0 0 auto',
+      height: NON_TITLE_PROGRAM_HEIGHT,
+      maxHeight: NON_TITLE_PROGRAM_HEIGHT,
+      minHeight: 0,
+      alignSelf: 'stretch',
+    };
+  };
+
   const computeContainerStyle = (): React.CSSProperties => {
-    const vAlign =
-      slide?.style?.verticalAlign === VerticalAlign.TOP
-        ? 'flex-start'
-        : slide?.style?.verticalAlign === VerticalAlign.BOTTOM
-        ? 'flex-end'
-        : 'center';
-    const hAlign =
-      slide?.style?.horizontalAlign === HorizontalAlign.LEFT
-        ? 'flex-start'
-        : slide?.style?.horizontalAlign === HorizontalAlign.RIGHT
-        ? 'flex-end'
-        : 'center';
     const textAlign = slide?.style?.horizontalAlign ?? 'center';
 
     const backgroundImage =
@@ -88,17 +224,16 @@ export default function Presentation() {
         : slide?.style?.backgroundImage);
 
     return {
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: vAlign,
-      alignItems: hAlign,
+      boxSizing: 'border-box',
       textAlign,
       backgroundColor: useGreenScreen ? 'transparent' : slide?.style?.backgroundColor,
       color: slide?.style?.color,
-      width: slide?.style?.width ?? '100%',
-      height: slide?.style?.height ?? '100%',
+      width: '100%',
+      maxWidth: '100%',
       fontFamily: slide?.style?.fontFamily,
-      padding: '20px',
+      fontSize: slide?.style?.fontSize,
+      padding: 0,
+      margin: 0,
       backgroundImage: backgroundImage ? `url(${backgroundImage})` : undefined,
       backgroundSize: slide?.style?.backgroundSize ?? 'cover',
       backgroundPosition: slide?.style?.backgroundPosition ?? 'center',
@@ -106,30 +241,198 @@ export default function Presentation() {
     } as React.CSSProperties;
   };
 
+  /** Absolutely positioned title (image / non-song slides). */
+  const getTitleOverlayStyle = (): React.CSSProperties => {
+    const v = slide?.style?.verticalAlign;
+    const h = slide?.style?.horizontalAlign;
+    const alignItems = flexAlignFromHorizontal(h);
+    const textAlign = slide?.style?.horizontalAlign ?? 'center';
+    const base: React.CSSProperties = {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      width: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems,
+      textAlign,
+      zIndex: 2,
+      boxSizing: 'border-box',
+    };
+    if (useGreenScreen && slide?.style?.backgroundColor) {
+      base.backgroundColor = slide.style.backgroundColor;
+      base.padding = '8px 0';
+    }
+    if (v === VerticalAlign.TOP) base.top = 0;
+    else if (v === VerticalAlign.BOTTOM) base.bottom = 0;
+    else {
+      base.top = '50%';
+      base.transform = 'translateY(-50%)';
+    }
+    return base;
+  };
+
+  const renderTitleOverlay = () =>
+    (slide?.title || slide?.subTitle) && (
+      <div data-testid="slide-overlay" style={getTitleOverlayStyle()}>
+        <div style={{ fontSize: slide?.titleFontSize ?? slide?.style?.fontSize }}>{slide?.title}</div>
+        <div style={{ fontSize: slide?.subTitleFontSize ?? slide?.style?.fontSize }}>{slide?.subTitle}</div>
+      </div>
+    );
+
+  const songShellStyle: React.CSSProperties = {
+    ...computeContainerStyle(),
+    position: 'relative',
+    ...slideFrameStyle(),
+    display: 'flex',
+    flexDirection: 'column',
+    width: '100%',
+  };
+
+  const justifyForSongVertical = (v?: VerticalAlign): React.CSSProperties['justifyContent'] => {
+    if (v === VerticalAlign.TOP) return 'flex-start';
+    if (v === VerticalAlign.BOTTOM) return 'flex-end';
+    return 'center';
+  };
+
+  /** Slide-colored band in green-screen mode; transparent when the shell already paints the background. */
+  const songContentPanelStyle = (opts?: { flexFill?: boolean }): React.CSSProperties => {
+    const bg = slide?.style?.backgroundColor;
+    const base: React.CSSProperties = {
+      width: '100%',
+      boxSizing: 'border-box',
+      ...(useGreenScreen && bg
+        ? {
+            backgroundColor: bg,
+            color: slide?.style?.color,
+            padding: '20px 16px',
+          }
+        : {}),
+    };
+    if (opts?.flexFill) {
+      base.flex = 1;
+      base.minHeight = 0;
+      base.display = 'flex';
+      base.flexDirection = 'column';
+    }
+    return base;
+  };
+
+  /** First song stage: title + subtitle only; font sizes match general slide overlay. */
+  const renderSongTitleIntro = () =>
+    (slide?.title || slide?.subTitle) && (
+      <div
+        data-testid="slide-overlay"
+        style={{
+          ...songContentPanelStyle(),
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: flexAlignFromHorizontal(slide?.style?.horizontalAlign),
+          textAlign: (slide?.style?.horizontalAlign ?? 'center') as React.CSSProperties['textAlign'],
+          gap: '0.35em',
+        }}
+      >
+        {slide?.title ? (
+          <div style={{ fontSize: slide.titleFontSize ?? slide?.style?.fontSize, lineHeight: 1.15 }}>
+            {slide.title}
+          </div>
+        ) : null}
+        {slide?.subTitle ? (
+          <div style={{ fontSize: slide.subTitleFontSize ?? slide?.style?.fontSize, lineHeight: 1.2 }}>
+            {slide.subTitle}
+          </div>
+        ) : null}
+      </div>
+    );
+
   const display = loading ? (
     <h1>Loading...</h1>
   ) : (
-    <div style={{ height: '100%', width: '100%' }}>
-      <div id="message">{message}</div>
-      <div id="slide" style={{ height: '100%', width: '100%' }}>
-        {slide?.type === SlideType.SONG && songData ? (
-          <div id="song" style={computeContainerStyle()}>
-            <LyricsDisplay song={songData} segmentIndex={segmentIndex} />
-          </div>
+    <div
+      style={{
+        minHeight: '100vh',
+        height: '100vh',
+        width: '100%',
+        maxWidth: '100%',
+        minWidth: 0,
+        margin: 0,
+        padding: 0,
+        position: 'relative',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: inFullscreen ? 'hidden' : undefined,
+        overflowX: inFullscreen ? 'hidden' : undefined,
+        boxSizing: 'border-box',
+      }}
+    >
+      <div id="message" style={{ flexShrink: 0 }}>{message}</div>
+      <div
+        id="slide"
+        style={{
+          flex: 1,
+          minHeight: 0,
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: isTitleSlideType ? 'flex-start' : 'flex-end',
+          boxSizing: 'border-box',
+          overflowX: inFullscreen ? 'hidden' : undefined,
+        }}
+      >
+        {slide?.type === SlideType.SONG ? (
+          (() => {
+            const hasLyrics =
+              !!songData &&
+              songData.verses.some(v => v.lines.some(l => (l ?? '').trim() !== ''));
+            const v = slide?.style?.verticalAlign ?? VerticalAlign.MIDDLE;
+            const ha = slide?.style?.horizontalAlign;
+            const va = slide?.style?.verticalAlign;
+            const useLyricsFill = v === VerticalAlign.TOP;
+            return (
+              <div id="song" style={songShellStyle}>
+                <div
+                  style={{
+                    flex: 1,
+                    minHeight: 0,
+                    width: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: justifyForSongVertical(v),
+                    alignItems: 'stretch',
+                  }}
+                >
+                  {hasLyrics && songData ? (
+                    <div style={songContentPanelStyle({ flexFill: useLyricsFill })}>
+                      <LyricsDisplay
+                        song={songData}
+                        segmentIndex={segmentIndex}
+                        horizontalAlign={ha}
+                        verticalAlign={va}
+                        fillHeight={useLyricsFill}
+                        fontSize={slide?.style?.fontSize}
+                      />
+                    </div>
+                  ) : (
+                    renderSongTitleIntro()
+                  )}
+                </div>
+              </div>
+            );
+          })()
         ) : slide?.type === SlideType.IMAGE ? (
-          <div id="image-slide" style={computeContainerStyle()}>
-            <div style={{ textAlign: 'inherit', color: slide?.style?.color }}>
-              <div style={{ fontSize: slide?.titleFontSize ?? slide?.style?.fontSize }}>{slide?.title}</div>
-              <div style={{ fontSize: slide?.subTitleFontSize ?? slide?.style?.fontSize }}>{slide?.subTitle}</div>
-            </div>
+          <div id="image-slide" style={{ ...computeContainerStyle(), position: 'relative', ...slideFrameStyle() }}>
+            <div style={{ textAlign: 'inherit', color: slide?.style?.color }} />
+            {renderTitleOverlay()}
           </div>
         ) : (
-          <div id="content" style={computeContainerStyle()}>
-            <div style={{ fontSize: slide?.titleFontSize ?? slide?.style?.fontSize }}>{slide?.title}</div>
-            <div style={{ fontSize: slide?.subTitleFontSize ?? slide?.style?.fontSize }}>{slide?.subTitle}</div>
+          <div id="content" style={{ ...computeContainerStyle(), position: 'relative', ...slideFrameStyle() }}>
+            {renderTitleOverlay()}
           </div>
         )}
       </div>
+      {/* Broadcast-safe overlay: use ?safearea=1 or press S to toggle.
+          Keep the clean program feed URL free of this param for mixer capture. */}
+      <SafeAreaOverlay visible={showSafeArea} />
     </div>
   );
 
