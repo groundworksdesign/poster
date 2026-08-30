@@ -8,8 +8,9 @@
  * beforeBuild hook intentionally skips install — so v0.1.4-pr.1 shipped with
  * zero node_modules and the UI never appeared.
  *
- * Mirrors the portable-zip prod install (shamefully-hoist) into
- * dist/electron-prod-modules/, which electron-builder.yml maps to node_modules.
+ * Only server/SSR runtime deps are installed (not react-scripts / test tooling).
+ * Packing the full package.json "dependencies" tree caused EMFILE on macOS CI
+ * when signing dual-arch DMGs.
  */
 'use strict';
 
@@ -19,11 +20,26 @@ const {
   mkdirSync,
   cpSync,
   rmSync,
+  writeFileSync,
+  readFileSync,
 } = require('fs');
 const { join } = require('path');
 
 const ROOT = join(__dirname, '..');
 const OUT = join(ROOT, 'dist', 'electron-prod-modules');
+
+/** Runtime packages required by server/index.js + Remix SSR. */
+const RUNTIME_DEP_NAMES = [
+  '@remix-run/express',
+  '@remix-run/node',
+  '@remix-run/react',
+  '@remix-run/serve',
+  'better-sqlite3',
+  'express',
+  'isbot',
+  'react',
+  'react-dom',
+];
 
 function log(msg) {
   process.stdout.write(`${msg}\n`);
@@ -43,27 +59,44 @@ if (!existsSync(join(ROOT, 'build'))) {
   die('build/ missing — run `pnpm run build:remix` first');
 }
 
+const rootPkg = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8'));
+const dependencies = {};
+for (const name of RUNTIME_DEP_NAMES) {
+  if (!rootPkg.dependencies || !rootPkg.dependencies[name]) {
+    die(`package.json missing runtime dependency: ${name}`);
+  }
+  dependencies[name] = rootPkg.dependencies[name];
+}
+
 rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });
 
-// Use the full package.json + lockfile (same as portable zip). --prod skips
-// installing/linking devDependencies while keeping the lockfile valid.
-cpSync(join(ROOT, 'package.json'), join(OUT, 'package.json'));
-cpSync(join(ROOT, 'pnpm-lock.yaml'), join(OUT, 'pnpm-lock.yaml'));
+writeFileSync(
+  join(OUT, 'package.json'),
+  `${JSON.stringify(
+    {
+      name: `${rootPkg.name}-electron-runtime`,
+      version: rootPkg.version,
+      private: true,
+      dependencies,
+    },
+    null,
+    2,
+  )}\n`,
+);
+
 if (existsSync(join(ROOT, '.npmrc'))) {
   cpSync(join(ROOT, '.npmrc'), join(OUT, '.npmrc'));
 }
 
-log(`Installing flat production node_modules into ${OUT}`);
-run('pnpm install --prod --shamefully-hoist --frozen-lockfile', OUT);
+log(`Installing slim runtime node_modules into ${OUT}`);
+// No frozen lockfile: this package.json is a filtered subset of root deps.
+run('pnpm install --prod --shamefully-hoist', OUT);
 
 if (existsSync(join(OUT, 'node_modules', 'better-sqlite3'))) {
   log('Rebuilding better-sqlite3 native bindings for the packaged tree');
-  // pnpm may ignore dependency build scripts by policy; force a rebuild so the
-  // addon exists on disk. ELECTRON_RUN_AS_NODE can still fall back to
-  // node:sqlite / JSON if the Electron ABI differs.
   try {
-    run('npm rebuild better-sqlite3', OUT);
+    run('pnpm rebuild better-sqlite3', OUT);
   } catch (err) {
     log(`warning: better-sqlite3 rebuild failed: ${err.message || err}`);
   }

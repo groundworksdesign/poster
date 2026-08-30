@@ -263,11 +263,11 @@ jobs:
       - name: Build Remix app
         run: pnpm run build:remix
 
-      # --publish never: electron-builder v26 auto-publishes in CI without GH_TOKEN.
-      # prepare-electron-pack.cjs ships flat production node_modules into the app
-      # (required so ELECTRON_RUN_AS_NODE can require express / Remix).
+      # --publish never is baked into build:electron (electron-builder v26
+      # otherwise auto-publishes in CI). prepare-electron-pack.cjs ships a slim
+      # runtime node_modules tree into the app.
       - name: Build Electron installers
-        run: pnpm run build:electron -- --publish never
+        run: pnpm run build:electron
 
       - name: Stage installer files for release upload
         shell: bash
@@ -325,6 +325,9 @@ jobs:
       contents: write
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Delete pre-releases with same base version (final release only)
         if: needs.resolve-version.outputs.is_prerelease == 'false'
         env:
