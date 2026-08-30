@@ -10,11 +10,11 @@ extends: null
 # ABI support ships upstream.
 
 # Packaging note: electron/main.cjs spawns a child Node.js process to run
-# server/index.js via process.execPath with ELECTRON_RUN_AS_NODE=1, so native
-# modules must be rebuilt for Electron's ABI.
-# CI pre-rebuilds better-sqlite3 in .github/workflows/pr.yml.
-# The beforeBuild hook delegates dependency handling externally to avoid
-# pnpm dependency tree parsing failures.
+# server/index.js via process.execPath with ELECTRON_RUN_AS_NODE=1.
+# Production node_modules are prepared by scripts/prepare-electron-pack.cjs
+# (flat pnpm --shamefully-hoist tree) and mapped in below — electron-builder
+# does not pack pnpm's isolated node_modules on its own, and beforeBuild
+# returns false so we never rely on its dependency installer.
 nodeGypRebuild: false
 beforeBuild: ./scripts/electron-before-build.cjs
 
@@ -29,13 +29,16 @@ directories:
 # Artifact naming: semver ${version} is read from package.json by default.
 artifactName: "${productName}-${version}-${os}-${arch}.${ext}"
 
-# Files to include in the packaged app
+# Files to include in the packaged app. Production deps come from the
+# prepare-electron-pack output (not the workspace pnpm store layout).
 files:
   - electron/**
   - server/**
   - build/**
   - public/**
   - package.json
+  - from: dist/electron-prod-modules/node_modules
+    to: node_modules
   - "!src/**"
   - "!e2e/**"
   - "!scripts/**"

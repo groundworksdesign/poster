@@ -61,8 +61,9 @@
     "rebuild:sqlite": "pnpm rebuild better-sqlite3",
     "package:portable": "node scripts/package-portable.mjs",
     "electron": "electron .",
-    "build:electron": "electron-builder build",
-    "build:electron:dir": "electron-builder build --dir"
+    "prepare:electron": "node scripts/prepare-electron-pack.cjs",
+    "build:electron": "node scripts/prepare-electron-pack.cjs && electron-builder build",
+    "build:electron:dir": "node scripts/prepare-electron-pack.cjs && electron-builder build --dir"
   },
   "jest": {
     "collectCoverageFrom": [
