@@ -68,8 +68,13 @@ jobs:
             # -----------------------------------------------------------------
             # Tag push — final release. Use the tag name as-is.
             # -----------------------------------------------------------------
-            echo "version=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+            TAG_NAME='${{ github.ref_name }}'
+            echo "version=$TAG_NAME" >> "$GITHUB_OUTPUT"
             echo "is_prerelease=false" >> "$GITHUB_OUTPUT"
+            echo "commit_sha=${{ github.sha }}" >> "$GITHUB_OUTPUT"
+            if ! gh release view "$TAG_NAME" >/dev/null 2>&1; then
+              gh release create "$TAG_NAME" --draft --title "$TAG_NAME" --notes "Release assets building..."
+            fi
 
           else
             # -----------------------------------------------------------------
@@ -134,6 +139,8 @@ jobs:
             git tag "$TAG_NAME"
             git push origin "$TAG_NAME"
 
+            gh release create "$TAG_NAME" --draft --prerelease --title "$TAG_NAME" --notes "Pre-release assets building..."
+
             echo "version=$TAG_NAME" >> "$GITHUB_OUTPUT"
             echo "is_prerelease=true" >> "$GITHUB_OUTPUT"
             echo "commit_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
@@ -146,6 +153,8 @@ jobs:
     name: Portable zip (${{ matrix.os }}) for ${{ needs.resolve-version.outputs.version }}
     needs: [resolve-version]
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
@@ -196,13 +205,20 @@ jobs:
             --tag "${{ needs.resolve-version.outputs.version }}" \
             --node-modules dist/portable-prod/node_modules
 
-      - name: Upload portable zip (staging artifact)
-        uses: actions/upload-artifact@v4
-        with:
-          name: poster-portable-release-${{ matrix.os }}-${{ needs.resolve-version.outputs.version }}-${{ github.sha }}
-          path: dist/poster-portable-*.zip
-          retention-days: 1
-          if-no-files-found: error
+      - name: Upload portable zip to GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION='${{ needs.resolve-version.outputs.version }}'
+          shopt -s nullglob
+          files=(dist/poster-portable-*.zip)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No portable zip found"
+            exit 1
+          fi
+          gh release upload "$VERSION" "${files[@]}" --clobber
 
   # ---------------------------------------------------------------------------
   # Electron installers (per OS)
@@ -211,6 +227,8 @@ jobs:
     name: Electron installers (${{ matrix.os }}) for ${{ needs.resolve-version.outputs.version }}
     needs: [resolve-version]
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
@@ -249,7 +267,7 @@ jobs:
       - name: Build Electron installers
         run: pnpm exec electron-builder build --publish never
 
-      - name: Stage installer files for artifact upload
+      - name: Stage installer files for release upload
         shell: bash
         run: |
           set -euo pipefail
@@ -275,16 +293,23 @@ jobs:
           fi
           ls -la dist/electron-installers/
 
-      - name: Upload Electron installers (staging artifact)
-        uses: actions/upload-artifact@v4
-        with:
-          name: poster-electron-release-${{ matrix.os }}-${{ needs.resolve-version.outputs.version }}-${{ github.sha }}
-          path: dist/electron-installers/
-          retention-days: 1
-          if-no-files-found: error
+      - name: Upload Electron installers to GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION='${{ needs.resolve-version.outputs.version }}'
+          shopt -s nullglob
+          files=(dist/electron-installers/*)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No installer files found"
+            exit 1
+          fi
+          gh release upload "$VERSION" "${files[@]}" --clobber
 
   # ---------------------------------------------------------------------------
-  # Attach all matrix outputs to the GitHub Release (pre-release or final)
+  # Finalize the GitHub Release (pre-release or final)
   # ---------------------------------------------------------------------------
   publish:
     # Always run as long as version resolution succeeded, even if individual
@@ -298,17 +323,6 @@ jobs:
       contents: write
 
     steps:
-      - name: Download packaged artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: release-assets
-          pattern: poster-*-${{ needs.resolve-version.outputs.version }}-${{ github.sha }}
-          merge-multiple: true
-          if-no-files-found: error
-
-      - name: List files to publish
-        run: ls -la release-assets
-
       - name: Delete pre-releases with same base version (final release only)
         if: needs.resolve-version.outputs.is_prerelease == 'false'
         env:
@@ -334,28 +348,16 @@ jobs:
               gh api -X DELETE "/repos/${{ github.repository }}/git/refs/$ref" || true
             done
 
-      - name: Upload assets to GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ needs.resolve-version.outputs.version }}
-          name: ${{ needs.resolve-version.outputs.version }}
-          prerelease: ${{ needs.resolve-version.outputs.is_prerelease == 'true' && 'true' || '' }}
-          generate_release_notes: true
-          fail_on_unmatched_files: true
-          files: |
-            release-assets/*
-
-      # Staging artifacts are only needed until assets are on the GitHub Release.
-      - name: Delete staging artifacts
-        if: success()
+      - name: Finalize GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          RUN_ID="${{ github.run_id }}"
-          gh api "/repos/${{ github.repository }}/actions/artifacts?per_page=100" --paginate \
-            --jq ".artifacts[] | select(.workflow_run.id == ${RUN_ID}) | .id" \
-            | while read -r id; do
-              echo "Deleting staging artifact ${id}"
-              gh api -X DELETE "/repos/${{ github.repository }}/actions/artifacts/${id}" || true
-            done
+          VERSION='${{ needs.resolve-version.outputs.version }}'
+          if [ '${{ needs.resolve-version.outputs.is_prerelease }}' = 'true' ]; then
+            gh release edit "$VERSION" --draft=false --prerelease=true --generate-notes=true
+          else
+            gh release edit "$VERSION" --draft=false --prerelease=false --generate-notes=true
+          fi
+          echo "Release assets:"
+          gh release view "$VERSION" --json assets --jq '.assets[] | "\(.name): \(.browser_download_url)"'
