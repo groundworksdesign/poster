@@ -271,6 +271,9 @@ jobs:
       contents: write
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Finalize PR pre-release
         env:
           GH_TOKEN: ${{ github.token }}
