@@ -78,9 +78,16 @@ describe('electron packaging includes production node_modules', () => {
     expect(builderYml).toMatch(/to:\s*node_modules/);
   });
 
-  it('prepare script installs flat production deps with express', () => {
+  it('prepare script installs slim flat runtime deps with express', () => {
     expect(prepareSrc).toMatch(/shamefully-hoist/);
     expect(prepareSrc).toMatch(/express/);
+    expect(prepareSrc).toMatch(/RUNTIME_DEP_NAMES/);
+    const runtimeBlock = prepareSrc.slice(
+      prepareSrc.indexOf('RUNTIME_DEP_NAMES'),
+      prepareSrc.indexOf('];', prepareSrc.indexOf('RUNTIME_DEP_NAMES')) + 2,
+    );
+    expect(runtimeBlock).not.toMatch(/react-scripts/);
+    expect(runtimeBlock).not.toMatch(/@testing-library/);
   });
 });
 
