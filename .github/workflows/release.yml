@@ -12,10 +12,32 @@ permissions:
 
 jobs:
   # ---------------------------------------------------------------------------
+  # Free artifact storage quota before staging release uploads (~28 GB backlog).
+  # ---------------------------------------------------------------------------
+  cleanup-old-artifacts:
+    name: Cleanup old workflow artifacts
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - name: Delete all workflow artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          deleted=0
+          while IFS= read -r id; do
+            gh api -X DELETE "/repos/${{ github.repository }}/actions/artifacts/${id}" && deleted=$((deleted + 1)) || true
+          done < <(gh api "/repos/${{ github.repository }}/actions/artifacts?per_page=100" --paginate \
+            --jq '.artifacts[].id')
+          echo "Deleted ${deleted} artifact(s)."
+
+  # ---------------------------------------------------------------------------
   # Resolve the version: tag push → final release tag; main push → pre-release
   # with +semver: detection, package.json bump, and pre-release tag creation.
   # ---------------------------------------------------------------------------
   resolve-version:
+    needs: [cleanup-old-artifacts]
     # Skip pre-release tags (vX.Y.Z-pr.N) — they are auto-created by the
     # main-branch flow and would only collide with a final-release run.
     if: github.ref_type != 'tag' || !contains(github.ref_name, '-pr.')
@@ -223,8 +245,9 @@ jobs:
       - name: Build Remix app
         run: pnpm run build:remix
 
+      # --publish never: electron-builder v26 auto-publishes in CI without GH_TOKEN.
       - name: Build Electron installers
-        run: pnpm run build:electron
+        run: pnpm exec electron-builder build --publish never
 
       - name: Stage installer files for artifact upload
         shell: bash
