@@ -72,7 +72,8 @@ async function startServer(port) {
   const serverEntry = path.join(appRoot, 'server', 'index.js');
 
   // Electron's binary (process.execPath) can run as Node when
-  // ELECTRON_RUN_AS_NODE=1. Without it, spawn opens new GUI instances.
+  // ELECTRON_RUN_AS_NODE=1. Without it, spawn opens new GUI instances on
+  // every packaged target (macOS DMG, Windows NSIS, Linux deb/AppImage).
   const nodeBin = process.execPath;
 
   serverProcess = spawn(nodeBin, [serverEntry], {
