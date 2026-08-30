@@ -50,8 +50,20 @@ describe('electron/main.cjs launch safety (all Electron installers)', () => {
 
   it('recreates the window on macOS activate without relaunching', () => {
     const activateBlock = mainSource.slice(mainSource.indexOf("app.on('activate'"));
-    expect(activateBlock).toMatch(/createWindow\(serverPort\)/);
+    expect(activateBlock).toMatch(/process\.platform\s*===\s*['"]darwin['"]/);
+    expect(activateBlock).toMatch(/BrowserWindow\.getAllWindows\(\)\.length\s*===\s*0/);
+    expect(activateBlock).toMatch(/openMainWindow\(/);
     expect(activateBlock).not.toMatch(/app\.relaunch\(\)/);
+  });
+
+  it('only kills the server on window-all-closed for non-macOS', () => {
+    const closedBlock = mainSource.slice(
+      mainSource.indexOf("app.on('window-all-closed'"),
+      mainSource.indexOf("app.on('activate'"),
+    );
+    expect(closedBlock).toMatch(
+      /if\s*\(\s*process\.platform\s*!==\s*['"]darwin['"]\s*\)\s*\{[\s\S]*killServer\(\)/,
+    );
   });
   it('fails fast when packaged node_modules/express is missing', () => {
     expect(mainSource).toMatch(/node_modules['"].*express/);
