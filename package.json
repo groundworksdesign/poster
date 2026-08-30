@@ -1,6 +1,6 @@
 {
   "name": "poster",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "private": true,
   "description": "Live slide presentation tool with operator deck builder and presenter view.",
   "author": "Groundworks Design",
