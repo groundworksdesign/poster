@@ -28,7 +28,12 @@ export default function DeckBuilder() {
   const [isSongMode, setIsSongMode] = useState<boolean>(false);
   const [, setCurrentSongIndex] = useState<number>(0);
   const [lastSentSlideId, setLastSentSlideId] = useState<string | null>(null);
+  /** Index of the slide currently on the presentation output (null = blank/end). */
+  const [presentSlideIndex, setPresentSlideIndex] = useState<number | null>(null);
+  const [presentationBlank, setPresentationBlank] = useState<boolean>(false);
   const [selectedSlideIndex, setSelectedSlideIndex] = useState<number | null>(null);
+  const [jumpToSlideInput, setJumpToSlideInput] = useState<string>('');
+  const [moveTargetByIndex, setMoveTargetByIndex] = useState<Record<number, string>>({});
   const [operatorMessage, setOperatorMessage] = useState<string>('');
   const [libraryId, setLibraryId] = useState<string | null>(null);
   const [libraryRefreshKey, setLibraryRefreshKey] = useState<number>(0);
@@ -66,22 +71,10 @@ export default function DeckBuilder() {
       if (!deck) return;
       if (e.key === 'ArrowRight' || e.key === 'PageDown') {
         e.preventDefault();
-        const currentIdx = selectedSlideIndex !== null
-          ? selectedSlideIndex
-          : deck.slides.findIndex((s: any) => (s as any).id === lastSentSlideId);
-        const nextIdx = Math.min((currentIdx < 0 ? -1 : currentIdx) + 1, deck.slides.length - 1);
-        if (nextIdx >= 0) {
-          handleSendClick({ slide: deck.slides[nextIdx], useGreenScreen: deck.useGreenScreen });
-          setSelectedSlideIndex(nextIdx);
-        }
+        navigatePresentationNext();
       } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
         e.preventDefault();
-        const currentIdx = selectedSlideIndex !== null
-          ? selectedSlideIndex
-          : deck.slides.findIndex((s: any) => (s as any).id === lastSentSlideId);
-        const prevIdx = Math.max((currentIdx <= 0 ? 0 : currentIdx) - 1, 0);
-        handleSendClick({ slide: deck.slides[prevIdx], useGreenScreen: deck.useGreenScreen });
-        setSelectedSlideIndex(prevIdx);
+        navigatePresentationPrevious();
       }
     }
   };
@@ -247,6 +240,13 @@ export default function DeckBuilder() {
   };
 
   const handleSendClick = (props: any) => {
+    if (props.slide === null) {
+      connection?.channel.postMessage(new PresentData({ ...props, slide: null }));
+      setLastSentSlideId(null);
+      setPresentSlideIndex(null);
+      setPresentationBlank(true);
+      return;
+    }
     const safeSlide = (sl: any) => {
     if (!sl) return sl;
     // ensure slide has an id so we can track it for sync across edits/reorder
@@ -257,6 +257,76 @@ export default function DeckBuilder() {
     const slideWithStyle = props.slide ? safeSlide(props.slide) : null;
     connection?.channel.postMessage(new PresentData({ ...props, slide: slideWithStyle }));
     setLastSentSlideId(slideWithStyle?.id ?? null);
+  };
+
+  const getResolvedPresentIndex = (): number => {
+    if (!deck) return -1;
+    if (presentSlideIndex !== null && presentSlideIndex >= 0 && presentSlideIndex < deck.slides.length) {
+      return presentSlideIndex;
+    }
+    if (lastSentSlideId) {
+      const idx = deck.slides.findIndex((s: any) => (s as any).id === lastSentSlideId);
+      if (idx >= 0) return idx;
+    }
+    return -1;
+  };
+
+  const sendSlideAtIndex = (index: number) => {
+    if (!deck || index < 0 || index >= deck.slides.length) return;
+    const slide = deck.slides[index] as Slide;
+    const sid = (slide as any).id as string | undefined;
+    if (slide.type === SlideType.SONG && slide.lyrics && sid) {
+      const staged = buildStagedSongSlide(slide, 0);
+      handleSendClick({ slide: staged, useGreenScreen: deck.useGreenScreen });
+      setSongLastStagedById(s => ({ ...s, [sid]: 0 }));
+    } else {
+      handleSendClick({ slide, useGreenScreen: deck.useGreenScreen });
+    }
+    setPresentSlideIndex(index);
+    setPresentationBlank(false);
+  };
+
+  const sendBlankSlide = () => {
+    if (!deck) return;
+    handleSendClick({ slide: null, useGreenScreen: deck.useGreenScreen });
+  };
+
+  const navigatePresentationStart = () => {
+    if (!deck || deck.slides.length === 0) return;
+    sendSlideAtIndex(0);
+  };
+
+  const navigatePresentationEnd = () => {
+    sendBlankSlide();
+  };
+
+  const navigatePresentationNext = () => {
+    if (!deck || deck.slides.length === 0) return;
+    const current = getResolvedPresentIndex();
+    if (current < 0) {
+      sendSlideAtIndex(0);
+      return;
+    }
+    if (current >= deck.slides.length - 1) return;
+    sendSlideAtIndex(current + 1);
+  };
+
+  const navigatePresentationPrevious = () => {
+    if (!deck || deck.slides.length === 0) return;
+    const current = getResolvedPresentIndex();
+    if (current < 0) {
+      sendSlideAtIndex(deck.slides.length - 1);
+      return;
+    }
+    if (current <= 0) return;
+    sendSlideAtIndex(current - 1);
+  };
+
+  const navigatePresentationJump = () => {
+    if (!deck) return;
+    const n = parseInt(jumpToSlideInput, 10);
+    if (!Number.isFinite(n) || n < 1 || n > deck.slides.length) return;
+    sendSlideAtIndex(n - 1);
   };
 
   const handleSongStageAdvance = (slideRef: any) => {
@@ -522,19 +592,79 @@ export default function DeckBuilder() {
     slides.splice(index, 1);
     const newDeck = { ...deck, slides };
     setDeck(newDeck);
-    setSelectedSlideIndex(null);
+    if (selectedSlideIndex !== null) {
+      if (selectedSlideIndex === index) setSelectedSlideIndex(null);
+      else if (selectedSlideIndex > index) setSelectedSlideIndex(selectedSlideIndex - 1);
+    }
+    if (presentSlideIndex !== null) {
+      if (presentSlideIndex === index) {
+        setPresentSlideIndex(null);
+        setPresentationBlank(true);
+        setLastSentSlideId(null);
+        handleSendClick({ slide: null, useGreenScreen: newDeck.useGreenScreen });
+      } else if (presentSlideIndex > index) {
+        setPresentSlideIndex(presentSlideIndex - 1);
+      }
+    }
+    syncSentSlideIfNeeded(newDeck);
+  };
+
+  const adjustSelectedIndexAfterReorder = (fromIndex: number, toIndex: number) => {
+    if (selectedSlideIndex === null) return;
+    let newSel = selectedSlideIndex;
+    if (selectedSlideIndex === fromIndex) {
+      newSel = toIndex;
+    } else if (fromIndex < selectedSlideIndex && toIndex >= selectedSlideIndex) {
+      newSel = selectedSlideIndex - 1;
+    } else if (fromIndex > selectedSlideIndex && toIndex <= selectedSlideIndex) {
+      newSel = selectedSlideIndex + 1;
+    }
+    setSelectedSlideIndex(newSel);
+  };
+
+  const adjustPresentIndexAfterReorder = (fromIndex: number, toIndex: number) => {
+    if (presentSlideIndex === null) return;
+    let newIdx = presentSlideIndex;
+    if (presentSlideIndex === fromIndex) {
+      newIdx = toIndex;
+    } else if (fromIndex < presentSlideIndex && toIndex >= presentSlideIndex) {
+      newIdx = presentSlideIndex - 1;
+    } else if (fromIndex > presentSlideIndex && toIndex <= presentSlideIndex) {
+      newIdx = presentSlideIndex + 1;
+    }
+    setPresentSlideIndex(newIdx);
+  };
+
+  const reorderSlide = (fromIndex: number, toIndex: number) => {
+    if (!deck || fromIndex === toIndex) return;
+    if (toIndex < 0 || toIndex >= deck.slides.length) return;
+    const slides = deck.slides.slice();
+    const [item] = slides.splice(fromIndex, 1);
+    slides.splice(toIndex, 0, item);
+    const newDeck = { ...deck, slides };
+    setDeck(newDeck);
+    adjustSelectedIndexAfterReorder(fromIndex, toIndex);
+    adjustPresentIndexAfterReorder(fromIndex, toIndex);
     syncSentSlideIfNeeded(newDeck);
   };
 
   const moveSlide = (index: number, direction: 'up' | 'down') => {
     if (!deck) return;
-    const slides = deck.slides.slice();
     const to = direction === 'up' ? index - 1 : index + 1;
-    if (to < 0 || to >= slides.length) return;
-    [slides[index], slides[to]] = [slides[to], slides[index]];
-    const newDeck = { ...deck, slides };
-    setDeck(newDeck);
-    syncSentSlideIfNeeded(newDeck);
+    if (to < 0 || to >= deck.slides.length) return;
+    reorderSlide(index, to);
+  };
+
+  const moveSlideToTop = (index: number) => {
+    if (!deck || index <= 0) return;
+    reorderSlide(index, 0);
+  };
+
+  const moveSlideToNumber = (fromIndex: number, oneBasedTarget: number) => {
+    if (!deck) return;
+    const toIndex = oneBasedTarget - 1;
+    if (toIndex < 0 || toIndex >= deck.slides.length) return;
+    reorderSlide(fromIndex, toIndex);
   };
 
   const handleSaveClick = () => {
@@ -605,6 +735,8 @@ export default function DeckBuilder() {
       setCurrentSongIndex(0);
       setSelectedSlideIndex(null);
       setLastSentSlideId(null);
+      setPresentSlideIndex(null);
+      setPresentationBlank(false);
       setSongLastStagedById({});
       setShowSaveToLibraryPrompt(false);
       setMessage('Opened from library.');
@@ -706,6 +838,37 @@ export default function DeckBuilder() {
           </div>
         </div>
 
+        {deck && (
+          <div className="deck-page-panel" data-testid="presentation-controls">
+            <h3>Presentation</h3>
+            <div className="deck-presentation-controls">
+              <button type="button" onClick={navigatePresentationStart} disabled={deck.slides.length === 0}>Start</button>
+              <button type="button" onClick={navigatePresentationPrevious} disabled={deck.slides.length === 0}>Previous</button>
+              <button type="button" onClick={navigatePresentationNext} disabled={deck.slides.length === 0}>Next</button>
+              <button type="button" onClick={navigatePresentationEnd}>End</button>
+              <label>
+                Go to:
+                <input
+                  type="number"
+                  min={1}
+                  max={deck.slides.length || 1}
+                  className="deck-jump-input"
+                  value={jumpToSlideInput}
+                  onChange={e => setJumpToSlideInput(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') navigatePresentationJump(); }}
+                />
+              </label>
+              <button type="button" onClick={navigatePresentationJump} disabled={deck.slides.length === 0}>Go</button>
+              {presentSlideIndex !== null && (
+                <span style={{ fontSize: '0.85rem', opacity: 0.85 }}>On slide {presentSlideIndex + 1}</span>
+              )}
+              {presentationBlank && (
+                <span style={{ fontSize: '0.85rem', opacity: 0.85 }}>Blank</span>
+              )}
+            </div>
+          </div>
+        )}
+
         <div style={{ marginTop: '12px', padding: '8px', border: '1px solid #ddd' }}>
           <h3>Deck defaults (GENERAL)</h3>
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -757,223 +920,250 @@ export default function DeckBuilder() {
         </div>
       </div>
 
-      <div>
-        <h2>Slides</h2>
-        {!deck && <p>No deck loaded yet.</p>}
-        <div id="slides">
-          <ul style={{ listStyle: 'none', padding: 0 }}>
-            {deck?.slides.map((slide: any, index: number) => (
-              <li key={(slide as any).id || index} style={{ border: '1px solid #ccc', margin: '4px 0', padding: '6px' }}>
-                <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                  <strong>{index + 1}.</strong>
-                  <span style={{ flex: 1 }}>{slide.title || slide.type || 'Slide'}</span>
-                  <button
-                    onClick={() => {
-                      const sid = (slide as any).id as string | undefined;
-                      if (slide.type === SlideType.SONG && slide.lyrics && sid && deck) {
-                        const full = deck.slides.find((s: any) => s.id === sid) as Slide;
-                        const staged = buildStagedSongSlide(full, 0);
-                        handleSendClick({ slide: staged, useGreenScreen: deck.useGreenScreen });
-                        setSongLastStagedById(st => ({ ...st, [sid]: 0 }));
-                      } else {
-                        handleSendClick({ slide, useGreenScreen: deck?.useGreenScreen || false });
-                      }
-                    }}
-                  >
-                    Send
-                  </button>
-                  {slide.type === SlideType.SONG && slide.lyrics && (slide as any).id ? (
-                    <>
-                      <button
-                        type="button"
-                        title="Full rewind to title"
-                        onClick={() => handleSongFullRewind(slide)}
-                      >
-                        |&lt;--
-                      </button>
-                      <button
-                        type="button"
-                        disabled={
-                          songLastStagedById[(slide as any).id] === undefined ||
-                          songLastStagedById[(slide as any).id] === 0
+      <div className="deck-slides-editor-row">
+        <div className="deck-slides-list">
+          <h2>Slides</h2>
+          {!deck && <p>No deck loaded yet.</p>}
+          <div id="slides">
+            <ul>
+              {deck?.slides.map((slide: any, index: number) => (
+                <li key={(slide as any).id || index} className="deck-slide-item">
+                  <div className="deck-slide-row">
+                    <strong>{index + 1}.</strong>
+                    <span className="deck-slide-row-title">{slide.title || slide.type || 'Slide'}</span>
+                    <button
+                      onClick={() => {
+                        const sid = (slide as any).id as string | undefined;
+                        if (slide.type === SlideType.SONG && slide.lyrics && sid && deck) {
+                          const full = deck.slides.find((s: any) => s.id === sid) as Slide;
+                          const staged = buildStagedSongSlide(full, 0);
+                          handleSendClick({ slide: staged, useGreenScreen: deck.useGreenScreen });
+                          setSongLastStagedById(st => ({ ...st, [sid]: 0 }));
+                        } else {
+                          handleSendClick({ slide, useGreenScreen: deck?.useGreenScreen || false });
                         }
-                        onClick={() => handleSongStageReverse(slide)}
-                      >
-                        Reverse
-                      </button>
-                      <button type="button" onClick={() => handleSongStageAdvance(slide)}>Advance</button>
-                    </>
-                  ) : null}
-                  <button onClick={() => setSelectedSlideIndex(index)}>Edit</button>
-                  <button onClick={() => duplicateSlide(index)}>Duplicate</button>
-                  <button onClick={() => deleteSlide(index)}>Delete</button>
-                  <button onClick={() => moveSlide(index, 'up')} disabled={index === 0}>↑</button>
-                  <button onClick={() => moveSlide(index, 'down')} disabled={index === (deck!.slides.length - 1)}>↓</button>
-                </div>
-              </li>
-            ))}
-          </ul>
+                        setPresentSlideIndex(index);
+                        setPresentationBlank(false);
+                      }}
+                    >
+                      Send
+                    </button>
+                    {slide.type === SlideType.SONG && slide.lyrics && (slide as any).id ? (
+                      <>
+                        <button
+                          type="button"
+                          title="Full rewind to title"
+                          onClick={() => handleSongFullRewind(slide)}
+                        >
+                          |&lt;--
+                        </button>
+                        <button
+                          type="button"
+                          disabled={
+                            songLastStagedById[(slide as any).id] === undefined ||
+                            songLastStagedById[(slide as any).id] === 0
+                          }
+                          onClick={() => handleSongStageReverse(slide)}
+                        >
+                          Reverse
+                        </button>
+                        <button type="button" onClick={() => handleSongStageAdvance(slide)}>Advance</button>
+                      </>
+                    ) : null}
+                    <button onClick={() => setSelectedSlideIndex(index)}>Edit</button>
+                    <button onClick={() => duplicateSlide(index)}>Duplicate</button>
+                    <button onClick={() => deleteSlide(index)}>Delete</button>
+                    <button type="button" onClick={() => moveSlideToTop(index)} disabled={index === 0} title="Move to top">Top</button>
+                    <input
+                      type="number"
+                      min={1}
+                      max={deck?.slides.length ?? 1}
+                      className="deck-move-to-input"
+                      aria-label={`Move slide ${index + 1} to position`}
+                      value={moveTargetByIndex[index] ?? ''}
+                      onChange={e => setMoveTargetByIndex(prev => ({ ...prev, [index]: e.target.value }))}
+                    />
+                    <button
+                      type="button"
+                      title="Move to number"
+                      onClick={() => {
+                        const n = parseInt(moveTargetByIndex[index] ?? '', 10);
+                        if (Number.isFinite(n)) moveSlideToNumber(index, n);
+                      }}
+                    >
+                      Move
+                    </button>
+                    <button onClick={() => moveSlide(index, 'up')} disabled={index === 0}>↑</button>
+                    <button onClick={() => moveSlide(index, 'down')} disabled={index === (deck!.slides.length - 1)}>↓</button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <div className="deck-slide-editor">
+          {typeof selectedSlideIndex === 'number' && deck && deck.slides[selectedSlideIndex] ? (
+            <>
+              <h3>Editing slide {selectedSlideIndex + 1}</h3>
+              {(() => {
+                const slide = deck.slides[selectedSlideIndex] as any;
+                return (
+                  <div>
+                    <div>
+                      <label>Type: 
+                        <select value={slide.type} onChange={e => updateSlideField(selectedSlideIndex, 'type', e.target.value as SlideType)}>
+                          <option value={SlideType.GENERAL}>GENERAL</option>
+                          <option value={SlideType.TITLE}>TITLE</option>
+                          <option value={SlideType.IMAGE}>IMAGE</option>
+                          <option value={SlideType.SONG}>SONG</option>
+                        </select>
+                      </label>
+                    </div>
+                    <div>
+                      <label>Title: <input type="text" value={slide.title || ''} onChange={e => updateSlideField(selectedSlideIndex, 'title', e.target.value)} /></label>
+                    </div>
+                    <div>
+                      <label>Subtitle: <input type="text" value={slide.subTitle || ''} onChange={e => updateSlideField(selectedSlideIndex, 'subTitle', e.target.value)} /></label>
+                    </div>
+
+                    {slide.type === SlideType.IMAGE && (
+                      <div>
+                        <label>Image URL/file: <input type="text" value={slide.file || slide.style?.backgroundImage || ''} onChange={e => updateSlideField(selectedSlideIndex, 'file', e.target.value)} /></label>
+                      </div>
+                    )}
+
+                    {slide.type === SlideType.SONG && (
+                      <div>
+                        <label>Lyrics (JSON):</label>
+                        <div>
+                          <textarea id="lyrics-json" style={{ width: '100%', height: '120px' }} defaultValue={slide.lyrics ? JSON.stringify(slide.lyrics, null, 2) : ''}></textarea>
+                          <div style={{ marginTop: '6px' }}>
+                            <button onClick={() => {
+                              const t = (document.getElementById('lyrics-json') as HTMLTextAreaElement | null);
+                              if (!t) return;
+                              try {
+                                const parsed = JSON.parse(t.value) as SongData;
+                                updateSlideField(selectedSlideIndex, 'lyrics', parsed);
+                              } catch (err) {
+                                setMessage('Invalid Lyrics JSON');
+                              }
+                            }}>Apply Lyrics JSON</button>
+                            <button onClick={() => {
+                              const s = { ...(deck.slides[selectedSlideIndex] as any) };
+                              const lyrics = s.lyrics || { title: '', author: '', verses: [] };
+                              lyrics.verses = lyrics.verses.concat([{ number: (lyrics.verses.length || 0) + 1, lines: [''] }]);
+                              updateSlideField(selectedSlideIndex, 'lyrics', lyrics);
+                            }} style={{ marginLeft: '8px' }}>Add Verse</button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    <h4>Style (effective shown; overrides saved to slide.style)</h4>
+                    {(() => {
+                      const effective = resolveSlideStyle(deck, slide);
+                      const textStyleKeys: Array<'backgroundColor' | 'color' | 'fontFamily' | 'fontSize'> = [
+                        'backgroundColor',
+                        'color',
+                        'fontFamily',
+                        'fontSize',
+                      ];
+                      const rawH = slide.style?.horizontalAlign ?? effective.horizontalAlign ?? HorizontalAlign.CENTER;
+                      const selectHorizontal =
+                        rawH === HorizontalAlign.LEFT || rawH === HorizontalAlign.CENTER || rawH === HorizontalAlign.RIGHT
+                          ? rawH
+                          : HorizontalAlign.CENTER;
+                      const rawV = slide.style?.verticalAlign ?? effective.verticalAlign ?? VerticalAlign.MIDDLE;
+                      const selectVertical =
+                        rawV === VerticalAlign.TOP || rawV === VerticalAlign.MIDDLE || rawV === VerticalAlign.BOTTOM
+                          ? rawV
+                          : VerticalAlign.MIDDLE;
+                      return (
+                        <div>
+                          {textStyleKeys.map((k) => (
+                            <div key={k} style={{ marginTop: '6px' }}>
+                              <label style={{ marginRight: '8px' }}>{`${k}: `}</label>
+                              <input
+                                type="text"
+                                value={(slide.style && slide.style[k]) || (effective as any)[k] || ''}
+                                onChange={e => updateSlideStyle(selectedSlideIndex, k, e.target.value)}
+                              />
+                              <button type="button" onClick={() => resetSlideStyleField(selectedSlideIndex, k)} style={{ marginLeft: '8px' }}>Reset</button>
+                            </div>
+                          ))}
+                          <div style={{ marginTop: '6px' }}>
+                            <label style={{ marginRight: '8px' }}>Horizontal alignment: </label>
+                            <select
+                              value={selectHorizontal}
+                              onChange={e => updateSlideStyle(selectedSlideIndex, 'horizontalAlign', e.target.value)}
+                            >
+                              <option value={HorizontalAlign.LEFT}>Left</option>
+                              <option value={HorizontalAlign.CENTER}>Center</option>
+                              <option value={HorizontalAlign.RIGHT}>Right</option>
+                            </select>
+                            <button type="button" onClick={() => resetSlideStyleField(selectedSlideIndex, 'horizontalAlign')} style={{ marginLeft: '8px' }}>Reset</button>
+                          </div>
+                          <div style={{ marginTop: '6px' }}>
+                            <label style={{ marginRight: '8px' }}>Vertical alignment: </label>
+                            <select
+                              value={selectVertical}
+                              onChange={e => updateSlideStyle(selectedSlideIndex, 'verticalAlign', e.target.value)}
+                            >
+                              <option value={VerticalAlign.TOP}>Top</option>
+                              <option value={VerticalAlign.MIDDLE}>Middle</option>
+                              <option value={VerticalAlign.BOTTOM}>Bottom</option>
+                            </select>
+                            <button type="button" onClick={() => resetSlideStyleField(selectedSlideIndex, 'verticalAlign')} style={{ marginLeft: '8px' }}>Reset</button>
+                          </div>
+                          <div style={{ marginTop: '8px' }}>
+                            {slide.type === SlideType.SONG && slide.lyrics && slide.id ? (
+                              <>
+                                <button
+                                  type="button"
+                                  title="Full rewind to title"
+                                  onClick={() => handleSongFullRewind(slide)}
+                                  style={{ marginRight: '8px' }}
+                                >
+                                  |&lt;-- Full rewind
+                                </button>
+                                <button
+                                  type="button"
+                                  disabled={
+                                    songLastStagedById[slide.id] === undefined ||
+                                    songLastStagedById[slide.id] === 0
+                                  }
+                                  onClick={() => handleSongStageReverse(slide)}
+                                  style={{ marginRight: '8px' }}
+                                >
+                                  Reverse (staged)
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleSongStageAdvance(slide)}
+                                  style={{ marginRight: '8px' }}
+                                >
+                                  Advance (staged)
+                                </button>
+                              </>
+                            ) : null}
+                            <button onClick={() => resetAllSlideStyleOverrides(selectedSlideIndex)}>Reset all overrides</button>
+                            <button onClick={() => duplicateSlide(selectedSlideIndex)} style={{ marginLeft: '8px' }}>Duplicate</button>
+                            <button onClick={() => deleteSlide(selectedSlideIndex)} style={{ marginLeft: '8px' }}>Delete</button>
+                            <button onClick={() => setSelectedSlideIndex(null)} style={{ marginLeft: '8px' }}>Close editor</button>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                );
+              })()}
+            </>
+          ) : (
+            <p className="deck-slide-editor-placeholder">Click Edit on a slide to edit it here.</p>
+          )}
         </div>
       </div>
-
-      {typeof selectedSlideIndex === 'number' && deck && deck.slides[selectedSlideIndex] && (
-        <div style={{ marginTop: '12px', padding: '8px', border: '1px solid #ddd' }}>
-          <h3>Editing slide {selectedSlideIndex + 1}</h3>
-          {(() => {
-            const slide = deck.slides[selectedSlideIndex] as any;
-            return (
-              <div>
-                <div>
-                  <label>Type: 
-                    <select value={slide.type} onChange={e => updateSlideField(selectedSlideIndex, 'type', e.target.value as SlideType)}>
-                      <option value={SlideType.GENERAL}>GENERAL</option>
-                      <option value={SlideType.TITLE}>TITLE</option>
-                      <option value={SlideType.IMAGE}>IMAGE</option>
-                      <option value={SlideType.SONG}>SONG</option>
-                    </select>
-                  </label>
-                </div>
-                <div>
-                  <label>Title: <input type="text" value={slide.title || ''} onChange={e => updateSlideField(selectedSlideIndex, 'title', e.target.value)} /></label>
-                </div>
-                <div>
-                  <label>Subtitle: <input type="text" value={slide.subTitle || ''} onChange={e => updateSlideField(selectedSlideIndex, 'subTitle', e.target.value)} /></label>
-                </div>
-
-                {slide.type === SlideType.IMAGE && (
-                  <div>
-                    <label>Image URL/file: <input type="text" value={slide.file || slide.style?.backgroundImage || ''} onChange={e => updateSlideField(selectedSlideIndex, 'file', e.target.value)} /></label>
-                  </div>
-                )}
-
-                {slide.type === SlideType.SONG && (
-                  <div>
-                    <label>Lyrics (JSON):</label>
-                    <div>
-                      <textarea id="lyrics-json" style={{ width: '100%', height: '120px' }} defaultValue={slide.lyrics ? JSON.stringify(slide.lyrics, null, 2) : ''}></textarea>
-                      <div style={{ marginTop: '6px' }}>
-                        <button onClick={() => {
-                          const t = (document.getElementById('lyrics-json') as HTMLTextAreaElement | null);
-                          if (!t) return;
-                          try {
-                            const parsed = JSON.parse(t.value) as SongData;
-                            updateSlideField(selectedSlideIndex, 'lyrics', parsed);
-                          } catch (err) {
-                            setMessage('Invalid Lyrics JSON');
-                          }
-                        }}>Apply Lyrics JSON</button>
-                        <button onClick={() => {
-                          // quick add an empty verse
-                          const s = { ...(deck.slides[selectedSlideIndex] as any) };
-                          const lyrics = s.lyrics || { title: '', author: '', verses: [] };
-                          lyrics.verses = lyrics.verses.concat([{ number: (lyrics.verses.length || 0) + 1, lines: [''] }]);
-                          updateSlideField(selectedSlideIndex, 'lyrics', lyrics);
-                        }} style={{ marginLeft: '8px' }}>Add Verse</button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                <h4>Style (effective shown; overrides saved to slide.style)</h4>
-                {(() => {
-                  const effective = resolveSlideStyle(deck, slide);
-                  const textStyleKeys: Array<'backgroundColor' | 'color' | 'fontFamily' | 'fontSize'> = [
-                    'backgroundColor',
-                    'color',
-                    'fontFamily',
-                    'fontSize',
-                  ];
-                  const rawH = slide.style?.horizontalAlign ?? effective.horizontalAlign ?? HorizontalAlign.CENTER;
-                  const selectHorizontal =
-                    rawH === HorizontalAlign.LEFT || rawH === HorizontalAlign.CENTER || rawH === HorizontalAlign.RIGHT
-                      ? rawH
-                      : HorizontalAlign.CENTER;
-                  const rawV = slide.style?.verticalAlign ?? effective.verticalAlign ?? VerticalAlign.MIDDLE;
-                  const selectVertical =
-                    rawV === VerticalAlign.TOP || rawV === VerticalAlign.MIDDLE || rawV === VerticalAlign.BOTTOM
-                      ? rawV
-                      : VerticalAlign.MIDDLE;
-                  return (
-                    <div>
-                      {textStyleKeys.map((k) => (
-                        <div key={k} style={{ marginTop: '6px' }}>
-                          <label style={{ marginRight: '8px' }}>{`${k}: `}</label>
-                          <input
-                            type="text"
-                            value={(slide.style && slide.style[k]) || (effective as any)[k] || ''}
-                            onChange={e => updateSlideStyle(selectedSlideIndex, k, e.target.value)}
-                          />
-                          <button type="button" onClick={() => resetSlideStyleField(selectedSlideIndex, k)} style={{ marginLeft: '8px' }}>Reset</button>
-                        </div>
-                      ))}
-                      <div style={{ marginTop: '6px' }}>
-                        <label style={{ marginRight: '8px' }}>Horizontal alignment: </label>
-                        <select
-                          value={selectHorizontal}
-                          onChange={e => updateSlideStyle(selectedSlideIndex, 'horizontalAlign', e.target.value)}
-                        >
-                          <option value={HorizontalAlign.LEFT}>Left</option>
-                          <option value={HorizontalAlign.CENTER}>Center</option>
-                          <option value={HorizontalAlign.RIGHT}>Right</option>
-                        </select>
-                        <button type="button" onClick={() => resetSlideStyleField(selectedSlideIndex, 'horizontalAlign')} style={{ marginLeft: '8px' }}>Reset</button>
-                      </div>
-                      <div style={{ marginTop: '6px' }}>
-                        <label style={{ marginRight: '8px' }}>Vertical alignment: </label>
-                        <select
-                          value={selectVertical}
-                          onChange={e => updateSlideStyle(selectedSlideIndex, 'verticalAlign', e.target.value)}
-                        >
-                          <option value={VerticalAlign.TOP}>Top</option>
-                          <option value={VerticalAlign.MIDDLE}>Middle</option>
-                          <option value={VerticalAlign.BOTTOM}>Bottom</option>
-                        </select>
-                        <button type="button" onClick={() => resetSlideStyleField(selectedSlideIndex, 'verticalAlign')} style={{ marginLeft: '8px' }}>Reset</button>
-                      </div>
-                      <div style={{ marginTop: '8px' }}>
-                        {slide.type === SlideType.SONG && slide.lyrics && slide.id ? (
-                          <>
-                            <button
-                              type="button"
-                              title="Full rewind to title"
-                              onClick={() => handleSongFullRewind(slide)}
-                              style={{ marginRight: '8px' }}
-                            >
-                              |&lt;-- Full rewind
-                            </button>
-                            <button
-                              type="button"
-                              disabled={
-                                songLastStagedById[slide.id] === undefined ||
-                                songLastStagedById[slide.id] === 0
-                              }
-                              onClick={() => handleSongStageReverse(slide)}
-                              style={{ marginRight: '8px' }}
-                            >
-                              Reverse (staged)
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleSongStageAdvance(slide)}
-                              style={{ marginRight: '8px' }}
-                            >
-                              Advance (staged)
-                            </button>
-                          </>
-                        ) : null}
-                        <button onClick={() => resetAllSlideStyleOverrides(selectedSlideIndex)}>Reset all overrides</button>
-                        <button onClick={() => duplicateSlide(selectedSlideIndex)} style={{ marginLeft: '8px' }}>Duplicate</button>
-                        <button onClick={() => deleteSlide(selectedSlideIndex)} style={{ marginLeft: '8px' }}>Delete</button>
-                        <button onClick={() => setSelectedSlideIndex(null)} style={{ marginLeft: '8px' }}>Close editor</button>
-                      </div>
-                    </div>
-                  );
-                })()}
-              </div>
-            );
-          })()}
-        </div>
-      )}
 
       <div id="status" style={{ marginTop: '12px' }}>{message}</div>
       {showSaveToLibraryPrompt && (

@@ -47,7 +47,13 @@ export default function Presentation() {
     }
 
     // Full present payload — update slide/message/useGreenScreen
-    if (present.slide) {
+    if (present.slide === null) {
+      setSlide(null);
+      setSongData(null);
+      setSegmentIndex(0);
+      if (present.message !== undefined) setMessage(present.message);
+      if (present.useGreenScreen !== undefined) setUseGreenScreen(!!present.useGreenScreen);
+    } else if (present.slide) {
       setSlide(present.slide);
       setMessage(present.message ?? null);
       setUseGreenScreen(!!present.useGreenScreen);

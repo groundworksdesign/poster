@@ -74,7 +74,7 @@ export type PresentDataProps = {
 };
 
 export class PresentData {
-  slide?: Slide | null = null;
+  slide?: Slide | null;
   message?: string | null = null;
   useGreenScreen?: boolean | null = null;
   data?: any = null;

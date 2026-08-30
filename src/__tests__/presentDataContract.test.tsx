@@ -141,9 +141,9 @@ describe('PresentData -- payload shape contract', () => {
       expect(payload.message).toBe('Now Live');
     });
 
-    it('leaves slide null when not provided', () => {
+    it('leaves slide unset on message-only payload', () => {
       const payload = new PresentData({ message: 'Now Live' });
-      expect(payload.slide).toBeNull();
+      expect(payload.slide).toBeUndefined();
     });
 
     it('leaves data null when not provided', () => {
@@ -171,9 +171,9 @@ describe('PresentData -- payload shape contract', () => {
       expect(payload.data).toEqual({ lyricsNavigation: { command: 'next' } });
     });
 
-    it('leaves slide null for a navigation-only update', () => {
+    it('leaves slide unset for a navigation-only update', () => {
       const payload = new PresentData({ data: { lyricsNavigation: { command: 'next' } } });
-      expect(payload.slide).toBeNull();
+      expect(payload.slide).toBeUndefined();
     });
 
     it('leaves message null for a navigation-only update', () => {
@@ -219,7 +219,7 @@ describe('PresentData -- payload shape contract', () => {
     it('can be set without a slide (flag-only payload)', () => {
       const payload = new PresentData({ useGreenScreen: true });
       expect(payload.useGreenScreen).toBe(true);
-      expect(payload.slide).toBeNull();
+      expect(payload.slide).toBeUndefined();
     });
 
     it('co-exists with a message payload', () => {

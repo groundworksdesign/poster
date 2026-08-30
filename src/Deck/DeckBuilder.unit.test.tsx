@@ -222,3 +222,41 @@ test('imported JSON deck with future schemaVersion emits console warning', async
   expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('schemaVersion 999'));
   warnSpy.mockRestore();
 });
+
+test('presentation controls appear when deck is loaded', async () => {
+  render(<DeckBuilder />);
+  expect(screen.queryByTestId('presentation-controls')).not.toBeInTheDocument();
+  await loadFile(makeJsonFile(VALID_DECK));
+  await waitFor(() => expect(screen.getByTestId('presentation-controls')).toBeInTheDocument());
+  expect(screen.getByRole('button', { name: /^start$/i })).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: /^end$/i })).toBeInTheDocument();
+});
+
+test('side-by-side editor placeholder shows before Edit is clicked', async () => {
+  render(<DeckBuilder />);
+  await loadFile(makeJsonFile(VALID_DECK));
+  await waitFor(() => screen.getByText(/click edit on a slide/i));
+  expect(screen.queryByText(/editing slide/i)).not.toBeInTheDocument();
+});
+
+test('clicking Edit shows editor beside slide list', async () => {
+  render(<DeckBuilder />);
+  await loadFile(makeJsonFile(VALID_DECK));
+  await waitFor(() => screen.getByRole('button', { name: /^edit$/i }));
+  act(() => { fireEvent.click(screen.getByRole('button', { name: /^edit$/i })); });
+  expect(screen.getByText(/editing slide 1/i)).toBeInTheDocument();
+});
+
+test('slide row includes Top and Move reorder controls', async () => {
+  render(<DeckBuilder />);
+  const multiSlideDeck = {
+    ...VALID_DECK,
+    slides: [
+      { type: 'general', title: 'Slide 1', id: 'a' },
+      { type: 'general', title: 'Slide 2', id: 'b' },
+    ],
+  };
+  await loadFile(makeJsonFile(multiSlideDeck));
+  await waitFor(() => expect(screen.getAllByRole('button', { name: /^top$/i }).length).toBe(2));
+  expect(screen.getAllByRole('button', { name: /^move$/i }).length).toBe(2);
+});
