@@ -1,0 +1,26 @@
+name: Cleanup Actions artifacts
+
+# One-time (or occasional) cleanup of accumulated workflow artifacts.
+# Run manually from the Actions tab after merging storage-retention fixes.
+on:
+  workflow_dispatch:
+
+permissions:
+  actions: write
+
+jobs:
+  cleanup:
+    name: Delete all workflow artifacts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          deleted=0
+          while IFS= read -r id; do
+            gh api -X DELETE "/repos/${{ github.repository }}/actions/artifacts/${id}" && deleted=$((deleted + 1)) || true
+          done < <(gh api "/repos/${{ github.repository }}/actions/artifacts?per_page=100" --paginate \
+            --jq '.artifacts[].id')
+          echo "Deleted ${deleted} artifact(s)."

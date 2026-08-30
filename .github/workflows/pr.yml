@@ -89,13 +89,12 @@ jobs:
       - name: Package portable zip
         run: node scripts/package-portable.mjs --sha ${{ github.sha }} --node-modules dist/portable-prod/node_modules
 
-      - name: Upload portable zip artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: poster-portable-${{ matrix.os }}-${{ github.sha }}
-          path: dist/poster-portable-*.zip
-          retention-days: 30
-          if-no-files-found: error
+      # Verify packaging succeeded; do not upload artifacts (400MB+ zips burn Actions storage).
+      - name: Verify portable zip output
+        shell: bash
+        run: |
+          set -euo pipefail
+          ls -lh dist/poster-portable-*.zip
 
   # ---------------------------------------------------------------------------
   # Electron installers (per OS): DMG (mac), NSIS exe (win), deb + AppImage (linux)
@@ -139,8 +138,8 @@ jobs:
       - name: Build Electron installers
         run: pnpm run build:electron
 
-      # electron-builder also leaves unpacked app trees under dist/electron/; upload only deliverables.
-      - name: Stage installer files for artifact upload
+      # electron-builder also leaves unpacked app trees under dist/electron/; verify deliverables only.
+      - name: Verify Electron installer output
         shell: bash
         run: |
           set -euo pipefail
@@ -165,11 +164,3 @@ jobs:
             exit 1
           fi
           ls -la dist/electron-installers/
-
-      - name: Upload Electron installer artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: poster-electron-${{ matrix.os }}-pr-${{ github.event.pull_request.number }}-${{ github.sha }}
-          path: dist/electron-installers/
-          retention-days: 30
-          if-no-files-found: error
