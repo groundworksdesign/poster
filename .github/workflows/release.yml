@@ -179,7 +179,7 @@ jobs:
         with:
           name: poster-portable-release-${{ matrix.os }}-${{ needs.resolve-version.outputs.version }}-${{ github.sha }}
           path: dist/poster-portable-*.zip
-          retention-days: 90
+          retention-days: 1
           if-no-files-found: error
 
   # ---------------------------------------------------------------------------
@@ -257,7 +257,7 @@ jobs:
         with:
           name: poster-electron-release-${{ matrix.os }}-${{ needs.resolve-version.outputs.version }}-${{ github.sha }}
           path: dist/electron-installers/
-          retention-days: 90
+          retention-days: 1
           if-no-files-found: error
 
   # ---------------------------------------------------------------------------
@@ -321,3 +321,18 @@ jobs:
           fail_on_unmatched_files: true
           files: |
             release-assets/*
+
+      # Staging artifacts are only needed until assets are on the GitHub Release.
+      - name: Delete staging artifacts
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          RUN_ID="${{ github.run_id }}"
+          gh api "/repos/${{ github.repository }}/actions/artifacts?per_page=100" --paginate \
+            --jq ".artifacts[] | select(.workflow_run.id == ${RUN_ID}) | .id" \
+            | while read -r id; do
+              echo "Deleting staging artifact ${id}"
+              gh api -X DELETE "/repos/${{ github.repository }}/actions/artifacts/${id}" || true
+            done
