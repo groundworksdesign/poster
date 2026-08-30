@@ -8,6 +8,7 @@ const path = require('path');
 
 let serverProcess = null;
 let mainWindow = null;
+let serverPort = null;
 
 // ---------------------------------------------------------------------------
 // Resolve app root (works both from `electron .` dev and packaged mode)
@@ -70,14 +71,16 @@ async function startServer(port) {
   const appRoot = getAppRoot();
   const serverEntry = path.join(appRoot, 'server', 'index.js');
 
-  // Use the Node that ships with Electron (process.execPath) so the binary is
-  // always available, even when the system PATH does not contain node.
+  // Electron's binary (process.execPath) can run as Node when
+  // ELECTRON_RUN_AS_NODE=1. Without it, spawn opens new GUI instances on
+  // every packaged target (macOS DMG, Windows NSIS, Linux deb/AppImage).
   const nodeBin = process.execPath;
 
   serverProcess = spawn(nodeBin, [serverEntry], {
     cwd: appRoot,
     env: {
       ...process.env,
+      ELECTRON_RUN_AS_NODE: '1',
       PORT: String(port),
       NODE_ENV: process.env.NODE_ENV || 'production',
     },
@@ -134,39 +137,53 @@ function createWindow(port) {
   });
 }
 
+function focusMainWindow() {
+  if (!mainWindow) return;
+  if (mainWindow.isMinimized()) mainWindow.restore();
+  mainWindow.focus();
+}
+
 // ---------------------------------------------------------------------------
-// App lifecycle
+// App lifecycle — only one GUI instance; second launches focus the first
 // ---------------------------------------------------------------------------
-app.on('ready', async () => {
-  try {
-    const port = await findFreePort();
-    await startServer(port);
-    await waitForServer(port);
-    createWindow(port);
-  } catch (err) {
-    console.error('[main] startup error:', err);
-    app.quit();
-  }
-});
+const gotTheLock = app.requestSingleInstanceLock();
 
-app.on('window-all-closed', () => {
-  killServer();
-  // On macOS, keep app in Dock until Cmd+Q (standard behaviour)
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
-});
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.on('second-instance', () => {
+    focusMainWindow();
+  });
 
-app.on('activate', async () => {
-  // Re-create window on macOS when clicking Dock icon with no windows open
-  if (mainWindow === null && serverProcess) {
-    // Server already running; re-open window on the same port is not trivial
-    // without storing the port, so just re-launch from scratch
-    app.relaunch();
-    app.exit(0);
-  }
-});
+  app.on('ready', async () => {
+    try {
+      const port = await findFreePort();
+      serverPort = port;
+      await startServer(port);
+      await waitForServer(port);
+      createWindow(port);
+    } catch (err) {
+      console.error('[main] startup error:', err);
+      app.quit();
+    }
+  });
 
-app.on('before-quit', () => {
-  killServer();
-});
+  app.on('window-all-closed', () => {
+    killServer();
+    // On macOS, keep app in Dock until Cmd+Q (standard behaviour)
+    if (process.platform !== 'darwin') {
+      app.quit();
+    }
+  });
+
+  app.on('activate', () => {
+    // Re-create window on macOS when clicking Dock icon with no windows open
+    if (mainWindow === null && serverPort !== null && serverProcess) {
+      createWindow(serverPort);
+    }
+  });
+
+  app.on('before-quit', () => {
+    killServer();
+  });
+}

@@ -10,8 +10,8 @@ extends: null
 # ABI support ships upstream.
 
 # Packaging note: electron/main.cjs spawns a child Node.js process to run
-# server/index.js. The current implementation launches Electron's bundled Node
-# (process.execPath), so native modules must be rebuilt for Electron's ABI.
+# server/index.js via process.execPath with ELECTRON_RUN_AS_NODE=1, so native
+# modules must be rebuilt for Electron's ABI.
 # CI pre-rebuilds better-sqlite3 in .github/workflows/pr.yml.
 # The beforeBuild hook delegates dependency handling externally to avoid
 # pnpm dependency tree parsing failures.
