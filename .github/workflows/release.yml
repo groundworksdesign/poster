@@ -355,9 +355,9 @@ jobs:
           set -euo pipefail
           VERSION='${{ needs.resolve-version.outputs.version }}'
           if [ '${{ needs.resolve-version.outputs.is_prerelease }}' = 'true' ]; then
-            gh release edit "$VERSION" --draft=false --prerelease=true --generate-notes=true
+            gh release edit "$VERSION" --draft=false --prerelease
           else
-            gh release edit "$VERSION" --draft=false --prerelease=false --generate-notes=true
+            gh release edit "$VERSION" --draft=false
           fi
           echo "Release assets:"
           gh release view "$VERSION" --json assets --jq '.assets[] | "\(.name): \(.browser_download_url)"'
