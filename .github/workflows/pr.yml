@@ -3,6 +3,11 @@ name: PR Build
 on:
   pull_request:
     branches: ["**"]
+    types: [opened, synchronize, reopened, ready_for_review]
+
+# Default read-only; release jobs elevate contents: write.
+permissions:
+  contents: read
 
 jobs:
   # ---------------------------------------------------------------------------
@@ -41,11 +46,62 @@ jobs:
         run: pnpm run test:e2e:remix
 
   # ---------------------------------------------------------------------------
-  # Portable zip (per OS)
+  # Resolve PR pre-release tag (vX.Y.Z-pr.<PR_NUMBER>) and ensure GitHub Release
+  # ---------------------------------------------------------------------------
+  resolve-pr-release:
+    name: Resolve PR pre-release
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      version: ${{ steps.resolve.outputs.version }}
+      pr_number: ${{ steps.resolve.outputs.pr_number }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve PR pre-release tag
+        id: resolve
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          PR_NUMBER='${{ github.event.pull_request.number }}'
+          BASE_VER=$(node -p "require('./package.json').version")
+          TAG_NAME="v${BASE_VER}-pr.${PR_NUMBER}"
+          SHORT_SHA=$(echo '${{ github.event.pull_request.head.sha }}' | cut -c1-7)
+          NOTES=$(cat <<EOF
+          Pre-release installer build for PR #${PR_NUMBER}: ${{ github.event.pull_request.title }}
+
+          - Tag: \`${TAG_NAME}\` (same tag is updated on each push to this PR)
+          - Commit: \`${SHORT_SHA}\`
+          - When this PR merges to \`main\`, a final \`v*\` release is published and this pre-release is deleted.
+
+          EOF
+          )
+
+          if gh release view "$TAG_NAME" >/dev/null 2>&1; then
+            gh release edit "$TAG_NAME" --notes "$NOTES" --prerelease --draft
+          else
+            gh release create "$TAG_NAME" --draft --prerelease --title "$TAG_NAME" \
+              --notes "$NOTES" --target '${{ github.event.pull_request.head.sha }}'
+          fi
+
+          echo "version=$TAG_NAME" >> "$GITHUB_OUTPUT"
+          echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+
+  # ---------------------------------------------------------------------------
+  # Portable zip (per OS) — upload directly to the PR GitHub Release
   # ---------------------------------------------------------------------------
   portable-zip:
-    name: Portable zip (${{ matrix.os }})
+    name: Portable zip (${{ matrix.os }}) for ${{ needs.resolve-pr-release.outputs.version }}
+    needs: [resolve-pr-release]
+    if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
@@ -55,7 +111,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v3
@@ -87,33 +143,53 @@ jobs:
           pnpm rebuild better-sqlite3
 
       - name: Package portable zip
-        run: node scripts/package-portable.mjs --sha ${{ github.sha }} --node-modules dist/portable-prod/node_modules
-
-      # Verify packaging succeeded; do not upload artifacts (400MB+ zips burn Actions storage).
-      - name: Verify portable zip output
         shell: bash
         run: |
           set -euo pipefail
-          ls -lh dist/poster-portable-*.zip
+          SHORT_SHA=$(echo "${{ github.event.pull_request.head.sha }}" | cut -c1-7)
+          node scripts/package-portable.mjs \
+            --sha "$SHORT_SHA" \
+            --tag "${{ needs.resolve-pr-release.outputs.version }}" \
+            --node-modules dist/portable-prod/node_modules
+
+      - name: Upload portable zip to PR GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION='${{ needs.resolve-pr-release.outputs.version }}'
+          shopt -s nullglob
+          files=(dist/poster-portable-*.zip)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No portable zip found"
+            exit 1
+          fi
+          gh release upload "$VERSION" "${files[@]}" --clobber
 
   # ---------------------------------------------------------------------------
-  # Electron installers (per OS): DMG (mac), NSIS exe (win), deb + AppImage (linux)
+  # Electron installers (per OS) — upload directly to the PR GitHub Release
   # ---------------------------------------------------------------------------
   electron-installers:
-    name: Electron installers (${{ matrix.os }})
+    name: Electron installers (${{ matrix.os }}) for ${{ needs.resolve-pr-release.outputs.version }}
+    needs: [resolve-pr-release]
+    if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
       fail-fast: false
 
     env:
-      # PR workflows do not ship Apple or Windows code-signing secrets
       CSC_IDENTITY_AUTO_DISCOVERY: false
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v3
@@ -135,12 +211,10 @@ jobs:
       - name: Build Remix app
         run: pnpm run build:remix
 
-      # prepare-electron-pack.cjs (via build:electron) packs production node_modules.
       - name: Build Electron installers
         run: pnpm run build:electron
 
-      # electron-builder also leaves unpacked app trees under dist/electron/; verify deliverables only.
-      - name: Verify Electron installer output
+      - name: Stage installer files for release upload
         shell: bash
         run: |
           set -euo pipefail
@@ -165,3 +239,44 @@ jobs:
             exit 1
           fi
           ls -la dist/electron-installers/
+
+      - name: Upload Electron installers to PR GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION='${{ needs.resolve-pr-release.outputs.version }}'
+          shopt -s nullglob
+          files=(dist/electron-installers/*)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No installer files found"
+            exit 1
+          fi
+          gh release upload "$VERSION" "${files[@]}" --clobber
+
+  # ---------------------------------------------------------------------------
+  # Finalize the PR pre-release (publish draft, list assets)
+  # ---------------------------------------------------------------------------
+  publish-pr-release:
+    name: Publish ${{ needs.resolve-pr-release.outputs.version }}
+    needs: [portable-zip, electron-installers, resolve-pr-release]
+    if: >-
+      always() &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      needs.resolve-pr-release.result == 'success' &&
+      !cancelled()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Finalize PR pre-release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          VERSION='${{ needs.resolve-pr-release.outputs.version }}'
+          gh release edit "$VERSION" --draft=false --prerelease
+          echo "PR pre-release assets:"
+          gh release view "$VERSION" --json assets --jq '.assets[] | "\(.name): \(.browser_download_url)"'
