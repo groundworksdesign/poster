@@ -135,6 +135,7 @@ jobs:
       - name: Build Remix app
         run: pnpm run build:remix
 
+      # prepare-electron-pack.cjs (via build:electron) packs production node_modules.
       - name: Build Electron installers
         run: pnpm run build:electron
 
