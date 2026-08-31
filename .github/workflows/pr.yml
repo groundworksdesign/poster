@@ -298,6 +298,7 @@ jobs:
         run: |
           set -euo pipefail
           VERSION='${{ needs.resolve-pr-release.outputs.version }}'
-          gh release edit "$VERSION" --draft=false --prerelease
+          gh release edit "$VERSION" --repo "${{ github.repository }}" --draft=false --prerelease
           echo "PR pre-release assets:"
-          gh release view "$VERSION" --json assets --jq '.assets[] | "\(.name): \(.browser_download_url)"'
+          gh release view "$VERSION" --repo "${{ github.repository }}" --json assets \
+            --jq '.assets[] | "\(.name)"'
