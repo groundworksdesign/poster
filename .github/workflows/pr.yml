@@ -79,6 +79,18 @@ jobs:
           - Commit: \`${SHORT_SHA}\`
           - When this PR merges to \`main\`, a final \`v*\` release is published and this pre-release is deleted.
 
+          ### macOS (unsigned test build)
+
+          Browser downloads are quarantined. If macOS says **"Poster.app is damaged"**, the app is not corrupt — clear quarantine, then open once:
+
+          \`\`\`bash
+          xattr -cr /Applications/Poster.app
+          \`\`\`
+
+          Then **right-click → Open → Open** the first time. See \`docs/macos-install-unsigned.txt\` in the repo for details.
+
+          Full notarization requires Apple Developer ID secrets in CI (not configured for PR builds).
+
           EOF
           )
 
@@ -184,6 +196,12 @@ jobs:
 
     env:
       CSC_IDENTITY_AUTO_DISCOVERY: false
+      # Optional Apple signing/notarization (when repo secrets are configured)
+      CSC_LINK: ${{ secrets.CSC_LINK }}
+      CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
 
     steps:
       - name: Checkout

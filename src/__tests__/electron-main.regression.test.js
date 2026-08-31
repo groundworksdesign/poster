@@ -65,6 +65,7 @@ describe('electron/main.cjs launch safety (all Electron installers)', () => {
       /if\s*\(\s*process\.platform\s*!==\s*['"]darwin['"]\s*\)\s*\{[\s\S]*killServer\(\)/,
     );
   });
+
   it('fails fast when packaged node_modules/express is missing', () => {
     expect(mainSource).toMatch(/node_modules['"].*express/);
     expect(mainSource).toMatch(/missing node_modules\/express/);
@@ -100,6 +101,17 @@ describe('electron packaging includes production node_modules', () => {
     );
     expect(runtimeBlock).not.toMatch(/react-scripts/);
     expect(runtimeBlock).not.toMatch(/@testing-library/);
+  });
+
+  it('ad-hoc re-signs unsigned mac builds after pack', () => {
+    expect(builderYml).toMatch(/afterPack:\s*scripts\/mac-adhoc-sign\.cjs/);
+    const adhocSrc = fs.readFileSync(
+      path.join(__dirname, '../../scripts/mac-adhoc-sign.cjs'),
+      'utf8',
+    );
+    expect(adhocSrc).toMatch(/CSC_LINK/);
+    expect(adhocSrc).toMatch(/codesign/);
+    expect(adhocSrc).toMatch(/--sign', '-'/);
   });
 });
 
