@@ -113,6 +113,11 @@ describe('electron packaging includes production node_modules', () => {
     expect(adhocSrc).toMatch(/codesign/);
     expect(adhocSrc).toMatch(/--sign', '-'/);
   });
+
+  it('allows window.open child windows in Electron main', () => {
+    expect(mainSource).toMatch(/setWindowOpenHandler/);
+    expect(mainSource).toMatch(/did-create-window/);
+  });
 });
 
 describe('portable zip launch path (all OS portable targets)', () => {

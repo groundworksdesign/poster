@@ -59,23 +59,19 @@ export default function DeckBuilder() {
     const tag = (document.activeElement as HTMLElement)?.tagName?.toUpperCase();
     if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
 
-    if (isSongMode) {
-      if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        advanceSong();
-      } else if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        rewindSong();
-      }
-    } else {
-      if (!deck) return;
-      if (e.key === 'ArrowRight' || e.key === 'PageDown') {
-        e.preventDefault();
-        navigatePresentationNext();
-      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
-        e.preventDefault();
-        navigatePresentationPrevious();
-      }
+    if (!deck) return;
+    if (e.key === 'ArrowRight' || e.key === 'PageDown') {
+      e.preventDefault();
+      navigatePresentationNext();
+    } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+      e.preventDefault();
+      navigatePresentationPrevious();
+    } else if (isSongMode && e.key === 'ArrowDown') {
+      e.preventDefault();
+      advanceSong();
+    } else if (isSongMode && e.key === 'ArrowUp') {
+      e.preventDefault();
+      rewindSong();
     }
   };
 
@@ -271,6 +267,21 @@ export default function DeckBuilder() {
     return -1;
   };
 
+  const getPresentedSongSlide = (): Slide | null => {
+    if (!deck) return null;
+    const idx = getResolvedPresentIndex();
+    if (idx < 0) return null;
+    const slide = deck.slides[idx] as Slide;
+    if (slide.type !== SlideType.SONG || !slide.lyrics || !(slide as any).id) return null;
+    return slide;
+  };
+
+  const canReverseSongStage = (slide: Slide): boolean => {
+    const id = (slide as any).id as string;
+    const last = songLastStagedById[id];
+    return last !== undefined && last > 0;
+  };
+
   const sendSlideAtIndex = (index: number) => {
     if (!deck || index < 0 || index >= deck.slides.length) return;
     const slide = deck.slides[index] as Slide;
@@ -293,6 +304,10 @@ export default function DeckBuilder() {
 
   const navigatePresentationStart = () => {
     if (!deck || deck.slides.length === 0) return;
+    if (deck.useGreenScreen) {
+      sendBlankSlide();
+      return;
+    }
     sendSlideAtIndex(0);
   };
 
@@ -303,8 +318,13 @@ export default function DeckBuilder() {
   const navigatePresentationNext = () => {
     if (!deck || deck.slides.length === 0) return;
     const current = getResolvedPresentIndex();
-    if (current < 0) {
+    if (presentationBlank || current < 0) {
       sendSlideAtIndex(0);
+      return;
+    }
+    const songSlide = getPresentedSongSlide();
+    if (songSlide) {
+      handleSongStageAdvance(songSlide);
       return;
     }
     if (current >= deck.slides.length - 1) return;
@@ -314,8 +334,13 @@ export default function DeckBuilder() {
   const navigatePresentationPrevious = () => {
     if (!deck || deck.slides.length === 0) return;
     const current = getResolvedPresentIndex();
-    if (current < 0) {
+    if (presentationBlank || current < 0) {
       sendSlideAtIndex(deck.slides.length - 1);
+      return;
+    }
+    const songSlide = getPresentedSongSlide();
+    if (songSlide && canReverseSongStage(songSlide)) {
+      handleSongStageReverse(songSlide);
       return;
     }
     if (current <= 0) return;

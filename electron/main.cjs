@@ -174,10 +174,32 @@ function createWindow(port) {
     },
   });
 
+  configureWindowOpen(mainWindow);
   mainWindow.loadURL(`http://127.0.0.1:${port}/`);
 
   mainWindow.on('closed', () => {
     mainWindow = null;
+  });
+}
+
+/** Allow window.open from the UI to spawn real child windows (deck, presentation). */
+function configureWindowOpen(win) {
+  win.webContents.setWindowOpenHandler(() => ({
+    action: 'allow',
+    overrideBrowserWindowOptions: {
+      width: 1280,
+      height: 720,
+      show: true,
+      title: 'Poster',
+      webPreferences: {
+        contextIsolation: true,
+        nodeIntegration: false,
+        sandbox: true,
+      },
+    },
+  }));
+  win.webContents.on('did-create-window', (childWin) => {
+    configureWindowOpen(childWin);
   });
 }
 

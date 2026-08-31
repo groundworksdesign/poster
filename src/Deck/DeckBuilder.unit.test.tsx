@@ -2,10 +2,11 @@ import React, { act } from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 
 // Mock Broadcast connection used by DeckBuilder to avoid BroadcastChannel in the test environment
+const mockPostMessage = jest.fn();
 jest.mock('../Present/Broadcast', () => ({
   connect: (channelType: any, handler: any) => ({
     id: 'mock-id',
-    channel: { postMessage: jest.fn(), onmessage: null },
+    channel: { postMessage: mockPostMessage, onmessage: null },
     channelType,
   }),
   ChannelType: { BUILDER: 0, PRESENTER: 1 },
@@ -13,6 +14,7 @@ jest.mock('../Present/Broadcast', () => ({
 
 // Mock fetch for library panel rendering
 beforeEach(() => {
+  mockPostMessage.mockClear();
   jest.spyOn(global, 'fetch').mockResolvedValue({
     ok: true,
     json: async () => [],
@@ -259,4 +261,41 @@ test('slide row includes Top and Move reorder controls', async () => {
   await loadFile(makeJsonFile(multiSlideDeck));
   await waitFor(() => expect(screen.getAllByRole('button', { name: /^top$/i }).length).toBe(2));
   expect(screen.getAllByRole('button', { name: /^move$/i }).length).toBe(2);
+});
+
+test('Start with green screen sends blank output', async () => {
+  render(<DeckBuilder />);
+  const deck = {
+    ...VALID_DECK,
+    useGreenScreen: true,
+    slides: [{ type: 'general', title: 'Slide 1', id: 's1' }],
+  };
+  await loadFile(makeJsonFile(deck));
+  await waitFor(() => screen.getByTestId('presentation-controls'));
+  mockPostMessage.mockClear();
+  act(() => {
+    fireEvent.click(screen.getByRole('button', { name: /^start$/i }));
+  });
+  expect(mockPostMessage).toHaveBeenCalled();
+  const payload = mockPostMessage.mock.calls[0][0];
+  expect(payload.slide).toBeNull();
+  expect(payload.useGreenScreen).toBe(true);
+});
+
+test('Start without green screen sends first slide', async () => {
+  render(<DeckBuilder />);
+  const deck = {
+    ...VALID_DECK,
+    useGreenScreen: false,
+    slides: [{ type: 'general', title: 'Slide 1', id: 's1' }],
+  };
+  await loadFile(makeJsonFile(deck));
+  await waitFor(() => screen.getByTestId('presentation-controls'));
+  mockPostMessage.mockClear();
+  act(() => {
+    fireEvent.click(screen.getByRole('button', { name: /^start$/i }));
+  });
+  const payload = mockPostMessage.mock.calls[0][0];
+  expect(payload.slide).not.toBeNull();
+  expect(payload.slide.title).toBe('Slide 1');
 });
