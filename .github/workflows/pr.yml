@@ -72,27 +72,7 @@ jobs:
           BASE_VER=$(node -p "require('./package.json').version")
           TAG_NAME="v${BASE_VER}-pr.${PR_NUMBER}"
           SHORT_SHA=$(echo '${{ github.event.pull_request.head.sha }}' | cut -c1-7)
-          NOTES=$(cat <<EOF
-          Pre-release installer build for PR #${PR_NUMBER}: ${{ github.event.pull_request.title }}
-
-          - Tag: \`${TAG_NAME}\` (same tag is updated on each push to this PR)
-          - Commit: \`${SHORT_SHA}\`
-          - When this PR merges to \`main\`, a final \`v*\` release is published and this pre-release is deleted.
-
-          ### macOS (unsigned test build)
-
-          Browser downloads are quarantined. If macOS says **"Poster.app is damaged"**, the app is not corrupt — clear quarantine, then open once:
-
-          \`\`\`bash
-          xattr -cr /Applications/Poster.app
-          \`\`\`
-
-          Then **right-click → Open → Open** the first time. See \`docs/macos-install-unsigned.txt\` in the repo for details.
-
-          Full notarization requires Apple Developer ID secrets in CI (not configured for PR builds).
-
-          EOF
-          )
+          NOTES="Pre-release installer build for PR #${PR_NUMBER} (${SHORT_SHA}). Tag ${TAG_NAME} is updated on each push. On merge, a final release is published and this pre-release is deleted. macOS unsigned install: after copying Poster.app to Applications, run: xattr -cr /Applications/Poster.app then right-click Open. See docs/macos-install-unsigned.txt."
 
           if gh release view "$TAG_NAME" >/dev/null 2>&1; then
             gh release edit "$TAG_NAME" --notes "$NOTES" --prerelease --draft
