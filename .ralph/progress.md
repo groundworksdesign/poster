@@ -147,6 +147,23 @@ REQ-003 + REQ-004 — collapsed Edit rail and wider slides workspace.
 - Ran `CI=true npx react-scripts test --watchAll=false --testPathPattern=DeckBuilder.unit.test` — 33/33 passed (3 REQ-005 + REQ-001/002/003+004 regression).
 - Updated `.ralph/qa-report.md`. fix_plan selected next unchanged (REQ-006).
 
+## Loop 13 — Dev (2026-09-01)
+
+**Agent:** Dev  
+**Branch:** `cursor/ralph-epic-001-plan-8243`  
+**REQ:** REQ-007 — **done**
+
+### Actions
+- Toolbar: `#export` + **Export** (`handleExportClick` file download); `#save` + **Save** (library via `handleSaveToLibrary`). Removed `#save-to-library` / **Save to Library**.
+- Import prompt button label → **Save** (id unchanged for e2e).
+- Added `src/utils/libraryRefresh.ts`: `notifyLibraryChanged()` after library save; `subscribeLibraryChanged()` on HomePage bumps `libraryRefreshKey` → LibraryPanel refetch in place (BroadcastChannel + localStorage fallback; no focus steal, no reload).
+- Removed unused `libraryRefreshKey` from DeckBuilder.
+- Tests: 2 REQ-007 DeckBuilder, 1 HomePage in-place refresh, 2 libraryRefresh unit; updated Export/Save label tests.
+- Ran targeted unit tests — 43 passed (DeckBuilder 38 + HomePage 3 + libraryRefresh 2).
+
+### Notes
+- REQ-008 partial for REQ-007 tests. No PR opened. Next: Final QA epic close.
+
 ## Loop 11 — Dev (2026-09-01)
 
 **Agent:** Dev  

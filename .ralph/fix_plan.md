@@ -25,30 +25,26 @@ Prioritized remaining work on top of PR #12 (`cursor/deck-editor-ux-d46a`). High
 | REQ-003 | **Done** | Idle `.deck-slides-list` flex 1; expanded row uses 42% list split; 3 layout tests |
 | REQ-004 | **Done** | `deck-slide-editor-rail` when idle; `deck-slide-editor-panel` when Edit; `collapseSlideEditor()` |
 | REQ-005 | **Done (QA-pass)** | Draft-based slide editor; prominent Save slide header/footer; `saveSlideEdits()` commits + collapses; 3 unit tests |
-| REQ-006 | **Done** | Drag handles + HTML5 DnD via `reorderSlide`; ↑/↓ removed; Top/Move kept; 3 DnD tests |
+| REQ-006 | **Done (QA-pass)** | Drag handles + HTML5 DnD via `reorderSlide`; ↑/↓ removed; Top/Move kept; 3 DnD tests |
+| REQ-007 | **Done** | Toolbar Export/Save labels; `notifyLibraryChanged` cross-window; Home in-place refresh; 5 tests |
 
 ## Gaps (prioritized)
 
-### 1. REQ-007 — Export / Save toolbar + in-place Home library list
-**Gap (labels):** Toolbar still `#save` (file) + `#save-to-library` (library). Mock: **Export** + **Save**. E2e specs use old ids.
-**Gap (Home refresh):** `libraryRefreshKey` in DeckBuilder still unused; no cross-window refresh when Deck saves from separate window.
-**Tests:** no in-place Home refresh test.
-
-### 2. REQ-008 — Unit tests for REQ-005–007
-**Gap:** REQ-001–006 covered (36 DeckBuilder tests). Export/Save rename, Home refresh still untested.
+### 1. REQ-008 — Final test / QA sweep
+**Gap:** REQ-001–007 unit tests in place (43 tests across DeckBuilder, HomePage, libraryRefresh). Remaining: final QA pass on full epic, adjacent integration/e2e if needed before merge.
 
 ---
 
 ## Selected next item
 
-**REQ-007: Export / Save toolbar labels + in-place Home library refresh — rename `#save` → Export (file), `#save-to-library` → Save (library); refresh Home library list when deck saved from separate window.**
+**Final QA — epic-001 close: verify REQ-001–007 in one QA loop; confirm no regressions; epic ready for PR when stakeholder approves.**
 
-**Why this item:** REQ-006 DnD is done; toolbar/library naming and cross-window refresh are the remaining UX gaps before REQ-008 test sweep.
+**Why this item:** All feature REQs implemented and unit-tested. REQ-008 acceptance for REQ-007 tests satisfied in loop 13.
 
-**Do not implement in this item:** unrelated restyles or new features beyond REQ-007 scope.
+**Do not implement in this item:** New features beyond epic scope.
 
 ---
 
 ## After selected item (remaining order)
 
-1. REQ-008 — Tests for each as they land
+1. Epic PR when stakeholder approves (PR #12 base + epic branch)

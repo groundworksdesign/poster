@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import LibraryPanel from './Deck/LibraryPanel';
 import { THEMES, useTheme, type ThemeId } from './utils/useTheme';
+import { subscribeLibraryChanged } from './utils/libraryRefresh';
 
 /**
  * Opens a Poster route in a dedicated window/tab without navigating the current page.
@@ -20,6 +21,10 @@ function openAppWindow(e: React.MouseEvent<HTMLAnchorElement>, windowName: strin
 export default function HomePage() {
   const [theme, setTheme] = useTheme();
   const [libraryRefreshKey, setLibraryRefreshKey] = useState(0);
+
+  useEffect(() => {
+    return subscribeLibraryChanged(() => setLibraryRefreshKey(k => k + 1));
+  }, []);
 
   const handleOpenFromLibrary = (id: string) => {
     const url = `${window.location.origin}/deck?open=${encodeURIComponent(id)}`;

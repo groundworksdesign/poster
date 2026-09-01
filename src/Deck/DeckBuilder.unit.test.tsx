@@ -26,6 +26,7 @@ afterEach(() => {
 });
 
 import DeckBuilder from './DeckBuilder';
+import * as libraryRefresh from '../utils/libraryRefresh';
 
 function makeJsonFile(content: object | string, name = 'deck.json'): File {
   const text = typeof content === 'string' ? content : JSON.stringify(content);
@@ -55,7 +56,7 @@ async function loadFile(file: File) {
   });
 }
 
-test('DeckBuilder shows header and handles save with no deck', () => {
+test('DeckBuilder shows header and handles export with no deck', () => {
   render(<DeckBuilder />);
 
   // header
@@ -64,17 +65,17 @@ test('DeckBuilder shows header and handles save with no deck', () => {
   // no deck message
   expect(screen.getByText('No deck loaded yet.')).toBeInTheDocument();
 
-  // click save and assert message
   act(() => {
-    fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^export$/i }));
   });
 
-  expect(screen.getByText('No deck to save')).toBeInTheDocument();
+  expect(screen.getByText('No deck to export')).toBeInTheDocument();
 });
 
-test('does not render Library toggle; Save and Load remain', () => {
+test('does not render Library toggle; Export, Save, and Load remain', () => {
   render(<DeckBuilder />);
   expect(screen.queryByRole('button', { name: /^library$/i })).not.toBeInTheDocument();
+  expect(screen.getByRole('button', { name: /^export$/i })).toBeInTheDocument();
   expect(screen.getByRole('button', { name: /^save$/i })).toBeInTheDocument();
   expect(screen.getByRole('button', { name: /^load$/i })).toBeInTheDocument();
 });
@@ -104,7 +105,7 @@ test('clicking Skip dismisses the import-save prompt without calling /library/sa
   expect(fetchSpy).not.toHaveBeenCalledWith(expect.stringContaining('/library/save'), expect.anything());
 });
 
-test('clicking Save to Library from import prompt calls /library/save and dismisses prompt', async () => {
+test('clicking Save from import prompt calls /library/save and dismisses prompt', async () => {
   (global.fetch as jest.Mock).mockResolvedValue({
     ok: true,
     json: async () => ({ id: 'new-lib-id' }),
@@ -167,7 +168,7 @@ test('new deck includes schemaVersion 1', async () => {
   const appendSpy = jest.spyOn(document.body, 'appendChild').mockImplementation((n: any) => n);
 
   act(() => {
-    fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^export$/i }));
   });
 
   expect(capturedBlob).toBeDefined();
@@ -186,11 +187,9 @@ test('new deck includes schemaVersion 1', async () => {
 
 test('imported JSON deck without schemaVersion defaults to 1', async () => {
   render(<DeckBuilder />);
-  // VALID_DECK has no schemaVersion field
   await loadFile(makeJsonFile(VALID_DECK));
   await waitFor(() => screen.getByTestId('import-save-prompt'));
 
-  // Set up URL mocks
   let capturedBlob: Blob | undefined;
   (global.URL as any).createObjectURL = jest.fn((b: Blob) => {
     capturedBlob = b;
@@ -199,7 +198,7 @@ test('imported JSON deck without schemaVersion defaults to 1', async () => {
   (global.URL as any).revokeObjectURL = jest.fn();
   const appendSpy = jest.spyOn(document.body, 'appendChild').mockImplementation((n: any) => n);
 
-  act(() => { fireEvent.click(screen.getByRole('button', { name: /^save$/i })); });
+  act(() => { fireEvent.click(screen.getByRole('button', { name: /^export$/i })); });
 
   expect(capturedBlob).toBeDefined();
   const text = await new Promise<string>((resolve) => {
@@ -207,8 +206,7 @@ test('imported JSON deck without schemaVersion defaults to 1', async () => {
     reader.onload = () => resolve(reader.result as string);
     reader.readAsText(capturedBlob!);
   });
-  const saved = JSON.parse(text);
-  expect(saved.schemaVersion).toBe(1);
+  expect(JSON.parse(text).schemaVersion).toBe(1);
 
   appendSpy.mockRestore();
   delete (global.URL as any).createObjectURL;
@@ -308,8 +306,9 @@ test('REQ-005: expanded editor shows prominent Save slide in header and footer',
   const saveButtons = screen.getAllByTestId('save-slide-button');
   expect(saveButtons.length).toBe(2);
   saveButtons.forEach(btn => expect(btn).toHaveTextContent(/^save slide$/i));
-  // Distinct from toolbar file Save — would fail if Save slide were missing or mislabeled.
-  expect(screen.getByRole('button', { name: /^save$/i })).toBeInTheDocument();
+  // Toolbar library Save (#save) is distinct from Save slide in the editor.
+  expect(document.getElementById('save')).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: /^export$/i })).toBeInTheDocument();
 });
 
 test('REQ-005: unsaved title edits stay in draft until Save slide commits to deck', async () => {
@@ -435,6 +434,38 @@ test('REQ-006: Showing follows slide id after drag reorder, not stale index', as
   expect(queryShowingRows()).toHaveLength(1);
   expect(showingSlideId()).toBe('slide-b');
   expect(slideRowNumber(queryShowingRows()[0])).toBe('1.');
+});
+
+test('REQ-007: toolbar uses Export for file and Save for library (not old labels)', () => {
+  render(<DeckBuilder />);
+  expect(screen.getByRole('button', { name: /^export$/i })).toHaveAttribute('id', 'export');
+  expect(screen.getByRole('button', { name: /^save$/i })).toHaveAttribute('id', 'save');
+  expect(screen.queryByRole('button', { name: /save to library/i })).not.toBeInTheDocument();
+  expect(document.getElementById('save-to-library')).not.toBeInTheDocument();
+});
+
+test('REQ-007: toolbar Save calls /library/save and notifies library listeners', async () => {
+  const notifySpy = jest.spyOn(libraryRefresh, 'notifyLibraryChanged').mockImplementation(() => {});
+  (global.fetch as jest.Mock).mockResolvedValue({
+    ok: true,
+    json: async () => ({ id: 'lib-save-1' }),
+  } as Response);
+
+  render(<DeckBuilder />);
+  act(() => {
+    fireEvent.click(screen.getByRole('button', { name: /new deck/i }));
+  });
+
+  await act(async () => {
+    fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
+  });
+
+  await waitFor(() => expect(notifySpy).toHaveBeenCalled());
+  expect(global.fetch).toHaveBeenCalledWith(
+    expect.stringContaining('/library/save'),
+    expect.objectContaining({ method: 'POST' }),
+  );
+  notifySpy.mockRestore();
 });
 
 test('Start with green screen sends blank output', async () => {

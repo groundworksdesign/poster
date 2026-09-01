@@ -17,6 +17,7 @@ import { parseSongXML, createSongSlide, isSongData } from '../utils/songParser';
 import { validateDeck } from '../utils/deckValidator';
 import { CURRENT_SCHEMA_VERSION } from '../utils/schema';
 import { remixDataUrl, REMIX_ROUTE_ID } from '../utils/remixDataUrl';
+import { notifyLibraryChanged } from '../utils/libraryRefresh';
 
 export default function DeckBuilder() {
   useTheme();
@@ -38,7 +39,6 @@ export default function DeckBuilder() {
   const [moveTargetByIndex, setMoveTargetByIndex] = useState<Record<number, string>>({});
   const [operatorMessage, setOperatorMessage] = useState<string>('');
   const [libraryId, setLibraryId] = useState<string | null>(null);
-  const [libraryRefreshKey, setLibraryRefreshKey] = useState<number>(0);
   const [showSaveToLibraryPrompt, setShowSaveToLibraryPrompt] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   /** Last stage index sent via Advance/Reverse per song slide id (0 = title, 1+ = lyric pairs). */
@@ -796,9 +796,9 @@ export default function DeckBuilder() {
     reorderSlide(fromIndex, toIndex);
   };
 
-  const handleSaveClick = () => {
+  const handleExportClick = () => {
     if (!deck) {
-      setMessage('No deck to save');
+      setMessage('No deck to export');
       return;
     }
     const blob = new Blob([JSON.stringify(deck, null, 2)], { type: 'application/json' });
@@ -834,7 +834,7 @@ export default function DeckBuilder() {
       const data = await res.json();
       setLibraryId(data.id);
       setMessage(wasUpdate ? 'Library updated.' : 'Saved to library.');
-      setLibraryRefreshKey(k => k + 1);
+      notifyLibraryChanged();
     } catch (e) {
       setMessage(`Library save error: ${e instanceof Error ? e.message : 'Unknown'}`);
     }
@@ -908,8 +908,8 @@ export default function DeckBuilder() {
       <div>
         <input ref={fileInputRef} id="file" type="file" onChange={handleFileChange} />
         <button id="load" onClick={() => handleUploadClick()} disabled={isLoadingSong}>{isLoadingSong ? 'Loading...' : 'Load'}</button>
-        <button id="save" onClick={handleSaveClick}>Save</button>
-        <button id="save-to-library" onClick={handleSaveToLibrary} disabled={!deck}>Save to Library</button>
+        <button id="export" onClick={handleExportClick}>Export</button>
+        <button id="save" onClick={handleSaveToLibrary} disabled={!deck}>Save</button>
         <button onClick={createNewDeck}>New Deck</button>
         <label style={{ marginLeft: '8px' }}>
           Add slide:
@@ -1371,7 +1371,7 @@ export default function DeckBuilder() {
       {showSaveToLibraryPrompt && (
         <div data-testid="import-save-prompt" style={{ marginTop: '8px', padding: '8px', border: '1px solid #aaa', display: 'inline-flex', gap: '8px', alignItems: 'center' }}>
           <span>Save this import to the library?</span>
-          <button id="import-save-to-library" onClick={async () => { setShowSaveToLibraryPrompt(false); await handleSaveToLibrary(); }}>Save to Library</button>
+          <button id="import-save-to-library" onClick={async () => { setShowSaveToLibraryPrompt(false); await handleSaveToLibrary(); }}>Save</button>
           <button id="import-skip-save-to-library" onClick={() => setShowSaveToLibraryPrompt(false)}>Skip</button>
         </div>
       )}
