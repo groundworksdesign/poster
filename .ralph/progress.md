@@ -62,3 +62,15 @@ REQ-001 — song advance after last lyric goes to next deck slide.
 
 ### Notes
 - No PR opened. Next loop: REQ-007 (per updated fix_plan priority).
+
+## Loop 5 — QA (2026-09-01)
+
+**Agent:** QA  
+**Branch:** `cursor/ralph-epic-001-plan-8243`  
+**Item:** REQ-002  
+**Result:** **pass**
+
+### Actions
+- Code review: `getShowingSlideId()` identity-based on `lastSentSlideId`; `.deck-slide-item--showing` + SHOWING label; End clears via blank send.
+- Ran `CI=true npx react-scripts test --watchAll=false --testPathPattern=DeckBuilder.unit.test` — 29/29 passed (6 REQ-002 + 5 REQ-001 regression).
+- Updated `.ralph/qa-report.md`. fix_plan unchanged (next loop is planning).

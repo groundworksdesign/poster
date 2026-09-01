@@ -2,32 +2,42 @@
 
 | REQ | Description | Status | Notes |
 | --- | --- | --- | --- |
-| REQ-001 | Song finish → next deck slide | **pass** | Code + unit tests verified (loop 3). See evidence below. |
-| REQ-002 | Showing row highlight | not-run | |
+| REQ-001 | Song finish → next deck slide | **pass** | Re-verified loop 5; no regression (5 REQ-001 tests + code unchanged). |
+| REQ-002 | Showing row highlight | **pass** | Code + unit tests verified (loop 5). See evidence below. |
 | REQ-003 | More workspace width | not-run | |
 | REQ-004 | Collapsed Edit rail | not-run | |
 | REQ-005 | Prominent Save slide | not-run | |
 | REQ-006 | Drag-and-drop reorder | not-run | |
 | REQ-007 | Export / Save toolbar + Home refresh | not-run | |
-| REQ-008 | Unit tests (REQ-002–007) | not-run | REQ-001 tests verified; remaining REQs not in scope. |
+| REQ-008 | Unit tests (REQ-003–007) | not-run | REQ-001–002 tests verified; remaining REQs not in scope. |
 
-## REQ-001 evidence (loop 3 — independent QA)
+## REQ-001 evidence (loop 3; regression check loop 5)
+
+| Acceptance criterion | Result | Evidence |
+| --- | --- | --- |
+| Last stage → next deck slide (Next / right-arrow / Advance) | **pass** | `handleSongStageAdvance` L376–382: `nextStage >= total` → `sendSlideAtIndex(currentIndex + 1)`; no `% total` wrap. |
+| Mid-song lyrics step | **pass** | L384–386: staged send when `nextStage < total`. |
+| Last deck slide no wrap | **pass** | L380–382: no-op when no next slide. |
+| Loop 5 regression | **pass** | All 5 REQ-001 unit tests still pass (29/29 suite). |
+
+## REQ-002 evidence (loop 5 — independent QA)
 
 ### Code review
 
 | Acceptance criterion | Result | Evidence |
 | --- | --- | --- |
-| Next after last song stage → next deck slide | **pass** | `navigatePresentationNext` (L318–328) delegates to `handleSongStageAdvance` when on a song slide. |
-| Right-arrow → same path as Next | **pass** | `keyHandlerRef` ArrowRight (L63–65) calls `navigatePresentationNext()`. |
-| Row Advance → same last-stage rule | **pass** | Slide row Advance (L1002) and editor Advance (L1175) call `handleSongStageAdvance(slide)` directly. |
-| No `% total` wrap in advance path | **pass** | `handleSongStageAdvance` (L369–375): `nextStage = last === undefined ? 0 : last + 1`; when `nextStage >= total`, calls `sendSlideAtIndex(currentIndex + 1)`. Repo grep: no `(last + 1) % total`. |
-| Mid-song advance steps lyrics | **pass** | L377–379: when `nextStage < total`, sends `buildStagedSongSlide(full, nextStage)`. |
-| Last deck slide does not wrap | **pass** | L370–375: if `currentIndex >= deck.slides.length - 1`, returns without sending (no stage-0 restart). |
-| Previous / Reverse / left-arrow inverse | **pass** | `navigatePresentationPrevious` (L334–347) + `handleSongStageReverse` (L382–397) unchanged; `canReverseSongStage` gates reverse while stage > 0. Left-arrow calls `navigatePresentationPrevious` (L66–68). |
-| End still blanks | **pass** | `navigatePresentationEnd` → `sendBlankSlide` → `handleSendClick({ slide: null })` (L314–316, L300–303, L238–244). |
-| No placeholders / stubs in REQ-001 path | **pass** | No TODO/FIXME/stub in `handleSongStageAdvance` or navigation helpers. `buildStagedSongSlide` uses `% totalStages` only to clamp stage index (not deck navigation wrap). |
+| Distinct Showing background + label (mock intent) | **pass** | `.deck-slide-item--showing` (App.css L420–423): teal/green via `--color-link-present` mix; `.deck-slide-showing-label` (L433–438): SHOWING text in `--color-link-present`. Not applied on Edit (`selectedSlideIndex` is separate state). |
+| Only one row Showing | **pass** | `isShowing = slideId === showingSlideId` (DeckBuilder L971); single id match. |
+| Send updates Showing | **pass** | Send handler L987–999 → `handleSendClick` sets `lastSentSlideId`; test `REQ-002: Send updates Showing`. |
+| Start updates Showing | **pass** | `navigatePresentationStart` → `sendSlideAtIndex` → `handleSendClick`; test `REQ-002: Start marks exactly one Showing row`. |
+| Next / Previous update Showing | **pass** | `navigatePresentationNext/Previous` → `sendSlideAtIndex` or song stage (same `lastSentSlideId` on song); test `REQ-002: Next and Previous update Showing row`. |
+| Go updates Showing | **pass** | `navigatePresentationJump` → `sendSlideAtIndex`; test `REQ-002: Go updates Showing`. |
+| End clears Showing (no stale row) | **pass** | `handleSendClick({ slide: null })` clears `lastSentSlideId`, sets `presentationBlank`; `getShowingSlideId()` returns null (L260–262). Test `REQ-002: End clears all Showing rows`. |
+| Identity-based, not index | **pass** | `getShowingSlideId()` returns `lastSentSlideId` when not blank — not `presentSlideIndex` or map index (L260–262). Row match: `slideId === showingSlideId` (L971). Test `REQ-002: Showing follows slide id after Top reorder`. |
+| Distinct from editing | **pass** | Edit sets `selectedSlideIndex` only; no `--showing` class tied to edit state. |
+| No placeholders / stubs | **pass** | No TODO/FIXME/stub in showing path. Editor placeholder text is unrelated UI copy. |
 
-### Tests run
+### Tests run (loop 5)
 
 **Command:**
 
@@ -35,29 +45,30 @@
 CI=true npx react-scripts test --watchAll=false --testPathPattern=DeckBuilder.unit.test
 ```
 
-**Result:** 1 suite passed, **23 tests passed**, 0 failed (2026-09-01).
+**Result:** 1 suite passed, **29 tests passed**, 0 failed (2026-09-01).
 
-Includes 5 REQ-001 tests (would fail if wrap-to-start returned):
+REQ-002 tests (6):
 
-- `REQ-001: Presentation Next after last song stage sends next deck slide`
-- `REQ-001: right-arrow after last song stage sends next deck slide`
-- `REQ-001: song row Advance after last stage sends next deck slide`
-- `REQ-001: mid-song Next still advances lyric stages`
-- `REQ-001: last deck slide song does not wrap to song start`
+- `REQ-002: Start marks exactly one Showing row by slide id`
+- `REQ-002: End clears all Showing rows`
+- `REQ-002: Send updates Showing to the sent slide`
+- `REQ-002: Next and Previous update Showing row`
+- `REQ-002: Go updates Showing to jumped slide`
+- `REQ-002: Showing follows slide id after Top reorder`
 
-**PR #12 baseline Deck tests:** all 18 pre-REQ-001 tests in the same file also passed (presentation controls, Top/Move, green-screen Start, import/save, editor layout, etc.).
+REQ-001 regression (5 tests) and 18 PR #12 baseline tests also passed in the same run.
 
 ## Global checks
 
 | Check | Status | Notes |
 | --- | --- | --- |
-| No app-wide restyle | not-run | Out of loop 3 scope |
-| No new long-lived Actions artifacts | not-run | Out of loop 3 scope |
-| PR #12 not merged | **pass** | No merge performed; work on branch only |
-| No open PR for epic work | **pass** | PR #13 closed; no new PR opened |
+| No app-wide restyle | not-run | Loop 5 scoped to REQ-002 verification |
+| No new long-lived Actions artifacts | not-run | Out of loop 5 scope |
+| PR #12 not merged | **pass** | No merge performed |
+| No open PR for epic work | **pass** | PR #13 closed; no open PR on branch |
 
 ## Run metadata
 
-- **Loop:** 3 (QA)
-- **Commit verified:** `1e22b1f` (branch `cursor/ralph-epic-001-plan-8243`)
-- **Tester:** QA agent (loop 3)
+- **Loop:** 5 (QA)
+- **Commit verified:** `e3701b5` (branch `cursor/ralph-epic-001-plan-8243`)
+- **Tester:** QA agent (loop 5)
