@@ -33,3 +33,16 @@ REQ-001 — song advance after last lyric goes to next deck slide.
 ### Notes
 - PR #13 closed unmerged per stakeholder rule; no PR until epic complete.
 - Next loop: REQ-002 (Showing row highlight).
+
+## Loop 3 — QA (2026-09-01)
+
+**Agent:** QA  
+**Branch:** `cursor/ralph-epic-001-plan-8243`  
+**Item:** REQ-001  
+**Result:** **pass**
+
+### Actions
+- Code review: `handleSongStageAdvance`, `navigatePresentationNext`, ArrowRight handler, Advance buttons; confirmed shared `nextStage >= total` → `sendSlideAtIndex(current + 1)`; no `(last + 1) % total`.
+- Verified Previous/Reverse/End paths unchanged (code inspection).
+- Ran `CI=true npx react-scripts test --watchAll=false --testPathPattern=DeckBuilder.unit.test` — 23/23 passed.
+- Updated `.ralph/qa-report.md`. Selected next item unchanged (REQ-002).
