@@ -146,3 +146,21 @@ REQ-003 + REQ-004 — collapsed Edit rail and wider slides workspace.
 - Code review: `slideEditDraft` draft model; `saveSlideEdits()` commits to deck + collapses; Save slide in header/footer; Close discards draft; toolbar `#save` / `#save-to-library` unchanged.
 - Ran `CI=true npx react-scripts test --watchAll=false --testPathPattern=DeckBuilder.unit.test` — 33/33 passed (3 REQ-005 + REQ-001/002/003+004 regression).
 - Updated `.ralph/qa-report.md`. fix_plan selected next unchanged (REQ-006).
+
+## Loop 11 — Dev (2026-09-01)
+
+**Agent:** Dev  
+**Branch:** `cursor/ralph-epic-001-plan-8243`  
+**REQ:** REQ-006 — **done**
+
+### Actions
+- Added `::` drag handles on slide rows (HTML5 DnD, no new dependency); drop calls existing `reorderSlide`.
+- Removed `moveSlide` and per-row ↑/↓ buttons; **Top** and **Move** unchanged.
+- Slides list hint: "Drag the handle to reorder · Top / Move still available".
+- Scoped CSS: `.deck-slide-drag-handle`, list header hint, dragging opacity.
+- Added 3 REQ-006 unit tests (no arrows, drag reorder, Move reorder, Showing by id after drag); updated row-controls test.
+- Fixed REQ-002 Top reorder assertion for drag-handle prefix in row text.
+- Ran `CI=true npx react-scripts test --watchAll=false --testPathPattern=DeckBuilder.unit.test` — 36 passed.
+
+### Notes
+- Toolbar Save/Export unchanged (REQ-007 deferred). No PR opened. Next: REQ-007.

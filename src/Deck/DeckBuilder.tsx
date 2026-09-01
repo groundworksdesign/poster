@@ -43,6 +43,8 @@ export default function DeckBuilder() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   /** Last stage index sent via Advance/Reverse per song slide id (0 = title, 1+ = lyric pairs). */
   const [songLastStagedById, setSongLastStagedById] = useState<Record<string, number>>({});
+  /** Slide list index being dragged (visual feedback only; drop uses dataTransfer). */
+  const [dragSlideIndex, setDragSlideIndex] = useState<number | null>(null);
 
   const genId = () => (typeof (globalThis as any).crypto !== 'undefined' && typeof (globalThis as any).crypto.randomUUID === 'function') ? (globalThis as any).crypto.randomUUID() : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 
@@ -782,13 +784,6 @@ export default function DeckBuilder() {
     syncSentSlideIfNeeded(newDeck);
   };
 
-  const moveSlide = (index: number, direction: 'up' | 'down') => {
-    if (!deck) return;
-    const to = direction === 'up' ? index - 1 : index + 1;
-    if (to < 0 || to >= deck.slides.length) return;
-    reorderSlide(index, to);
-  };
-
   const moveSlideToTop = (index: number) => {
     if (!deck || index <= 0) return;
     reorderSlide(index, 0);
@@ -1059,7 +1054,12 @@ export default function DeckBuilder() {
         data-editor-expanded={isSlideEditorExpanded ? 'true' : 'false'}
       >
         <div className="deck-slides-list">
-          <h2>Slides</h2>
+          <div className="deck-slides-list-header">
+            <h2>Slides</h2>
+            {deck && deck.slides.length > 0 ? (
+              <span className="deck-slides-list-hint">Drag the handle to reorder · Top / Move still available</span>
+            ) : null}
+          </div>
           {!deck && <p>No deck loaded yet.</p>}
           <div id="slides">
             <ul>
@@ -1070,11 +1070,41 @@ export default function DeckBuilder() {
                 return (
                 <li
                   key={slideId || index}
-                  className={`deck-slide-item${isShowing ? ' deck-slide-item--showing' : ''}`}
+                  className={`deck-slide-item${isShowing ? ' deck-slide-item--showing' : ''}${dragSlideIndex === index ? ' deck-slide-item--dragging' : ''}`}
                   data-slide-id={slideId}
                   data-showing={isShowing ? 'true' : undefined}
+                  onDragOver={e => {
+                    e.preventDefault();
+                    if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+                  }}
+                  onDrop={e => {
+                    e.preventDefault();
+                    const raw = e.dataTransfer?.getData('text/plain');
+                    const fromIndex = parseInt(raw, 10);
+                    if (!Number.isFinite(fromIndex) || fromIndex === index) {
+                      setDragSlideIndex(null);
+                      return;
+                    }
+                    reorderSlide(fromIndex, index);
+                    setDragSlideIndex(null);
+                  }}
                 >
                   <div className="deck-slide-row">
+                    <span
+                      className="deck-slide-drag-handle"
+                      draggable
+                      data-testid="deck-slide-drag-handle"
+                      aria-label={`Drag slide ${index + 1} to reorder`}
+                      title="Drag to reorder"
+                      onDragStart={e => {
+                        e.dataTransfer.effectAllowed = 'move';
+                        e.dataTransfer.setData('text/plain', String(index));
+                        setDragSlideIndex(index);
+                      }}
+                      onDragEnd={() => setDragSlideIndex(null)}
+                    >
+                      ::
+                    </span>
                     <strong>{index + 1}.</strong>
                     <div className="deck-slide-row-title-wrap">
                       <span className="deck-slide-row-title">{slide.title || slide.type || 'Slide'}</span>
@@ -1144,8 +1174,6 @@ export default function DeckBuilder() {
                     >
                       Move
                     </button>
-                    <button onClick={() => moveSlide(index, 'up')} disabled={index === 0}>↑</button>
-                    <button onClick={() => moveSlide(index, 'down')} disabled={index === (deck!.slides.length - 1)}>↓</button>
                   </div>
                 </li>
                 );

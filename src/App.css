@@ -468,6 +468,37 @@ ul {
   margin: 0;
 }
 
+.deck-slides-list-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.deck-slides-list-header h2 {
+  margin: 0;
+}
+
+.deck-slides-list-hint {
+  font-size: 0.75rem;
+  color: var(--color-fg-muted);
+}
+
+.deck-slide-drag-handle {
+  cursor: grab;
+  user-select: none;
+  padding: 0 4px;
+  color: var(--color-fg-muted);
+  font-weight: 700;
+  letter-spacing: -0.12em;
+  line-height: 1;
+}
+
+.deck-slide-item--dragging {
+  opacity: 0.55;
+}
+
 .deck-slide-editor-rail {
   flex: 0 0 2.75rem;
   width: 2.75rem;

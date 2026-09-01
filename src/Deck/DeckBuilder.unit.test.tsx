@@ -345,7 +345,7 @@ test('REQ-005: Save slide collapses editor; re-open Edit shows persisted title',
   expect(getEditorTitleInput().value).toBe('Persisted title');
 });
 
-test('slide row includes Top and Move reorder controls', async () => {
+test('slide row includes drag handle, Top and Move reorder controls (no up/down arrows)', async () => {
   render(<DeckBuilder />);
   const multiSlideDeck = {
     ...VALID_DECK,
@@ -357,6 +357,84 @@ test('slide row includes Top and Move reorder controls', async () => {
   await loadFile(makeJsonFile(multiSlideDeck));
   await waitFor(() => expect(screen.getAllByRole('button', { name: /^top$/i }).length).toBe(2));
   expect(screen.getAllByRole('button', { name: /^move$/i }).length).toBe(2);
+  expect(screen.getAllByTestId('deck-slide-drag-handle')).toHaveLength(2);
+  const slides = document.getElementById('slides');
+  expect(slides?.textContent).not.toMatch(/↑|↓/);
+});
+
+function getSlideRowTitles(): string[] {
+  return Array.from(document.querySelectorAll('.deck-slide-row-title')).map(
+    el => el.textContent?.trim() ?? '',
+  );
+}
+
+function slideRowNumber(row: HTMLElement): string | null {
+  return row.querySelector('strong')?.textContent ?? null;
+}
+
+function makeDataTransfer() {
+  const store: Record<string, string> = {};
+  return {
+    effectAllowed: '',
+    dropEffect: '',
+    setData(type: string, value: string) {
+      store[type] = value;
+    },
+    getData(type: string) {
+      return store[type] ?? '';
+    },
+  };
+}
+
+function dragSlideRow(fromIndex: number, toIndex: number) {
+  const handles = screen.getAllByTestId('deck-slide-drag-handle');
+  const items = document.querySelectorAll<HTMLElement>('.deck-slide-item');
+  const handle = handles[fromIndex];
+  const target = items[toIndex];
+  if (!handle || !target) throw new Error('drag source or drop target not found');
+  const dataTransfer = makeDataTransfer();
+  act(() => {
+    fireEvent.dragStart(handle, { dataTransfer });
+    fireEvent.dragOver(target, { dataTransfer });
+    fireEvent.drop(target, { dataTransfer });
+    fireEvent.dragEnd(handle, { dataTransfer });
+  });
+}
+
+test('REQ-006: drag handle reorders slides via shared reorderSlide', async () => {
+  await loadThreeSlideDeck();
+  expect(getSlideRowTitles()).toEqual(['Slide A', 'Slide B', 'Slide C']);
+  dragSlideRow(2, 0);
+  expect(getSlideRowTitles()).toEqual(['Slide C', 'Slide A', 'Slide B']);
+  // Renumbered in list (1., 2., 3.) — slide C is now first row.
+  const firstRow = document.querySelector('.deck-slide-item');
+  expect(slideRowNumber(firstRow as HTMLElement)).toBe('1.');
+});
+
+test('REQ-006: Move-to-number still reorders slides', async () => {
+  await loadThreeSlideDeck();
+  const moveInputs = document.querySelectorAll<HTMLInputElement>('.deck-move-to-input');
+  const moveButtons = screen.getAllByRole('button', { name: /^move$/i });
+  act(() => {
+    fireEvent.change(moveInputs[2], { target: { value: '1' } });
+    fireEvent.click(moveButtons[2]);
+  });
+  expect(getSlideRowTitles()).toEqual(['Slide C', 'Slide A', 'Slide B']);
+});
+
+test('REQ-006: Showing follows slide id after drag reorder, not stale index', async () => {
+  await loadThreeSlideDeck();
+  act(() => {
+    fireEvent.click(screen.getByRole('button', { name: /^start$/i }));
+  });
+  act(() => {
+    fireEvent.click(screen.getByRole('button', { name: /^next$/i }));
+  });
+  expect(showingSlideId()).toBe('slide-b');
+  dragSlideRow(1, 0);
+  expect(queryShowingRows()).toHaveLength(1);
+  expect(showingSlideId()).toBe('slide-b');
+  expect(slideRowNumber(queryShowingRows()[0])).toBe('1.');
 });
 
 test('Start with green screen sends blank output', async () => {
@@ -668,5 +746,5 @@ test('REQ-002: Showing follows slide id after Top reorder', async () => {
   expect(queryShowingRows()).toHaveLength(1);
   expect(showingSlideId()).toBe('slide-b');
   const showingRow = queryShowingRows()[0];
-  expect(showingRow.textContent).toMatch(/^1\./);
+  expect(slideRowNumber(showingRow)).toBe('1.');
 });
