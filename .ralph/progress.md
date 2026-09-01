@@ -74,3 +74,19 @@ REQ-001 — song advance after last lyric goes to next deck slide.
 - Code review: `getShowingSlideId()` identity-based on `lastSentSlideId`; `.deck-slide-item--showing` + SHOWING label; End clears via blank send.
 - Ran `CI=true npx react-scripts test --watchAll=false --testPathPattern=DeckBuilder.unit.test` — 29/29 passed (6 REQ-002 + 5 REQ-001 regression).
 - Updated `.ralph/qa-report.md`. fix_plan unchanged (next loop is planning).
+
+## Loop 6 — Planning (2026-09-01)
+
+**Agent:** Planner  
+**Branch:** `cursor/ralph-epic-001-plan-8243`  
+**Selected item:** REQ-003 + REQ-004 — wider slides workspace + collapsed Edit rail  
+**Status:** **done**
+
+### Actions
+- Searched `DeckBuilder.tsx`, `App.css`, `HomePage.tsx`, `LibraryPanel.tsx`, `package.json`, e2e specs.
+- Confirmed REQ-001–002 QA-pass; REQ-003–007 still open.
+- Key findings: 42% list + always-visible editor placeholder; dead `libraryRefreshKey` in DeckBuilder; ↑/↓ reorder; no DnD deps; live slide edits without Save slide.
+- Updated `.ralph/fix_plan.md`: REQ-003+004 selected (same layout change); REQ-007 deferred (cross-window refresh higher risk than layout).
+
+### Selected for loop 7 (dev)
+REQ-003 + REQ-004 — collapsed Edit rail and wider slides workspace.
