@@ -174,7 +174,7 @@ REQ-003 + REQ-004 — collapsed Edit rail and wider slides workspace.
 ### Actions
 - Code review REQ-007: `#export`/`Export` file download; `#save`/Save library; `notifyLibraryChanged` after save; `subscribeLibraryChanged` on Home → `LibraryPanel` refetch; no `location.reload`; no focus steal on save path.
 - Ran epic test command — 43/43 passed (DeckBuilder 38 + HomePage 3 + libraryRefresh 2).
-- Ran adjacent tests — 10/10 passed (LibraryPanel 8 + deck-to-presentation 1).
+- Ran adjacent tests — 10/10 passed (LibraryPanel 9 + deck-to-presentation 1).
 - Verified REQ-001–006 regressions in epic suite; all epic validation checklist items pass.
 - Updated `.ralph/qa-report.md` for REQ-001–008.
 
