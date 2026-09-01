@@ -134,3 +134,15 @@ REQ-003 + REQ-004 — collapsed Edit rail and wider slides workspace.
 
 ### Notes
 - Toolbar Save (file) and Save to Library unchanged (REQ-007 deferred). No PR opened. Next: REQ-006 (DnD).
+
+## Loop 10 — QA (2026-09-01)
+
+**Agent:** QA  
+**Branch:** `cursor/ralph-epic-001-plan-8243`  
+**Item:** REQ-005  
+**Result:** **pass**
+
+### Actions
+- Code review: `slideEditDraft` draft model; `saveSlideEdits()` commits to deck + collapses; Save slide in header/footer; Close discards draft; toolbar `#save` / `#save-to-library` unchanged.
+- Ran `CI=true npx react-scripts test --watchAll=false --testPathPattern=DeckBuilder.unit.test` — 33/33 passed (3 REQ-005 + REQ-001/002/003+004 regression).
+- Updated `.ralph/qa-report.md`. fix_plan selected next unchanged (REQ-006).
