@@ -164,6 +164,32 @@ REQ-003 + REQ-004 — collapsed Edit rail and wider slides workspace.
 ### Notes
 - REQ-008 partial for REQ-007 tests. No PR opened. Next: Final QA epic close.
 
+## Loop 14 — QA (2026-09-01)
+
+**Agent:** QA  
+**Branch:** `cursor/ralph-epic-001-plan-8243`  
+**Item:** REQ-007 + final epic validation  
+**Result:** **pass**
+
+### Actions
+- Code review REQ-007: `#export`/`Export` file download; `#save`/Save library; `notifyLibraryChanged` after save; `subscribeLibraryChanged` on Home → `LibraryPanel` refetch; no `location.reload`; no focus steal on save path.
+- Ran epic test command — 43/43 passed (DeckBuilder 38 + HomePage 3 + libraryRefresh 2).
+- Ran adjacent tests — 10/10 passed (LibraryPanel 8 + deck-to-presentation 1).
+- Verified REQ-001–006 regressions in epic suite; all epic validation checklist items pass.
+- Updated `.ralph/qa-report.md` for REQ-001–008.
+
+### Notes
+- No PR opened per epic rules.
+
+## COMPLETE_EPIC
+
+**Epic:** epic-001 — Deck operator UX  
+**Branch:** `cursor/ralph-epic-001-plan-8243`  
+**Verified:** loop 14 QA (2026-09-01)  
+**Commit:** `456094f`
+
+All REQ-001–008 validation items pass. Unit tests: 43 (epic) + 10 (adjacent). Ready for stakeholder PR when approved; do not merge PR #12 as part of this epic.
+
 ## Loop 11 — Dev (2026-09-01)
 
 **Agent:** Dev  
