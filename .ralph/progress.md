@@ -106,3 +106,15 @@ REQ-003 + REQ-004 — collapsed Edit rail and wider slides workspace.
 
 ### Notes
 - No PR opened. Next: REQ-005 (Save slide).
+
+## Loop 8 — QA (2026-09-01)
+
+**Agent:** QA  
+**Branch:** `cursor/ralph-epic-001-plan-8243`  
+**Item:** REQ-003 + REQ-004  
+**Result:** **pass**
+
+### Actions
+- Code review: idle list `flex: 1` + narrow rail; expanded 42% split; no placeholder pane; `collapseSlideEditor()` on Close.
+- Ran `CI=true npx react-scripts test --watchAll=false --testPathPattern=DeckBuilder.unit.test` — 30/30 passed (3 REQ-003+004 + REQ-001/002 regression).
+- Updated `.ralph/qa-report.md`. fix_plan selected next unchanged (REQ-005).
