@@ -164,3 +164,16 @@ REQ-003 + REQ-004 — collapsed Edit rail and wider slides workspace.
 
 ### Notes
 - Toolbar Save/Export unchanged (REQ-007 deferred). No PR opened. Next: REQ-007.
+
+## Loop 12 — QA (2026-09-01)
+
+**Agent:** QA  
+**Branch:** `cursor/ralph-epic-001-plan-8243`  
+**Item:** REQ-006  
+**Result:** **pass**
+
+### Actions
+- Grep: no `moveSlide` or ↑/↓ in `DeckBuilder.tsx`; drag handle + `reorderSlide` on drop; Top/Move call same `reorderSlide`.
+- Code review: Showing id-based via `getShowingSlideId()`; renumber in list after reorder.
+- Ran `CI=true npx react-scripts test --watchAll=false --testPathPattern=DeckBuilder.unit.test` — 36/36 passed (4 REQ-006 + REQ-001–005 regression).
+- Updated `.ralph/qa-report.md`. fix_plan selected next unchanged (REQ-007).
