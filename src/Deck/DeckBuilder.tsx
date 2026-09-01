@@ -253,6 +253,13 @@ export default function DeckBuilder() {
     const slideWithStyle = props.slide ? safeSlide(props.slide) : null;
     connection?.channel.postMessage(new PresentData({ ...props, slide: slideWithStyle }));
     setLastSentSlideId(slideWithStyle?.id ?? null);
+    setPresentationBlank(false);
+  };
+
+  /** Slide id currently on program output; null when blank/end. Keyed by identity for reorder safety. */
+  const getShowingSlideId = (): string | null => {
+    if (presentationBlank || !lastSentSlideId) return null;
+    return lastSentSlideId;
   };
 
   const getResolvedPresentIndex = (): number => {
@@ -958,11 +965,25 @@ export default function DeckBuilder() {
           {!deck && <p>No deck loaded yet.</p>}
           <div id="slides">
             <ul>
-              {deck?.slides.map((slide: any, index: number) => (
-                <li key={(slide as any).id || index} className="deck-slide-item">
+              {deck?.slides.map((slide: any, index: number) => {
+                const slideId = (slide as any).id as string | undefined;
+                const showingSlideId = getShowingSlideId();
+                const isShowing = !!slideId && slideId === showingSlideId;
+                return (
+                <li
+                  key={slideId || index}
+                  className={`deck-slide-item${isShowing ? ' deck-slide-item--showing' : ''}`}
+                  data-slide-id={slideId}
+                  data-showing={isShowing ? 'true' : undefined}
+                >
                   <div className="deck-slide-row">
                     <strong>{index + 1}.</strong>
-                    <span className="deck-slide-row-title">{slide.title || slide.type || 'Slide'}</span>
+                    <div className="deck-slide-row-title-wrap">
+                      <span className="deck-slide-row-title">{slide.title || slide.type || 'Slide'}</span>
+                      {isShowing ? (
+                        <span className="deck-slide-showing-label" data-testid="deck-slide-showing-label">SHOWING</span>
+                      ) : null}
+                    </div>
                     <button
                       onClick={() => {
                         const sid = (slide as any).id as string | undefined;
@@ -1029,7 +1050,8 @@ export default function DeckBuilder() {
                     <button onClick={() => moveSlide(index, 'down')} disabled={index === (deck!.slides.length - 1)}>↓</button>
                   </div>
                 </li>
-              ))}
+                );
+              })}
             </ul>
           </div>
         </div>

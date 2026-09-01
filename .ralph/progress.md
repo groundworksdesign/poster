@@ -46,3 +46,19 @@ REQ-001 — song advance after last lyric goes to next deck slide.
 - Verified Previous/Reverse/End paths unchanged (code inspection).
 - Ran `CI=true npx react-scripts test --watchAll=false --testPathPattern=DeckBuilder.unit.test` — 23/23 passed.
 - Updated `.ralph/qa-report.md`. Selected next item unchanged (REQ-002).
+
+## Loop 4 — Dev (2026-09-01)
+
+**Agent:** Dev  
+**Branch:** `cursor/ralph-epic-001-plan-8243`  
+**REQ:** REQ-002 — **done**
+
+### Actions
+- Added `getShowingSlideId()` keyed on `lastSentSlideId` when not `presentationBlank`.
+- Slide rows: `.deck-slide-item--showing`, `data-showing`, SHOWING label; scoped CSS in `App.css`.
+- `handleSendClick` sets `presentationBlank(false)` when sending a slide.
+- Added 6 REQ-002 unit tests (Start, End, Send, Next/Previous, Go, reorder by id).
+- Ran `CI=true npx react-scripts test --watchAll=false --testPathPattern=DeckBuilder.unit.test` — 29 passed.
+
+### Notes
+- No PR opened. Next loop: REQ-007 (per updated fix_plan priority).

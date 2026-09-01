@@ -458,3 +458,119 @@ test('REQ-001: last deck slide song does not wrap to song start', async () => {
   expect(mockPostMessage.mock.calls.length).toBe(callsBefore);
   // Wrap-to-start would post another message with the song title stage; no-op is correct.
 });
+
+const THREE_SLIDE_DECK = {
+  title: 'Three slides',
+  slides: [
+    { type: 'general', id: 'slide-a', title: 'Slide A' },
+    { type: 'general', id: 'slide-b', title: 'Slide B' },
+    { type: 'general', id: 'slide-c', title: 'Slide C' },
+  ],
+};
+
+function queryShowingRows(): HTMLElement[] {
+  return Array.from(document.querySelectorAll<HTMLElement>('[data-showing="true"]'));
+}
+
+function showingSlideId(): string | null {
+  const row = queryShowingRows()[0];
+  return row?.getAttribute('data-slide-id') ?? null;
+}
+
+async function loadThreeSlideDeck() {
+  render(<DeckBuilder />);
+  await loadFile(makeJsonFile(THREE_SLIDE_DECK));
+  await waitFor(() => screen.getByTestId('presentation-controls'));
+}
+
+// REQ-002: Start marks exactly one slide row as Showing (fails if highlight missing or duplicated).
+test('REQ-002: Start marks exactly one Showing row by slide id', async () => {
+  await loadThreeSlideDeck();
+  act(() => {
+    fireEvent.click(screen.getByRole('button', { name: /^start$/i }));
+  });
+  expect(queryShowingRows()).toHaveLength(1);
+  expect(showingSlideId()).toBe('slide-a');
+  expect(screen.getAllByTestId('deck-slide-showing-label')).toHaveLength(1);
+});
+
+// REQ-002: End clears Showing so no stale row stays highlighted after blanking presenter.
+test('REQ-002: End clears all Showing rows', async () => {
+  await loadThreeSlideDeck();
+  act(() => {
+    fireEvent.click(screen.getByRole('button', { name: /^start$/i }));
+  });
+  expect(queryShowingRows()).toHaveLength(1);
+  act(() => {
+    fireEvent.click(screen.getByRole('button', { name: /^end$/i }));
+  });
+  expect(queryShowingRows()).toHaveLength(0);
+  expect(screen.queryByTestId('deck-slide-showing-label')).not.toBeInTheDocument();
+});
+
+// REQ-002: Send updates which row is Showing.
+test('REQ-002: Send updates Showing to the sent slide', async () => {
+  await loadThreeSlideDeck();
+  const sendButtons = screen.getAllByRole('button', { name: /^send$/i });
+  act(() => {
+    fireEvent.click(sendButtons[2]);
+  });
+  expect(queryShowingRows()).toHaveLength(1);
+  expect(showingSlideId()).toBe('slide-c');
+});
+
+// REQ-002: Next and Previous update Showing.
+test('REQ-002: Next and Previous update Showing row', async () => {
+  await loadThreeSlideDeck();
+  act(() => {
+    fireEvent.click(screen.getByRole('button', { name: /^start$/i }));
+  });
+  act(() => {
+    fireEvent.click(screen.getByRole('button', { name: /^next$/i }));
+  });
+  expect(showingSlideId()).toBe('slide-b');
+
+  act(() => {
+    fireEvent.click(screen.getByRole('button', { name: /^previous$/i }));
+  });
+  expect(showingSlideId()).toBe('slide-a');
+});
+
+// REQ-002: Go jump updates Showing.
+test('REQ-002: Go updates Showing to jumped slide', async () => {
+  await loadThreeSlideDeck();
+  act(() => {
+    fireEvent.click(screen.getByRole('button', { name: /^start$/i }));
+  });
+  const jumpInput = document.querySelector<HTMLInputElement>('.deck-jump-input');
+  if (!jumpInput) throw new Error('jump input not found');
+  act(() => {
+    fireEvent.change(jumpInput, { target: { value: '3' } });
+  });
+  act(() => {
+    fireEvent.click(screen.getByRole('button', { name: /^go$/i }));
+  });
+  expect(showingSlideId()).toBe('slide-c');
+});
+
+// REQ-002: Showing follows slide identity after reorder, not a stale list index.
+test('REQ-002: Showing follows slide id after Top reorder', async () => {
+  await loadThreeSlideDeck();
+  act(() => {
+    fireEvent.click(screen.getByRole('button', { name: /^start$/i }));
+  });
+  act(() => {
+    fireEvent.click(screen.getByRole('button', { name: /^next$/i }));
+  });
+  expect(showingSlideId()).toBe('slide-b');
+
+  const topButtons = screen.getAllByRole('button', { name: /^top$/i });
+  act(() => {
+    fireEvent.click(topButtons[1]);
+  });
+
+  expect(queryShowingRows()).toHaveLength(1);
+  expect(showingSlideId()).toBe('slide-b');
+  const showingRow = queryShowingRows()[0];
+  expect(showingRow.textContent).toMatch(/^1\./);
+});

@@ -417,6 +417,27 @@ ul {
   background: var(--color-bg-surface);
 }
 
+.deck-slide-item--showing {
+  background: color-mix(in srgb, var(--color-link-present) 22%, var(--color-bg-surface));
+  border-color: color-mix(in srgb, var(--color-link-present) 55%, var(--color-border));
+}
+
+.deck-slide-row-title-wrap {
+  flex: 1;
+  min-width: 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.deck-slide-showing-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--color-link-present);
+  line-height: 1.2;
+}
+
 .deck-slides-editor-row {
   display: flex;
   gap: 12px;
