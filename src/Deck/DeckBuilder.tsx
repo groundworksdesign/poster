@@ -366,7 +366,14 @@ export default function DeckBuilder() {
     if (!id) return;
     const total = getSongStageCount(full);
     const last = songLastStagedById[id];
-    const nextStage = last === undefined ? 0 : (last + 1) % total;
+    const nextStage = last === undefined ? 0 : last + 1;
+    if (nextStage >= total) {
+      const currentIndex = getResolvedPresentIndex();
+      if (currentIndex >= 0 && currentIndex < deck.slides.length - 1) {
+        sendSlideAtIndex(currentIndex + 1);
+      }
+      return;
+    }
     const staged = buildStagedSongSlide(full, nextStage);
     handleSendClick({ slide: staged, useGreenScreen: deck.useGreenScreen });
     setSongLastStagedById(s => ({ ...s, [id]: nextStage }));

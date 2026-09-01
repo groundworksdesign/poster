@@ -18,3 +18,18 @@
 
 ### Selected for loop 2
 REQ-001 — song advance after last lyric goes to next deck slide.
+
+## Loop 2 — Dev (2026-09-01)
+
+**Agent:** Dev  
+**Branch:** `cursor/ralph-epic-001-plan-8243`  
+**REQ:** REQ-001 — **done**
+
+### Actions
+- Fixed `handleSongStageAdvance`: when `nextStage >= total`, call `sendSlideAtIndex(current + 1)` instead of `(last + 1) % total` wrap.
+- Added 5 unit tests in `DeckBuilder.unit.test.tsx` (Next, right-arrow, row Advance, mid-song lyrics, last-slide no-wrap).
+- Ran `CI=true npx react-scripts test --watchAll=false --testPathPattern=DeckBuilder.unit.test` — 23 passed.
+
+### Notes
+- PR #13 closed unmerged per stakeholder rule; no PR until epic complete.
+- Next loop: REQ-002 (Showing row highlight).

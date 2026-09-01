@@ -299,3 +299,162 @@ test('Start without green screen sends first slide', async () => {
   expect(payload.slide).not.toBeNull();
   expect(payload.slide.title).toBe('Slide 1');
 });
+
+/** REQ-001: song with one lyric pair (stages 0 title, 1 lyrics, 2 blank) then a general slide. */
+const SONG_THEN_GENERAL_DECK = {
+  title: 'Song then general',
+  slides: [
+    {
+      type: 'song',
+      id: 'song-1',
+      title: 'Hymn',
+      subTitle: '',
+      lyrics: {
+        title: 'Hymn',
+        verses: [{ number: 1, lines: ['Line A', 'Line B'] }],
+      },
+    },
+    {
+      type: 'general',
+      id: 'general-1',
+      title: 'After song',
+    },
+  ],
+};
+
+const SONG_ONLY_DECK = {
+  title: 'Song only',
+  slides: [
+    {
+      type: 'song',
+      id: 'song-only',
+      title: 'Last slide song',
+      subTitle: '',
+      lyrics: {
+        title: 'Last slide song',
+        verses: [{ number: 1, lines: ['Only A', 'Only B'] }],
+      },
+    },
+  ],
+};
+
+function lastSentSlideTitle(): string | undefined {
+  const calls = mockPostMessage.mock.calls;
+  if (calls.length === 0) return undefined;
+  return calls[calls.length - 1][0]?.slide?.title;
+}
+
+function lastSentSlideHasLyrics(): boolean {
+  const calls = mockPostMessage.mock.calls;
+  if (calls.length === 0) return false;
+  return !!calls[calls.length - 1][0]?.slide?.lyrics;
+}
+
+/** Advance through every song stage via Presentation Next (same path as right-arrow). */
+async function advanceSongThroughAllStagesViaNext() {
+  // Start presents song at stage 0
+  act(() => {
+    fireEvent.click(screen.getByRole('button', { name: /^start$/i }));
+  });
+  // Stages 1 and 2 (lyrics pair, then terminal blank)
+  act(() => {
+    fireEvent.click(screen.getByRole('button', { name: /^next$/i }));
+  });
+  act(() => {
+    fireEvent.click(screen.getByRole('button', { name: /^next$/i }));
+  });
+}
+
+// REQ-001: after the last song stage, Next must send the next deck slide — not restart the song.
+test('REQ-001: Presentation Next after last song stage sends next deck slide', async () => {
+  render(<DeckBuilder />);
+  await loadFile(makeJsonFile(SONG_THEN_GENERAL_DECK));
+  await waitFor(() => screen.getByTestId('presentation-controls'));
+  mockPostMessage.mockClear();
+
+  await advanceSongThroughAllStagesViaNext();
+  expect(lastSentSlideTitle()).toBe(''); // terminal blank stage before advancing to next slide
+
+  mockPostMessage.mockClear();
+  act(() => {
+    fireEvent.click(screen.getByRole('button', { name: /^next$/i }));
+  });
+
+  const payload = mockPostMessage.mock.calls[0][0];
+  expect(payload.slide.title).toBe('After song');
+  expect(payload.slide.id).toBe('general-1');
+  // Would fail if wrap-to-start returned: song restart sends title-only stage 0, not "After song"
+});
+
+// REQ-001: right-arrow shares the same step-forward path as Next.
+test('REQ-001: right-arrow after last song stage sends next deck slide', async () => {
+  render(<DeckBuilder />);
+  await loadFile(makeJsonFile(SONG_THEN_GENERAL_DECK));
+  await waitFor(() => screen.getByTestId('presentation-controls'));
+  mockPostMessage.mockClear();
+
+  await advanceSongThroughAllStagesViaNext();
+
+  mockPostMessage.mockClear();
+  act(() => {
+    fireEvent.keyDown(window, { key: 'ArrowRight' });
+  });
+
+  expect(mockPostMessage).toHaveBeenCalled();
+  expect(mockPostMessage.mock.calls[0][0].slide.title).toBe('After song');
+});
+
+// REQ-001: row Advance button uses the same last-stage rule as Next.
+test('REQ-001: song row Advance after last stage sends next deck slide', async () => {
+  render(<DeckBuilder />);
+  await loadFile(makeJsonFile(SONG_THEN_GENERAL_DECK));
+  await waitFor(() => screen.getByTestId('presentation-controls'));
+  mockPostMessage.mockClear();
+
+  await advanceSongThroughAllStagesViaNext();
+
+  mockPostMessage.mockClear();
+  act(() => {
+    fireEvent.click(screen.getAllByRole('button', { name: /^advance$/i })[0]);
+  });
+
+  expect(mockPostMessage.mock.calls[0][0].slide.title).toBe('After song');
+});
+
+// REQ-001: mid-song Advance still steps lyrics, not deck slides.
+test('REQ-001: mid-song Next still advances lyric stages', async () => {
+  render(<DeckBuilder />);
+  await loadFile(makeJsonFile(SONG_THEN_GENERAL_DECK));
+  await waitFor(() => screen.getByTestId('presentation-controls'));
+  mockPostMessage.mockClear();
+
+  act(() => {
+    fireEvent.click(screen.getByRole('button', { name: /^start$/i }));
+  });
+  mockPostMessage.mockClear();
+  act(() => {
+    fireEvent.click(screen.getByRole('button', { name: /^next$/i }));
+  });
+
+  expect(lastSentSlideHasLyrics()).toBe(true);
+  expect(lastSentSlideTitle()).toBe('');
+  expect(mockPostMessage.mock.calls[0][0].slide.id).toBe('song-1');
+});
+
+// REQ-001: last deck slide song must not wrap to song start when advanced past final stage.
+test('REQ-001: last deck slide song does not wrap to song start', async () => {
+  render(<DeckBuilder />);
+  await loadFile(makeJsonFile(SONG_ONLY_DECK));
+  await waitFor(() => screen.getByTestId('presentation-controls'));
+  mockPostMessage.mockClear();
+
+  await advanceSongThroughAllStagesViaNext();
+
+  const callsBefore = mockPostMessage.mock.calls.length;
+  act(() => {
+    fireEvent.click(screen.getByRole('button', { name: /^next$/i }));
+  });
+
+  expect(mockPostMessage.mock.calls.length).toBe(callsBefore);
+  // Wrap-to-start would post another message with the song title stage; no-op is correct.
+});
