@@ -90,3 +90,19 @@ REQ-001 — song advance after last lyric goes to next deck slide.
 
 ### Selected for loop 7 (dev)
 REQ-003 + REQ-004 — collapsed Edit rail and wider slides workspace.
+
+## Loop 7 — Dev (2026-09-01)
+
+**Agent:** Dev  
+**Branch:** `cursor/ralph-epic-001-plan-8243`  
+**REQ:** REQ-003 + REQ-004 — **done**
+
+### Actions
+- Completed crashed mid-edit JSX: `isSlideEditorExpanded`, conditional rail vs `deck-slide-editor-panel`, `collapseSlideEditor()`.
+- CSS: idle list `flex: 1`; expanded row 42% list + editor; vertical **Edit** rail (`deck-slide-editor-rail`).
+- Removed full-width placeholder column.
+- Added 3 REQ-003+004 unit tests (idle rail, Edit expands, Close collapses).
+- Ran `CI=true npx react-scripts test --watchAll=false --testPathPattern=DeckBuilder.unit.test` — 30 passed.
+
+### Notes
+- No PR opened. Next: REQ-005 (Save slide).

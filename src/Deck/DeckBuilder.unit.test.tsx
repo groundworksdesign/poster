@@ -234,19 +234,49 @@ test('presentation controls appear when deck is loaded', async () => {
   expect(screen.getByRole('button', { name: /^end$/i })).toBeInTheDocument();
 });
 
-test('side-by-side editor placeholder shows before Edit is clicked', async () => {
+test('REQ-003+004: idle shows collapsed Edit rail, not full editor pane', async () => {
   render(<DeckBuilder />);
   await loadFile(makeJsonFile(VALID_DECK));
-  await waitFor(() => screen.getByText(/click edit on a slide/i));
-  expect(screen.queryByText(/editing slide/i)).not.toBeInTheDocument();
+  await waitFor(() => screen.getByRole('button', { name: /^send$/i }));
+  expect(screen.getByTestId('deck-slide-editor-rail')).toBeInTheDocument();
+  expect(screen.queryByTestId('deck-slide-editor-panel')).not.toBeInTheDocument();
+  // Would fail if old layout kept a full-width placeholder column instead of the rail.
+  expect(screen.queryByText(/click edit on a slide/i)).not.toBeInTheDocument();
+  const row = document.querySelector('.deck-slides-editor-row');
+  expect(row?.getAttribute('data-editor-expanded')).toBe('false');
 });
 
-test('clicking Edit shows editor beside slide list', async () => {
+function clickSlideListEditButton() {
+  const slides = document.getElementById('slides');
+  if (!slides) throw new Error('slides list not found');
+  const buttons = Array.from(slides.querySelectorAll<HTMLButtonElement>('button'));
+  const edit = buttons.find(b => /^edit$/i.test(b.textContent?.trim() ?? ''));
+  if (!edit) throw new Error('slide row Edit button not found');
+  act(() => { fireEvent.click(edit); });
+}
+
+test('REQ-003+004: Edit expands editor beside list and hides rail', async () => {
   render(<DeckBuilder />);
   await loadFile(makeJsonFile(VALID_DECK));
-  await waitFor(() => screen.getByRole('button', { name: /^edit$/i }));
-  act(() => { fireEvent.click(screen.getByRole('button', { name: /^edit$/i })); });
+  await waitFor(() => screen.getByRole('button', { name: /^send$/i }));
+  expect(screen.getByTestId('deck-slide-editor-rail')).toBeInTheDocument();
+  clickSlideListEditButton();
+  expect(screen.getByTestId('deck-slide-editor-panel')).toBeInTheDocument();
   expect(screen.getByText(/editing slide 1/i)).toBeInTheDocument();
+  expect(screen.queryByTestId('deck-slide-editor-rail')).not.toBeInTheDocument();
+  expect(document.querySelector('.deck-slides-editor-row')?.getAttribute('data-editor-expanded')).toBe('true');
+});
+
+test('REQ-003+004: Close editor collapses back to Edit rail', async () => {
+  render(<DeckBuilder />);
+  await loadFile(makeJsonFile(VALID_DECK));
+  await waitFor(() => screen.getByRole('button', { name: /^send$/i }));
+  clickSlideListEditButton();
+  expect(screen.getByTestId('deck-slide-editor-panel')).toBeInTheDocument();
+  act(() => { fireEvent.click(screen.getByRole('button', { name: /close editor/i })); });
+  expect(screen.queryByTestId('deck-slide-editor-panel')).not.toBeInTheDocument();
+  expect(screen.getByTestId('deck-slide-editor-rail')).toBeInTheDocument();
+  expect(document.querySelector('.deck-slides-editor-row')?.getAttribute('data-editor-expanded')).toBe('false');
 });
 
 test('slide row includes Top and Move reorder controls', async () => {

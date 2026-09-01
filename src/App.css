@@ -441,15 +441,25 @@ ul {
 .deck-slides-editor-row {
   display: flex;
   gap: 12px;
-  align-items: flex-start;
+  align-items: stretch;
   margin-top: 12px;
 }
 
 .deck-slides-list {
-  flex: 0 0 42%;
-  min-width: 260px;
   max-height: calc(100vh - 280px);
   overflow-y: auto;
+  min-width: 0;
+}
+
+/* Idle: slides list uses most of the row; narrow Edit rail on the right. */
+.deck-slides-editor-row:not(.deck-slides-editor-row--expanded) .deck-slides-list {
+  flex: 1 1 auto;
+}
+
+/* Expanded: editor beside list (prior 42% list split). */
+.deck-slides-editor-row--expanded .deck-slides-list {
+  flex: 0 0 42%;
+  min-width: 260px;
 }
 
 .deck-slides-list ul {
@@ -458,20 +468,37 @@ ul {
   margin: 0;
 }
 
+.deck-slide-editor-rail {
+  flex: 0 0 2.75rem;
+  width: 2.75rem;
+  min-width: 2.75rem;
+  max-height: calc(100vh - 280px);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.deck-slide-editor-rail-label {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--color-fg-muted);
+  user-select: none;
+}
+
 .deck-slide-editor {
-  flex: 1;
+  flex: 1 1 auto;
   min-width: 0;
   max-height: calc(100vh - 280px);
   overflow-y: auto;
   border: 1px solid var(--color-border);
   padding: 8px;
   background: var(--color-bg-surface);
-}
-
-.deck-slide-editor-placeholder {
-  margin: 0;
-  color: var(--color-fg-muted, #888);
-  font-size: 0.9rem;
 }
 
 .deck-slide-row {

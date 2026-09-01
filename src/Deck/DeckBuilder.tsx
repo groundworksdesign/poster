@@ -262,6 +262,14 @@ export default function DeckBuilder() {
     return lastSentSlideId;
   };
 
+  const isSlideEditorExpanded =
+    typeof selectedSlideIndex === 'number' &&
+    deck !== null &&
+    deck.slides[selectedSlideIndex] !== undefined;
+
+  /** Collapse expanded slide editor back to the side rail (also used by future Save slide). */
+  const collapseSlideEditor = () => setSelectedSlideIndex(null);
+
   const getResolvedPresentIndex = (): number => {
     if (!deck) return -1;
     if (presentSlideIndex !== null && presentSlideIndex >= 0 && presentSlideIndex < deck.slides.length) {
@@ -959,7 +967,10 @@ export default function DeckBuilder() {
         </div>
       </div>
 
-      <div className="deck-slides-editor-row">
+      <div
+        className={`deck-slides-editor-row${isSlideEditorExpanded ? ' deck-slides-editor-row--expanded' : ''}`}
+        data-editor-expanded={isSlideEditorExpanded ? 'true' : 'false'}
+      >
         <div className="deck-slides-list">
           <h2>Slides</h2>
           {!deck && <p>No deck loaded yet.</p>}
@@ -1056,7 +1067,8 @@ export default function DeckBuilder() {
           </div>
         </div>
 
-        <div className="deck-slide-editor">
+        {isSlideEditorExpanded ? (
+        <div className="deck-slide-editor" data-testid="deck-slide-editor-panel">
           {typeof selectedSlideIndex === 'number' && deck && deck.slides[selectedSlideIndex] ? (
             <>
               <h3>Editing slide {selectedSlideIndex + 1}</h3>
@@ -1204,7 +1216,7 @@ export default function DeckBuilder() {
                             <button onClick={() => resetAllSlideStyleOverrides(selectedSlideIndex)}>Reset all overrides</button>
                             <button onClick={() => duplicateSlide(selectedSlideIndex)} style={{ marginLeft: '8px' }}>Duplicate</button>
                             <button onClick={() => deleteSlide(selectedSlideIndex)} style={{ marginLeft: '8px' }}>Delete</button>
-                            <button onClick={() => setSelectedSlideIndex(null)} style={{ marginLeft: '8px' }}>Close editor</button>
+                            <button type="button" onClick={collapseSlideEditor} style={{ marginLeft: '8px' }}>Close editor</button>
                           </div>
                         </div>
                       );
@@ -1213,10 +1225,13 @@ export default function DeckBuilder() {
                 );
               })()}
             </>
-          ) : (
-            <p className="deck-slide-editor-placeholder">Click Edit on a slide to edit it here.</p>
-          )}
+          ) : null}
         </div>
+        ) : (
+          <div className="deck-slide-editor-rail" data-testid="deck-slide-editor-rail" aria-label="Edit rail">
+            <span className="deck-slide-editor-rail-label">Edit</span>
+          </div>
+        )}
       </div>
 
       <div id="status" style={{ marginTop: '12px' }}>{message}</div>
