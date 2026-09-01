@@ -24,40 +24,36 @@ Prioritized remaining work on top of PR #12 (`cursor/deck-editor-ux-d46a`). High
 | REQ-002 | **Done (QA-pass)** | `getShowingSlideId()` + `.deck-slide-item--showing` + SHOWING label; 6 unit tests |
 | REQ-003 | **Done** | Idle `.deck-slides-list` flex 1; expanded row uses 42% list split; 3 layout tests |
 | REQ-004 | **Done** | `deck-slide-editor-rail` when idle; `deck-slide-editor-panel` when Edit; `collapseSlideEditor()` |
+| REQ-005 | **Done** | Draft-based slide editor; prominent Save slide header/footer; `saveSlideEdits()` commits + collapses; 3 unit tests |
 
 ## Gaps (prioritized)
 
-### 1. REQ-005 — Prominent Save slide
-**Gap:** Slide edits apply immediately via `updateSlideField` / `updateSlideStyle`; editor has **Close editor** but no primary **Save slide** button. `collapseSlideEditor()` hook ready for Save slide to collapse rail.
-**Tests:** none.
-
-### 2. REQ-006 — Drag-and-drop reorder (keep Top / Move)
+### 1. REQ-006 — Drag-and-drop reorder (keep Top / Move)
 **Gap:** ↑/↓ buttons still on every row (`moveSlide`). No drag handles, no DnD library in `package.json`. Mock shows `::` handles.
 **Partial:** `reorderSlide` + Showing-by-id after Top reorder tested.
 **Tests:** none for DnD.
 
-### 3. REQ-007 — Export / Save toolbar + in-place Home library list
+### 2. REQ-007 — Export / Save toolbar + in-place Home library list
 **Gap (labels):** Toolbar still `#save` (file) + `#save-to-library` (library). Mock: **Export** + **Save**. E2e specs use old ids.
 **Gap (Home refresh):** `libraryRefreshKey` in DeckBuilder still unused; no cross-window refresh when Deck saves from separate window.
 **Tests:** no in-place Home refresh test.
 
-### 4. REQ-008 — Unit tests for REQ-005–007
-**Gap:** REQ-001–004 covered (30 DeckBuilder tests). Save slide, DnD, Export/Save rename, Home refresh still untested.
+### 3. REQ-008 — Unit tests for REQ-005–007
+**Gap:** REQ-001–005 covered (33 DeckBuilder tests). DnD, Export/Save rename, Home refresh still untested.
 
 ---
 
 ## Selected next item
 
-**REQ-005: Prominent Save slide — primary Save control in expanded editor; persists slide edits; collapse via `collapseSlideEditor()` when saved.**
+**REQ-006: Drag-and-drop reorder — drag handles on rows; remove ↑/↓; keep Top / Move.**
 
-**Why this item:** REQ-004 rail expand/collapse is done; Save slide is the natural follow-on per mock and REQ-004 spec. Smallest next increment before DnD or toolbar/library work.
+**Why this item:** REQ-005 Save slide is done; mock shows `::` drag handles. DnD is next prioritized gap before toolbar/library work.
 
-**Do not implement in this item:** REQ-006 DnD, REQ-007 Export/Save rename / Home refresh.
+**Do not implement in this item:** REQ-007 Export/Save rename / Home refresh.
 
 ---
 
 ## After selected item (remaining order)
 
-1. REQ-006 — Drag-and-drop reorder; remove ↑/↓
-2. REQ-007 — Export/Save toolbar labels + in-place Home library refresh
-3. REQ-008 — Tests for each as they land
+1. REQ-007 — Export/Save toolbar labels + in-place Home library refresh
+2. REQ-008 — Tests for each as they land

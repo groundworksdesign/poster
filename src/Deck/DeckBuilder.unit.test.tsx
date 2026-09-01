@@ -279,6 +279,72 @@ test('REQ-003+004: Close editor collapses back to Edit rail', async () => {
   expect(document.querySelector('.deck-slides-editor-row')?.getAttribute('data-editor-expanded')).toBe('false');
 });
 
+function openSlideEditor() {
+  clickSlideListEditButton();
+  expect(screen.getByTestId('deck-slide-editor-panel')).toBeInTheDocument();
+}
+
+function getSlideListTitleText(): string | null {
+  const titleEl = document.querySelector('.deck-slide-row-title');
+  return titleEl?.textContent ?? null;
+}
+
+function getEditorTitleInput(): HTMLInputElement {
+  const panel = screen.getByTestId('deck-slide-editor-panel');
+  const inputs = Array.from(panel.querySelectorAll<HTMLInputElement>('input[type="text"]'));
+  const titleInput = inputs.find(inp => {
+    const parent = inp.closest('label');
+    return parent?.textContent?.trim().startsWith('Title:');
+  });
+  if (!titleInput) throw new Error('editor title input not found');
+  return titleInput;
+}
+
+test('REQ-005: expanded editor shows prominent Save slide in header and footer', async () => {
+  render(<DeckBuilder />);
+  await loadFile(makeJsonFile(VALID_DECK));
+  await waitFor(() => screen.getByRole('button', { name: /^send$/i }));
+  openSlideEditor();
+  const saveButtons = screen.getAllByTestId('save-slide-button');
+  expect(saveButtons.length).toBe(2);
+  saveButtons.forEach(btn => expect(btn).toHaveTextContent(/^save slide$/i));
+  // Distinct from toolbar file Save — would fail if Save slide were missing or mislabeled.
+  expect(screen.getByRole('button', { name: /^save$/i })).toBeInTheDocument();
+});
+
+test('REQ-005: unsaved title edits stay in draft until Save slide commits to deck', async () => {
+  render(<DeckBuilder />);
+  await loadFile(makeJsonFile({ ...VALID_DECK, slides: [{ type: 'general', title: 'Before save', id: 's1' }] }));
+  await waitFor(() => screen.getByRole('button', { name: /^send$/i }));
+  expect(getSlideListTitleText()).toBe('Before save');
+  openSlideEditor();
+  const titleInput = getEditorTitleInput();
+  await act(async () => {
+    fireEvent.change(titleInput, { target: { value: 'Draft only' } });
+  });
+  // Would fail under old live-apply: list would show draft text before Save slide.
+  expect(getSlideListTitleText()).toBe('Before save');
+  act(() => { fireEvent.click(screen.getAllByTestId('save-slide-button')[0]); });
+  await waitFor(() => expect(screen.queryByTestId('deck-slide-editor-panel')).not.toBeInTheDocument());
+  expect(getSlideListTitleText()).toBe('Draft only');
+  expect(screen.getByText(/slide saved/i)).toBeInTheDocument();
+});
+
+test('REQ-005: Save slide collapses editor; re-open Edit shows persisted title', async () => {
+  render(<DeckBuilder />);
+  await loadFile(makeJsonFile({ ...VALID_DECK, slides: [{ type: 'general', title: 'Original', id: 's1' }] }));
+  await waitFor(() => screen.getByRole('button', { name: /^send$/i }));
+  openSlideEditor();
+  await act(async () => {
+    fireEvent.change(getEditorTitleInput(), { target: { value: 'Persisted title' } });
+  });
+  act(() => { fireEvent.click(screen.getAllByTestId('save-slide-button')[1]); });
+  await waitFor(() => expect(screen.getByTestId('deck-slide-editor-rail')).toBeInTheDocument());
+  expect(document.querySelector('.deck-slides-editor-row')?.getAttribute('data-editor-expanded')).toBe('false');
+  openSlideEditor();
+  expect(getEditorTitleInput().value).toBe('Persisted title');
+});
+
 test('slide row includes Top and Move reorder controls', async () => {
   render(<DeckBuilder />);
   const multiSlideDeck = {

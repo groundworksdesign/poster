@@ -501,6 +501,36 @@ ul {
   background: var(--color-bg-surface);
 }
 
+.deck-slide-editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.deck-slide-editor-header h3 {
+  margin: 0;
+}
+
+.deck-slide-editor-save-btn {
+  font-weight: 700;
+  padding: 6px 14px;
+  background: var(--color-link-present, #1a7f5a);
+  color: #fff;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+.deck-slide-editor-footer-actions {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
 .deck-slide-row {
   display: flex;
   gap: 4px;

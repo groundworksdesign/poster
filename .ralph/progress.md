@@ -118,3 +118,19 @@ REQ-003 + REQ-004 — collapsed Edit rail and wider slides workspace.
 - Code review: idle list `flex: 1` + narrow rail; expanded 42% split; no placeholder pane; `collapseSlideEditor()` on Close.
 - Ran `CI=true npx react-scripts test --watchAll=false --testPathPattern=DeckBuilder.unit.test` — 30/30 passed (3 REQ-003+004 + REQ-001/002 regression).
 - Updated `.ralph/qa-report.md`. fix_plan selected next unchanged (REQ-005).
+
+## Loop 9 — Dev (2026-09-01)
+
+**Agent:** Dev  
+**Branch:** `cursor/ralph-epic-001-plan-8243`  
+**REQ:** REQ-005 — **done**
+
+### Actions
+- Introduced `slideEditDraft` so editor edits stay in draft until **Save slide** commits to deck (replacing silent live-apply in the editor panel).
+- Added prominent **Save slide** buttons in editor header and footer (`deck-slide-editor-save-btn`, `data-testid="save-slide-button"`).
+- `saveSlideEdits()` commits draft (including lyrics JSON textarea), calls `syncSentSlideIfNeeded`, shows "Slide saved", then `collapseSlideEditor()`.
+- Added 3 REQ-005 unit tests (Save visible, draft vs persist, collapse + re-open).
+- Ran `CI=true npx react-scripts test --watchAll=false --testPathPattern=DeckBuilder.unit.test` — 33 passed.
+
+### Notes
+- Toolbar Save (file) and Save to Library unchanged (REQ-007 deferred). No PR opened. Next: REQ-006 (DnD).
