@@ -2,7 +2,7 @@
   "epic": "epic-004",
   "branch": "cursor/epic-004-multi-deck-plan-doc-6573",
   "status": "in_progress",
-  "loop": 2,
+  "loop": 3,
   "persona": "qa",
   "completeEpic": false,
   "requirements": [
@@ -41,35 +41,41 @@
       "content": "Replace the shared BroadcastChannel / handleSendClick / PresentData slide bus with a Main-owned session graph and four fixed channels so a deck posts only to the chosen Present Window.",
       "requirementId": "REQ-001",
       "status": "done",
-      "qaVerifiedAt": "2026-09-02T14:35:00.000Z",
+      "passes": true,
+      "qaVerifiedAt": "2026-09-02T14:46:00.000Z",
+      "qaReport": "ralph/qa-report.md",
       "qaTests": [
-        "CI=true pnpm test --watchAll=false --testPathPattern=posterSessionGraph|presentation|presentData|deck-to-presentation|DeckBuilder.unit|electron-main (61 passed)",
-        "CI=true pnpm test --watchAll=false --testPathIgnorePatterns=e2e (133 passed)"
+        "CI=true pnpm test --watchAll=false --testPathPattern=posterSessionGraph|presentation|presentData|deck-to-presentation|DeckBuilder.unit|electron-main → 61 passed",
+        "CI=true pnpm test --watchAll=false --testPathIgnorePatterns=e2e → 133 passed"
       ]
     },
     {
       "id": "directed-send-targeting",
       "content": "Support send to named child presentIds, or all children of that deck only; missing targets send to nobody; another deck's id is a no-op; new Present window gets a new id; replay last payload if that Present reloads.",
       "requirementId": "REQ-001",
-      "status": "pending"
+      "status": "pending",
+      "passes": false
     },
     {
       "id": "single-home-focus",
       "content": "Keep Home/Library as the only main window (the saved presentations/decks list); opening Home again focuses the existing Home; Open Presentation opens a deck window while Home stays put; Present windows are where slides play.",
       "requirementId": "REQ-002",
-      "status": "pending"
+      "status": "pending",
+      "passes": false
     },
     {
       "id": "persist-theme-all-windows",
       "content": "Persist the selected theme including the dropdown across app restart and across Home close/reopen, and apply it to Home, deck builders, and Present windows.",
       "requirementId": "REQ-003",
-      "status": "pending"
+      "status": "pending",
+      "passes": false
     },
     {
       "id": "program-thumbnail",
       "content": "Show a thumbnail in the deck of what is on program.",
       "requirementId": "REQ-004",
-      "status": "pending"
+      "status": "pending",
+      "passes": false
     }
   ],
   "acceptanceCriteria": [
@@ -86,23 +92,23 @@
   ],
   "acceptanceCriteriaEvidence": {
     "directed-send-main-switch": {
-      "Deck A send-to-A1 does not show on A2 or any B Present.": { "scope": "deferred", "task": "directed-send-targeting" },
-      "Deck A send-to-all-its-children does not show on B.": { "scope": "deferred", "task": "directed-send-targeting" },
-      "Deck B cannot drive A's children (including by guessing an id).": { "scope": "deferred", "task": "directed-send-targeting" },
-      "Closing a Present drops it from that deck's list. Reopen gets a new presentId.": { "scope": "partial", "evidence": "shared/posterSessionGraph.cjs close/spawn with uuid; deck child list UI not in this task" },
-      "Reloading a Present still shows the last payload Main cached for it.": { "scope": "verified", "evidence": "src/__tests__/posterSessionGraph.test.js replay test; handlePresentEvent ready replays lastPayloadByPresent" },
-      "Only one Home/Library exists. Opening Home again focuses the original Home. Home is the saved-deck list. Present windows play slides. Open Presentation leaves Home in place and opens a deck window.": { "scope": "deferred", "task": "single-home-focus" },
-      "After choosing a theme (dropdown shows it), quit and reopen the app: the same theme is applied on Home, decks, and Presents, and the dropdown still shows that choice.": { "scope": "deferred", "task": "persist-theme-all-windows" },
-      "Close the main Home window and open it again: same theme restore as above.": { "scope": "deferred", "task": "persist-theme-all-windows" },
-      "A deck shows a thumbnail of what is on program.": { "scope": "deferred", "task": "program-thumbnail" },
-      "Slide payloads are not sent on BroadcastChannel.": { "scope": "verified", "evidence": "src/ has no new BroadcastChannel; DeckBuilder sends via SessionTransport; Present receives poster:present-push; Broadcast.ts throws" }
+      "Deck A send-to-A1 does not show on A2 or any B Present.": { "scope": "out_of_scope", "task": "directed-send-targeting", "passes": null },
+      "Deck A send-to-all-its-children does not show on B.": { "scope": "out_of_scope", "task": "directed-send-targeting", "passes": null },
+      "Deck B cannot drive A's children (including by guessing an id).": { "scope": "out_of_scope", "task": "directed-send-targeting", "passes": null },
+      "Closing a Present drops it from that deck's list. Reopen gets a new presentId.": { "scope": "partial", "passes": true, "evidence": "shared/posterSessionGraph.cjs close/unregister + spawn uuid(); deck UI list deferred" },
+      "Reloading a Present still shows the last payload Main cached for it.": { "scope": "in_scope", "passes": true, "evidence": "lastPayloadByPresent replay on ready; src/__tests__/posterSessionGraph.test.js" },
+      "Only one Home/Library exists. Opening Home again focuses the original Home. Home is the saved-deck list. Present windows play slides. Open Presentation leaves Home in place and opens a deck window.": { "scope": "out_of_scope", "task": "single-home-focus", "passes": null },
+      "After choosing a theme (dropdown shows it), quit and reopen the app: the same theme is applied on Home, decks, and Presents, and the dropdown still shows that choice.": { "scope": "out_of_scope", "task": "persist-theme-all-windows", "passes": null },
+      "Close the main Home window and open it again: same theme restore as above.": { "scope": "out_of_scope", "task": "persist-theme-all-windows", "passes": null },
+      "A deck shows a thumbnail of what is on program.": { "scope": "out_of_scope", "task": "program-thumbnail", "passes": null },
+      "Slide payloads are not sent on BroadcastChannel.": { "scope": "in_scope", "passes": true, "evidence": "DeckBuilder SessionTransport.send; Present onPresentPush; Broadcast.ts throws; no new BroadcastChannel in src/" }
     }
   },
-  "qaNotes": "Architecture verified: shared/posterSessionGraph.cjs, electron/sessionIpc.cjs + preload.cjs (four poster:* channels), server/posterSessionRelay.js. E2E remix-visual-regression still injects via BroadcastChannel (11 failures); follow-up e2e migration not in main-switch scope.",
+  "qaNotes": "Independent QA loop 3: all in-scope criteria pass. See ralph/qa-report.md. E2E BroadcastChannel injection is known debt, not in main-switch scope.",
   "selected": {
     "id": "directed-send-targeting",
-    "reason": "Main-switch complete: session graph and four channels replace BroadcastChannel in app code. Next: named presentId targeting, cross-deck isolation, and e2e harness update."
+    "reason": "directed-send-main-switch passes QA (passes: true). Next: named presentId targeting, cross-deck isolation, e2e harness migration."
   },
   "planningNotes": "Baseline confirmed: BroadcastChannel on presentation in src/Present/Broadcast.ts and app/utils/Broadcast.ts; handleSendClick in DeckBuilder posts PresentData to all listeners. Electron main.cjs has single-instance focus for the one BrowserWindow but no session map or deck/present window roles. Theme uses localStorage (poster-theme) per window; epic requires cross-restart and Home close/reopen on every window. No program thumbnail UI. Home opens deck via window.open and presentation via named popup; not yet Electron session-aware.",
-  "lastUpdated": "2026-09-02T14:35:00.000Z"
+  "lastUpdated": "2026-09-02T14:46:00.000Z"
 }
