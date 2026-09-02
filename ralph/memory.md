@@ -28,7 +28,7 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - npm install must run before tsx can resolve modules
 -->
 
-## Epic-004 planning (loop 8)
+## Epic-004 planning (loop 10)
 
-- REQ-001 and REQ-002 done (directed-send + single-home-focus, passes true).
-- Selected next: persist-theme-all-windows (REQ-003). localStorage + Home dropdown exist; Present does not apply theme; no program thumbnail UI yet.
+- REQ-001 through REQ-003 todos all passes true (directed-send, single-home, theme persist).
+- Only pending: program-thumbnail (REQ-004). No thumbnail/preview UI in src/; present-event is ready/closed only; lastPayloadByPresent not shown to deck. Thumbnail must stay on directed path (no shared bus).

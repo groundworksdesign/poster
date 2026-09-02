@@ -2,8 +2,8 @@
   "epic": "epic-004",
   "branch": "cursor/epic-004-multi-deck-plan-doc-6573",
   "status": "in_progress",
-  "loop": 9,
-  "persona": "qa",
+  "loop": 10,
+  "persona": "planning",
   "completeEpic": false,
   "requirements": [
     {
@@ -93,33 +93,34 @@
     "Slide payloads are not sent on BroadcastChannel."
   ],
   "selected": {
-    "id": "persist-theme-all-windows",
-    "reason": "REQ-001 and REQ-002 todos all passes true. Next Validation ACs are theme persist across app quit/reopen and Home close/reopen on Home, decks, and Presents. Codebase already has localStorage poster-theme, Home dropdown + useTheme, DeckBuilder useTheme apply, and root FOUC script, but Present.tsx never calls useTheme/applyTheme so Present windows miss the theme. program-thumbnail has no UI yet and should follow once chrome theming is consistent across the window set."
+    "id": "program-thumbnail",
+    "reason": "All other epic-004 todos have passes true (REQ-001 through REQ-003). Only pending todo is program-thumbnail (REQ-004 Validation AC: a deck shows a thumbnail of what is on program). Code search found no thumbnail/preview UI under src/; present-event currently handles ready/closed only; lastPayloadByPresent exists in the session graph but is not forwarded to the deck as a program preview. Epic requires the thumbnail use the directed path (not a shared BroadcastChannel bus)."
   },
-  "planningNotes": "Baseline (loop 8 search): useTheme.ts persists ThemeId in localStorage THEME_STORAGE_KEY; HomePage owns the theme select; DeckBuilder calls useTheme() without a picker; app/root.tsx inlines poster-theme before paint. Present.tsx has no theme hook. electron/ has no theme IPC (partition localStorage may suffice if every window applies on load). No thumbnail/program-preview symbols under src/. No E2E for theme restore across windows.",
+  "planningNotes": "Baseline (loop 10 search): No thumbnail/program-preview symbols in src/. DeckBuilder listens for child-ready/child-closed deck-events only. Present.tsx has no program-state report. shared/posterSessionGraph.cjs caches lastPayloadByPresent for Present reload replay but does not emit program thumbnail/state to the owning deck. Risk from epic: thumbnail must not reintroduce a global bus — use Present->Main->owning-deck via poster:present-event / poster:deck-event (or derive from Main cache when send succeeds).",
   "planningBrief": {
-    "persist-theme-all-windows": {
+    "program-thumbnail": {
       "alreadyPresent": [
-        "localStorage poster-theme via applyTheme/readStoredTheme",
-        "Home theme dropdown bound to useTheme",
-        "DeckBuilder applies stored theme on mount via useTheme()",
-        "Remix root FOUC themeInitScript"
+        "Main-owned session graph with lastPayloadByPresent per presentId",
+        "Four fixed channels including poster:present-event and poster:deck-event",
+        "DeckBuilder onDeckEvent for child-ready / child-closed",
+        "Directed send so deck already knows which payload was sent to which Present"
       ],
       "stillNeeded": [
-        "Apply stored theme on Present windows (Present.tsx or shared shell)",
-        "Prove Home dropdown still shows choice after app restart and after Home close/reopen",
-        "Prove deck and Present windows receive the same theme (on open / reload); sync live changes across open windows if required by AC",
-        "Tests: unit + remix/E2E covering restore on Home and application on deck + Present"
+        "Deck UI showing a thumbnail/preview of what is currently on program",
+        "Directed feedback path: Present reports program state to Main and Main forwards only to the owning deck (or Main mirrors last payload to that deck without a shared bus)",
+        "Clear empty/no-Present state in the thumbnail area",
+        "Tests: unit and/or remix E2E that send updates the deck thumbnail and does not use BroadcastChannel for slide/thumbnail traffic"
       ],
       "primaryFiles": [
-        "src/utils/useTheme.ts",
-        "src/Present/Present.tsx",
-        "src/HomePage.tsx",
         "src/Deck/DeckBuilder.tsx",
-        "app/root.tsx",
-        "e2e/ (theme restore / multi-window apply)"
+        "src/Present/Present.tsx",
+        "src/Present/SessionTransport.ts",
+        "shared/posterSessionGraph.cjs",
+        "server/posterSessionRelay.js",
+        "electron/sessionIpc.cjs",
+        "e2e/ (program thumbnail)"
       ]
     }
   },
-  "lastUpdated": "2026-09-02T16:15:00.000Z"
+  "lastUpdated": "2026-09-02T16:20:00.000Z"
 }
