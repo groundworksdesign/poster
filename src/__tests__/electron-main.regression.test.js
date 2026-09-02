@@ -50,9 +50,18 @@ describe('electron/main.cjs launch safety (all Electron installers)', () => {
 
   it('recreates the window on macOS activate without relaunching', () => {
     const activateBlock = mainSource.slice(mainSource.indexOf("app.on('activate'"));
-    expect(activateBlock).toMatch(/createWindow\(serverPort\)/);
+    expect(activateBlock).toMatch(/ensureHomeWindow\(serverPort\)/);
     expect(activateBlock).not.toMatch(/app\.relaunch\(\)/);
   });
+
+  it('never creates a second Home: ensureHomeWindow + window-open home deny', () => {
+    expect(mainSource).toMatch(/function ensureHomeWindow/);
+    expect(mainSource).toMatch(/shouldCreateHomeWindow/);
+    expect(mainSource).toMatch(/setWindowOpenHandler/);
+    expect(mainSource).toMatch(/classifyOpenUrl/);
+    expect(mainSource).toMatch(/present-bare/);
+  });
+
   it('fails fast when packaged node_modules/express is missing', () => {
     expect(mainSource).toMatch(/node_modules['"].*express/);
     expect(mainSource).toMatch(/missing node_modules\/express/);

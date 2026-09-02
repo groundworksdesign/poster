@@ -7,6 +7,10 @@ const net = require('net');
 const http = require('http');
 const path = require('path');
 const { registerSessionIpc } = require('./sessionIpc.cjs');
+const {
+  classifyOpenUrl,
+  shouldCreateHomeWindow,
+} = require('./homeWindowPolicy.cjs');
 
 const sessionIpc = registerSessionIpc();
 
@@ -162,9 +166,13 @@ function killServer() {
 }
 
 // ---------------------------------------------------------------------------
-// Create the main browser window
+// Create the main (Home/Library) browser window — only one
 // ---------------------------------------------------------------------------
 const preloadPath = path.join(__dirname, 'preload.cjs');
+
+function homeOrigin() {
+  return `http://127.0.0.1:${serverPort}`;
+}
 
 function attachWindowLifecycle(win) {
   win.webContents.on('destroyed', () => {
@@ -172,32 +180,101 @@ function attachWindowLifecycle(win) {
   });
 }
 
-function createWindow(port) {
+function defaultWebPreferences() {
+  return {
+    contextIsolation: true,
+    nodeIntegration: false,
+    sandbox: true,
+    preload: preloadPath,
+  };
+}
+
+/**
+ * Window-open policy: never a second Home; bare /presentation denied;
+ * deck and session Present allowed as child windows.
+ */
+function attachWindowOpenPolicy(win) {
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    const kind = classifyOpenUrl(url);
+    if (kind === 'home') {
+      focusMainWindow();
+      return { action: 'deny' };
+    }
+    if (kind === 'present-bare') {
+      // Present requires session params; open a deck instead so Home stays put.
+      openDeckWindow();
+      return { action: 'deny' };
+    }
+    if (kind === 'deck' || kind === 'present-session') {
+      return {
+        action: 'allow',
+        overrideBrowserWindowOptions: {
+          width: 1280,
+          height: 800,
+          webPreferences: defaultWebPreferences(),
+        },
+      };
+    }
+    return { action: 'deny' };
+  });
+
+  win.webContents.on('did-create-window', (child) => {
+    attachWindowLifecycle(child);
+    attachWindowOpenPolicy(child);
+  });
+}
+
+function createHomeWindow(port) {
   mainWindow = new BrowserWindow({
     width: 1280,
     height: 800,
     show: true,
     title: 'Poster',
-    webPreferences: {
-      contextIsolation: true,
-      nodeIntegration: false,
-      sandbox: true,
-      preload: preloadPath,
-    },
+    webPreferences: defaultWebPreferences(),
   });
 
   attachWindowLifecycle(mainWindow);
+  attachWindowOpenPolicy(mainWindow);
   mainWindow.loadURL(`http://127.0.0.1:${port}/`);
 
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
+  return mainWindow;
+}
+
+/** Focus existing Home or create the single Home window. Never a second Home. */
+function ensureHomeWindow(port) {
+  const create = shouldCreateHomeWindow({
+    exists: Boolean(mainWindow),
+    destroyed: Boolean(mainWindow && mainWindow.isDestroyed()),
+  });
+  if (!create) {
+    focusMainWindow();
+    return mainWindow;
+  }
+  return createHomeWindow(port);
 }
 
 function focusMainWindow() {
-  if (!mainWindow) return;
+  if (!mainWindow || mainWindow.isDestroyed()) return;
   if (mainWindow.isMinimized()) mainWindow.restore();
+  mainWindow.show();
   mainWindow.focus();
+}
+
+function openDeckWindow() {
+  if (serverPort == null) return;
+  const deck = new BrowserWindow({
+    width: 1280,
+    height: 800,
+    show: true,
+    title: 'Poster Deck',
+    webPreferences: defaultWebPreferences(),
+  });
+  attachWindowLifecycle(deck);
+  attachWindowOpenPolicy(deck);
+  deck.loadURL(`${homeOrigin()}/deck`);
 }
 
 // ---------------------------------------------------------------------------
@@ -209,7 +286,11 @@ if (!gotTheLock) {
   app.quit();
 } else {
   app.on('second-instance', () => {
-    focusMainWindow();
+    if (serverPort != null) {
+      ensureHomeWindow(serverPort);
+    } else {
+      focusMainWindow();
+    }
   });
 
   app.on('ready', async () => {
@@ -219,7 +300,7 @@ if (!gotTheLock) {
       logLine(`starting server on ${port} (packaged=${app.isPackaged}) root=${getAppRoot()}`);
       await startServer(port);
       await waitForServer(port);
-      createWindow(port);
+      ensureHomeWindow(port);
       logLine('window created');
     } catch (err) {
       logLine(`startup error: ${err && err.stack ? err.stack : err}`);
@@ -236,9 +317,12 @@ if (!gotTheLock) {
   });
 
   app.on('activate', () => {
-    // Re-create window on macOS when clicking Dock icon with no windows open
-    if (mainWindow === null && serverPort !== null && serverProcess) {
-      createWindow(serverPort);
+    if (serverPort === null) return;
+    // Focus existing Home, or recreate only when there is no Home window
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      focusMainWindow();
+    } else if (serverProcess) {
+      ensureHomeWindow(serverPort);
     }
   });
 
