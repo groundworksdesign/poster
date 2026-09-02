@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { connect, ChannelType } from './Broadcast';
 import {
   PresentData,
   Slide,
@@ -10,6 +9,8 @@ import {
 } from './PresentTypes';
 import LyricsDisplay from './LyricsDisplay';
 import SafeAreaOverlay from './SafeAreaOverlay';
+import { createPresentSession } from './SessionTransport';
+import { applyPresentPayload } from './applyPresentPayload';
 
 function flexAlignFromHorizontal(h?: HorizontalAlign): React.CSSProperties['alignItems'] {
   if (h === HorizontalAlign.LEFT) return 'flex-start';
@@ -31,56 +32,49 @@ export default function Presentation() {
   // NOTE: capture the presenter URL without this param for a clean program feed.
   const [showSafeArea, setShowSafeArea] = useState<boolean>(false);
   const [inFullscreen, setInFullscreen] = useState<boolean>(false);
-  const broadcastEventHandler = (event: MessageEvent) => {
-    const present = event.data as PresentData;
-    if (!present) return;
-
-    // Partial updates (e.g., lyrics navigation)
-    if ((present as any).data && (present as any).data.lyricsNavigation) {
-      const nav = (present as any).data.lyricsNavigation;
-      const cmd = nav.command;
-      if (cmd === 'next') setSegmentIndex(i => i + 1);
-      else if (cmd === 'previous') setSegmentIndex(i => Math.max(0, i - 1));
-      else if (cmd === 'goToVerse' && typeof nav.verseIndex === 'number')
-        setSegmentIndex(nav.verseIndex);
-      return present;
-    }
-
-    // Full present payload — update slide/message/useGreenScreen
-    if (present.slide) {
-      setSlide(present.slide);
-      setMessage(present.message ?? null);
-      setUseGreenScreen(!!present.useGreenScreen);
-
-      // If this is a song slide, extract SongData and reset segmentIndex
-      if (present.slide.type === SlideType.SONG && present.slide.lyrics) {
-        setSongData(present.slide.lyrics as SongData);
-        setSegmentIndex(0);
-      } else {
-        setSongData(null);
-        setSegmentIndex(0);
-      }
-    } else if (present.message || present.message === '') {
-      setMessage(present.message);
-    }
-
-    return present;
-  };
+  const [sessionError, setSessionError] = useState<string | null>(null);
 
   useEffect(() => {
-    const connection = connect(ChannelType.PRESENTER, broadcastEventHandler);
-    setLoading(false);
-    return () => {
-      try {
-        // ensure we remove the handler before closing to avoid duplicate handlers
-        if (connection && connection.channel) {
-          // clear handler reference then close channel
-          (connection.channel as any).onmessage = null;
-          connection.channel.close();
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get('sessionId');
+    const presentId = params.get('presentId');
+    if (!sessionId || !presentId) {
+      setSessionError('Open Present from the deck builder to connect this window.');
+      setLoading(false);
+      return;
+    }
+
+    let disposed = false;
+    let presentSession: Awaited<ReturnType<typeof createPresentSession>> | null = null;
+
+    createPresentSession(sessionId, presentId)
+      .then((session) => {
+        if (disposed) {
+          session.dispose();
+          return;
         }
-      } catch (e) {
-        // ignore cleanup errors
-      }
+        presentSession = session;
+        session.onPresentPush((payload) => {
+          applyPresentPayload(payload as PresentData, {
+            setSlide,
+            setMessage,
+            setUseGreenScreen,
+            setSongData,
+            setSegmentIndex,
+          });
+        });
+        setLoading(false);
+      })
+      .catch(() => {
+        if (!disposed) {
+          setSessionError('Could not connect to the deck session.');
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      disposed = true;
+      presentSession?.dispose();
     };
   }, []);
 
@@ -347,6 +341,8 @@ export default function Presentation() {
 
   const display = loading ? (
     <h1>Loading...</h1>
+  ) : sessionError ? (
+    <h1>{sessionError}</h1>
   ) : (
     <div
       style={{

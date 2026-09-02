@@ -1,6 +1,6 @@
 import React, { ChangeEvent, useEffect, useRef, useState } from 'react';
 import { useTheme } from '../utils/useTheme';
-import { connect, ChannelType, Connection } from '../Present/Broadcast';
+import { createDeckSession, type DeckSession } from '../Present/SessionTransport';
 import {
   PresentData,
   Slide,
@@ -23,7 +23,7 @@ export default function DeckBuilder() {
   const [message, setMessage] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [deck, setDeck] = useState<Deck | null>(null);
-  const [connection, setConnection] = useState<Connection | null | undefined>(null);
+  const deckSessionRef = useRef<DeckSession | null>(null);
   const [isLoadingSong, setIsLoadingSong] = useState<boolean>(false);
   const [isSongMode, setIsSongMode] = useState<boolean>(false);
   const [, setCurrentSongIndex] = useState<number>(0);
@@ -44,8 +44,20 @@ export default function DeckBuilder() {
   };
 
   useEffect(() => {
-    setConnection(connect(ChannelType.BUILDER, event => {}));
-    setMessage('Deck builder connected');
+    let disposed = false;
+    createDeckSession().then((session) => {
+      if (disposed) {
+        session.dispose();
+        return;
+      }
+      deckSessionRef.current = session;
+      setMessage('Deck builder connected');
+    });
+    return () => {
+      disposed = true;
+      deckSessionRef.current?.dispose();
+      deckSessionRef.current = null;
+    };
   }, []);
 
   // Keyboard shortcut handler ref -- always reflects latest state without stale closures
@@ -255,8 +267,22 @@ export default function DeckBuilder() {
     return { ...sl, style: resolvedStyle };
   };
     const slideWithStyle = props.slide ? safeSlide(props.slide) : null;
-    connection?.channel.postMessage(new PresentData({ ...props, slide: slideWithStyle }));
+    const payload = new PresentData({ ...props, slide: slideWithStyle });
+    void deckSessionRef.current?.send(payload);
     setLastSentSlideId(slideWithStyle?.id ?? null);
+  };
+
+  const handleOpenPresent = async () => {
+    const session = deckSessionRef.current;
+    if (!session) return;
+    const { url } = await session.spawnPresent();
+    const features =
+      'width=1280,height=720,menubar=no,toolbar=no,location=no,status=no,scrollbars=yes,resizable=yes';
+    const w = window.open(url, '_blank', features);
+    if (w) {
+      w.opener = null;
+      w.focus();
+    }
   };
 
   const handleSongStageAdvance = (slideRef: any) => {
@@ -313,7 +339,7 @@ export default function DeckBuilder() {
 
   const sendLyricsNavigation = (command: 'next' | 'previous' | 'goToVerse', verseIndex?: number) => {
     const nav = command === 'goToVerse' ? { command, verseIndex } : { command };
-    connection?.channel.postMessage(new PresentData({ data: { lyricsNavigation: nav } }));
+    void deckSessionRef.current?.send(new PresentData({ data: { lyricsNavigation: nav } }));
   };
 
   const startSong = () => {
@@ -667,6 +693,7 @@ export default function DeckBuilder() {
         <button onClick={startSong} disabled={!deck || !isSongMode}>Start Song</button>
         <button onClick={rewindSong} disabled={!deck || !isSongMode}>Prev 2 Lines</button>
         <button onClick={advanceSong} disabled={!deck || !isSongMode}>Next 2 Lines</button>
+        <button type="button" onClick={() => void handleOpenPresent()}>Open Present</button>
 
         {deck && (
           <div style={{ marginTop: '12px', padding: '8px', border: '1px solid #ddd' }}>

@@ -1,8 +1,11 @@
 const express = require("express");
 const path = require("path");
 const { createRequestHandler } = require("@remix-run/express");
+const { mountPosterSessionRelay } = require("./posterSessionRelay");
 
 const app = express();
+
+mountPosterSessionRelay(app);
 
 // Serve hashed Remix client assets and other files from /public.
 // `index: false` is required: otherwise `GET /` serves `public/index.html` (the CRA

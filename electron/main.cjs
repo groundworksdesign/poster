@@ -6,6 +6,9 @@ const fs = require('fs');
 const net = require('net');
 const http = require('http');
 const path = require('path');
+const { registerSessionIpc } = require('./sessionIpc.cjs');
+
+const sessionIpc = registerSessionIpc();
 
 let serverProcess = null;
 let mainWindow = null;
@@ -161,6 +164,14 @@ function killServer() {
 // ---------------------------------------------------------------------------
 // Create the main browser window
 // ---------------------------------------------------------------------------
+const preloadPath = path.join(__dirname, 'preload.cjs');
+
+function attachWindowLifecycle(win) {
+  win.webContents.on('destroyed', () => {
+    sessionIpc.onWebContentsDestroyed(win.webContents);
+  });
+}
+
 function createWindow(port) {
   mainWindow = new BrowserWindow({
     width: 1280,
@@ -171,9 +182,11 @@ function createWindow(port) {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
+      preload: preloadPath,
     },
   });
 
+  attachWindowLifecycle(mainWindow);
   mainWindow.loadURL(`http://127.0.0.1:${port}/`);
 
   mainWindow.on('closed', () => {
