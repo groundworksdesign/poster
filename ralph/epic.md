@@ -12,7 +12,7 @@ todos:
     status: done
   - id: single-home-focus
     content: Keep Home/Library as the only main window (the saved presentations/decks list); opening Home again focuses the existing Home; Open Presentation opens a deck window while Home stays put; Present windows are where slides play.
-    status: pending
+    status: done
   - id: persist-theme-all-windows
     content: Persist the selected theme including the dropdown across app restart and across Home close/reopen, and apply it to Home, deck builders, and Present windows.
     status: pending
