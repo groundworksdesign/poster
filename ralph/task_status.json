@@ -2,8 +2,8 @@
   "epic": "epic-004",
   "branch": "cursor/epic-004-multi-deck-plan-doc-6573",
   "status": "in_progress",
-  "loop": 7,
-  "persona": "qa",
+  "loop": 8,
+  "persona": "planning",
   "completeEpic": false,
   "requirements": [
     {
@@ -91,8 +91,33 @@
     "Slide payloads are not sent on BroadcastChannel."
   ],
   "selected": {
-    "id": "single-home-focus",
-    "reason": "QA verified single-home-focus. REQ-002 done. Remaining epic work: persist-theme-all-windows, program-thumbnail."
+    "id": "persist-theme-all-windows",
+    "reason": "REQ-001 and REQ-002 todos all passes true. Next Validation ACs are theme persist across app quit/reopen and Home close/reopen on Home, decks, and Presents. Codebase already has localStorage poster-theme, Home dropdown + useTheme, DeckBuilder useTheme apply, and root FOUC script, but Present.tsx never calls useTheme/applyTheme so Present windows miss the theme. program-thumbnail has no UI yet and should follow once chrome theming is consistent across the window set."
   },
-  "lastUpdated": "2026-09-02T16:00:00.000Z"
+  "planningNotes": "Baseline (loop 8 search): useTheme.ts persists ThemeId in localStorage THEME_STORAGE_KEY; HomePage owns the theme select; DeckBuilder calls useTheme() without a picker; app/root.tsx inlines poster-theme before paint. Present.tsx has no theme hook. electron/ has no theme IPC (partition localStorage may suffice if every window applies on load). No thumbnail/program-preview symbols under src/. No E2E for theme restore across windows.",
+  "planningBrief": {
+    "persist-theme-all-windows": {
+      "alreadyPresent": [
+        "localStorage poster-theme via applyTheme/readStoredTheme",
+        "Home theme dropdown bound to useTheme",
+        "DeckBuilder applies stored theme on mount via useTheme()",
+        "Remix root FOUC themeInitScript"
+      ],
+      "stillNeeded": [
+        "Apply stored theme on Present windows (Present.tsx or shared shell)",
+        "Prove Home dropdown still shows choice after app restart and after Home close/reopen",
+        "Prove deck and Present windows receive the same theme (on open / reload); sync live changes across open windows if required by AC",
+        "Tests: unit + remix/E2E covering restore on Home and application on deck + Present"
+      ],
+      "primaryFiles": [
+        "src/utils/useTheme.ts",
+        "src/Present/Present.tsx",
+        "src/HomePage.tsx",
+        "src/Deck/DeckBuilder.tsx",
+        "app/root.tsx",
+        "e2e/ (theme restore / multi-window apply)"
+      ]
+    }
+  },
+  "lastUpdated": "2026-09-02T16:05:00.000Z"
 }
