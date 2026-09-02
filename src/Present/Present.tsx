@@ -11,6 +11,7 @@ import LyricsDisplay from './LyricsDisplay';
 import SafeAreaOverlay from './SafeAreaOverlay';
 import { createPresentSession } from './SessionTransport';
 import { applyPresentPayload } from './applyPresentPayload';
+import { useTheme } from '../utils/useTheme';
 
 function flexAlignFromHorizontal(h?: HorizontalAlign): React.CSSProperties['alignItems'] {
   if (h === HorizontalAlign.LEFT) return 'flex-start';
@@ -22,6 +23,8 @@ function flexAlignFromHorizontal(h?: HorizontalAlign): React.CSSProperties['alig
 const NON_TITLE_PROGRAM_HEIGHT = '72%';
 
 export default function Presentation() {
+  // Apply persisted chrome theme (same storage as Home / deck builders).
+  useTheme();
   const [loading, setLoading] = useState<boolean>(true);
   const [slide, setSlide] = useState<Slide | null>(null);
   const [message, setMessage] = useState<string | null>(null);

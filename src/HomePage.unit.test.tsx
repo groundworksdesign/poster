@@ -1,12 +1,15 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import HomePage from './HomePage';
+import { THEME_STORAGE_KEY, applyTheme } from './utils/useTheme';
 
 beforeEach(() => {
   jest.spyOn(global, 'fetch').mockResolvedValue({
     ok: true,
     json: async () => [],
   } as Response);
+  localStorage.clear();
+  delete document.documentElement.dataset.theme;
 });
 
 afterEach(() => {
@@ -21,7 +24,10 @@ test('Home lists Open Presentation targeting /deck (not bare /presentation)', ()
   expect(screen.queryByRole('link', { name: /open presentation \(new window\)/i })).not.toBeInTheDocument();
   const barePresent = screen.queryAllByRole('link').filter((a) => {
     const href = a.getAttribute('href') || '';
-    return href === '/presentation' || href.startsWith('/presentation?') && !href.includes('sessionId');
+    return (
+      href === '/presentation' ||
+      (href.startsWith('/presentation?') && !href.includes('sessionId'))
+    );
   });
   expect(barePresent).toHaveLength(0);
 });
@@ -41,7 +47,27 @@ test('Open Presentation opens a deck window and leaves Home put', () => {
   const [url] = openSpy.mock.calls[0];
   expect(String(url)).toContain('/deck');
   expect(String(url)).not.toMatch(/\/presentation/);
-  // Home heading still mounted (same document; popup is separate)
   expect(screen.getByRole('heading', { level: 1, name: 'Poster' })).toBeInTheDocument();
   expect(screen.getByText(/library of saved presentations/i)).toBeInTheDocument();
+});
+
+test('Home theme dropdown restores after remount (restart / Home reopen)', async () => {
+  applyTheme('dracula');
+  const first = render(<HomePage />);
+  await waitFor(() => expect(screen.getByLabelText('Select theme')).toHaveValue('dracula'));
+  first.unmount();
+
+  delete document.documentElement.dataset.theme;
+  render(<HomePage />);
+  await waitFor(() => expect(screen.getByLabelText('Select theme')).toHaveValue('dracula'));
+  expect(document.documentElement.dataset.theme).toBe('dracula');
+  expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe('dracula');
+});
+
+test('choosing a theme on Home persists for later reopen', async () => {
+  render(<HomePage />);
+  await waitFor(() => expect(screen.getByLabelText('Select theme')).toBeInTheDocument());
+  fireEvent.change(screen.getByLabelText('Select theme'), { target: { value: 'tokyo-night' } });
+  expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe('tokyo-night');
+  expect(document.documentElement.dataset.theme).toBe('tokyo-night');
 });
