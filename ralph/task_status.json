@@ -2,8 +2,8 @@
   "epic": "epic-004",
   "branch": "cursor/epic-004-multi-deck-plan-doc-6573",
   "status": "in_progress",
-  "loop": 3,
-  "persona": "qa",
+  "loop": 4,
+  "persona": "planning",
   "completeEpic": false,
   "requirements": [
     {
@@ -43,11 +43,7 @@
       "status": "done",
       "passes": true,
       "qaVerifiedAt": "2026-09-02T14:46:00.000Z",
-      "qaReport": "ralph/qa-report.md",
-      "qaTests": [
-        "CI=true pnpm test --watchAll=false --testPathPattern=posterSessionGraph|presentation|presentData|deck-to-presentation|DeckBuilder.unit|electron-main → 61 passed",
-        "CI=true pnpm test --watchAll=false --testPathIgnorePatterns=e2e → 133 passed"
-      ]
+      "qaReport": "ralph/qa-report.md"
     },
     {
       "id": "directed-send-targeting",
@@ -90,25 +86,29 @@
     "A deck shows a thumbnail of what is on program.",
     "Slide payloads are not sent on BroadcastChannel."
   ],
-  "acceptanceCriteriaEvidence": {
-    "directed-send-main-switch": {
-      "Deck A send-to-A1 does not show on A2 or any B Present.": { "scope": "out_of_scope", "task": "directed-send-targeting", "passes": null },
-      "Deck A send-to-all-its-children does not show on B.": { "scope": "out_of_scope", "task": "directed-send-targeting", "passes": null },
-      "Deck B cannot drive A's children (including by guessing an id).": { "scope": "out_of_scope", "task": "directed-send-targeting", "passes": null },
-      "Closing a Present drops it from that deck's list. Reopen gets a new presentId.": { "scope": "partial", "passes": true, "evidence": "shared/posterSessionGraph.cjs close/unregister + spawn uuid(); deck UI list deferred" },
-      "Reloading a Present still shows the last payload Main cached for it.": { "scope": "in_scope", "passes": true, "evidence": "lastPayloadByPresent replay on ready; src/__tests__/posterSessionGraph.test.js" },
-      "Only one Home/Library exists. Opening Home again focuses the original Home. Home is the saved-deck list. Present windows play slides. Open Presentation leaves Home in place and opens a deck window.": { "scope": "out_of_scope", "task": "single-home-focus", "passes": null },
-      "After choosing a theme (dropdown shows it), quit and reopen the app: the same theme is applied on Home, decks, and Presents, and the dropdown still shows that choice.": { "scope": "out_of_scope", "task": "persist-theme-all-windows", "passes": null },
-      "Close the main Home window and open it again: same theme restore as above.": { "scope": "out_of_scope", "task": "persist-theme-all-windows", "passes": null },
-      "A deck shows a thumbnail of what is on program.": { "scope": "out_of_scope", "task": "program-thumbnail", "passes": null },
-      "Slide payloads are not sent on BroadcastChannel.": { "scope": "in_scope", "passes": true, "evidence": "DeckBuilder SessionTransport.send; Present onPresentPush; Broadcast.ts throws; no new BroadcastChannel in src/" }
-    }
-  },
-  "qaNotes": "Independent QA loop 3: all in-scope criteria pass. See ralph/qa-report.md. E2E BroadcastChannel injection is known debt, not in main-switch scope.",
   "selected": {
     "id": "directed-send-targeting",
-    "reason": "directed-send-main-switch passes QA (passes: true). Next: named presentId targeting, cross-deck isolation, e2e harness migration."
+    "reason": "directed-send-main-switch passes QA. Graph has send target/all and session-scoped presentIds (shared/posterSessionGraph.cjs) but DeckBuilder always sends target=all with no child picker, no onDeckEvent child list, and no multi-deck isolation tests. Epic validation criteria 1-4 for REQ-001 depend on this task before single-home or thumbnail work."
   },
-  "planningNotes": "Baseline confirmed: BroadcastChannel on presentation in src/Present/Broadcast.ts and app/utils/Broadcast.ts; handleSendClick in DeckBuilder posts PresentData to all listeners. Electron main.cjs has single-instance focus for the one BrowserWindow but no session map or deck/present window roles. Theme uses localStorage (poster-theme) per window; epic requires cross-restart and Home close/reopen on every window. No program thumbnail UI. Home opens deck via window.open and presentation via named popup; not yet Electron session-aware.",
-  "lastUpdated": "2026-09-02T14:46:00.000Z"
+  "planningNotes": "Baseline (loop 4 search): SessionTransport.send(payload, target?) and graph handleDeckCommand support named presentId or all; missing target yields empty deliver list. handlePresentEvent rejects ready when presentId not in session (cross-deck guess is no-op). DeckBuilder handleSendClick calls send(payload) without target; only Open Present spawns one child. No deck UI for present child list, send-to-selected, or close child. posterSessionGraph.test.js covers single deck send+replay only. E2E specs (remix-visual-regression, lyrics-navigation, alignment-grid) still inject via BroadcastChannel — migrate to session spawn/send in this task or immediately after deck targeting UI lands.",
+  "planningBrief": {
+    "directed-send-targeting": {
+      "alreadyInGraph": ["target presentId vs all", "missing target sends to nobody", "spawn uuid presentId", "replay on ready", "invalid ready rejects foreign presentId"],
+      "stillNeeded": [
+        "DeckBuilder: track presentIds via listPresents + onDeckEvent child-ready/child-closed",
+        "DeckBuilder: UI to pick send target (named presentId or all)",
+        "Wire handleSendClick and lyrics navigation to pass selected target",
+        "Integration tests: Deck A send A1 not A2; send-all not B; Deck B cannot drive A ids",
+        "Migrate or add E2E harness off BroadcastChannel"
+      ],
+      "primaryFiles": [
+        "src/Deck/DeckBuilder.tsx",
+        "src/Present/SessionTransport.ts",
+        "shared/posterSessionGraph.cjs",
+        "src/__tests__/posterSessionGraph.test.js",
+        "e2e/remix-visual-regression.spec.ts"
+      ]
+    }
+  },
+  "lastUpdated": "2026-09-02T14:55:00.000Z"
 }
