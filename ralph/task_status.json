@@ -1,0 +1,88 @@
+{
+  "epic": "epic-004",
+  "branch": "cursor/epic-004-multi-deck-plan-doc-6573",
+  "status": "in_progress",
+  "loop": 1,
+  "persona": "planning",
+  "completeEpic": false,
+  "requirements": [
+    {
+      "id": "REQ-001",
+      "title": "Directed send",
+      "description": "Multiple deck builders, each with one or more Present children. Each Present belongs to one deck. Posts go only to the chosen child Window. Send to a named child, or to all children of that deck only. Other decks never receive it. Missing target sends to nobody. Kill the shared BroadcastChannel / handleSendClick / PresentData path for slide payloads. Main owns the session graph. Four fixed channels. Logical child, not Electron parent. New Present window gets a new id. Main caches last payload and replays it if that Present reloads.",
+      "todoIds": ["directed-send-main-switch", "directed-send-targeting"],
+      "status": "pending"
+    },
+    {
+      "id": "REQ-002",
+      "title": "Single Home",
+      "description": "Home/Library is the one main window, the list of saved presentations/decks. Only one Home. Opening Home again focuses the existing one. Present windows are where slides play. Open Presentation opens a deck window; Home stays put.",
+      "todoIds": ["single-home-focus"],
+      "status": "pending"
+    },
+    {
+      "id": "REQ-003",
+      "title": "Theme persist",
+      "description": "Remember the selected theme, including the dropdown, on app restart and when the main window is closed and opened again. Apply that theme to Home, deck builders, and Present windows.",
+      "todoIds": ["persist-theme-all-windows"],
+      "status": "pending"
+    },
+    {
+      "id": "REQ-004",
+      "title": "Program thumbnail",
+      "description": "In the deck, a thumbnail of what is on program.",
+      "todoIds": ["program-thumbnail"],
+      "status": "pending"
+    }
+  ],
+  "todos": [
+    {
+      "id": "directed-send-main-switch",
+      "content": "Replace the shared BroadcastChannel / handleSendClick / PresentData slide bus with a Main-owned session graph and four fixed channels so a deck posts only to the chosen Present Window.",
+      "requirementId": "REQ-001",
+      "status": "pending"
+    },
+    {
+      "id": "directed-send-targeting",
+      "content": "Support send to named child presentIds, or all children of that deck only; missing targets send to nobody; another deck's id is a no-op; new Present window gets a new id; replay last payload if that Present reloads.",
+      "requirementId": "REQ-001",
+      "status": "pending"
+    },
+    {
+      "id": "single-home-focus",
+      "content": "Keep Home/Library as the only main window (the saved presentations/decks list); opening Home again focuses the existing Home; Open Presentation opens a deck window while Home stays put; Present windows are where slides play.",
+      "requirementId": "REQ-002",
+      "status": "pending"
+    },
+    {
+      "id": "persist-theme-all-windows",
+      "content": "Persist the selected theme including the dropdown across app restart and across Home close/reopen, and apply it to Home, deck builders, and Present windows.",
+      "requirementId": "REQ-003",
+      "status": "pending"
+    },
+    {
+      "id": "program-thumbnail",
+      "content": "Show a thumbnail in the deck of what is on program.",
+      "requirementId": "REQ-004",
+      "status": "pending"
+    }
+  ],
+  "acceptanceCriteria": [
+    "Deck A send-to-A1 does not show on A2 or any B Present.",
+    "Deck A send-to-all-its-children does not show on B.",
+    "Deck B cannot drive A's children (including by guessing an id).",
+    "Closing a Present drops it from that deck's list. Reopen gets a new presentId.",
+    "Reloading a Present still shows the last payload Main cached for it.",
+    "Only one Home/Library exists. Opening Home again focuses the original Home. Home is the saved-deck list. Present windows play slides. Open Presentation leaves Home in place and opens a deck window.",
+    "After choosing a theme (dropdown shows it), quit and reopen the app: the same theme is applied on Home, decks, and Presents, and the dropdown still shows that choice.",
+    "Close the main Home window and open it again: same theme restore as above.",
+    "A deck shows a thumbnail of what is on program.",
+    "Slide payloads are not sent on BroadcastChannel."
+  ],
+  "selected": {
+    "id": "directed-send-main-switch",
+    "reason": "REQ-001 is the architectural foundation: slide payloads still use BroadcastChannel (src/Present/Broadcast.ts, DeckBuilder handleSendClick). Main-owned session graph and the four fixed IPC channels must land before directed targeting, program thumbnail (directed state path), and reliable multi-deck isolation. No poster:* channels exist in the repo yet."
+  },
+  "planningNotes": "Baseline confirmed: BroadcastChannel on presentation in src/Present/Broadcast.ts and app/utils/Broadcast.ts; handleSendClick in DeckBuilder posts PresentData to all listeners. Electron main.cjs has single-instance focus for the one BrowserWindow but no session map or deck/present window roles. Theme uses localStorage (poster-theme) per window; epic requires cross-restart and Home close/reopen on every window. No program thumbnail UI. Home opens deck via window.open and presentation via named popup; not yet Electron session-aware.",
+  "lastUpdated": "2026-09-02T14:08:00.000Z"
+}

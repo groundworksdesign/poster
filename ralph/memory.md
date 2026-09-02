@@ -6,11 +6,13 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 
 ## Commands
 
-<!-- Build, test, and lint commands discovered during the loop. Example:
-- Build: `npm run build`
-- Test: `npm run test:ci`
-- Lint: `npm run lint`
--->
+- Install: `pnpm install`
+- Dev: `pnpm dev` (Remix, port 3000)
+- Build: `pnpm run build:remix` then `pnpm start`
+- Unit tests: `CI=true pnpm test -- --watchAll=false`
+- E2E (Remix): `pnpm run test:e2e:remix`
+- Electron: `pnpm run electron`
+- No dedicated lint script; ESLint via react-scripts config
 
 ## Conventions
 
