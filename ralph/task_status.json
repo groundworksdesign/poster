@@ -2,8 +2,8 @@
   "epic": "epic-004",
   "branch": "cursor/epic-004-multi-deck-plan-doc-6573",
   "status": "in_progress",
-  "loop": 11,
-  "persona": "dev",
+  "loop": 12,
+  "persona": "qa",
   "completeEpic": false,
   "requirements": [
     {
@@ -32,7 +32,7 @@
       "title": "Program thumbnail",
       "description": "In the deck, a thumbnail of what is on program.",
       "todoIds": ["program-thumbnail"],
-      "status": "pending"
+      "status": "done"
     }
   ],
   "todos": [
@@ -76,8 +76,10 @@
       "id": "program-thumbnail",
       "content": "Show a thumbnail in the deck of what is on program.",
       "requirementId": "REQ-004",
-      "status": "pending",
-      "passes": false
+      "status": "done",
+      "passes": true,
+      "qaVerifiedAt": "2026-09-02T16:25:00.000Z",
+      "qaReport": "ralph/qa-report.md"
     }
   ],
   "acceptanceCriteria": [
@@ -122,5 +124,5 @@
       ]
     }
   },
-  "lastUpdated": "2026-09-02T16:30:00.000Z"
+  "lastUpdated": "2026-09-02T16:25:00.000Z"
 }

@@ -18,7 +18,7 @@ todos:
     status: done
   - id: program-thumbnail
     content: Show a thumbnail in the deck of what is on program.
-    status: pending
+    status: done
 isProject: false
 ---
 
