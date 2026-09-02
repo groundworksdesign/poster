@@ -1,7 +1,7 @@
 ---
 name: Multi-deck directed Present, single Home, theme persist, program thumbnail
 epic: epic-004
-status: draft
+status: complete
 overview: "Poster decks send only to their own Present children, Home/Library is a single main window that refocuses if opened again, the selected theme persists across app restart and Home close/reopen on every window, and each deck shows a thumbnail of what is on program."
 todos:
   - id: directed-send-main-switch

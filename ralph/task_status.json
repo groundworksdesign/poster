@@ -1,10 +1,10 @@
 {
   "epic": "epic-004",
   "branch": "cursor/epic-004-multi-deck-plan-doc-6573",
-  "status": "in_progress",
-  "loop": 12,
+  "status": "complete",
+  "loop": 13,
   "persona": "qa",
-  "completeEpic": false,
+  "completeEpic": true,
   "requirements": [
     {
       "id": "REQ-001",
@@ -94,35 +94,8 @@
     "A deck shows a thumbnail of what is on program.",
     "Slide payloads are not sent on BroadcastChannel."
   ],
-  "selected": {
-    "id": "program-thumbnail",
-    "reason": "All other epic-004 todos have passes true (REQ-001 through REQ-003). Only pending todo is program-thumbnail (REQ-004 Validation AC: a deck shows a thumbnail of what is on program). Code search found no thumbnail/preview UI under src/; present-event currently handles ready/closed only; lastPayloadByPresent exists in the session graph but is not forwarded to the deck as a program preview. Epic requires the thumbnail use the directed path (not a shared BroadcastChannel bus)."
-  },
-  "planningNotes": "Baseline (loop 10 search): No thumbnail/program-preview symbols in src/. DeckBuilder listens for child-ready/child-closed deck-events only. Present.tsx has no program-state report. shared/posterSessionGraph.cjs caches lastPayloadByPresent for Present reload replay but does not emit program thumbnail/state to the owning deck. Risk from epic: thumbnail must not reintroduce a global bus — use Present->Main->owning-deck via poster:present-event / poster:deck-event (or derive from Main cache when send succeeds).",
-  "planningBrief": {
-    "program-thumbnail": {
-      "alreadyPresent": [
-        "Main-owned session graph with lastPayloadByPresent per presentId",
-        "Four fixed channels including poster:present-event and poster:deck-event",
-        "DeckBuilder onDeckEvent for child-ready / child-closed",
-        "Directed send so deck already knows which payload was sent to which Present"
-      ],
-      "stillNeeded": [
-        "Deck UI showing a thumbnail/preview of what is currently on program",
-        "Directed feedback path: Present reports program state to Main and Main forwards only to the owning deck (or Main mirrors last payload to that deck without a shared bus)",
-        "Clear empty/no-Present state in the thumbnail area",
-        "Tests: unit and/or remix E2E that send updates the deck thumbnail and does not use BroadcastChannel for slide/thumbnail traffic"
-      ],
-      "primaryFiles": [
-        "src/Deck/DeckBuilder.tsx",
-        "src/Present/Present.tsx",
-        "src/Present/SessionTransport.ts",
-        "shared/posterSessionGraph.cjs",
-        "server/posterSessionRelay.js",
-        "electron/sessionIpc.cjs",
-        "e2e/ (program thumbnail)"
-      ]
-    }
-  },
-  "lastUpdated": "2026-09-02T16:25:00.000Z"
+  "selected": null,
+  "planningNotes": "Epic completion QA (loop 13): all five todos still passes true; Jest 164 passed; remix E2Es for send/home/theme/thumbnail 8 passed. completeEpic set true.",
+  "planningBrief": {},
+  "lastUpdated": "2026-09-02T16:30:00.000Z"
 }
