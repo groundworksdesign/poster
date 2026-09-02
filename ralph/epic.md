@@ -6,10 +6,10 @@ overview: "Poster decks send only to their own Present children, Home/Library is
 todos:
   - id: directed-send-main-switch
     content: Replace the shared BroadcastChannel / handleSendClick / PresentData slide bus with a Main-owned session graph and four fixed channels so a deck posts only to the chosen Present Window.
-    status: pending
+    status: done
   - id: directed-send-targeting
     content: Support send to named child presentIds, or all children of that deck only; missing targets send to nobody; another deck's id is a no-op; new Present window gets a new id; replay last payload if that Present reloads.
-    status: pending
+    status: done
   - id: single-home-focus
     content: Keep Home/Library as the only main window (the saved presentations/decks list); opening Home again focuses the existing Home; Open Presentation opens a deck window while Home stays put; Present windows are where slides play.
     status: pending

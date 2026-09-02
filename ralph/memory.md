@@ -27,3 +27,8 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - Windows paths require backslashes in spawn() args
 - npm install must run before tsx can resolve modules
 -->
+
+## Epic-004 planning (loop 6)
+
+- REQ-001 done (directed-send-main-switch + directed-send-targeting, passes true).
+- Selected next: single-home-focus (REQ-002). Electron single-instance lock exists; Home still links Open presentation to bare /presentation; Present does not use useTheme yet; no program thumbnail UI.

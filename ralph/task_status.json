@@ -2,8 +2,8 @@
   "epic": "epic-004",
   "branch": "cursor/epic-004-multi-deck-plan-doc-6573",
   "status": "in_progress",
-  "loop": 5,
-  "persona": "qa",
+  "loop": 6,
+  "persona": "planning",
   "completeEpic": false,
   "requirements": [
     {
@@ -89,8 +89,30 @@
     "Slide payloads are not sent on BroadcastChannel."
   ],
   "selected": {
-    "id": "directed-send-targeting",
-    "reason": "QA verified directed-send-targeting. REQ-001 todos complete. Remaining epic work: single-home-focus, persist-theme-all-windows, program-thumbnail."
+    "id": "single-home-focus",
+    "reason": "REQ-001 (directed-send-main-switch + directed-send-targeting) passes QA. Next epic AC is single Home: Electron already has requestSingleInstanceLock + second-instance focusMainWindow, and library/open-deck leave Home in place, but HomePage still offers Open presentation to bare /presentation (no session), and there is no enforcement that opening Home again only focuses the existing Home BrowserWindow rather than spawning another. Theme persist and program thumbnail depend on a stable Home/deck/Present window model and should follow."
   },
-  "lastUpdated": "2026-09-02T15:50:00.000Z"
+  "planningNotes": "Baseline (loop 6 search): electron/main.cjs holds one mainWindow loading /; gotTheLock + second-instance calls focusMainWindow. HomePage LibraryPanel + Open deck builder use window.open(_blank) so Home stays; Open presentation uses named window to /presentation without sessionId/presentId (legacy, conflicts with directed Present). Present.tsx does not call useTheme; theme is localStorage-only on Home/DeckBuilder. No program thumbnail UI under src/. No E2E for single-home focus.",
+  "planningBrief": {
+    "single-home-focus": {
+      "alreadyPresent": [
+        "Electron requestSingleInstanceLock + second-instance focusMainWindow",
+        "Single createWindow for Home at /",
+        "Library open and Open deck builder leave Home and open /deck in a new window/tab",
+        "Present slides play via DeckBuilder Open Present + session transport"
+      ],
+      "stillNeeded": [
+        "Ensure opening Home again focuses existing Home (no second Home BrowserWindow); cover Electron paths (activate, menu, deep link if any)",
+        "Align Home Open Presentation with epic: open a deck window while Home stays put (not bare /presentation)",
+        "Keep Present windows as the only slide-play surfaces (spawned from deck session, not from Home)",
+        "Tests: second Home open focuses first; Open Presentation leaves Home and opens deck"
+      ],
+      "primaryFiles": [
+        "electron/main.cjs",
+        "src/HomePage.tsx",
+        "e2e/ (remix or electron coverage for Home focus / Open Presentation)"
+      ]
+    }
+  },
+  "lastUpdated": "2026-09-02T15:55:00.000Z"
 }
