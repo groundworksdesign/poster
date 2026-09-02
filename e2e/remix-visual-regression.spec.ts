@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { openPresenterSession, sessionSend } from './posterSessionE2E';
 
 /**
  * Visual regression tests for the presenter route.
@@ -59,101 +60,18 @@ function buildSlidePayload(
   };
 }
 
-type SessionHandles = {
-  context: import('@playwright/test').BrowserContext;
-  presenterPage: import('@playwright/test').Page;
-  senderPage: import('@playwright/test').Page;
-  peerId: string;
-  presentId: string;
-};
-
-/**
- * Register a deck session, spawn a Present, open Present with session query params,
- * then send via poster:deck-command HTTP relay (no BroadcastChannel).
- */
-async function openPresenterSession(
-  browser: import('@playwright/test').Browser,
-  baseURL: string,
-): Promise<SessionHandles> {
-  const context = await browser.newContext({
+function openVisualSession(browser: import('@playwright/test').Browser, baseURL: string) {
+  return openPresenterSession(browser, baseURL, {
     viewport: VIEWPORT,
     colorScheme: 'dark',
   });
-  const presenterPage = await context.newPage();
-  const senderPage = await context.newPage();
-
-  await senderPage.goto(`${baseURL}/deck`, { waitUntil: 'domcontentloaded' });
-
-  const session = await senderPage.evaluate(async () => {
-    const peerId = crypto.randomUUID();
-    const regRes = await fetch('/api/poster/deck-command', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ peerId, command: { type: 'register' } }),
-    });
-    const reg = await regRes.json();
-    const spawnRes = await fetch('/api/poster/deck-command', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ peerId, command: { type: 'spawn' } }),
-    });
-    const spawn = await spawnRes.json();
-    return {
-      peerId,
-      sessionId: reg.sessionId as string,
-      presentId: spawn.presentId as string,
-    };
-  });
-
-  await presenterPage.goto(
-    `${baseURL}/presentation?sessionId=${encodeURIComponent(session.sessionId)}&presentId=${encodeURIComponent(session.presentId)}`,
-    { waitUntil: 'domcontentloaded' },
-  );
-
-  // Wait until Present has registered and left the loading / error state
-  await expect(presenterPage.getByText('Loading...')).toHaveCount(0, { timeout: 15000 });
-  await expect(
-    presenterPage.getByText(/Open Present from the deck builder|Could not connect/),
-  ).toHaveCount(0);
-
-  return {
-    context,
-    presenterPage,
-    senderPage,
-    peerId: session.peerId,
-    presentId: session.presentId,
-  };
-}
-
-async function sessionSend(
-  senderPage: import('@playwright/test').Page,
-  peerId: string,
-  payload: unknown,
-  target: string | 'all' = 'all',
-) {
-  await senderPage.evaluate(
-    async ({ peerId: id, payload: msg, target: t }) => {
-      await fetch('/api/poster/deck-command', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          peerId: id,
-          command: { type: 'send', payload: msg, target: t },
-        }),
-      });
-    },
-    { peerId, payload, target },
-  );
 }
 
 test.describe('alignment grid -- screenshot', () => {
   for (const { cell, verticalAlign, horizontalAlign } of ALIGN_CELLS) {
     test(`align: ${cell}`, async ({ browser, baseURL }) => {
       const base = baseURL ?? 'http://127.0.0.1:3000';
-      const { context, presenterPage, senderPage, peerId } = await openPresenterSession(
-        browser,
-        base,
-      );
+      const { context, presenterPage, senderPage, peerId } = await openVisualSession(browser, base);
 
       try {
         await sessionSend(senderPage, peerId, buildSlidePayload(verticalAlign, horizontalAlign));
@@ -176,10 +94,7 @@ test.describe('alignment grid -- screenshot', () => {
 test.describe('green screen -- screenshot', () => {
   test('body background is chroma-key green', async ({ browser, baseURL }) => {
     const base = baseURL ?? 'http://127.0.0.1:3000';
-    const { context, presenterPage, senderPage, peerId } = await openPresenterSession(
-      browser,
-      base,
-    );
+    const { context, presenterPage, senderPage, peerId } = await openVisualSession(browser, base);
 
     try {
       const greenPayload = {
@@ -213,7 +128,7 @@ test.describe('green screen -- screenshot', () => {
 test.describe('idle / blank state -- screenshot', () => {
   test('presenter shows blank output before any slide is sent', async ({ browser, baseURL }) => {
     const base = baseURL ?? 'http://127.0.0.1:3000';
-    const { context, presenterPage } = await openPresenterSession(browser, base);
+    const { context, presenterPage } = await openVisualSession(browser, base);
 
     try {
       await presenterPage.waitForTimeout(500);

@@ -1,11 +1,9 @@
 import { test, expect } from '@playwright/test';
+import { openPresenterSession, sessionSend } from './posterSessionE2E';
 
 /**
  * E2E tests for the 3x3 alignment grid (design principle 7).
- *
- * Sends a general slide with each of the 9 vertical x horizontal alignment
- * combinations and asserts that the slide-overlay element has the correct
- * inline CSS properties in the presenter view.
+ * Slide delivery uses the poster session relay (not BroadcastChannel).
  *
  * Alignment mapping in getTitleOverlayStyle() (Present.tsx):
  *   horizontalAlign -> alignItems
@@ -60,46 +58,35 @@ function buildSlide(verticalAlign: string, horizontalAlign: string) {
   };
 }
 
-async function sendToBroadcastChannel(
-  page: import('@playwright/test').Page,
-  payload: unknown,
-) {
-  await page.evaluate((msg) => {
-    const ch = new BroadcastChannel('presentation');
-    ch.postMessage(msg);
-    ch.close();
-  }, payload);
-}
-
 test.describe('3x3 alignment grid', () => {
   for (const alignCase of ALIGN_CASES) {
-    const { cell, verticalAlign, horizontalAlign, expectedAlignItems, expectedTop, expectedBottom } = alignCase;
+    const { cell, verticalAlign, horizontalAlign, expectedAlignItems, expectedTop, expectedBottom } =
+      alignCase;
 
     test(`renders ${cell} alignment`, async ({ browser, baseURL }) => {
-      const base = baseURL || 'http://127.0.0.1:3001';
-      const context = await browser.newContext();
-      const presenterPage = await context.newPage();
-      const operatorPage = await context.newPage();
+      const base = baseURL || 'http://127.0.0.1:3000';
+      const { context, presenterPage, senderPage, peerId } = await openPresenterSession(browser, base);
 
-      await presenterPage.goto(`${base}/presentation`);
-      await operatorPage.goto(`${base}/deck`);
+      try {
+        await sessionSend(senderPage, peerId, buildSlide(verticalAlign, horizontalAlign));
 
-      await sendToBroadcastChannel(operatorPage, buildSlide(verticalAlign, horizontalAlign));
+        const overlay = presenterPage.locator('[data-testid="slide-overlay"]');
+        await expect(overlay).toBeVisible();
 
-      const overlay = presenterPage.locator('[data-testid="slide-overlay"]');
-      await expect(overlay).toBeVisible();
+        const styles = await overlay.evaluate((el: HTMLElement) => ({
+          alignItems: el.style.alignItems,
+          top: el.style.top,
+          bottom: el.style.bottom,
+        }));
 
-      const styles = await overlay.evaluate((el: HTMLElement) => ({
-        alignItems: el.style.alignItems,
-        top: el.style.top,
-        bottom: el.style.bottom,
-      }));
-
-      expect(styles.alignItems, `horizontal (${horizontalAlign}) -> alignItems`).toBe(expectedAlignItems);
-      expect(styles.top, `vertical (${verticalAlign}) -> top`).toBe(expectedTop);
-      expect(styles.bottom, `vertical (${verticalAlign}) -> bottom`).toBe(expectedBottom);
-
-      await context.close();
+        expect(styles.alignItems, `horizontal (${horizontalAlign}) -> alignItems`).toBe(
+          expectedAlignItems,
+        );
+        expect(styles.top, `vertical (${verticalAlign}) -> top`).toBe(expectedTop);
+        expect(styles.bottom, `vertical (${verticalAlign}) -> bottom`).toBe(expectedBottom);
+      } finally {
+        await context.close();
+      }
     });
   }
 });
