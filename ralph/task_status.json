@@ -2,8 +2,8 @@
   "epic": "epic-004",
   "branch": "cursor/epic-004-multi-deck-plan-doc-6573",
   "status": "in_progress",
-  "loop": 4,
-  "persona": "planning",
+  "loop": 5,
+  "persona": "qa",
   "completeEpic": false,
   "requirements": [
     {
@@ -11,7 +11,7 @@
       "title": "Directed send",
       "description": "Multiple deck builders, each with one or more Present children. Each Present belongs to one deck. Posts go only to the chosen child Window. Send to a named child, or to all children of that deck only. Other decks never receive it. Missing target sends to nobody. Kill the shared BroadcastChannel / handleSendClick / PresentData path for slide payloads. Main owns the session graph. Four fixed channels. Logical child, not Electron parent. New Present window gets a new id. Main caches last payload and replays it if that Present reloads.",
       "todoIds": ["directed-send-main-switch", "directed-send-targeting"],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "REQ-002",
@@ -49,8 +49,10 @@
       "id": "directed-send-targeting",
       "content": "Support send to named child presentIds, or all children of that deck only; missing targets send to nobody; another deck's id is a no-op; new Present window gets a new id; replay last payload if that Present reloads.",
       "requirementId": "REQ-001",
-      "status": "pending",
-      "passes": false
+      "status": "done",
+      "passes": true,
+      "qaVerifiedAt": "2026-09-02T15:50:00.000Z",
+      "qaReport": "ralph/qa-report.md"
     },
     {
       "id": "single-home-focus",
@@ -88,27 +90,7 @@
   ],
   "selected": {
     "id": "directed-send-targeting",
-    "reason": "directed-send-main-switch passes QA. Graph has send target/all and session-scoped presentIds (shared/posterSessionGraph.cjs) but DeckBuilder always sends target=all with no child picker, no onDeckEvent child list, and no multi-deck isolation tests. Epic validation criteria 1-4 for REQ-001 depend on this task before single-home or thumbnail work."
+    "reason": "QA verified directed-send-targeting. REQ-001 todos complete. Remaining epic work: single-home-focus, persist-theme-all-windows, program-thumbnail."
   },
-  "planningNotes": "Baseline (loop 4 search): SessionTransport.send(payload, target?) and graph handleDeckCommand support named presentId or all; missing target yields empty deliver list. handlePresentEvent rejects ready when presentId not in session (cross-deck guess is no-op). DeckBuilder handleSendClick calls send(payload) without target; only Open Present spawns one child. No deck UI for present child list, send-to-selected, or close child. posterSessionGraph.test.js covers single deck send+replay only. E2E specs (remix-visual-regression, lyrics-navigation, alignment-grid) still inject via BroadcastChannel — migrate to session spawn/send in this task or immediately after deck targeting UI lands.",
-  "planningBrief": {
-    "directed-send-targeting": {
-      "alreadyInGraph": ["target presentId vs all", "missing target sends to nobody", "spawn uuid presentId", "replay on ready", "invalid ready rejects foreign presentId"],
-      "stillNeeded": [
-        "DeckBuilder: track presentIds via listPresents + onDeckEvent child-ready/child-closed",
-        "DeckBuilder: UI to pick send target (named presentId or all)",
-        "Wire handleSendClick and lyrics navigation to pass selected target",
-        "Integration tests: Deck A send A1 not A2; send-all not B; Deck B cannot drive A ids",
-        "Migrate or add E2E harness off BroadcastChannel"
-      ],
-      "primaryFiles": [
-        "src/Deck/DeckBuilder.tsx",
-        "src/Present/SessionTransport.ts",
-        "shared/posterSessionGraph.cjs",
-        "src/__tests__/posterSessionGraph.test.js",
-        "e2e/remix-visual-regression.spec.ts"
-      ]
-    }
-  },
-  "lastUpdated": "2026-09-02T14:55:00.000Z"
+  "lastUpdated": "2026-09-02T15:50:00.000Z"
 }
