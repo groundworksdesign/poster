@@ -1,82 +1,73 @@
-# QA Report: directed-send-targeting
+# QA Report: single-home-focus
 
 **Epic:** epic-004  
-**Task:** directed-send-targeting  
+**Task:** single-home-focus  
 **Branch:** cursor/epic-004-multi-deck-plan-doc-6573  
-**Verified at:** 2026-09-02T15:50:00.000Z  
+**Verified at:** 2026-09-02T16:00:00.000Z  
 **Persona:** qa (independent; dev notes not trusted)
 
 ## Task scope
 
-Support send to named child presentIds, or all children of that deck only; missing targets send to nobody; another deck's id is a no-op; new Present window gets a new id; replay last payload if that Present reloads.
+Keep Home/Library as the only main window (the saved presentations/decks list); opening Home again focuses the existing Home; Open Presentation opens a deck window while Home stays put; Present windows are where slides play (session-scoped children, not a bare `/presentation` from Home).
 
-**Also required for this loop (from operator):** present child list + send-target UI in DeckBuilder; wire sends with selected target; integration isolation tests; prefer E2E off BroadcastChannel.
-
-**Out of scope for this task:** single-home-focus, persist-theme-all-windows, program-thumbnail.
+**Out of scope for this task:** persist-theme-all-windows, program-thumbnail, directed-send changes.
 
 ## Tests executed (ralph/AGENT.md)
 
 | Command | Result |
 | --- | --- |
-| `CI=true pnpm test --watchAll=false --testPathIgnorePatterns=e2e` | 23 suites, **143 passed** (11 skipped) |
-| `CI=true pnpm test --watchAll=false --testPathPattern=directed-send-targeting\|posterSessionGraph` | 2 suites, **11 passed** (isolation + graph) |
-| `CI=true REMIX_PORT=3010 pnpm exec playwright test --config=playwright.remix.config.ts remix-deck-send-smoke remix-playwright-smoke remix-lyrics-navigation remix-alignment-grid remix-visual-regression` | **22 passed**, 6 failed (see Known debt) |
+| `CI=true pnpm test --watchAll=false --testPathIgnorePatterns=e2e` | 25 suites, **152 passed** (11 skipped) |
+| Focused: `homeWindowPolicy\|HomePage.unit\|electron-main.regression` (covered in full run) | included above |
+| `CI=true REMIX_PORT=3014 pnpm exec playwright test --config=playwright.remix.config.ts remix-single-home` | **3 passed** |
 
 ## Code inspection (independent)
 
 | Check | Finding |
 | --- | --- |
-| DeckBuilder present list + send-target UI | `data-testid="present-targets"` / `send-target`; options `all` + each `presentChildren` id; Close per child |
-| Child tracking | `listPresents()` on connect; `onDeckEvent` `child-ready` / `child-closed`; Open Present adds id; Close calls `closePresent` |
-| Sends use selected target | `handleSendClick` and `sendLyricsNavigation` pass `sendTargetRef.current` into `session.send(payload, target)` |
-| Named vs all (session-scoped) | `PosterSessionGraph` send: named target only if `session.presents.has(target)`; else `[]`; `all` uses only that session's present keys |
-| Missing target -> nobody | Named miss -> empty `presentIds`; no `poster:present-push` |
-| Foreign presentId / other session -> no-op | Send looks up target only in **own** session map; foreign id never matches; ready rejects if presentId not in that session (`invalid-present`) |
-| New presentId on spawn | `spawn` assigns `uuid()`; close removes id from list; reopen spawn differs (graph test) |
-| Replay on reload | `lastPayloadByPresent` replayed on `ready` |
-| No BroadcastChannel slide bus in E2E harness | `e2e/` has no `new BroadcastChannel`; remix specs use `/api/poster/deck-command` |
+| Home is saved-deck Library | `HomePage.tsx` mounts `LibraryPanel` under `home-page-library`; heading Poster |
+| Only one Electron Home window | `ensureHomeWindow` + `shouldCreateHomeWindow`; creates only if missing/destroyed; else `focusMainWindow` |
+| Second app launch focuses Home | `requestSingleInstanceLock` + `second-instance` -> `ensureHomeWindow` |
+| macOS activate | focuses existing Home; recreates only when `mainWindow` gone |
+| Window-open cannot spawn second Home | `setWindowOpenHandler`: `classifyOpenUrl` `home` -> deny + focus |
+| Open Presentation -> deck, Home stays | `data-testid="open-presentation"` `href="/deck"` + `openDeckWindow` (`window.open` new window); no navigate of Home |
+| No bare Present from Home | Home links are only `/deck` variants; no `/presentation` hrefs |
+| Bare Present denied in Electron | `present-bare` -> deny + `openDeckWindow()` |
+| Session Present allowed | `present-session` (sessionId + presentId) allowed as child window |
+| Present plays slides as session children | `DeckBuilder` `Open Present` -> `spawnPresent`; `Present.tsx` requires `sessionId`+`presentId` or shows connect guidance |
 
 ## Acceptance criteria mapping
 
-Criteria belonging to **other todos** are marked **out of scope** for this task pass/fail.
+Criteria belonging to **other todos** are marked **out of scope**.
 
 | # | Criterion | Scope | Evidence | Pass |
 | --- | --- | --- | --- | --- |
-| 1 | Deck A send-to-A1 does not show on A2 or any B Present | in scope | `posterSessionGraph.test.js` + `directed-send-targeting.test.ts` same-named tests; graph send filters by session + named target | yes |
-| 2 | Deck A send-to-all-its-children does not show on B | in scope | Graph + integration tests `send(..., 'all')` deliver A1+A2 only | yes |
-| 3 | Deck B cannot drive A's children (including by guessing an id) | in scope | Graph + integration: B `send` with A's presentId delivers to neither A1 nor B1 | yes |
-| 4 | Closing a Present drops it from that deck's list. Reopen gets a new presentId | in scope (task content) | Graph close removes from `list`; new spawn uuid differs; DeckBuilder Close -> `closePresent` + local list filter | yes |
-| 5 | Reloading a Present still shows the last payload Main cached for it | in scope (task content) | Graph `replay last payload when present becomes ready` test | yes |
-| 6 | Only one Home/Library… | out of scope | -> `single-home-focus` | n/a |
-| 7 | Theme persist quit/reopen | out of scope | -> `persist-theme-all-windows` | n/a |
-| 8 | Theme persist Home close/reopen | out of scope | -> `persist-theme-all-windows` | n/a |
+| 1-5 | Directed-send isolation / close / replay | out of scope | REQ-001 already passes | n/a |
+| 6 | Only one Home/Library exists. Opening Home again focuses the original Home. Home is the saved-deck list. Present windows play slides. Open Presentation leaves Home in place and opens a deck window. | **in scope** | See must-confirm table + tests below | yes |
+| 7-8 | Theme persist | out of scope | -> `persist-theme-all-windows` | n/a |
 | 9 | Program thumbnail | out of scope | -> `program-thumbnail` | n/a |
-| 10 | Slide payloads are not sent on BroadcastChannel | in scope (regression) | DeckBuilder uses SessionTransport only; E2E helpers use poster API; no `new BroadcastChannel` under `e2e/` | yes |
+| 10 | No BroadcastChannel slide bus | regression | unchanged; prior REQ-001 | n/a (not this task) |
 
-### Operator must-confirm (explicit)
+### Operator must-confirm
 
 | Must confirm | Evidence | Pass |
 | --- | --- | --- |
-| A send-to-A1 not on A2 or B | Integration + graph tests | yes |
-| A send-all not on B | Integration + graph tests | yes |
-| B cannot drive A | Integration + graph tests | yes |
-| Missing targets send to nobody | Integration + graph `missing target presentId` tests | yes |
-| Foreign session id is a no-op | Cross-deck send guess no-op; ready with unknown presentId/session returns `invalid-present` | yes |
+| Only one Home/Library (saved-deck list) | Single `mainWindow` Home; `LibraryPanel` on Home; policy + electron regression tests | yes |
+| Opening Home again focuses existing Home | `ensureHomeWindow` / `shouldCreateHomeWindow` false when exists; second-instance + activate; `homeWindowPolicy.test.js` | yes |
+| Open Presentation opens deck; Home stays | HomePage unit + `remix-single-home` E2E (Home heading still visible; deck URL `/deck`) | yes |
+| Present is session-scoped, not bare `/presentation` from Home | No bare Present links on Home; E2E asserts none; bare `/presentation` shows deck-builder guidance; Electron denies `present-bare` | yes |
 
 ## Task-level deliverables
 
 | Deliverable | Pass |
 | --- | --- |
-| Present child list UI in DeckBuilder | yes (`present-list` / empty state; unit + deck-send-smoke E2E) |
-| Send-target selector (named or all of this session) | yes (`send-target` default `all`) |
-| Wire handleSendClick + lyrics nav to selected target | yes |
-| Isolation integration tests | yes (`src/integration/directed-send-targeting.test.ts`) |
-| E2E off BroadcastChannel for session delivery | yes (remix smoke/lyrics/visual + shared `posterSessionE2E.ts`) |
+| Electron single-Home focus policy | yes |
+| Home Open Presentation -> deck | yes |
+| Tests for REQ-002 Validation item | yes (`homeWindowPolicy`, `HomePage.unit`, electron regression, `remix-single-home`) |
 
 ## Known debt (not blocking this task)
 
-- `e2e/remix-alignment-grid.spec.ts` top/bottom cases expect `top/bottom: 20px` but `Present.tsx` `getTitleOverlayStyle()` uses `0` / `0`. Overlay still receives the slide (session delivery OK). Middle row and `remix-visual-regression` title alignment screenshots passed. Fix expectations or product insets in a follow-up; not a directed-send isolation failure.
+- `e2e/remix-dev-render.spec.ts` `/deck` with `waitUntil: 'networkidle'` can time out while poster poll keeps connections open. Unrelated to single-Home behavior; `remix-single-home` and deck smoke using `domcontentloaded` pass.
 
 ## Verdict
 
-**PASS** — `directed-send-targeting` meets scoped requirements and the operator must-confirm isolation rules. Verified by independent code inspection, full Jest suite, isolation-focused tests, and remix session E2E (with non-blocking alignment CSS expectation debt noted above).
+**PASS** — `single-home-focus` meets REQ-002 scoped requirements and the operator must-confirm checks. Verified by independent code inspection, full Jest suite, and remix single-home E2E.
