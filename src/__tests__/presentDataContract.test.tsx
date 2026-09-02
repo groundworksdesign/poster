@@ -25,6 +25,7 @@ import {
 } from '../Present/PresentTypes';
 import Presentation from '../Present/Present';
 import {
+  ensureTestSessionBackend,
   resetTestSessionHub,
   setPresentationSearch,
   setupDeckPresentPair,
@@ -64,6 +65,7 @@ async function renderPresentationWithSession(): Promise<DeckSession> {
 }
 
 beforeEach(() => {
+  ensureTestSessionBackend();
   resetTestSessionHub();
 });
 

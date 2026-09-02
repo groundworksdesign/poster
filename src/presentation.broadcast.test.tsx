@@ -4,12 +4,14 @@ import { act } from 'react';
 import Presentation from './Present/Present';
 import { SlideType } from './Present/PresentTypes';
 import {
+  ensureTestSessionBackend,
   resetTestSessionHub,
   setPresentationSearch,
   setupDeckPresentPair,
 } from './Present/testSessionHelpers';
 
 beforeEach(() => {
+  ensureTestSessionBackend();
   resetTestSessionHub();
 });
 

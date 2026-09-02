@@ -53,14 +53,10 @@ class PosterSessionGraph {
         this.sessions.delete(peer.sessionId);
       }
     } else if (peer.role === 'present' && session && peer.presentId) {
-      session.presents.delete(peer.presentId);
-      this.lastPayloadByPresent.delete(peer.presentId);
-      const deckPeer = this.peers.get(session.deckPeerId);
-      if (deckPeer) {
-        deckPeer.deliver('poster:deck-event', {
-          type: 'child-closed',
-          presentId: peer.presentId,
-        });
+      // Soft-unbind only if this peer still owns the presentId (avoid Strict Mode race
+      // where a late closed from mount-1 clears mount-2's binding).
+      if (session.presents.get(peer.presentId) === peerId) {
+        session.presents.set(peer.presentId, null);
       }
     }
 
@@ -118,10 +114,16 @@ class PosterSessionGraph {
         }
         const presentPeerId = session.presents.get(presentId);
         if (presentPeerId) {
-          this.unregister(presentPeerId);
-        } else {
-          session.presents.delete(presentId);
-          this.lastPayloadByPresent.delete(presentId);
+          this.peers.delete(presentPeerId);
+        }
+        session.presents.delete(presentId);
+        this.lastPayloadByPresent.delete(presentId);
+        const deckPeer = this.peers.get(session.deckPeerId);
+        if (deckPeer) {
+          deckPeer.deliver('poster:deck-event', {
+            type: 'child-closed',
+            presentId,
+          });
         }
         return { ok: true };
       }

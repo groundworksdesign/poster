@@ -3,12 +3,14 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { act } from 'react';
 import Presentation from '../Present/Present';
 import {
+  ensureTestSessionBackend,
   resetTestSessionHub,
   setPresentationSearch,
   setupDeckPresentPair,
 } from '../Present/testSessionHelpers';
 
 beforeEach(() => {
+  ensureTestSessionBackend();
   resetTestSessionHub();
 });
 

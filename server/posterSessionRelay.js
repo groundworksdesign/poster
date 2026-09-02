@@ -2,18 +2,24 @@
 
 const { PosterSessionGraph } = require('../shared/posterSessionGraph.cjs');
 
-/** @type {PosterSessionGraph} */
-let graph;
+const GLOBAL_KEY = '__posterSessionRelayState';
 
-/** @type {Map<string, { deck: import('express').Response[], present: import('express').Response[] }>} */
-const streamClients = new Map();
+function getState() {
+  if (!globalThis[GLOBAL_KEY]) {
+    globalThis[GLOBAL_KEY] = {
+      graph: new PosterSessionGraph(),
+      streamClients: new Map(),
+    };
+  }
+  return globalThis[GLOBAL_KEY];
+}
 
 function getGraph() {
-  if (!graph) graph = new PosterSessionGraph();
-  return graph;
+  return getState().graph;
 }
 
 function ensurePeerStreams(peerId) {
+  const { streamClients } = getState();
   if (!streamClients.has(peerId)) {
     streamClients.set(peerId, { deck: [], present: [] });
   }
@@ -21,26 +27,92 @@ function ensurePeerStreams(peerId) {
 }
 
 function deliverToPeer(peerId, channel, payload) {
-  const streams = streamClients.get(peerId);
-  if (!streams) return;
-  const list = channel === 'poster:present-push' ? streams.present : streams.deck;
-  const data = JSON.stringify({ channel, payload });
-  for (const res of list) {
-    res.write(`data: ${data}\n\n`);
+  const state = getState();
+  const streams = state.streamClients.get(peerId);
+  if (streams) {
+    const list = channel === 'poster:present-push' ? streams.present : streams.deck;
+    const data = `data: ${JSON.stringify({ channel, payload })}\n\n`;
+    for (const sink of list) {
+      try {
+        sink.write(data);
+      } catch (_) {
+        // sink may be closed
+      }
+    }
   }
+  // Always enqueue for poll clients (Remix SSE often ends immediately).
+  if (!state.queues) state.queues = new Map();
+  if (!state.queues.has(peerId)) state.queues.set(peerId, []);
+  state.queues.get(peerId).push({ channel, payload });
 }
 
-function writeSse(res) {
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Connection', 'keep-alive');
-  res.flushHeaders?.();
+function drainQueue(peerId) {
+  const state = getState();
+  if (!state.queues) state.queues = new Map();
+  const items = state.queues.get(peerId) || [];
+  state.queues.set(peerId, []);
+  return items;
 }
 
-/**
- * Mount poster session relay routes on an Express app (before Remix catch-all).
- * @param {import('express').Express} app
- */
+function processDeckCommand(peerId, command) {
+  const g = getGraph();
+  if (command.type === 'register') {
+    if (!g.peers.has(peerId)) {
+      g.registerDeck(peerId, (channel, payload) => deliverToPeer(peerId, channel, payload));
+    }
+    const peer = g.peers.get(peerId);
+    return { ok: true, sessionId: peer?.sessionId };
+  }
+  return g.handleDeckCommand(peerId, command);
+}
+
+function processPresentEvent(peerId, event) {
+  const g = getGraph();
+  return g.handlePresentEvent(peerId, event, (channel, payload) =>
+    deliverToPeer(peerId, channel, payload),
+  );
+}
+
+function attachStream(peerId, kind, sink) {
+  const streams = ensurePeerStreams(peerId);
+  const list = kind === 'present' ? streams.present : streams.deck;
+  list.push(sink);
+  return () => {
+    const idx = list.indexOf(sink);
+    if (idx >= 0) list.splice(idx, 1);
+    const remaining = streams.deck.length + streams.present.length;
+    if (remaining === 0) {
+      getGraph().unregister(peerId);
+    }
+  };
+}
+
+function createSseResponse(peerId, kind) {
+  const encoder = new TextEncoder();
+  let unsubscribe = () => {};
+  const stream = new ReadableStream({
+    start(controller) {
+      const sink = {
+        write(chunk) {
+          controller.enqueue(encoder.encode(chunk));
+        },
+      };
+      unsubscribe = attachStream(peerId, kind, sink);
+      controller.enqueue(encoder.encode(': connected\n\n'));
+    },
+    cancel() {
+      unsubscribe();
+    },
+  });
+  return new Response(stream, {
+    headers: {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      Connection: 'keep-alive',
+    },
+  });
+}
+
 function mountPosterSessionRelay(app) {
   app.use('/api/poster', require('express').json());
 
@@ -51,20 +123,7 @@ function mountPosterSessionRelay(app) {
       res.status(400).json({ ok: false, error: 'peerId-and-command-required' });
       return;
     }
-
-    const g = getGraph();
-
-    if (command.type === 'register') {
-      if (!g.peers.has(peerId)) {
-        g.registerDeck(peerId, (channel, payload) => deliverToPeer(peerId, channel, payload));
-      }
-      const peer = g.peers.get(peerId);
-      res.json({ ok: true, sessionId: peer?.sessionId });
-      return;
-    }
-
-    const result = g.handleDeckCommand(peerId, command);
-    res.json(result);
+    res.json(processDeckCommand(peerId, command));
   });
 
   app.post('/api/poster/present-event', (req, res) => {
@@ -74,12 +133,7 @@ function mountPosterSessionRelay(app) {
       res.status(400).json({ ok: false, error: 'peerId-and-event-required' });
       return;
     }
-
-    const g = getGraph();
-    const result = g.handlePresentEvent(peerId, event, (channel, payload) =>
-      deliverToPeer(peerId, channel, payload),
-    );
-    res.json(result);
+    res.json(processPresentEvent(peerId, event));
   });
 
   app.get('/api/poster/stream/deck', (req, res) => {
@@ -88,14 +142,16 @@ function mountPosterSessionRelay(app) {
       res.status(400).end('peerId required');
       return;
     }
-    writeSse(res);
-    const streams = ensurePeerStreams(peerId);
-    streams.deck.push(res);
-    req.on('close', () => {
-      const idx = streams.deck.indexOf(res);
-      if (idx >= 0) streams.deck.splice(idx, 1);
-      getGraph().unregister(peerId);
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders?.();
+    const unsubscribe = attachStream(peerId, 'deck', {
+      write(chunk) {
+        res.write(chunk);
+      },
     });
+    req.on('close', unsubscribe);
   });
 
   app.get('/api/poster/stream/present', (req, res) => {
@@ -104,29 +160,50 @@ function mountPosterSessionRelay(app) {
       res.status(400).end('peerId required');
       return;
     }
-    writeSse(res);
-    const streams = ensurePeerStreams(peerId);
-    streams.present.push(res);
-    req.on('close', () => {
-      const idx = streams.present.indexOf(res);
-      if (idx >= 0) streams.present.splice(idx, 1);
-      getGraph().unregister(peerId);
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders?.();
+    const unsubscribe = attachStream(peerId, 'present', {
+      write(chunk) {
+        res.write(chunk);
+      },
     });
+    req.on('close', unsubscribe);
   });
 
-  /** Test-only reset */
+  app.get('/api/poster/poll', (req, res) => {
+    const peerId = req.query.peerId;
+    if (typeof peerId !== 'string' || !peerId) {
+      res.status(400).json({ ok: false, error: 'peerId-required' });
+      return;
+    }
+    res.json({ ok: true, messages: drainQueue(peerId) });
+  });
+
   app.post('/api/poster/test/reset', (req, res) => {
     if (process.env.NODE_ENV === 'production') {
       res.status(404).end();
       return;
     }
-    graph = new PosterSessionGraph();
-    streamClients.clear();
+    const state = getState();
+    state.graph = new PosterSessionGraph();
+    state.streamClients.clear();
     res.json({ ok: true });
   });
 }
 
-module.exports = { mountPosterSessionRelay, getGraph, _resetForTests: () => {
-  graph = new PosterSessionGraph();
-  streamClients.clear();
-} };
+module.exports = {
+  mountPosterSessionRelay,
+  getGraph,
+  processDeckCommand,
+  processPresentEvent,
+  createSseResponse,
+  drainQueue,
+  _resetForTests: () => {
+    const state = getState();
+    state.graph = new PosterSessionGraph();
+    state.streamClients.clear();
+    state.queues = new Map();
+  },
+};

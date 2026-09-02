@@ -13,6 +13,7 @@ jest.mock('../Present/SessionTransport', () => ({
       url: '/presentation?sessionId=mock-session&presentId=mock-present',
     })),
     listPresents: jest.fn(async () => []),
+    closePresent: jest.fn(async () => {}),
     onDeckEvent: jest.fn(() => () => {}),
     dispose: jest.fn(),
   }),
@@ -75,6 +76,14 @@ test('DeckBuilder shows header and handles save with no deck', () => {
   });
 
   expect(screen.getByText('No deck to save')).toBeInTheDocument();
+});
+
+test('DeckBuilder shows present targets UI with send-to all default', async () => {
+  render(<DeckBuilder />);
+  await waitFor(() => expect(screen.getByTestId('present-targets')).toBeInTheDocument());
+  expect(screen.getByTestId('send-target')).toHaveValue('all');
+  expect(screen.getByTestId('present-list-empty')).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: /open present/i })).toBeInTheDocument();
 });
 
 test('does not render Library toggle; Save and Load remain', () => {

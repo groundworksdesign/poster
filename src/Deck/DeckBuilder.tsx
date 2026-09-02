@@ -24,6 +24,11 @@ export default function DeckBuilder() {
   const [file, setFile] = useState<File | null>(null);
   const [deck, setDeck] = useState<Deck | null>(null);
   const deckSessionRef = useRef<DeckSession | null>(null);
+  const [presentChildren, setPresentChildren] = useState<string[]>([]);
+  /** 'all' = every child of this deck session only; otherwise a presentId of this session. */
+  const [sendTarget, setSendTarget] = useState<'all' | string>('all');
+  const sendTargetRef = useRef<'all' | string>('all');
+  sendTargetRef.current = sendTarget;
   const [isLoadingSong, setIsLoadingSong] = useState<boolean>(false);
   const [isSongMode, setIsSongMode] = useState<boolean>(false);
   const [, setCurrentSongIndex] = useState<number>(0);
@@ -45,16 +50,32 @@ export default function DeckBuilder() {
 
   useEffect(() => {
     let disposed = false;
-    createDeckSession().then((session) => {
+    let unsubEvents: (() => void) | undefined;
+    createDeckSession().then(async (session) => {
       if (disposed) {
         session.dispose();
         return;
       }
       deckSessionRef.current = session;
-      setMessage('Deck builder connected');
+      unsubEvents = session.onDeckEvent((event) => {
+        if (event.type === 'child-ready') {
+          setPresentChildren((prev) =>
+            prev.includes(event.presentId) ? prev : [...prev, event.presentId],
+          );
+        } else if (event.type === 'child-closed') {
+          setPresentChildren((prev) => prev.filter((id) => id !== event.presentId));
+          setSendTarget((current) => (current === event.presentId ? 'all' : current));
+        }
+      });
+      const listed = await session.listPresents();
+      if (!disposed) {
+        setPresentChildren(listed);
+        setMessage('Deck builder connected');
+      }
     });
     return () => {
       disposed = true;
+      unsubEvents?.();
       deckSessionRef.current?.dispose();
       deckSessionRef.current = null;
     };
@@ -268,14 +289,16 @@ export default function DeckBuilder() {
   };
     const slideWithStyle = props.slide ? safeSlide(props.slide) : null;
     const payload = new PresentData({ ...props, slide: slideWithStyle });
-    void deckSessionRef.current?.send(payload);
+    const target = sendTargetRef.current;
+    void deckSessionRef.current?.send(payload, target);
     setLastSentSlideId(slideWithStyle?.id ?? null);
   };
 
   const handleOpenPresent = async () => {
     const session = deckSessionRef.current;
     if (!session) return;
-    const { url } = await session.spawnPresent();
+    const { url, presentId } = await session.spawnPresent();
+    setPresentChildren((prev) => (prev.includes(presentId) ? prev : [...prev, presentId]));
     const features =
       'width=1280,height=720,menubar=no,toolbar=no,location=no,status=no,scrollbars=yes,resizable=yes';
     const w = window.open(url, '_blank', features);
@@ -283,6 +306,14 @@ export default function DeckBuilder() {
       w.opener = null;
       w.focus();
     }
+  };
+
+  const handleClosePresent = async (presentId: string) => {
+    const session = deckSessionRef.current;
+    if (!session) return;
+    await session.closePresent(presentId);
+    setPresentChildren((prev) => prev.filter((id) => id !== presentId));
+    setSendTarget((current) => (current === presentId ? 'all' : current));
   };
 
   const handleSongStageAdvance = (slideRef: any) => {
@@ -339,7 +370,10 @@ export default function DeckBuilder() {
 
   const sendLyricsNavigation = (command: 'next' | 'previous' | 'goToVerse', verseIndex?: number) => {
     const nav = command === 'goToVerse' ? { command, verseIndex } : { command };
-    void deckSessionRef.current?.send(new PresentData({ data: { lyricsNavigation: nav } }));
+    void deckSessionRef.current?.send(
+      new PresentData({ data: { lyricsNavigation: nav } }),
+      sendTargetRef.current,
+    );
   };
 
   const startSong = () => {
@@ -694,6 +728,43 @@ export default function DeckBuilder() {
         <button onClick={rewindSong} disabled={!deck || !isSongMode}>Prev 2 Lines</button>
         <button onClick={advanceSong} disabled={!deck || !isSongMode}>Next 2 Lines</button>
         <button type="button" onClick={() => void handleOpenPresent()}>Open Present</button>
+
+        <div
+          data-testid="present-targets"
+          style={{ marginTop: '12px', padding: '8px', border: '1px solid #ddd' }}
+        >
+          <h3>Present windows</h3>
+          <label>
+            Send to:{' '}
+            <select
+              data-testid="send-target"
+              aria-label="Send target"
+              value={sendTarget}
+              onChange={(e) => setSendTarget(e.target.value)}
+            >
+              <option value="all">All children of this deck</option>
+              {presentChildren.map((id) => (
+                <option key={id} value={id}>
+                  {id.slice(0, 8)}…
+                </option>
+              ))}
+            </select>
+          </label>
+          {presentChildren.length === 0 ? (
+            <p data-testid="present-list-empty">No Present windows open. Use Open Present.</p>
+          ) : (
+            <ul data-testid="present-list">
+              {presentChildren.map((id) => (
+                <li key={id}>
+                  <code>{id}</code>{' '}
+                  <button type="button" onClick={() => void handleClosePresent(id)}>
+                    Close
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
 
         {deck && (
           <div style={{ marginTop: '12px', padding: '8px', border: '1px solid #ddd' }}>

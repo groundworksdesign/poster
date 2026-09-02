@@ -39,9 +39,15 @@ function genPeerId(): string {
 async function postJson(url: string, body: unknown): Promise<unknown> {
   const res = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
     body: JSON.stringify(body),
   });
+  if (!res.ok) {
+    throw new Error(`poster API ${url} failed: ${res.status}`);
+  }
   return res.json();
 }
 
@@ -50,6 +56,7 @@ export type DeckSession = {
   sessionId: string;
   send: (payload: unknown, target?: string | 'all') => Promise<void>;
   spawnPresent: () => Promise<{ sessionId: string; presentId: string; url: string }>;
+  closePresent: (presentId: string) => Promise<void>;
   listPresents: () => Promise<string[]>;
   onDeckEvent: (handler: (event: DeckEvent) => void) => () => void;
   dispose: () => void;
@@ -61,38 +68,75 @@ export type PresentSession = {
   dispose: () => void;
 };
 
-/** In-memory hub for unit tests (same JS realm). */
-type TestHubPeer = {
-  role: 'deck' | 'present';
-  onDeckEvent?: (payload: DeckEvent) => void;
-  onPresentPush?: (payload: unknown) => void;
+/** Optional in-memory backend for Jest (injected; never require() native modules here). */
+export type TestSessionBackend = {
+  createDeckSession: () => Promise<DeckSession>;
+  createPresentSession: (sessionId: string, presentId: string) => Promise<PresentSession>;
+  reset: () => void;
 };
 
-const testHub: {
-  graph: import('../../shared/posterSessionGraph.cjs').PosterSessionGraph | null;
-  peers: Map<string, TestHubPeer>;
-} = {
-  graph: null,
-  peers: new Map(),
-};
+let testBackend: TestSessionBackend | null = null;
 
-function getTestGraph() {
-  if (!testHub.graph) {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { PosterSessionGraph } = require('../../shared/posterSessionGraph.cjs');
-    testHub.graph = new PosterSessionGraph();
-    testHub.peers.clear();
-  }
-  return testHub.graph;
+export function setTestSessionBackend(backend: TestSessionBackend | null): void {
+  testBackend = backend;
 }
 
 export function resetTestSessionHub(): void {
-  testHub.graph = null;
-  testHub.peers.clear();
+  testBackend?.reset();
 }
 
-function useTestHub(): boolean {
-  return process.env.NODE_ENV === 'test';
+function subscribePresentPushHttp(peerId: string, handler: (payload: unknown) => void): () => void {
+  let stopped = false;
+  const tick = async () => {
+    if (stopped) return;
+    try {
+      const res = await fetch(`/api/poster/poll?peerId=${encodeURIComponent(peerId)}`);
+      const data = (await res.json()) as {
+        messages?: Array<{ channel: string; payload: unknown }>;
+      };
+      for (const msg of data.messages || []) {
+        if (msg.channel === CHANNEL_PRESENT_PUSH) {
+          handler(msg.payload);
+        }
+      }
+    } catch {
+      // ignore transient poll errors
+    }
+    if (!stopped) {
+      setTimeout(tick, 100);
+    }
+  };
+  tick();
+  return () => {
+    stopped = true;
+  };
+}
+
+function subscribeDeckEventsHttp(peerId: string, handler: (event: DeckEvent) => void): () => void {
+  let stopped = false;
+  const tick = async () => {
+    if (stopped) return;
+    try {
+      const res = await fetch(`/api/poster/poll?peerId=${encodeURIComponent(peerId)}`);
+      const data = (await res.json()) as {
+        messages?: Array<{ channel: string; payload: unknown }>;
+      };
+      for (const msg of data.messages || []) {
+        if (msg.channel === CHANNEL_DECK_EVENT) {
+          handler(msg.payload as DeckEvent);
+        }
+      }
+    } catch {
+      // ignore
+    }
+    if (!stopped) {
+      setTimeout(tick, 100);
+    }
+  };
+  tick();
+  return () => {
+    stopped = true;
+  };
 }
 
 async function deckCommandElectron(command: DeckCommand): Promise<unknown> {
@@ -104,84 +148,12 @@ async function deckCommandHttp(peerId: string, command: DeckCommand): Promise<un
   return postJson('/api/poster/deck-command', { peerId, command });
 }
 
-function subscribeDeckEventsHttp(peerId: string, handler: (event: DeckEvent) => void): () => void {
-  const es = new EventSource(`/api/poster/stream/deck?peerId=${encodeURIComponent(peerId)}`);
-  es.onmessage = (msg) => {
-    try {
-      const parsed = JSON.parse(msg.data);
-      if (parsed.channel === CHANNEL_DECK_EVENT) {
-        handler(parsed.payload as DeckEvent);
-      }
-    } catch {
-      // ignore malformed
-    }
-  };
-  return () => es.close();
-}
-
-function subscribePresentPushHttp(peerId: string, handler: (payload: unknown) => void): () => void {
-  const es = new EventSource(`/api/poster/stream/present?peerId=${encodeURIComponent(peerId)}`);
-  es.onmessage = (msg) => {
-    try {
-      const parsed = JSON.parse(msg.data);
-      if (parsed.channel === CHANNEL_PRESENT_PUSH) {
-        handler(parsed.payload);
-      }
-    } catch {
-      // ignore malformed
-    }
-  };
-  return () => es.close();
-}
-
 export async function createDeckSession(): Promise<DeckSession> {
-  if (useTestHub()) {
-    const peerId = genPeerId();
-    const graph = getTestGraph();
-    const reg = graph.registerDeck(peerId, (channel, payload) => {
-      const peer = testHub.peers.get(peerId);
-      if (channel === CHANNEL_DECK_EVENT && peer?.onDeckEvent) {
-        peer.onDeckEvent(payload as DeckEvent);
-      }
-    });
-    testHub.peers.set(peerId, { role: 'deck' });
-    return {
-      peerId,
-      sessionId: reg.sessionId,
-      send: async (payload, target) => {
-        graph.handleDeckCommand(peerId, { type: 'send', payload, target: target ?? 'all' });
-      },
-      spawnPresent: async () => {
-        const result = graph.handleDeckCommand(peerId, { type: 'spawn' }) as {
-          ok: boolean;
-          sessionId: string;
-          presentId: string;
-        };
-        const url = `/presentation?sessionId=${encodeURIComponent(result.sessionId)}&presentId=${encodeURIComponent(result.presentId)}`;
-        return { sessionId: result.sessionId, presentId: result.presentId, url };
-      },
-      listPresents: async () => {
-        const result = graph.handleDeckCommand(peerId, { type: 'list' }) as {
-          presents: string[];
-        };
-        return result.presents ?? [];
-      },
-      onDeckEvent: (handler) => {
-        const peer = testHub.peers.get(peerId);
-        if (peer) peer.onDeckEvent = handler;
-        return () => {
-          const p = testHub.peers.get(peerId);
-          if (p) p.onDeckEvent = undefined;
-        };
-      },
-      dispose: () => {
-        graph.unregister(peerId);
-        testHub.peers.delete(peerId);
-      },
-    };
+  if (testBackend) {
+    return testBackend.createDeckSession();
   }
 
-  if (window.poster) {
+  if (typeof window !== 'undefined' && window.poster) {
     const reg = (await deckCommandElectron({ type: 'register' })) as {
       sessionId: string;
       peerId?: string;
@@ -203,6 +175,9 @@ export async function createDeckSession(): Promise<DeckSession> {
         const url = `/presentation?sessionId=${encodeURIComponent(result.sessionId)}&presentId=${encodeURIComponent(result.presentId)}`;
         return { sessionId: result.sessionId, presentId: result.presentId, url };
       },
+      closePresent: async (presentId) => {
+        await deckCommandElectron({ type: 'close', presentId });
+      },
       listPresents: async () => {
         const result = (await deckCommandElectron({ type: 'list' })) as { presents: string[] };
         return result.presents ?? [];
@@ -216,7 +191,7 @@ export async function createDeckSession(): Promise<DeckSession> {
 
   const peerId = genPeerId();
   const reg = (await deckCommandHttp(peerId, { type: 'register' })) as { sessionId: string };
-  const unsub = subscribeDeckEventsHttp(peerId, () => {});
+  let unsub: (() => void) | undefined;
   return {
     peerId,
     sessionId: reg.sessionId,
@@ -231,13 +206,23 @@ export async function createDeckSession(): Promise<DeckSession> {
       const url = `/presentation?sessionId=${encodeURIComponent(result.sessionId)}&presentId=${encodeURIComponent(result.presentId)}`;
       return { sessionId: result.sessionId, presentId: result.presentId, url };
     },
+    closePresent: async (presentId) => {
+      await deckCommandHttp(peerId, { type: 'close', presentId });
+    },
     listPresents: async () => {
       const result = (await deckCommandHttp(peerId, { type: 'list' })) as { presents: string[] };
       return result.presents ?? [];
     },
-    onDeckEvent: (handler) => subscribeDeckEventsHttp(peerId, handler),
+    onDeckEvent: (handler) => {
+      unsub?.();
+      unsub = subscribeDeckEventsHttp(peerId, handler);
+      return () => {
+        unsub?.();
+        unsub = undefined;
+      };
+    },
     dispose: () => {
-      unsub();
+      unsub?.();
     },
   };
 }
@@ -246,38 +231,11 @@ export async function createPresentSession(
   sessionId: string,
   presentId: string,
 ): Promise<PresentSession> {
-  if (useTestHub()) {
-    const peerId = genPeerId();
-    const graph = getTestGraph();
-    testHub.peers.set(peerId, { role: 'present' });
-    graph.handlePresentEvent(
-      peerId,
-      { type: 'ready', sessionId, presentId },
-      (channel, payload) => {
-        const peer = testHub.peers.get(peerId);
-        if (channel === CHANNEL_PRESENT_PUSH && peer?.onPresentPush) {
-          peer.onPresentPush(payload);
-        }
-      },
-    );
-    return {
-      peerId,
-      onPresentPush: (handler) => {
-        const peer = testHub.peers.get(peerId);
-        if (peer) peer.onPresentPush = handler;
-        return () => {
-          const p = testHub.peers.get(peerId);
-          if (p) p.onPresentPush = undefined;
-        };
-      },
-      dispose: () => {
-        graph.handlePresentEvent(peerId, { type: 'closed' }, () => {});
-        testHub.peers.delete(peerId);
-      },
-    };
+  if (testBackend) {
+    return testBackend.createPresentSession(sessionId, presentId);
   }
 
-  if (window.poster) {
+  if (typeof window !== 'undefined' && window.poster) {
     window.poster.presentEvent({ type: 'ready', sessionId, presentId });
     return {
       peerId: genPeerId(),
@@ -293,13 +251,20 @@ export async function createPresentSession(
     peerId,
     event: { type: 'ready', sessionId, presentId },
   });
-  const unsub = subscribePresentPushHttp(peerId, () => {});
+  let unsub: (() => void) | undefined;
   return {
     peerId,
-    onPresentPush: (handler) => subscribePresentPushHttp(peerId, handler),
+    onPresentPush: (handler) => {
+      unsub?.();
+      unsub = subscribePresentPushHttp(peerId, handler);
+      return () => {
+        unsub?.();
+        unsub = undefined;
+      };
+    },
     dispose: () => {
       postJson('/api/poster/present-event', { peerId, event: { type: 'closed' } });
-      unsub();
+      unsub?.();
     },
   };
 }
