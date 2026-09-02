@@ -171,6 +171,27 @@ class PosterSessionGraph {
       return { ok: true };
     }
 
+    // Present reports what is on program; Main forwards only to the owning deck.
+    if (event.type === 'program-state') {
+      const peer = this.peers.get(peerId);
+      if (!peer || peer.role !== 'present' || !peer.presentId) {
+        return { ok: false, error: 'not-a-present' };
+      }
+      const session = this.sessions.get(peer.sessionId);
+      if (!session) {
+        return { ok: false, error: 'no-session' };
+      }
+      const deckPeer = this.peers.get(session.deckPeerId);
+      if (deckPeer) {
+        deckPeer.deliver('poster:deck-event', {
+          type: 'program-thumbnail',
+          presentId: peer.presentId,
+          program: event.program ?? null,
+        });
+      }
+      return { ok: true };
+    }
+
     return { ok: false, error: 'unknown-event' };
   }
 }

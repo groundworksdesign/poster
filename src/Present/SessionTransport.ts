@@ -1,3 +1,5 @@
+import type { ProgramThumbnailState } from './programThumbnail';
+
 export const CHANNEL_DECK_COMMAND = 'poster:deck-command';
 export const CHANNEL_PRESENT_PUSH = 'poster:present-push';
 export const CHANNEL_PRESENT_EVENT = 'poster:present-event';
@@ -10,13 +12,21 @@ export type DeckCommand =
   | { type: 'list' }
   | { type: 'close'; presentId: string };
 
+export type { ProgramThumbnailState };
+
 export type PresentEvent =
   | { type: 'ready'; sessionId: string; presentId: string }
-  | { type: 'closed' };
+  | { type: 'closed' }
+  | { type: 'program-state'; program: ProgramThumbnailState | null };
 
 export type DeckEvent =
   | { type: 'child-ready'; presentId: string }
-  | { type: 'child-closed'; presentId: string };
+  | { type: 'child-closed'; presentId: string }
+  | {
+      type: 'program-thumbnail';
+      presentId: string;
+      program: ProgramThumbnailState | null;
+    };
 
 declare global {
   interface Window {
@@ -65,6 +75,8 @@ export type DeckSession = {
 export type PresentSession = {
   peerId: string;
   onPresentPush: (handler: (payload: unknown) => void) => () => void;
+  /** Report what is on program to Main (directed present-event → owning deck). */
+  reportProgramState: (program: ProgramThumbnailState | null) => void;
   dispose: () => void;
 };
 
@@ -240,6 +252,9 @@ export async function createPresentSession(
     return {
       peerId: genPeerId(),
       onPresentPush: (handler) => window.poster!.onPresentPush(handler),
+      reportProgramState: (program) => {
+        window.poster!.presentEvent({ type: 'program-state', program });
+      },
       dispose: () => {
         window.poster!.presentEvent({ type: 'closed' });
       },
@@ -261,6 +276,12 @@ export async function createPresentSession(
         unsub?.();
         unsub = undefined;
       };
+    },
+    reportProgramState: (program) => {
+      void postJson('/api/poster/present-event', {
+        peerId,
+        event: { type: 'program-state', program },
+      });
     },
     dispose: () => {
       postJson('/api/poster/present-event', { peerId, event: { type: 'closed' } });

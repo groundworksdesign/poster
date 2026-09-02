@@ -127,4 +127,31 @@ describe('PosterSessionGraph', () => {
     const spawn2 = graph.handleDeckCommand(deckPeer, { type: 'spawn' });
     expect(spawn2.presentId).not.toBe(spawn1.presentId);
   });
+
+  test('program-state present-event forwards thumbnail only to owning deck', () => {
+    const a = registerDeckWithPresents('deck-a', ['present-a1']);
+    registerDeckWithPresents('deck-b', ['present-b1']);
+    const program = { title: 'On program', slideType: 'title', backgroundColor: '#111', color: '#fff' };
+
+    const result = graph.handlePresentEvent(
+      'present-a1',
+      { type: 'program-state', program },
+      makeDeliver('present-a1'),
+    );
+    expect(result.ok).toBe(true);
+
+    const deckAEvents = (deliveries.get('deck-a') || []).filter(
+      (m) => m.channel === 'poster:deck-event' && m.payload.type === 'program-thumbnail',
+    );
+    const deckBEvents = (deliveries.get('deck-b') || []).filter(
+      (m) => m.channel === 'poster:deck-event' && m.payload.type === 'program-thumbnail',
+    );
+    expect(deckAEvents).toHaveLength(1);
+    expect(deckAEvents[0].payload).toEqual({
+      type: 'program-thumbnail',
+      presentId: a.presentIds[0],
+      program,
+    });
+    expect(deckBEvents).toHaveLength(0);
+  });
 });

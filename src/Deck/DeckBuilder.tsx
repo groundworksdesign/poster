@@ -1,6 +1,7 @@
 import React, { ChangeEvent, useEffect, useRef, useState } from 'react';
 import { useTheme } from '../utils/useTheme';
-import { createDeckSession, type DeckSession } from '../Present/SessionTransport';
+import { createDeckSession, type DeckSession, type ProgramThumbnailState } from '../Present/SessionTransport';
+import { ProgramThumbnailPanel } from './ProgramThumbnailPanel';
 import {
   PresentData,
   Slide,
@@ -25,6 +26,11 @@ export default function DeckBuilder() {
   const [deck, setDeck] = useState<Deck | null>(null);
   const deckSessionRef = useRef<DeckSession | null>(null);
   const [presentChildren, setPresentChildren] = useState<string[]>([]);
+  /** Last program snapshot reported by a Present child (directed deck-event). */
+  const [programThumbnail, setProgramThumbnail] = useState<{
+    presentId: string;
+    program: ProgramThumbnailState;
+  } | null>(null);
   /** 'all' = every child of this deck session only; otherwise a presentId of this session. */
   const [sendTarget, setSendTarget] = useState<'all' | string>('all');
   const sendTargetRef = useRef<'all' | string>('all');
@@ -65,6 +71,17 @@ export default function DeckBuilder() {
         } else if (event.type === 'child-closed') {
           setPresentChildren((prev) => prev.filter((id) => id !== event.presentId));
           setSendTarget((current) => (current === event.presentId ? 'all' : current));
+          setProgramThumbnail((current) =>
+            current && current.presentId === event.presentId ? null : current,
+          );
+        } else if (event.type === 'program-thumbnail') {
+          if (event.program) {
+            setProgramThumbnail({ presentId: event.presentId, program: event.program });
+          } else {
+            setProgramThumbnail((current) =>
+              current && current.presentId === event.presentId ? null : current,
+            );
+          }
         }
       });
       const listed = await session.listPresents();
@@ -765,6 +782,8 @@ export default function DeckBuilder() {
             </ul>
           )}
         </div>
+
+        <ProgramThumbnailPanel program={programThumbnail?.program ?? null} />
 
         {deck && (
           <div style={{ marginTop: '12px', padding: '8px', border: '1px solid #ddd' }}>

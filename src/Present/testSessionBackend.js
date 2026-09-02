@@ -102,6 +102,9 @@ function installTestSessionBackend() {
             if (p) p.onPresentPush = undefined;
           };
         },
+        reportProgramState: (program) => {
+          graph.handlePresentEvent(peerId, { type: 'program-state', program }, () => {});
+        },
         dispose: () => {
           graph.handlePresentEvent(peerId, { type: 'closed' }, () => {});
           peers.delete(peerId);

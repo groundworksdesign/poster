@@ -12,6 +12,7 @@ import SafeAreaOverlay from './SafeAreaOverlay';
 import { createPresentSession } from './SessionTransport';
 import { applyPresentPayload } from './applyPresentPayload';
 import { useTheme } from '../utils/useTheme';
+import { buildProgramThumbnail } from './programThumbnail';
 
 function flexAlignFromHorizontal(h?: HorizontalAlign): React.CSSProperties['alignItems'] {
   if (h === HorizontalAlign.LEFT) return 'flex-start';
@@ -36,6 +37,9 @@ export default function Presentation() {
   const [showSafeArea, setShowSafeArea] = useState<boolean>(false);
   const [inFullscreen, setInFullscreen] = useState<boolean>(false);
   const [sessionError, setSessionError] = useState<string | null>(null);
+  const presentSessionRef = React.useRef<Awaited<ReturnType<typeof createPresentSession>> | null>(
+    null,
+  );
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -57,6 +61,7 @@ export default function Presentation() {
           return;
         }
         presentSession = session;
+        presentSessionRef.current = session;
         session.onPresentPush((payload) => {
           applyPresentPayload(payload as PresentData, {
             setSlide,
@@ -77,9 +82,24 @@ export default function Presentation() {
 
     return () => {
       disposed = true;
+      presentSessionRef.current = null;
       presentSession?.dispose();
     };
   }, []);
+
+  // Directed path: Present reports program state → Main → owning deck only.
+  useEffect(() => {
+    const session = presentSessionRef.current;
+    if (!session || loading || sessionError) return;
+    const program = buildProgramThumbnail({
+      slide,
+      message,
+      songData,
+      segmentIndex,
+      useGreenScreen,
+    });
+    session.reportProgramState(program);
+  }, [slide, message, songData, segmentIndex, useGreenScreen, loading, sessionError]);
 
   const toggleFullscreen = () => {
     if (document.fullscreenElement) {
