@@ -2,8 +2,8 @@
   "epic": "epic-004",
   "branch": "cursor/epic-004-multi-deck-plan-doc-6573",
   "status": "complete",
-  "loop": 13,
-  "persona": "qa",
+  "loop": 14,
+  "persona": "release",
   "completeEpic": true,
   "requirements": [
     {
@@ -95,7 +95,7 @@
     "Slide payloads are not sent on BroadcastChannel."
   ],
   "selected": null,
-  "planningNotes": "Epic completion QA (loop 13): all five todos still passes true; Jest 164 passed; remix E2Es for send/home/theme/thumbnail 8 passed. completeEpic set true.",
+  "planningNotes": "Epic completion QA (loop 13): all five todos still passes true; Jest 164 passed; remix E2Es for send/home/theme/thumbnail 8 passed. completeEpic set true. Release loop 14: open single PR against main (CI enabled, no skip ci).",
   "planningBrief": {},
-  "lastUpdated": "2026-09-02T16:30:00.000Z"
+  "lastUpdated": "2026-09-02T16:35:00.000Z"
 }
