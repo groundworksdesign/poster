@@ -2,8 +2,8 @@
   "epic": "epic-004",
   "branch": "cursor/epic-004-multi-deck-plan-doc-6573",
   "status": "in_progress",
-  "loop": 8,
-  "persona": "planning",
+  "loop": 9,
+  "persona": "qa",
   "completeEpic": false,
   "requirements": [
     {
@@ -25,7 +25,7 @@
       "title": "Theme persist",
       "description": "Remember the selected theme, including the dropdown, on app restart and when the main window is closed and opened again. Apply that theme to Home, deck builders, and Present windows.",
       "todoIds": ["persist-theme-all-windows"],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "REQ-004",
@@ -67,8 +67,10 @@
       "id": "persist-theme-all-windows",
       "content": "Persist the selected theme including the dropdown across app restart and across Home close/reopen, and apply it to Home, deck builders, and Present windows.",
       "requirementId": "REQ-003",
-      "status": "pending",
-      "passes": false
+      "status": "done",
+      "passes": true,
+      "qaVerifiedAt": "2026-09-02T16:15:00.000Z",
+      "qaReport": "ralph/qa-report.md"
     },
     {
       "id": "program-thumbnail",
@@ -119,5 +121,5 @@
       ]
     }
   },
-  "lastUpdated": "2026-09-02T16:05:00.000Z"
+  "lastUpdated": "2026-09-02T16:15:00.000Z"
 }

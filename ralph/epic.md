@@ -15,7 +15,7 @@ todos:
     status: done
   - id: persist-theme-all-windows
     content: Persist the selected theme including the dropdown across app restart and across Home close/reopen, and apply it to Home, deck builders, and Present windows.
-    status: pending
+    status: done
   - id: program-thumbnail
     content: Show a thumbnail in the deck of what is on program.
     status: pending

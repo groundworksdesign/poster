@@ -1,39 +1,36 @@
-# QA Report: single-home-focus
+# QA Report: persist-theme-all-windows
 
 **Epic:** epic-004  
-**Task:** single-home-focus  
+**Task:** persist-theme-all-windows  
 **Branch:** cursor/epic-004-multi-deck-plan-doc-6573  
-**Verified at:** 2026-09-02T16:00:00.000Z  
+**Verified at:** 2026-09-02T16:15:00.000Z  
 **Persona:** qa (independent; dev notes not trusted)
 
 ## Task scope
 
-Keep Home/Library as the only main window (the saved presentations/decks list); opening Home again focuses the existing Home; Open Presentation opens a deck window while Home stays put; Present windows are where slides play (session-scoped children, not a bare `/presentation` from Home).
+Persist the selected theme including the dropdown across app restart and across Home close/reopen, and apply that theme to Home, deck builders, and Present windows.
 
-**Out of scope for this task:** persist-theme-all-windows, program-thumbnail, directed-send changes.
+**Out of scope for this task:** program-thumbnail, directed-send, single-home changes.
 
 ## Tests executed (ralph/AGENT.md)
 
 | Command | Result |
 | --- | --- |
-| `CI=true pnpm test --watchAll=false --testPathIgnorePatterns=e2e` | 25 suites, **152 passed** (11 skipped) |
-| Focused: `homeWindowPolicy\|HomePage.unit\|electron-main.regression` (covered in full run) | included above |
-| `CI=true REMIX_PORT=3014 pnpm exec playwright test --config=playwright.remix.config.ts remix-single-home` | **3 passed** |
+| `CI=true pnpm test --watchAll=false --testPathIgnorePatterns=e2e` | 26 suites, **158 passed** (11 skipped) |
+| Focused: `useTheme\|HomePage.unit\|Present.theme` | **3 suites, 11 passed** |
+| `CI=true REMIX_PORT=3015 pnpm exec playwright test --config=playwright.remix.config.ts remix-theme-persist` | **3 passed** |
 
 ## Code inspection (independent)
 
 | Check | Finding |
 | --- | --- |
-| Home is saved-deck Library | `HomePage.tsx` mounts `LibraryPanel` under `home-page-library`; heading Poster |
-| Only one Electron Home window | `ensureHomeWindow` + `shouldCreateHomeWindow`; creates only if missing/destroyed; else `focusMainWindow` |
-| Second app launch focuses Home | `requestSingleInstanceLock` + `second-instance` -> `ensureHomeWindow` |
-| macOS activate | focuses existing Home; recreates only when `mainWindow` gone |
-| Window-open cannot spawn second Home | `setWindowOpenHandler`: `classifyOpenUrl` `home` -> deny + focus |
-| Open Presentation -> deck, Home stays | `data-testid="open-presentation"` `href="/deck"` + `openDeckWindow` (`window.open` new window); no navigate of Home |
-| No bare Present from Home | Home links are only `/deck` variants; no `/presentation` hrefs |
-| Bare Present denied in Electron | `present-bare` -> deny + `openDeckWindow()` |
-| Session Present allowed | `present-session` (sessionId + presentId) allowed as child window |
-| Present plays slides as session children | `DeckBuilder` `Open Present` -> `spawnPresent`; `Present.tsx` requires `sessionId`+`presentId` or shows connect guidance |
+| Persist key | `THEME_STORAGE_KEY = 'poster-theme'` in `useTheme.ts`; `applyTheme` writes localStorage |
+| Hydrate + dropdown | `useTheme` SSR-safe starts `light`, then `readStoredTheme` + `applyTheme` on mount; Home select bound to `[theme, setTheme]` with `aria-label="Select theme"` |
+| Home reopen / remount | Remount re-reads storage; unit test remounts Home and asserts dropdown + `data-theme` |
+| Deck applies theme | `DeckBuilder.tsx` calls `useTheme()` on mount |
+| Present applies theme | `Present.tsx` calls `useTheme()` on mount; `Present.theme.test.tsx` asserts `data-theme` from storage |
+| FOUC / restart paint | `app/root.tsx` inlines `themeInitScript` reading `poster-theme` before paint |
+| Cross-window sync | `storage` + `visibilitychange` listeners in `useTheme` |
 
 ## Acceptance criteria mapping
 
@@ -42,8 +39,9 @@ Criteria belonging to **other todos** are marked **out of scope**.
 | # | Criterion | Scope | Evidence | Pass |
 | --- | --- | --- | --- | --- |
 | 1-5 | Directed-send isolation / close / replay | out of scope | REQ-001 already passes | n/a |
-| 6 | Only one Home/Library exists. Opening Home again focuses the original Home. Home is the saved-deck list. Present windows play slides. Open Presentation leaves Home in place and opens a deck window. | **in scope** | See must-confirm table + tests below | yes |
-| 7-8 | Theme persist | out of scope | -> `persist-theme-all-windows` | n/a |
+| 6 | Single Home | out of scope | REQ-002 already passes | n/a |
+| 7 | After choosing a theme (dropdown shows it), quit and reopen the app: the same theme is applied on Home, decks, and Presents, and the dropdown still shows that choice. | **in scope** | Unit: Home remount restore; useTheme remount; Present mount from storage. E2E: new browser context with storageState restores dropdown + `data-theme`. E2E: deck + Present pages get stored theme. Screenshots: Home before/after restart, deck, Present. | yes |
+| 8 | Close the main Home window and open it again: same theme restore as above. | **in scope** | Unit remount Home; E2E navigate away to `/deck` then back to `/` keeps dropdown + `data-theme`. | yes |
 | 9 | Program thumbnail | out of scope | -> `program-thumbnail` | n/a |
 | 10 | No BroadcastChannel slide bus | regression | unchanged; prior REQ-001 | n/a (not this task) |
 
@@ -51,23 +49,21 @@ Criteria belonging to **other todos** are marked **out of scope**.
 
 | Must confirm | Evidence | Pass |
 | --- | --- | --- |
-| Only one Home/Library (saved-deck list) | Single `mainWindow` Home; `LibraryPanel` on Home; policy + electron regression tests | yes |
-| Opening Home again focuses existing Home | `ensureHomeWindow` / `shouldCreateHomeWindow` false when exists; second-instance + activate; `homeWindowPolicy.test.js` | yes |
-| Open Presentation opens deck; Home stays | HomePage unit + `remix-single-home` E2E (Home heading still visible; deck URL `/deck`) | yes |
-| Present is session-scoped, not bare `/presentation` from Home | No bare Present links on Home; E2E asserts none; bare `/presentation` shows deck-builder guidance; Electron denies `present-bare` | yes |
+| Selected theme including dropdown restores on app restart | `remix-theme-persist` new-context + storageState; Home unit remount; FOUC script + hydrate | yes |
+| Theme + dropdown restore when Home closed and opened again | E2E Home->deck->Home; Home unit remount | yes |
+| Theme applies to Home | HomePage `useTheme` + dropdown; E2E + screenshot `theme_home_dracula.png` | yes |
+| Theme applies to deck builders | DeckBuilder `useTheme()`; E2E deck poll `data-theme`; screenshot `theme_deck_dracula.png` | yes |
+| Theme applies to Present windows | Present `useTheme()`; Present.theme unit; E2E Present poll `data-theme`; screenshot `theme_present_dracula.png` | yes |
 
 ## Task-level deliverables
 
 | Deliverable | Pass |
 | --- | --- |
-| Electron single-Home focus policy | yes |
-| Home Open Presentation -> deck | yes |
-| Tests for REQ-002 Validation item | yes (`homeWindowPolicy`, `HomePage.unit`, electron regression, `remix-single-home`) |
-
-## Known debt (not blocking this task)
-
-- `e2e/remix-dev-render.spec.ts` `/deck` with `waitUntil: 'networkidle'` can time out while poster poll keeps connections open. Unrelated to single-Home behavior; `remix-single-home` and deck smoke using `domcontentloaded` pass.
+| Persist theme + dropdown across restart | yes |
+| Persist across Home close/reopen | yes |
+| Apply on Home, decks, Present | yes |
+| Tests for REQ-003 Validation items | yes (`useTheme.unit`, HomePage theme tests, Present.theme, `remix-theme-persist`) |
 
 ## Verdict
 
-**PASS** — `single-home-focus` meets REQ-002 scoped requirements and the operator must-confirm checks. Verified by independent code inspection, full Jest suite, and remix single-home E2E.
+**PASS** — `persist-theme-all-windows` meets REQ-003 scoped requirements and the operator must-confirm checks. Verified by independent code inspection, full Jest suite, focused theme unit tests, and remix theme-persist E2E.
