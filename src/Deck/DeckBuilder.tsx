@@ -26,6 +26,7 @@ export default function DeckBuilder() {
   const [file, setFile] = useState<File | null>(null);
   const [deck, setDeck] = useState<Deck | null>(null);
   const deckSessionRef = useRef<DeckSession | null>(null);
+  const [deckSessionReady, setDeckSessionReady] = useState(false);
   const [presentChildren, setPresentChildren] = useState<string[]>([]);
   /** Last program snapshot reported by a Present child (directed deck-event). */
   const [programThumbnail, setProgramThumbnail] = useState<{
@@ -72,6 +73,7 @@ export default function DeckBuilder() {
         return;
       }
       deckSessionRef.current = session;
+      setDeckSessionReady(true);
       unsubEvents = session.onDeckEvent((event) => {
         if (event.type === 'child-ready') {
           setPresentChildren((prev) =>
@@ -104,6 +106,7 @@ export default function DeckBuilder() {
       unsubEvents?.();
       deckSessionRef.current?.dispose();
       deckSessionRef.current = null;
+      setDeckSessionReady(false);
     };
   }, []);
 
@@ -512,15 +515,31 @@ export default function DeckBuilder() {
 
   const handleOpenPresent = async () => {
     const session = deckSessionRef.current;
-    if (!session) return;
-    const { url, presentId } = await session.spawnPresent();
-    setPresentChildren((prev) => (prev.includes(presentId) ? prev : [...prev, presentId]));
+    if (!session) {
+      setMessage('Deck session not ready yet — try Open Present again.');
+      return;
+    }
+    // Open the window in the same turn as the click. `window.open` after
+    // `await spawnPresent()` loses the user gesture and returns null (no page),
+    // which is what timed out remix-program-thumbnail E2E on CI.
     const features =
       'width=1280,height=720,menubar=no,toolbar=no,location=no,status=no,scrollbars=yes,resizable=yes';
-    const w = window.open(url, '_blank', features);
-    if (w) {
-      w.opener = null;
-      w.focus();
+    const w = window.open('about:blank', '_blank', features);
+    try {
+      const { url, presentId } = await session.spawnPresent();
+      setPresentChildren((prev) => (prev.includes(presentId) ? prev : [...prev, presentId]));
+      if (w && !w.closed) {
+        w.opener = null;
+        w.location.href = url;
+        w.focus();
+      } else {
+        window.open(url, '_blank');
+      }
+    } catch (err) {
+      if (w && !w.closed) w.close();
+      setMessage(
+        `Open Present failed: ${err instanceof Error ? err.message : 'unknown error'}`,
+      );
     }
   };
 
@@ -1005,7 +1024,17 @@ export default function DeckBuilder() {
         <button onClick={startSong} disabled={!deck || !isSongMode}>Start Song</button>
         <button onClick={rewindSong} disabled={!deck || !isSongMode}>Prev 2 Lines</button>
         <button onClick={advanceSong} disabled={!deck || !isSongMode}>Next 2 Lines</button>
-        <button type="button" onClick={() => void handleOpenPresent()}>Open Present</button>
+        <button
+          type="button"
+          data-testid="open-present"
+          disabled={!deckSessionReady}
+          onClick={() => void handleOpenPresent()}
+        >
+          Open Present
+        </button>
+        <span data-testid="deck-session-ready" data-ready={deckSessionReady ? 'true' : 'false'} hidden>
+          {deckSessionReady ? 'ready' : 'pending'}
+        </span>
 
         <div
           data-testid="present-targets"

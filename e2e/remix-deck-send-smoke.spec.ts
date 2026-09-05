@@ -11,10 +11,14 @@ test('deck Open Present + Send updates presentation', async ({ browser, baseURL 
 
   await expect(deckPage.getByTestId('present-targets')).toBeVisible();
   await expect(deckPage.getByTestId('send-target')).toHaveValue('all');
+  await expect(deckPage.getByTestId('deck-session-ready')).toHaveAttribute('data-ready', 'true', {
+    timeout: 15000,
+  });
+  await expect(deckPage.getByTestId('open-present')).toBeEnabled();
 
   const [presentation] = await Promise.all([
     context.waitForEvent('page'),
-    deckPage.getByRole('button', { name: /open present/i }).click(),
+    deckPage.getByTestId('open-present').click(),
   ]);
   await presentation.waitForLoadState('domcontentloaded');
   await expect(presentation.getByText('Loading...')).toHaveCount(0, { timeout: 15000 });
