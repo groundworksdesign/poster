@@ -174,11 +174,51 @@ function createWindow(port) {
     },
   });
 
+  configureWindowOpen(mainWindow);
   mainWindow.loadURL(`http://127.0.0.1:${port}/`);
 
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
+}
+
+/** Allow window.open from the UI to spawn real child windows (deck, presentation). */
+function configureWindowOpen(win) {
+  win.webContents.setWindowOpenHandler(() => ({
+    action: 'allow',
+    overrideBrowserWindowOptions: {
+      width: 1280,
+      height: 720,
+      show: true,
+      title: 'Poster',
+      webPreferences: {
+        contextIsolation: true,
+        nodeIntegration: false,
+        sandbox: true,
+      },
+    },
+  }));
+  win.webContents.on('did-create-window', (childWin) => {
+    configureWindowOpen(childWin);
+  });
+}
+
+async function openMainWindow() {
+  if (BrowserWindow.getAllWindows().length > 0) {
+    focusMainWindow();
+    return;
+  }
+
+  if (!serverProcess || serverPort === null) {
+    const port = await findFreePort();
+    serverPort = port;
+    logLine(`starting server on ${port} (packaged=${app.isPackaged}) root=${getAppRoot()}`);
+    await startServer(port);
+    await waitForServer(port);
+  }
+
+  createWindow(serverPort);
+  logLine('window created');
 }
 
 function focusMainWindow() {
@@ -201,13 +241,7 @@ if (!gotTheLock) {
 
   app.on('ready', async () => {
     try {
-      const port = await findFreePort();
-      serverPort = port;
-      logLine(`starting server on ${port} (packaged=${app.isPackaged}) root=${getAppRoot()}`);
-      await startServer(port);
-      await waitForServer(port);
-      createWindow(port);
-      logLine('window created');
+      await openMainWindow();
     } catch (err) {
       logLine(`startup error: ${err && err.stack ? err.stack : err}`);
       app.quit();
@@ -215,17 +249,19 @@ if (!gotTheLock) {
   });
 
   app.on('window-all-closed', () => {
-    killServer();
-    // On macOS, keep app in Dock until Cmd+Q (standard behaviour)
+    // macOS: keep process (and server) alive in the Dock until Cmd+Q
     if (process.platform !== 'darwin') {
+      killServer();
       app.quit();
     }
   });
 
   app.on('activate', () => {
-    // Re-create window on macOS when clicking Dock icon with no windows open
-    if (mainWindow === null && serverPort !== null && serverProcess) {
-      createWindow(serverPort);
+    // Dock click / re-activate with no windows — recreate main window (no relaunch)
+    if (process.platform === 'darwin' && BrowserWindow.getAllWindows().length === 0) {
+      openMainWindow().catch((err) => {
+        logLine(`activate window error: ${err && err.stack ? err.stack : err}`);
+      });
     }
   });
 

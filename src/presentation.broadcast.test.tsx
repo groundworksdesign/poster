@@ -78,3 +78,30 @@ test('lyricsNavigation partial updates do not clear song slide or message', asyn
   expect(screen.getByText('Line3')).toBeInTheDocument();
   expect(screen.getByText('Line4')).toBeInTheDocument();
 });
+
+test('explicit null slide clears presentation output', async () => {
+  await act(async () => {
+    render(<Presentation />);
+  });
+
+  await act(async () => {
+    const chan = new (global as any).BroadcastChannel('presentation');
+    chan.postMessage({
+      slide: {
+        type: SlideType.TITLE,
+        title: 'Visible Title',
+        style: { backgroundColor: '#000', color: '#fff' },
+      },
+      useGreenScreen: false,
+    });
+  });
+
+  expect(screen.getByText('Visible Title')).toBeInTheDocument();
+
+  await act(async () => {
+    const chan = new (global as any).BroadcastChannel('presentation');
+    chan.postMessage({ slide: null, useGreenScreen: false });
+  });
+
+  expect(screen.queryByText('Visible Title')).not.toBeInTheDocument();
+});

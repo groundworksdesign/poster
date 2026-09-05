@@ -2,10 +2,11 @@ import React, { act } from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 
 // Mock Broadcast connection used by DeckBuilder to avoid BroadcastChannel in the test environment
+const mockPostMessage = jest.fn();
 jest.mock('../Present/Broadcast', () => ({
   connect: (channelType: any, handler: any) => ({
     id: 'mock-id',
-    channel: { postMessage: jest.fn(), onmessage: null },
+    channel: { postMessage: mockPostMessage, onmessage: null },
     channelType,
   }),
   ChannelType: { BUILDER: 0, PRESENTER: 1 },
@@ -13,6 +14,7 @@ jest.mock('../Present/Broadcast', () => ({
 
 // Mock fetch for library panel rendering
 beforeEach(() => {
+  mockPostMessage.mockClear();
   jest.spyOn(global, 'fetch').mockResolvedValue({
     ok: true,
     json: async () => [],
@@ -221,4 +223,79 @@ test('imported JSON deck with future schemaVersion emits console warning', async
   await waitFor(() => screen.getByTestId('import-save-prompt'));
   expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('schemaVersion 999'));
   warnSpy.mockRestore();
+});
+
+test('presentation controls appear when deck is loaded', async () => {
+  render(<DeckBuilder />);
+  expect(screen.queryByTestId('presentation-controls')).not.toBeInTheDocument();
+  await loadFile(makeJsonFile(VALID_DECK));
+  await waitFor(() => expect(screen.getByTestId('presentation-controls')).toBeInTheDocument());
+  expect(screen.getByRole('button', { name: /^start$/i })).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: /^end$/i })).toBeInTheDocument();
+});
+
+test('side-by-side editor placeholder shows before Edit is clicked', async () => {
+  render(<DeckBuilder />);
+  await loadFile(makeJsonFile(VALID_DECK));
+  await waitFor(() => screen.getByText(/click edit on a slide/i));
+  expect(screen.queryByText(/editing slide/i)).not.toBeInTheDocument();
+});
+
+test('clicking Edit shows editor beside slide list', async () => {
+  render(<DeckBuilder />);
+  await loadFile(makeJsonFile(VALID_DECK));
+  await waitFor(() => screen.getByRole('button', { name: /^edit$/i }));
+  act(() => { fireEvent.click(screen.getByRole('button', { name: /^edit$/i })); });
+  expect(screen.getByText(/editing slide 1/i)).toBeInTheDocument();
+});
+
+test('slide row includes Top and Move reorder controls', async () => {
+  render(<DeckBuilder />);
+  const multiSlideDeck = {
+    ...VALID_DECK,
+    slides: [
+      { type: 'general', title: 'Slide 1', id: 'a' },
+      { type: 'general', title: 'Slide 2', id: 'b' },
+    ],
+  };
+  await loadFile(makeJsonFile(multiSlideDeck));
+  await waitFor(() => expect(screen.getAllByRole('button', { name: /^top$/i }).length).toBe(2));
+  expect(screen.getAllByRole('button', { name: /^move$/i }).length).toBe(2);
+});
+
+test('Start with green screen sends blank output', async () => {
+  render(<DeckBuilder />);
+  const deck = {
+    ...VALID_DECK,
+    useGreenScreen: true,
+    slides: [{ type: 'general', title: 'Slide 1', id: 's1' }],
+  };
+  await loadFile(makeJsonFile(deck));
+  await waitFor(() => screen.getByTestId('presentation-controls'));
+  mockPostMessage.mockClear();
+  act(() => {
+    fireEvent.click(screen.getByRole('button', { name: /^start$/i }));
+  });
+  expect(mockPostMessage).toHaveBeenCalled();
+  const payload = mockPostMessage.mock.calls[0][0];
+  expect(payload.slide).toBeNull();
+  expect(payload.useGreenScreen).toBe(true);
+});
+
+test('Start without green screen sends first slide', async () => {
+  render(<DeckBuilder />);
+  const deck = {
+    ...VALID_DECK,
+    useGreenScreen: false,
+    slides: [{ type: 'general', title: 'Slide 1', id: 's1' }],
+  };
+  await loadFile(makeJsonFile(deck));
+  await waitFor(() => screen.getByTestId('presentation-controls'));
+  mockPostMessage.mockClear();
+  act(() => {
+    fireEvent.click(screen.getByRole('button', { name: /^start$/i }));
+  });
+  const payload = mockPostMessage.mock.calls[0][0];
+  expect(payload.slide).not.toBeNull();
+  expect(payload.slide.title).toBe('Slide 1');
 });

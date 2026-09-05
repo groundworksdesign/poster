@@ -3,20 +3,17 @@ import LibraryPanel from './Deck/LibraryPanel';
 import { THEMES, useTheme, type ThemeId } from './utils/useTheme';
 
 /**
- * Opens the presentation in a dedicated window (second screen / projector).
- * Falls back to same-tab navigation if the browser blocks the popup.
+ * Opens a Poster route in a dedicated window/tab without navigating the current page.
  */
-function openPresentationWindow(e: React.MouseEvent<HTMLAnchorElement>) {
+function openAppWindow(e: React.MouseEvent<HTMLAnchorElement>, windowName: string) {
   e.preventDefault();
   const url = e.currentTarget.href;
   const features =
     'width=1280,height=720,menubar=no,toolbar=no,location=no,status=no,scrollbars=yes,resizable=yes';
-  const w = window.open(url, 'posterPresentation', features);
+  const w = window.open(url, windowName, features);
   if (w) {
     w.opener = null;
     w.focus();
-  } else {
-    window.location.assign(url);
   }
 }
 
@@ -25,12 +22,10 @@ export default function HomePage() {
   const [libraryRefreshKey, setLibraryRefreshKey] = useState(0);
 
   const handleOpenFromLibrary = (id: string) => {
-    const url = '/deck?open=' + encodeURIComponent(id);
-    const tab = window.open(url, '_blank', 'noopener,noreferrer');
+    const url = `${window.location.origin}/deck?open=${encodeURIComponent(id)}`;
+    const tab = window.open(url, 'posterDeck', 'noopener,noreferrer,width=1280,height=720');
     if (tab) {
       tab.opener = null;
-    } else {
-      window.location.assign(url);
     }
   };
 
@@ -78,23 +73,21 @@ export default function HomePage() {
         <a
           className="home-page-link home-page-link--deck"
           href="/deck"
-          target="_blank"
-          rel="noopener noreferrer"
+          onClick={(e) => openAppWindow(e, 'posterDeck')}
         >
-          Open deck builder (new tab)
+          Open deck builder (new window)
         </a>
         <a
           className="home-page-link home-page-link--present"
           href="/presentation"
-          onClick={openPresentationWindow}
+          onClick={(e) => openAppWindow(e, 'posterPresentation')}
         >
           Open presentation (new window)
         </a>
         <a
           className="home-page-link home-page-link--import"
           href="/deck?focusImport=1"
-          target="_blank"
-          rel="noopener noreferrer"
+          onClick={(e) => openAppWindow(e, 'posterDeck')}
         >
           Import a file
         </a>
