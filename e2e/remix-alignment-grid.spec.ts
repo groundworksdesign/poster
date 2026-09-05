@@ -11,9 +11,9 @@ import { openPresenterSession, sessionSend } from './posterSessionE2E';
  *     center -> center
  *     right  -> flex-end
  *   verticalAlign -> positioning
- *     top    -> top: 20px
+ *     top    -> top: 0
  *     middle -> top: 50%  (+ transform: translateY(-50%))
- *     bottom -> bottom: 20px
+ *     bottom -> bottom: 0
  */
 
 type AlignCase = {
@@ -26,15 +26,15 @@ type AlignCase = {
 };
 
 const ALIGN_CASES: AlignCase[] = [
-  { cell: 'upper-left',    verticalAlign: 'top',    horizontalAlign: 'left',   expectedAlignItems: 'flex-start', expectedTop: '20px', expectedBottom: '' },
-  { cell: 'upper-middle',  verticalAlign: 'top',    horizontalAlign: 'center', expectedAlignItems: 'center',     expectedTop: '20px', expectedBottom: '' },
-  { cell: 'upper-right',   verticalAlign: 'top',    horizontalAlign: 'right',  expectedAlignItems: 'flex-end',   expectedTop: '20px', expectedBottom: '' },
-  { cell: 'center-left',   verticalAlign: 'middle', horizontalAlign: 'left',   expectedAlignItems: 'flex-start', expectedTop: '50%',  expectedBottom: '' },
-  { cell: 'center-middle', verticalAlign: 'middle', horizontalAlign: 'center', expectedAlignItems: 'center',     expectedTop: '50%',  expectedBottom: '' },
-  { cell: 'center-right',  verticalAlign: 'middle', horizontalAlign: 'right',  expectedAlignItems: 'flex-end',   expectedTop: '50%',  expectedBottom: '' },
-  { cell: 'bottom-left',   verticalAlign: 'bottom', horizontalAlign: 'left',   expectedAlignItems: 'flex-start', expectedTop: '',     expectedBottom: '20px' },
-  { cell: 'bottom-middle', verticalAlign: 'bottom', horizontalAlign: 'center', expectedAlignItems: 'center',     expectedTop: '',     expectedBottom: '20px' },
-  { cell: 'bottom-right',  verticalAlign: 'bottom', horizontalAlign: 'right',  expectedAlignItems: 'flex-end',   expectedTop: '',     expectedBottom: '20px' },
+  { cell: 'upper-left',    verticalAlign: 'top',    horizontalAlign: 'left',   expectedAlignItems: 'flex-start', expectedTop: '0px', expectedBottom: '' },
+  { cell: 'upper-middle',  verticalAlign: 'top',    horizontalAlign: 'center', expectedAlignItems: 'center',     expectedTop: '0px', expectedBottom: '' },
+  { cell: 'upper-right',   verticalAlign: 'top',    horizontalAlign: 'right',  expectedAlignItems: 'flex-end',   expectedTop: '0px', expectedBottom: '' },
+  { cell: 'center-left',   verticalAlign: 'middle', horizontalAlign: 'left',   expectedAlignItems: 'flex-start', expectedTop: '50%', expectedBottom: '' },
+  { cell: 'center-middle', verticalAlign: 'middle', horizontalAlign: 'center', expectedAlignItems: 'center',     expectedTop: '50%', expectedBottom: '' },
+  { cell: 'center-right',  verticalAlign: 'middle', horizontalAlign: 'right',  expectedAlignItems: 'flex-end',   expectedTop: '50%', expectedBottom: '' },
+  { cell: 'bottom-left',   verticalAlign: 'bottom', horizontalAlign: 'left',   expectedAlignItems: 'flex-start', expectedTop: '',    expectedBottom: '0px' },
+  { cell: 'bottom-middle', verticalAlign: 'bottom', horizontalAlign: 'center', expectedAlignItems: 'center',     expectedTop: '',    expectedBottom: '0px' },
+  { cell: 'bottom-right',  verticalAlign: 'bottom', horizontalAlign: 'right',  expectedAlignItems: 'flex-end',   expectedTop: '',    expectedBottom: '0px' },
 ];
 
 function buildSlide(verticalAlign: string, horizontalAlign: string) {
