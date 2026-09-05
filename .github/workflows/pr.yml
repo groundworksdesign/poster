@@ -177,7 +177,9 @@ jobs:
 
     env:
       CSC_IDENTITY_AUTO_DISCOVERY: false
-      # Optional Apple signing/notarization (when repo secrets are configured)
+      # Optional Apple signing/notarization. Missing secrets become "" in Actions;
+      # build:electron → run-electron-builder.cjs strips blanks so electron-builder
+      # does not treat the repo path as CSC_LINK (PR also skips sign via isPR).
       CSC_LINK: ${{ secrets.CSC_LINK }}
       CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
       APPLE_ID: ${{ secrets.APPLE_ID }}

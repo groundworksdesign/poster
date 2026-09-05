@@ -14,9 +14,19 @@ const path = require('path');
  * fresh ad-hoc signature so testers can launch after clearing quarantine.
  * Skips when real signing secrets are present — electron-builder handles that.
  */
+function hasSigningIdentity() {
+  const link = process.env.CSC_LINK;
+  const name = process.env.CSC_NAME;
+  return (
+    (link != null && String(link).trim() !== '') ||
+    (name != null && String(name).trim() !== '')
+  );
+}
+
 module.exports = async function macAdhocSign(context) {
   if (process.platform !== 'darwin') return;
-  if (process.env.CSC_LINK || process.env.CSC_NAME) return;
+  // Empty CSC_LINK from Actions must not skip ad-hoc — treat blank as unsigned.
+  if (hasSigningIdentity()) return;
 
   const appPath = path.join(
     context.appOutDir,

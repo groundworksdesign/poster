@@ -83,7 +83,37 @@ test('DeckBuilder shows present targets UI with send-to all default', async () =
   await waitFor(() => expect(screen.getByTestId('present-targets')).toBeInTheDocument());
   expect(screen.getByTestId('send-target')).toHaveValue('all');
   expect(screen.getByTestId('present-list-empty')).toBeInTheDocument();
-  expect(screen.getByRole('button', { name: /open present/i })).toBeInTheDocument();
+  await waitFor(() => expect(screen.getByTestId('open-present')).toBeEnabled());
+  expect(screen.getByTestId('deck-session-ready')).toHaveAttribute('data-ready', 'true');
+});
+
+test('Open Present opens about:blank before spawn so the click gesture is kept', async () => {
+  const openSpy = jest.spyOn(window, 'open').mockImplementation(() => {
+    return {
+      closed: false,
+      opener: null,
+      focus: jest.fn(),
+      close: jest.fn(),
+      location: { href: '' },
+    } as unknown as Window;
+  });
+
+  render(<DeckBuilder />);
+  await waitFor(() => expect(screen.getByTestId('open-present')).toBeEnabled());
+
+  await act(async () => {
+    fireEvent.click(screen.getByTestId('open-present'));
+  });
+
+  await waitFor(() => {
+    expect(openSpy).toHaveBeenCalledWith('about:blank', '_blank', expect.any(String));
+  });
+  await waitFor(() => {
+    const win = openSpy.mock.results[0]?.value as { location: { href: string } } | undefined;
+    expect(win?.location.href).toContain('/presentation?');
+  });
+
+  openSpy.mockRestore();
 });
 
 test('does not render Library toggle; Export, Save, and Load remain', () => {

@@ -3,6 +3,10 @@ import { test, expect } from '@playwright/test';
 /**
  * REQ-004: deck shows a thumbnail of what is on program via directed
  * Present → Main (present-event) → owning deck (deck-event) path.
+ *
+ * Open Present must open a real popup. The deck opens about:blank
+ * synchronously on click (then navigates after spawn) so the user-gesture
+ * is preserved — otherwise window.open after await returns null in Chromium.
  */
 test('deck shows program thumbnail after Present receives a send', async ({ browser, baseURL }) => {
   const base = baseURL || 'http://127.0.0.1:3000';
@@ -11,10 +15,14 @@ test('deck shows program thumbnail after Present receives a send', async ({ brow
   await deckPage.goto(`${base}/deck`, { waitUntil: 'domcontentloaded' });
 
   await expect(deckPage.getByTestId('program-thumbnail-empty')).toBeVisible();
+  await expect(deckPage.getByTestId('deck-session-ready')).toHaveAttribute('data-ready', 'true', {
+    timeout: 15000,
+  });
+  await expect(deckPage.getByTestId('open-present')).toBeEnabled();
 
   const [presentation] = await Promise.all([
     context.waitForEvent('page'),
-    deckPage.getByRole('button', { name: /open present/i }).click(),
+    deckPage.getByTestId('open-present').click(),
   ]);
   await presentation.waitForLoadState('domcontentloaded');
   await expect(presentation.getByText('Loading...')).toHaveCount(0, { timeout: 15000 });
