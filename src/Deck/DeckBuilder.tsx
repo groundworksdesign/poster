@@ -17,6 +17,7 @@ import { parseSongXML, createSongSlide, isSongData } from '../utils/songParser';
 import { validateDeck } from '../utils/deckValidator';
 import { CURRENT_SCHEMA_VERSION } from '../utils/schema';
 import { remixDataUrl, REMIX_ROUTE_ID } from '../utils/remixDataUrl';
+import { notifyLibraryChanged } from '../utils/libraryRefresh';
 
 export default function DeckBuilder() {
   useTheme();
@@ -32,15 +33,18 @@ export default function DeckBuilder() {
   const [presentSlideIndex, setPresentSlideIndex] = useState<number | null>(null);
   const [presentationBlank, setPresentationBlank] = useState<boolean>(false);
   const [selectedSlideIndex, setSelectedSlideIndex] = useState<number | null>(null);
+  /** Draft copy of the slide being edited; committed to deck only via Save slide. */
+  const [slideEditDraft, setSlideEditDraft] = useState<any | null>(null);
   const [jumpToSlideInput, setJumpToSlideInput] = useState<string>('');
   const [moveTargetByIndex, setMoveTargetByIndex] = useState<Record<number, string>>({});
   const [operatorMessage, setOperatorMessage] = useState<string>('');
   const [libraryId, setLibraryId] = useState<string | null>(null);
-  const [libraryRefreshKey, setLibraryRefreshKey] = useState<number>(0);
   const [showSaveToLibraryPrompt, setShowSaveToLibraryPrompt] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   /** Last stage index sent via Advance/Reverse per song slide id (0 = title, 1+ = lyric pairs). */
   const [songLastStagedById, setSongLastStagedById] = useState<Record<string, number>>({});
+  /** Slide list index being dragged (visual feedback only; drop uses dataTransfer). */
+  const [dragSlideIndex, setDragSlideIndex] = useState<number | null>(null);
 
   const genId = () => (typeof (globalThis as any).crypto !== 'undefined' && typeof (globalThis as any).crypto.randomUUID === 'function') ? (globalThis as any).crypto.randomUUID() : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 
@@ -253,6 +257,106 @@ export default function DeckBuilder() {
     const slideWithStyle = props.slide ? safeSlide(props.slide) : null;
     connection?.channel.postMessage(new PresentData({ ...props, slide: slideWithStyle }));
     setLastSentSlideId(slideWithStyle?.id ?? null);
+    setPresentationBlank(false);
+  };
+
+  /** Slide id currently on program output; null when blank/end. Keyed by identity for reorder safety. */
+  const getShowingSlideId = (): string | null => {
+    if (presentationBlank || !lastSentSlideId) return null;
+    return lastSentSlideId;
+  };
+
+  const isSlideEditorExpanded =
+    typeof selectedSlideIndex === 'number' &&
+    deck !== null &&
+    deck.slides[selectedSlideIndex] !== undefined;
+
+  const cloneSlideForEdit = (slide: any): any => {
+    const copy = { ...slide };
+    if (slide.style) copy.style = { ...slide.style };
+    if (slide.lyrics) copy.lyrics = JSON.parse(JSON.stringify(slide.lyrics));
+    return copy;
+  };
+
+  useEffect(() => {
+    if (typeof selectedSlideIndex !== 'number' || !deck || !deck.slides[selectedSlideIndex]) {
+      setSlideEditDraft(null);
+      return;
+    }
+    const source = deck.slides[selectedSlideIndex] as any;
+    setSlideEditDraft(prev => {
+      if (prev && prev.id === source.id) return prev;
+      return cloneSlideForEdit(source);
+    });
+  }, [selectedSlideIndex, deck]);
+
+  /** Collapse expanded slide editor back to the side rail; discards unsaved draft. */
+  const collapseSlideEditor = () => {
+    setSlideEditDraft(null);
+    setSelectedSlideIndex(null);
+  };
+
+  const updateDraftField = (field: string, value: any) => {
+    setSlideEditDraft((prev: any) => (prev ? { ...prev, [field]: value } : prev));
+  };
+
+  const updateDraftStyle = (key: keyof any, value: any) => {
+    setSlideEditDraft((prev: any) => {
+      if (!prev) return prev;
+      const style = { ...(prev.style || {}) } as any;
+      if (value === '' || value === null || value === undefined) {
+        delete style[key as string];
+      } else {
+        style[key as string] =
+          typeof value === 'string' ? maybeNormalizeStyleColor(String(key), value) : value;
+      }
+      return { ...prev, style };
+    });
+  };
+
+  const resetDraftStyleField = (key: keyof any) => {
+    setSlideEditDraft((prev: any) => {
+      if (!prev) return prev;
+      const style = { ...(prev.style || {}) } as any;
+      delete style[key as string];
+      return { ...prev, style };
+    });
+  };
+
+  const resetAllDraftStyleOverrides = () => {
+    setSlideEditDraft((prev: any) => (prev ? { ...prev, style: {} } : prev));
+  };
+
+  const saveSlideEdits = () => {
+    if (!deck || typeof selectedSlideIndex !== 'number' || !slideEditDraft) return;
+    let draft = slideEditDraft;
+    if (draft.type === SlideType.SONG) {
+      const t = document.getElementById('lyrics-json') as HTMLTextAreaElement | null;
+      if (t) {
+        try {
+          draft = { ...draft, lyrics: JSON.parse(t.value) as SongData };
+        } catch {
+          setMessage('Invalid Lyrics JSON — fix before saving');
+          return;
+        }
+      }
+    }
+    const slides = deck.slides.slice();
+    const prevSlide = slides[selectedSlideIndex] as any;
+    slides[selectedSlideIndex] = draft;
+    const newDeck = { ...deck, slides };
+    setDeck(newDeck);
+    const slideId = draft.id as string | undefined;
+    if (slideId && draft.lyrics !== prevSlide?.lyrics) {
+      setSongLastStagedById(s => {
+        const next = { ...s };
+        delete next[slideId];
+        return next;
+      });
+    }
+    syncSentSlideIfNeeded(newDeck);
+    setMessage('Slide saved');
+    collapseSlideEditor();
   };
 
   const getResolvedPresentIndex = (): number => {
@@ -366,7 +470,14 @@ export default function DeckBuilder() {
     if (!id) return;
     const total = getSongStageCount(full);
     const last = songLastStagedById[id];
-    const nextStage = last === undefined ? 0 : (last + 1) % total;
+    const nextStage = last === undefined ? 0 : last + 1;
+    if (nextStage >= total) {
+      const currentIndex = getResolvedPresentIndex();
+      if (currentIndex >= 0 && currentIndex < deck.slides.length - 1) {
+        sendSlideAtIndex(currentIndex + 1);
+      }
+      return;
+    }
     const staged = buildStagedSongSlide(full, nextStage);
     handleSendClick({ slide: staged, useGreenScreen: deck.useGreenScreen });
     setSongLastStagedById(s => ({ ...s, [id]: nextStage }));
@@ -673,13 +784,6 @@ export default function DeckBuilder() {
     syncSentSlideIfNeeded(newDeck);
   };
 
-  const moveSlide = (index: number, direction: 'up' | 'down') => {
-    if (!deck) return;
-    const to = direction === 'up' ? index - 1 : index + 1;
-    if (to < 0 || to >= deck.slides.length) return;
-    reorderSlide(index, to);
-  };
-
   const moveSlideToTop = (index: number) => {
     if (!deck || index <= 0) return;
     reorderSlide(index, 0);
@@ -692,9 +796,9 @@ export default function DeckBuilder() {
     reorderSlide(fromIndex, toIndex);
   };
 
-  const handleSaveClick = () => {
+  const handleExportClick = () => {
     if (!deck) {
-      setMessage('No deck to save');
+      setMessage('No deck to export');
       return;
     }
     const blob = new Blob([JSON.stringify(deck, null, 2)], { type: 'application/json' });
@@ -730,7 +834,7 @@ export default function DeckBuilder() {
       const data = await res.json();
       setLibraryId(data.id);
       setMessage(wasUpdate ? 'Library updated.' : 'Saved to library.');
-      setLibraryRefreshKey(k => k + 1);
+      notifyLibraryChanged();
     } catch (e) {
       setMessage(`Library save error: ${e instanceof Error ? e.message : 'Unknown'}`);
     }
@@ -804,8 +908,8 @@ export default function DeckBuilder() {
       <div>
         <input ref={fileInputRef} id="file" type="file" onChange={handleFileChange} />
         <button id="load" onClick={() => handleUploadClick()} disabled={isLoadingSong}>{isLoadingSong ? 'Loading...' : 'Load'}</button>
-        <button id="save" onClick={handleSaveClick}>Save</button>
-        <button id="save-to-library" onClick={handleSaveToLibrary} disabled={!deck}>Save to Library</button>
+        <button id="export" onClick={handleExportClick}>Export</button>
+        <button id="save" onClick={handleSaveToLibrary} disabled={!deck}>Save</button>
         <button onClick={createNewDeck}>New Deck</button>
         <label style={{ marginLeft: '8px' }}>
           Add slide:
@@ -945,17 +1049,69 @@ export default function DeckBuilder() {
         </div>
       </div>
 
-      <div className="deck-slides-editor-row">
+      <div
+        className={`deck-slides-editor-row${isSlideEditorExpanded ? ' deck-slides-editor-row--expanded' : ''}`}
+        data-editor-expanded={isSlideEditorExpanded ? 'true' : 'false'}
+      >
         <div className="deck-slides-list">
-          <h2>Slides</h2>
+          <div className="deck-slides-list-header">
+            <h2>Slides</h2>
+            {deck && deck.slides.length > 0 ? (
+              <span className="deck-slides-list-hint">Drag the handle to reorder · Top / Move still available</span>
+            ) : null}
+          </div>
           {!deck && <p>No deck loaded yet.</p>}
           <div id="slides">
             <ul>
-              {deck?.slides.map((slide: any, index: number) => (
-                <li key={(slide as any).id || index} className="deck-slide-item">
+              {deck?.slides.map((slide: any, index: number) => {
+                const slideId = (slide as any).id as string | undefined;
+                const showingSlideId = getShowingSlideId();
+                const isShowing = !!slideId && slideId === showingSlideId;
+                return (
+                <li
+                  key={slideId || index}
+                  className={`deck-slide-item${isShowing ? ' deck-slide-item--showing' : ''}${dragSlideIndex === index ? ' deck-slide-item--dragging' : ''}`}
+                  data-slide-id={slideId}
+                  data-showing={isShowing ? 'true' : undefined}
+                  onDragOver={e => {
+                    e.preventDefault();
+                    if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+                  }}
+                  onDrop={e => {
+                    e.preventDefault();
+                    const raw = e.dataTransfer?.getData('text/plain');
+                    const fromIndex = parseInt(raw, 10);
+                    if (!Number.isFinite(fromIndex) || fromIndex === index) {
+                      setDragSlideIndex(null);
+                      return;
+                    }
+                    reorderSlide(fromIndex, index);
+                    setDragSlideIndex(null);
+                  }}
+                >
                   <div className="deck-slide-row">
+                    <span
+                      className="deck-slide-drag-handle"
+                      draggable
+                      data-testid="deck-slide-drag-handle"
+                      aria-label={`Drag slide ${index + 1} to reorder`}
+                      title="Drag to reorder"
+                      onDragStart={e => {
+                        e.dataTransfer.effectAllowed = 'move';
+                        e.dataTransfer.setData('text/plain', String(index));
+                        setDragSlideIndex(index);
+                      }}
+                      onDragEnd={() => setDragSlideIndex(null)}
+                    >
+                      ::
+                    </span>
                     <strong>{index + 1}.</strong>
-                    <span className="deck-slide-row-title">{slide.title || slide.type || 'Slide'}</span>
+                    <div className="deck-slide-row-title-wrap">
+                      <span className="deck-slide-row-title">{slide.title || slide.type || 'Slide'}</span>
+                      {isShowing ? (
+                        <span className="deck-slide-showing-label" data-testid="deck-slide-showing-label">SHOWING</span>
+                      ) : null}
+                    </div>
                     <button
                       onClick={() => {
                         const sid = (slide as any).id as string | undefined;
@@ -1018,26 +1174,36 @@ export default function DeckBuilder() {
                     >
                       Move
                     </button>
-                    <button onClick={() => moveSlide(index, 'up')} disabled={index === 0}>↑</button>
-                    <button onClick={() => moveSlide(index, 'down')} disabled={index === (deck!.slides.length - 1)}>↓</button>
                   </div>
                 </li>
-              ))}
+                );
+              })}
             </ul>
           </div>
         </div>
 
-        <div className="deck-slide-editor">
-          {typeof selectedSlideIndex === 'number' && deck && deck.slides[selectedSlideIndex] ? (
+        {isSlideEditorExpanded ? (
+        <div className="deck-slide-editor" data-testid="deck-slide-editor-panel">
+          {typeof selectedSlideIndex === 'number' && deck && slideEditDraft ? (
             <>
-              <h3>Editing slide {selectedSlideIndex + 1}</h3>
+              <div className="deck-slide-editor-header">
+                <h3>Editing slide {selectedSlideIndex + 1}</h3>
+                <button
+                  type="button"
+                  className="deck-slide-editor-save-btn"
+                  data-testid="save-slide-button"
+                  onClick={saveSlideEdits}
+                >
+                  Save slide
+                </button>
+              </div>
               {(() => {
-                const slide = deck.slides[selectedSlideIndex] as any;
+                const slide = slideEditDraft as any;
                 return (
                   <div>
                     <div>
                       <label>Type: 
-                        <select value={slide.type} onChange={e => updateSlideField(selectedSlideIndex, 'type', e.target.value as SlideType)}>
+                        <select value={slide.type} onChange={e => updateDraftField('type', e.target.value as SlideType)}>
                           <option value={SlideType.GENERAL}>GENERAL</option>
                           <option value={SlideType.TITLE}>TITLE</option>
                           <option value={SlideType.IMAGE}>IMAGE</option>
@@ -1046,15 +1212,15 @@ export default function DeckBuilder() {
                       </label>
                     </div>
                     <div>
-                      <label>Title: <input type="text" value={slide.title || ''} onChange={e => updateSlideField(selectedSlideIndex, 'title', e.target.value)} /></label>
+                      <label>Title: <input type="text" value={slide.title || ''} onChange={e => updateDraftField('title', e.target.value)} /></label>
                     </div>
                     <div>
-                      <label>Subtitle: <input type="text" value={slide.subTitle || ''} onChange={e => updateSlideField(selectedSlideIndex, 'subTitle', e.target.value)} /></label>
+                      <label>Subtitle: <input type="text" value={slide.subTitle || ''} onChange={e => updateDraftField('subTitle', e.target.value)} /></label>
                     </div>
 
                     {slide.type === SlideType.IMAGE && (
                       <div>
-                        <label>Image URL/file: <input type="text" value={slide.file || slide.style?.backgroundImage || ''} onChange={e => updateSlideField(selectedSlideIndex, 'file', e.target.value)} /></label>
+                        <label>Image URL/file: <input type="text" value={slide.file || slide.style?.backgroundImage || ''} onChange={e => updateDraftField('file', e.target.value)} /></label>
                       </div>
                     )}
 
@@ -1069,16 +1235,19 @@ export default function DeckBuilder() {
                               if (!t) return;
                               try {
                                 const parsed = JSON.parse(t.value) as SongData;
-                                updateSlideField(selectedSlideIndex, 'lyrics', parsed);
+                                updateDraftField('lyrics', parsed);
+                                setMessage('Lyrics applied to draft — click Save slide to commit');
                               } catch (err) {
                                 setMessage('Invalid Lyrics JSON');
                               }
                             }}>Apply Lyrics JSON</button>
                             <button onClick={() => {
-                              const s = { ...(deck.slides[selectedSlideIndex] as any) };
-                              const lyrics = s.lyrics || { title: '', author: '', verses: [] };
-                              lyrics.verses = lyrics.verses.concat([{ number: (lyrics.verses.length || 0) + 1, lines: [''] }]);
-                              updateSlideField(selectedSlideIndex, 'lyrics', lyrics);
+                              const lyrics = slide.lyrics || { title: '', author: '', verses: [] };
+                              const nextLyrics = {
+                                ...lyrics,
+                                verses: lyrics.verses.concat([{ number: (lyrics.verses.length || 0) + 1, lines: [''] }]),
+                              };
+                              updateDraftField('lyrics', nextLyrics);
                             }} style={{ marginLeft: '8px' }}>Add Verse</button>
                           </div>
                         </div>
@@ -1112,43 +1281,42 @@ export default function DeckBuilder() {
                               <input
                                 type="text"
                                 value={(slide.style && slide.style[k]) || (effective as any)[k] || ''}
-                                onChange={e => updateSlideStyle(selectedSlideIndex, k, e.target.value)}
+                                onChange={e => updateDraftStyle(k, e.target.value)}
                               />
-                              <button type="button" onClick={() => resetSlideStyleField(selectedSlideIndex, k)} style={{ marginLeft: '8px' }}>Reset</button>
+                              <button type="button" onClick={() => resetDraftStyleField(k)} style={{ marginLeft: '8px' }}>Reset</button>
                             </div>
                           ))}
                           <div style={{ marginTop: '6px' }}>
                             <label style={{ marginRight: '8px' }}>Horizontal alignment: </label>
                             <select
                               value={selectHorizontal}
-                              onChange={e => updateSlideStyle(selectedSlideIndex, 'horizontalAlign', e.target.value)}
+                              onChange={e => updateDraftStyle('horizontalAlign', e.target.value)}
                             >
                               <option value={HorizontalAlign.LEFT}>Left</option>
                               <option value={HorizontalAlign.CENTER}>Center</option>
                               <option value={HorizontalAlign.RIGHT}>Right</option>
                             </select>
-                            <button type="button" onClick={() => resetSlideStyleField(selectedSlideIndex, 'horizontalAlign')} style={{ marginLeft: '8px' }}>Reset</button>
+                            <button type="button" onClick={() => resetDraftStyleField('horizontalAlign')} style={{ marginLeft: '8px' }}>Reset</button>
                           </div>
                           <div style={{ marginTop: '6px' }}>
                             <label style={{ marginRight: '8px' }}>Vertical alignment: </label>
                             <select
                               value={selectVertical}
-                              onChange={e => updateSlideStyle(selectedSlideIndex, 'verticalAlign', e.target.value)}
+                              onChange={e => updateDraftStyle('verticalAlign', e.target.value)}
                             >
                               <option value={VerticalAlign.TOP}>Top</option>
                               <option value={VerticalAlign.MIDDLE}>Middle</option>
                               <option value={VerticalAlign.BOTTOM}>Bottom</option>
                             </select>
-                            <button type="button" onClick={() => resetSlideStyleField(selectedSlideIndex, 'verticalAlign')} style={{ marginLeft: '8px' }}>Reset</button>
+                            <button type="button" onClick={() => resetDraftStyleField('verticalAlign')} style={{ marginLeft: '8px' }}>Reset</button>
                           </div>
-                          <div style={{ marginTop: '8px' }}>
+                          <div className="deck-slide-editor-footer-actions">
                             {slide.type === SlideType.SONG && slide.lyrics && slide.id ? (
                               <>
                                 <button
                                   type="button"
                                   title="Full rewind to title"
                                   onClick={() => handleSongFullRewind(slide)}
-                                  style={{ marginRight: '8px' }}
                                 >
                                   |&lt;-- Full rewind
                                 </button>
@@ -1159,23 +1327,29 @@ export default function DeckBuilder() {
                                     songLastStagedById[slide.id] === 0
                                   }
                                   onClick={() => handleSongStageReverse(slide)}
-                                  style={{ marginRight: '8px' }}
                                 >
                                   Reverse (staged)
                                 </button>
                                 <button
                                   type="button"
                                   onClick={() => handleSongStageAdvance(slide)}
-                                  style={{ marginRight: '8px' }}
                                 >
                                   Advance (staged)
                                 </button>
                               </>
                             ) : null}
-                            <button onClick={() => resetAllSlideStyleOverrides(selectedSlideIndex)}>Reset all overrides</button>
-                            <button onClick={() => duplicateSlide(selectedSlideIndex)} style={{ marginLeft: '8px' }}>Duplicate</button>
-                            <button onClick={() => deleteSlide(selectedSlideIndex)} style={{ marginLeft: '8px' }}>Delete</button>
-                            <button onClick={() => setSelectedSlideIndex(null)} style={{ marginLeft: '8px' }}>Close editor</button>
+                            <button onClick={resetAllDraftStyleOverrides}>Reset all overrides</button>
+                            <button onClick={() => duplicateSlide(selectedSlideIndex)}>Duplicate</button>
+                            <button onClick={() => deleteSlide(selectedSlideIndex)}>Delete</button>
+                            <button type="button" onClick={collapseSlideEditor}>Close editor</button>
+                            <button
+                              type="button"
+                              className="deck-slide-editor-save-btn"
+                              data-testid="save-slide-button"
+                              onClick={saveSlideEdits}
+                            >
+                              Save slide
+                            </button>
                           </div>
                         </div>
                       );
@@ -1184,17 +1358,20 @@ export default function DeckBuilder() {
                 );
               })()}
             </>
-          ) : (
-            <p className="deck-slide-editor-placeholder">Click Edit on a slide to edit it here.</p>
-          )}
+          ) : null}
         </div>
+        ) : (
+          <div className="deck-slide-editor-rail" data-testid="deck-slide-editor-rail" aria-label="Edit rail">
+            <span className="deck-slide-editor-rail-label">Edit</span>
+          </div>
+        )}
       </div>
 
       <div id="status" style={{ marginTop: '12px' }}>{message}</div>
       {showSaveToLibraryPrompt && (
         <div data-testid="import-save-prompt" style={{ marginTop: '8px', padding: '8px', border: '1px solid #aaa', display: 'inline-flex', gap: '8px', alignItems: 'center' }}>
           <span>Save this import to the library?</span>
-          <button id="import-save-to-library" onClick={async () => { setShowSaveToLibraryPrompt(false); await handleSaveToLibrary(); }}>Save to Library</button>
+          <button id="import-save-to-library" onClick={async () => { setShowSaveToLibraryPrompt(false); await handleSaveToLibrary(); }}>Save</button>
           <button id="import-skip-save-to-library" onClick={() => setShowSaveToLibraryPrompt(false)}>Skip</button>
         </div>
       )}

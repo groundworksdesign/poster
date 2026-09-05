@@ -2,7 +2,7 @@ import { SlideType, type Slide, type SongData } from '../Present/PresentTypes';
 
 /**
  * Stages: 0 = title+subtitle; 1..numPairs = lyric pairs (2 lines each);
- * numPairs+1 = blank end; then Advance wraps to 0.
+ * numPairs+1 = blank end; deck navigation advances to the next slide after that.
  */
 export function getSongStageCount(slide: Slide): number {
   if (slide.type !== SlideType.SONG || !slide.lyrics) return 1;
