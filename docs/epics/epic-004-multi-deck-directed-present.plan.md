@@ -1,24 +1,24 @@
 ---
 name: Multi-deck directed Present, single Home, theme persist, program thumbnail
 epic: epic-004
-status: complete
+status: draft
 overview: "Poster decks send only to their own Present children, Home/Library is a single main window that refocuses if opened again, the selected theme persists across app restart and Home close/reopen on every window, and each deck shows a thumbnail of what is on program."
 todos:
   - id: directed-send-main-switch
     content: Replace the shared BroadcastChannel / handleSendClick / PresentData slide bus with a Main-owned session graph and four fixed channels so a deck posts only to the chosen Present Window.
-    status: done
+    status: pending
   - id: directed-send-targeting
     content: Support send to named child presentIds, or all children of that deck only; missing targets send to nobody; another deck's id is a no-op; new Present window gets a new id; replay last payload if that Present reloads.
-    status: done
+    status: pending
   - id: single-home-focus
     content: Keep Home/Library as the only main window (the saved presentations/decks list); opening Home again focuses the existing Home; Open Presentation opens a deck window while Home stays put; Present windows are where slides play.
-    status: done
+    status: pending
   - id: persist-theme-all-windows
     content: Persist the selected theme including the dropdown across app restart and across Home close/reopen, and apply it to Home, deck builders, and Present windows.
-    status: done
+    status: pending
   - id: program-thumbnail
     content: Show a thumbnail in the deck of what is on program.
-    status: done
+    status: pending
 isProject: false
 ---
 

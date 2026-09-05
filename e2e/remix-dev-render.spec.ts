@@ -14,7 +14,8 @@ test.describe('Remix dev', () => {
     });
     page.on('pageerror', err => failures.push(`pageerror: ${err.message}`));
 
-    const res = await page.goto('/deck', { waitUntil: 'networkidle' });
+    // domcontentloaded: deck poster poll keeps long-lived requests open, so networkidle never settles.
+    const res = await page.goto('/deck', { waitUntil: 'domcontentloaded' });
     expect(res?.status(), `document status (failures: ${failures.join('; ')})`).toBeLessThan(500);
 
     await expect(page.getByText(/Deck builder connected|Load deck|Deck/i).first()).toBeVisible({
@@ -25,7 +26,7 @@ test.describe('Remix dev', () => {
   });
 
   test('home / renders Poster (root index route)', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'networkidle' });
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
     await expect(page.getByRole('heading', { name: 'Poster', level: 1 })).toBeVisible({
       timeout: 15000,
     });

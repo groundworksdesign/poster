@@ -48,11 +48,9 @@ describe('electron/main.cjs launch safety (all Electron installers)', () => {
     expect(mainSource).not.toMatch(/spawn\(\s*process\.execPath\s*,\s*\[\s*__filename/);
   });
 
-  it('recreates the window on macOS activate without relaunching', () => {
+  it('recreates or focuses Home on macOS activate without relaunching', () => {
     const activateBlock = mainSource.slice(mainSource.indexOf("app.on('activate'"));
-    expect(activateBlock).toMatch(/process\.platform\s*===\s*['"]darwin['"]/);
-    expect(activateBlock).toMatch(/BrowserWindow\.getAllWindows\(\)\.length\s*===\s*0/);
-    expect(activateBlock).toMatch(/openMainWindow\(/);
+    expect(activateBlock).toMatch(/ensureHomeWindow\(serverPort\)/);
     expect(activateBlock).not.toMatch(/app\.relaunch\(\)/);
   });
 
@@ -64,6 +62,14 @@ describe('electron/main.cjs launch safety (all Electron installers)', () => {
     expect(closedBlock).toMatch(
       /if\s*\(\s*process\.platform\s*!==\s*['"]darwin['"]\s*\)\s*\{[\s\S]*killServer\(\)/,
     );
+  });
+
+  it('never creates a second Home: ensureHomeWindow + window-open home deny', () => {
+    expect(mainSource).toMatch(/function ensureHomeWindow/);
+    expect(mainSource).toMatch(/shouldCreateHomeWindow/);
+    expect(mainSource).toMatch(/setWindowOpenHandler/);
+    expect(mainSource).toMatch(/classifyOpenUrl/);
+    expect(mainSource).toMatch(/present-bare/);
   });
 
   it('fails fast when packaged node_modules/express is missing', () => {

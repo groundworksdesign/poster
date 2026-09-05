@@ -12,7 +12,7 @@
  *   4. useGreenScreen flag (true / false)
  *
  * Part A: pure unit tests -- no DOM, no channel needed.
- * Part B: receiver-side tests -- Presentation component + FakeBroadcastChannel.
+ * Part B: receiver-side tests -- Presentation component + session transport.
  */
 
 import React from 'react';
@@ -24,6 +24,13 @@ import {
   Slide,
 } from '../Present/PresentTypes';
 import Presentation from '../Present/Present';
+import {
+  ensureTestSessionBackend,
+  resetTestSessionHub,
+  setPresentationSearch,
+  setupDeckPresentPair,
+} from '../Present/testSessionHelpers';
+import type { DeckSession } from '../Present/SessionTransport';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -48,43 +55,18 @@ const makeSongSlide = (): Slide =>
     },
   });
 
-// ---------------------------------------------------------------------------
-// FakeBroadcastChannel (routes messages between instances on the same name)
-// ---------------------------------------------------------------------------
-
-class FakeBroadcastChannel {
-  static channels: Record<string, FakeBroadcastChannel[]> = {};
-  name: string;
-  onmessage: ((e: { data: unknown }) => void) | null = null;
-
-  constructor(name: string) {
-    this.name = name;
-    FakeBroadcastChannel.channels[name] = FakeBroadcastChannel.channels[name] || [];
-    FakeBroadcastChannel.channels[name].push(this);
-  }
-
-  postMessage(msg: unknown) {
-    (FakeBroadcastChannel.channels[this.name] || []).forEach(ch => {
-      if (ch !== this && typeof ch.onmessage === 'function') {
-        ch.onmessage({ data: msg });
-      }
-    });
-  }
-
-  close() {
-    FakeBroadcastChannel.channels[this.name] = (
-      FakeBroadcastChannel.channels[this.name] || []
-    ).filter(ch => ch !== this);
-  }
+async function renderPresentationWithSession(): Promise<DeckSession> {
+  const { deck, sessionId, presentId } = await setupDeckPresentPair();
+  setPresentationSearch(sessionId, presentId);
+  await act(async () => {
+    render(<Presentation />);
+  });
+  return deck;
 }
 
 beforeEach(() => {
-  (global as any).BroadcastChannel = FakeBroadcastChannel;
-});
-
-afterEach(() => {
-  delete (global as any).BroadcastChannel;
-  FakeBroadcastChannel.channels = {};
+  ensureTestSessionBackend();
+  resetTestSessionHub();
 });
 
 // ===========================================================================
@@ -256,93 +238,63 @@ describe('PresentData -- payload shape contract', () => {
 // ===========================================================================
 
 describe('Presentation receiver -- broadcast contract', () => {
-  // -------------------------------------------------------------------------
-  // Variant 1: slide-only send renders slide in presenter
-  // -------------------------------------------------------------------------
   it('renders slide title when a slide-only payload is received', async () => {
-    await act(async () => {
-      render(<Presentation />);
-    });
+    const deck = await renderPresentationWithSession();
 
     await act(async () => {
-      const ch = new (global as any).BroadcastChannel('presentation');
-      ch.postMessage(new PresentData({ slide: makeSlide({ title: 'Live Title' }) }));
+      await deck.send(new PresentData({ slide: makeSlide({ title: 'Live Title' }) }));
     });
 
     expect(screen.getByText('Live Title')).toBeInTheDocument();
   });
 
   it('does not show a message when slide-only payload has no message', async () => {
-    await act(async () => {
-      render(<Presentation />);
-    });
+    const deck = await renderPresentationWithSession();
 
     await act(async () => {
-      const ch = new (global as any).BroadcastChannel('presentation');
-      ch.postMessage(new PresentData({ slide: makeSlide({ title: 'No Message Slide' }) }));
+      await deck.send(new PresentData({ slide: makeSlide({ title: 'No Message Slide' }) }));
     });
 
-    // The #message div should be empty (no text content)
     const msgDiv = document.getElementById('message');
     expect(msgDiv?.textContent).toBeFalsy();
   });
 
-  // -------------------------------------------------------------------------
-  // Variant 2: message-only send appears in #message without clearing slide
-  // -------------------------------------------------------------------------
   it('displays message text when a message-only payload is received', async () => {
+    const deck = await renderPresentationWithSession();
+
     await act(async () => {
-      render(<Presentation />);
+      await deck.send(new PresentData({ slide: makeSlide({ title: 'Existing Slide' }) }));
     });
 
-    // First send a slide so there is existing slide state
     await act(async () => {
-      const ch = new (global as any).BroadcastChannel('presentation');
-      ch.postMessage(new PresentData({ slide: makeSlide({ title: 'Existing Slide' }) }));
-    });
-
-    // Then send message only
-    await act(async () => {
-      const ch = new (global as any).BroadcastChannel('presentation');
-      ch.postMessage(new PresentData({ message: 'Operator announcement' }));
+      await deck.send(new PresentData({ message: 'Operator announcement' }));
     });
 
     expect(screen.getByText('Operator announcement')).toBeInTheDocument();
-    // Slide should still be rendered
     expect(screen.getByText('Existing Slide')).toBeInTheDocument();
   });
 
   it('clears message when empty-string message payload is received', async () => {
-    await act(async () => {
-      render(<Presentation />);
-    });
+    const deck = await renderPresentationWithSession();
 
     await act(async () => {
-      const ch = new (global as any).BroadcastChannel('presentation');
-      ch.postMessage(new PresentData({ message: 'Temporary message' }));
+      await deck.send(new PresentData({ message: 'Temporary message' }));
     });
 
     expect(screen.getByText('Temporary message')).toBeInTheDocument();
 
     await act(async () => {
-      const ch = new (global as any).BroadcastChannel('presentation');
-      ch.postMessage(new PresentData({ message: '' }));
+      await deck.send(new PresentData({ message: '' }));
     });
 
     expect(screen.queryByText('Temporary message')).not.toBeInTheDocument();
   });
 
-  // -------------------------------------------------------------------------
-  // Variant 3: lyrics-navigation does not replace slide or message
-  // -------------------------------------------------------------------------
   it('advances lyrics segment on "next" without replacing the song slide', async () => {
-    await act(async () => {
-      render(<Presentation />);
-    });
+    const deck = await renderPresentationWithSession();
 
     await act(async () => {
-      const ch = new (global as any).BroadcastChannel('presentation');
-      ch.postMessage(
+      await deck.send(
         new PresentData({
           slide: makeSongSlide(),
           message: 'Sing along',
@@ -351,82 +303,60 @@ describe('Presentation receiver -- broadcast contract', () => {
       );
     });
 
-    // Initial segment: first two lines
     expect(screen.getByText('Verse1 Line1')).toBeInTheDocument();
     expect(screen.getByText('Verse1 Line2')).toBeInTheDocument();
 
     await act(async () => {
-      const ch = new (global as any).BroadcastChannel('presentation');
-      ch.postMessage(new PresentData({ data: { lyricsNavigation: { command: 'next' } } }));
+      await deck.send(new PresentData({ data: { lyricsNavigation: { command: 'next' } } }));
     });
 
-    // Segment should advance; message and slide title must still be present
     expect(screen.getByText('Verse1 Line3')).toBeInTheDocument();
     expect(screen.getByText('Verse1 Line4')).toBeInTheDocument();
     expect(screen.getByText('Sing along')).toBeInTheDocument();
   });
 
   it('rewinds lyrics segment on "previous"', async () => {
+    const deck = await renderPresentationWithSession();
+
     await act(async () => {
-      render(<Presentation />);
+      await deck.send(new PresentData({ slide: makeSongSlide(), useGreenScreen: false }));
     });
 
     await act(async () => {
-      const ch = new (global as any).BroadcastChannel('presentation');
-      ch.postMessage(new PresentData({ slide: makeSongSlide(), useGreenScreen: false }));
-    });
-
-    // Advance once
-    await act(async () => {
-      const ch = new (global as any).BroadcastChannel('presentation');
-      ch.postMessage(new PresentData({ data: { lyricsNavigation: { command: 'next' } } }));
+      await deck.send(new PresentData({ data: { lyricsNavigation: { command: 'next' } } }));
     });
 
     expect(screen.getByText('Verse1 Line3')).toBeInTheDocument();
 
-    // Rewind
     await act(async () => {
-      const ch = new (global as any).BroadcastChannel('presentation');
-      ch.postMessage(new PresentData({ data: { lyricsNavigation: { command: 'previous' } } }));
+      await deck.send(new PresentData({ data: { lyricsNavigation: { command: 'previous' } } }));
     });
 
     expect(screen.getByText('Verse1 Line1')).toBeInTheDocument();
     expect(screen.getByText('Verse1 Line2')).toBeInTheDocument();
   });
 
-  // -------------------------------------------------------------------------
-  // Variant 4: useGreenScreen true sets body background to chroma green
-  // -------------------------------------------------------------------------
   it('sets body background to chroma green when useGreenScreen is true', async () => {
-    await act(async () => {
-      render(<Presentation />);
-    });
+    const deck = await renderPresentationWithSession();
 
     await act(async () => {
-      const ch = new (global as any).BroadcastChannel('presentation');
-      ch.postMessage(new PresentData({ slide: makeSlide(), useGreenScreen: true }));
+      await deck.send(new PresentData({ slide: makeSlide(), useGreenScreen: true }));
     });
 
     expect(document.body.style.backgroundColor).toBe('rgb(0, 177, 64)');
   });
 
   it('clears chroma green when useGreenScreen is false', async () => {
-    await act(async () => {
-      render(<Presentation />);
-    });
+    const deck = await renderPresentationWithSession();
 
-    // Enable green screen first
     await act(async () => {
-      const ch = new (global as any).BroadcastChannel('presentation');
-      ch.postMessage(new PresentData({ slide: makeSlide(), useGreenScreen: true }));
+      await deck.send(new PresentData({ slide: makeSlide(), useGreenScreen: true }));
     });
 
     expect(document.body.style.backgroundColor).toBe('rgb(0, 177, 64)');
 
-    // Disable it
     await act(async () => {
-      const ch = new (global as any).BroadcastChannel('presentation');
-      ch.postMessage(new PresentData({ slide: makeSlide(), useGreenScreen: false }));
+      await deck.send(new PresentData({ slide: makeSlide(), useGreenScreen: false }));
     });
 
     expect(document.body.style.backgroundColor).not.toBe('rgb(0, 177, 64)');

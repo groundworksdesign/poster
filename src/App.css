@@ -410,6 +410,28 @@ ul {
   font-family: var(--font-sans);
 }
 
+.deck-program-thumbnail-preview {
+  margin-top: 0.5rem;
+  min-height: 5.5rem;
+  max-width: 16rem;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+  overflow: hidden;
+}
+
+.deck-program-thumbnail-message {
+  font-size: 0.75rem;
+  opacity: 0.9;
+  margin-bottom: 0.35rem;
+}
+
 .deck-slide-item {
   border: 1px solid var(--color-border);
   margin: 4px 0;

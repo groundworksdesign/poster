@@ -3,18 +3,37 @@ import LibraryPanel from './Deck/LibraryPanel';
 import { THEMES, useTheme, type ThemeId } from './utils/useTheme';
 import { subscribeLibraryChanged } from './utils/libraryRefresh';
 
+const POPUP_FEATURES =
+  'width=1280,height=720,menubar=no,toolbar=no,location=no,status=no,scrollbars=yes,resizable=yes';
+
 /**
- * Opens a Poster route in a dedicated window/tab without navigating the current page.
+ * Opens a Poster route in a dedicated window/tab without navigating Home away.
  */
 function openAppWindow(e: React.MouseEvent<HTMLAnchorElement>, windowName: string) {
   e.preventDefault();
   const url = e.currentTarget.href;
-  const features =
-    'width=1280,height=720,menubar=no,toolbar=no,location=no,status=no,scrollbars=yes,resizable=yes';
-  const w = window.open(url, windowName, features);
+  const w = window.open(url, windowName, POPUP_FEATURES);
   if (w) {
     w.opener = null;
     w.focus();
+  } else {
+    window.location.assign(url);
+  }
+}
+
+/**
+ * Open a deck builder window/tab while keeping Home put (Open Presentation).
+ * Falls back to same-tab navigation if the browser blocks the popup.
+ */
+function openDeckWindow(e: React.MouseEvent<HTMLAnchorElement>) {
+  e.preventDefault();
+  const url = e.currentTarget.href;
+  const w = window.open(url, '_blank', POPUP_FEATURES);
+  if (w) {
+    w.opener = null;
+    w.focus();
+  } else {
+    window.location.assign(url);
   }
 }
 
@@ -23,7 +42,7 @@ export default function HomePage() {
   const [libraryRefreshKey, setLibraryRefreshKey] = useState(0);
 
   useEffect(() => {
-    return subscribeLibraryChanged(() => setLibraryRefreshKey(k => k + 1));
+    return subscribeLibraryChanged(() => setLibraryRefreshKey((k) => k + 1));
   }, []);
 
   const handleOpenFromLibrary = (id: string) => {
@@ -31,6 +50,8 @@ export default function HomePage() {
     const tab = window.open(url, 'posterDeck', 'noopener,noreferrer,width=1280,height=720');
     if (tab) {
       tab.opener = null;
+    } else {
+      window.location.assign(url);
     }
   };
 
@@ -56,38 +77,32 @@ export default function HomePage() {
       </div>
 
       <p className="home-page-lead">
-        Poster is a two-part app: you run the <strong>deck builder</strong> to load or edit slides
-        and send them to the <strong>presentation</strong> view. Both tabs talk to each other in
-        the same browser (no server required for the live feed).
+        <strong>Home</strong> is your library of saved presentations. Open a presentation to work
+        in the deck builder; from the deck, use <strong>Open Present</strong> for the projector
+        window where slides play.
       </p>
       <ol className="home-page-steps">
+        <li>Open a presentation (deck builder) from Home — this page stays open.</li>
         <li>
-          Open the deck builder. Load a slide deck (JSON), import a song (XML), or open something
-          from the library when using the full app.
+          In the deck, choose a slide and click Open Present for a session-scoped Present window.
         </li>
-        <li>
-          Open the presentation on your projector or second monitor—keep it on top and fullscreen
-          there.
-        </li>
-        <li>
-          In the builder, choose a slide and send it to the presentation. Use arrow keys or
-          on-screen controls to move through the deck or through song lyrics.
-        </li>
+        <li>Send slides to Present from the deck; use arrow keys or on-screen controls as needed.</li>
       </ol>
       <div className="home-page-actions">
+        <a
+          className="home-page-link home-page-link--present"
+          href="/deck"
+          data-testid="open-presentation"
+          onClick={openDeckWindow}
+        >
+          Open Presentation
+        </a>
         <a
           className="home-page-link home-page-link--deck"
           href="/deck"
           onClick={(e) => openAppWindow(e, 'posterDeck')}
         >
           Open deck builder (new window)
-        </a>
-        <a
-          className="home-page-link home-page-link--present"
-          href="/presentation"
-          onClick={(e) => openAppWindow(e, 'posterPresentation')}
-        >
-          Open presentation (new window)
         </a>
         <a
           className="home-page-link home-page-link--import"
@@ -101,7 +116,7 @@ export default function HomePage() {
       <div className="home-page-library">
         <LibraryPanel
           onOpen={handleOpenFromLibrary}
-          onDeleted={() => setLibraryRefreshKey(k => k + 1)}
+          onDeleted={() => setLibraryRefreshKey((k) => k + 1)}
           currentLibraryId={null}
           refreshKey={libraryRefreshKey}
         />

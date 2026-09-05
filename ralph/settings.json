@@ -9,7 +9,7 @@
   "planFrequency": 1,
   "minBacklogSize": 3,
   "agentBackend": "copilot",
-  "epicFile": "docs/epics/epic-002-theme-install-reorg.plan.md",
+  "epicFile": "docs/epics/epic-004-multi-deck-directed-present.plan.md",
   "requirementsFile": "",
   "pauseAfterPlan": false,
   "taskColumnSort": "updatedAtDesc"
