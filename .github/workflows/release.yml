@@ -242,6 +242,9 @@ jobs:
       fail-fast: false
 
     env:
+      # Prefer unsigned/ad-hoc when Apple secrets are absent. Empty CSC_LINK from
+      # missing secrets is stripped by scripts/run-electron-builder.cjs (empty
+      # CSC_LINK makes electron-builder treat the repo path as a cert file).
       CSC_IDENTITY_AUTO_DISCOVERY: false
       CSC_LINK: ${{ secrets.CSC_LINK }}
       CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
@@ -277,7 +280,8 @@ jobs:
 
       # --publish never is baked into build:electron (electron-builder v26
       # otherwise auto-publishes in CI). prepare-electron-pack.cjs ships a slim
-      # runtime node_modules tree into the app.
+      # runtime node_modules tree into the app. run-electron-builder.cjs clears
+      # blank CSC_* so mac Release matches PR unsigned/ad-hoc behavior.
       - name: Build Electron installers
         run: pnpm run build:electron
 
@@ -353,11 +357,14 @@ jobs:
         run: |
           set -euo pipefail
           PR_NUMBER='${{ needs.resolve-version.outputs.pr_number }}'
-          echo "Cleaning up PR pre-releases for PR #${PR_NUMBER} (tags matching *-pr.${PR_NUMBER})"
+          SUFFIX="-pr.${PR_NUMBER}"
+          echo "Cleaning up PR pre-releases for PR #${PR_NUMBER} (tags ending with ${SUFFIX})"
 
-          gh api "/repos/${{ github.repository }}/releases" --paginate --jq \
-            ".[] | select(.tag_name | test(\"-pr\\.${PR_NUMBER}$\")) | .id" \
+          # Use endswith — avoid jq regex escapes (test("…\\.") broke undraft).
+          gh api "/repos/${{ github.repository }}/releases" --paginate \
+            --jq ".[] | select(.tag_name | endswith(\"${SUFFIX}\")) | .id" \
             | while read -r id; do
+              [ -n "${id}" ] || continue
               echo "  Deleting release $id"
               gh api -X DELETE "/repos/${{ github.repository }}/releases/$id" || true
             done

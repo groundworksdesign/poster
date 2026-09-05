@@ -118,6 +118,20 @@ describe('electron packaging includes production node_modules', () => {
     expect(adhocSrc).toMatch(/CSC_LINK/);
     expect(adhocSrc).toMatch(/codesign/);
     expect(adhocSrc).toMatch(/--sign', '-'/);
+    expect(adhocSrc).toMatch(/hasSigningIdentity|trim\(\)/);
+  });
+
+  it('strips empty CSC env before electron-builder (Release unsigned mac)', () => {
+    const pkg = JSON.parse(
+      fs.readFileSync(path.join(__dirname, '../../package.json'), 'utf8'),
+    );
+    expect(pkg.scripts['build:electron']).toMatch(/run-electron-builder\.cjs/);
+    const clearer = fs.readFileSync(
+      path.join(__dirname, '../../scripts/clear-empty-csc-env.cjs'),
+      'utf8',
+    );
+    expect(clearer).toMatch(/CSC_LINK/);
+    expect(clearer).toMatch(/trim/);
   });
 
   it('allows window.open child windows in Electron main', () => {
