@@ -1,12 +1,10 @@
 import { test, expect } from '@playwright/test';
+import { openPresenterSession, sessionSend } from './posterSessionE2E';
 
 /**
  * Visual regression tests for the presenter route.
  *
- * These tests lock the pixel-level layout of broadcast-critical output:
- *   - 9-cell alignment grid (3 vertical x 3 horizontal positions)
- *   - green screen mode (body background becomes chroma-key green #00b140)
- *   - idle/blank state (no slide sent)
+ * Slide delivery uses the poster session relay (not BroadcastChannel).
  *
  * Baselines are committed to e2e/remix-visual-regression.spec.ts-snapshots/.
  * To regenerate all baselines after an intentional layout change, run:
@@ -42,9 +40,6 @@ function buildSlidePayload(
 ) {
   return {
     slide: {
-      // Use 'title' type so the slide frame fills 100% of the viewport; 'general'
-      // only fills 72% and the overlay text lands in the transparent page area
-      // where it is invisible against the white body background.
       type: 'title',
       title: 'Visual Regression Test',
       subTitle: `${verticalAlign} / ${horizontalAlign}`,
@@ -54,8 +49,6 @@ function buildSlidePayload(
         width: '100%',
         height: '100%',
         fontFamily: 'Arial, sans-serif',
-        // Large font ensures the text block covers enough pixels that even a
-        // small position shift (e.g. 40px) exceeds the 0.5% diff threshold.
         fontSize: '120px',
         verticalAlign,
         horizontalAlign,
@@ -67,51 +60,22 @@ function buildSlidePayload(
   };
 }
 
-async function broadcastSlide(
-  page: import('@playwright/test').Page,
-  payload: unknown,
-) {
-  await page.evaluate((msg) => {
-    const ch = new BroadcastChannel('presentation');
-    ch.postMessage(msg);
-    ch.close();
-  }, payload);
-}
-
-/**
- * Open the presenter in a dedicated page at 1920x1080, and navigate a second
- * page on the same context to the same origin so BroadcastChannel messages are
- * same-origin and reach the presenter listener.
- */
-async function openPresenter(browser: import('@playwright/test').Browser, baseURL: string) {
-  const context = await browser.newContext({
+function openVisualSession(browser: import('@playwright/test').Browser, baseURL: string) {
+  return openPresenterSession(browser, baseURL, {
     viewport: VIEWPORT,
     colorScheme: 'dark',
   });
-  const presenterPage = await context.newPage();
-  const senderPage = await context.newPage();
-
-  // Navigate senderPage to a same-origin route first; on about:blank the
-  // BroadcastChannel sits on a different origin and never reaches the presenter.
-  await senderPage.goto(`${baseURL}/deck`, { waitUntil: 'domcontentloaded' });
-  await presenterPage.goto(`${baseURL}/presentation`, { waitUntil: 'networkidle' });
-
-  return { context, presenterPage, senderPage };
 }
 
-// ---------------------------------------------------------------------------
-// 9-cell alignment grid
-// ---------------------------------------------------------------------------
 test.describe('alignment grid -- screenshot', () => {
   for (const { cell, verticalAlign, horizontalAlign } of ALIGN_CELLS) {
     test(`align: ${cell}`, async ({ browser, baseURL }) => {
       const base = baseURL ?? 'http://127.0.0.1:3000';
-      const { context, presenterPage, senderPage } = await openPresenter(browser, base);
+      const { context, presenterPage, senderPage, peerId } = await openVisualSession(browser, base);
 
       try {
-        await broadcastSlide(senderPage, buildSlidePayload(verticalAlign, horizontalAlign));
+        await sessionSend(senderPage, peerId, buildSlidePayload(verticalAlign, horizontalAlign));
 
-        // Wait for overlay to appear with the correct title text
         const overlay = presenterPage.locator('[data-testid="slide-overlay"]').first();
         await expect(overlay).toBeVisible({ timeout: 10000 });
 
@@ -127,13 +91,10 @@ test.describe('alignment grid -- screenshot', () => {
   }
 });
 
-// ---------------------------------------------------------------------------
-// Green screen mode
-// ---------------------------------------------------------------------------
 test.describe('green screen -- screenshot', () => {
   test('body background is chroma-key green', async ({ browser, baseURL }) => {
     const base = baseURL ?? 'http://127.0.0.1:3000';
-    const { context, presenterPage, senderPage } = await openPresenter(browser, base);
+    const { context, presenterPage, senderPage, peerId } = await openVisualSession(browser, base);
 
     try {
       const greenPayload = {
@@ -141,9 +102,8 @@ test.describe('green screen -- screenshot', () => {
         useGreenScreen: true,
       };
 
-      await broadcastSlide(senderPage, greenPayload);
+      await sessionSend(senderPage, peerId, greenPayload);
 
-      // Confirm the body background color is applied by the useEffect in Present.tsx
       await presenterPage.waitForFunction(
         () => document.body.style.backgroundColor === 'rgb(0, 177, 64)',
         { timeout: 10000 },
@@ -155,11 +115,9 @@ test.describe('green screen -- screenshot', () => {
         maxDiffPixelRatio: 0.005,
       });
 
-      // Also assert the exact background color so tests fail fast with a clear message
       const bgColor = await presenterPage.evaluate(
         () => document.body.style.backgroundColor,
       );
-      // #00b140 == rgb(0, 177, 64)
       expect(bgColor).toBe('rgb(0, 177, 64)');
     } finally {
       await context.close();
@@ -167,19 +125,14 @@ test.describe('green screen -- screenshot', () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// Idle / blank state (no slide sent)
-// ---------------------------------------------------------------------------
 test.describe('idle / blank state -- screenshot', () => {
   test('presenter shows blank output before any slide is sent', async ({ browser, baseURL }) => {
     const base = baseURL ?? 'http://127.0.0.1:3000';
-    const { context, presenterPage } = await openPresenter(browser, base);
+    const { context, presenterPage } = await openVisualSession(browser, base);
 
     try {
-      // No BroadcastChannel message -- presenter should be blank
       await presenterPage.waitForTimeout(500);
 
-      // The slide overlay should not be visible
       const overlay = presenterPage.locator('[data-testid="slide-overlay"]').first();
       await expect(overlay).not.toBeVisible();
 

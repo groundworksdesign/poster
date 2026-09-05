@@ -47,6 +47,8 @@ jobs:
       version: ${{ steps.resolve.outputs.version }}
       is_prerelease: ${{ steps.resolve.outputs.is_prerelease }}
       commit_sha: ${{ steps.resolve.outputs.commit_sha }}
+      pr_number: ${{ steps.resolve.outputs.pr_number }}
+      skip_build: ${{ steps.resolve.outputs.skip_build }}
     permissions:
       contents: write
       pull-requests: read
@@ -67,25 +69,36 @@ jobs:
           if [ '${{ github.ref_type }}' = 'tag' ]; then
             # -----------------------------------------------------------------
             # Tag push — final release. Use the tag name as-is.
+            # Skip duplicate builds when the tag points at the automated
+            # post-merge version-bump commit (main-branch run already built).
             # -----------------------------------------------------------------
             TAG_NAME='${{ github.ref_name }}'
+            COMMIT_MSG=$(git log -1 --format=%B)
+            if echo "$COMMIT_MSG" | grep -qE 'Bump version to .* \[skip ci\]'; then
+              echo "skip_build=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "skip_build=false" >> "$GITHUB_OUTPUT"
+            fi
             echo "version=$TAG_NAME" >> "$GITHUB_OUTPUT"
             echo "is_prerelease=false" >> "$GITHUB_OUTPUT"
             echo "commit_sha=${{ github.sha }}" >> "$GITHUB_OUTPUT"
+            echo "pr_number=" >> "$GITHUB_OUTPUT"
             if ! gh release view "$TAG_NAME" >/dev/null 2>&1; then
               gh release create "$TAG_NAME" --draft --title "$TAG_NAME" --notes "Release assets building..."
             fi
 
           else
             # -----------------------------------------------------------------
-            # Main push — pre-release. Detect +semver:, bump package.json,
-            # commit [skip ci], push, create and push pre-release tag.
+            # Main push — final release. Detect +semver:, bump package.json,
+            # commit [skip ci], push, create and push final release tag.
             # -----------------------------------------------------------------
+            echo "skip_build=false" >> "$GITHUB_OUTPUT"
             CURRENT_VER=$(node -p "require('./package.json').version")
 
             # Find merged PR
             PR_NUMBER=$(gh api "/repos/${{ github.repository }}/commits/${{ github.sha }}/pulls" \
               --jq '.[0].number // empty')
+            echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
 
             # PR body + merge commit body
             PR_BODY=""
@@ -111,15 +124,7 @@ jobs:
               patch) PATCH=$((PATCH + 1)) ;;
             esac
             NEW_VER="${MAJOR}.${MINOR}.${PATCH}"
-
-            # Find highest pre-release number for this base version
-            MAX_PR=0
-            for TAG in $(git tag -l "v${NEW_VER}-pr.*"); do
-              PR_NUM="${TAG##*-pr.}"
-              [ "$PR_NUM" -gt "$MAX_PR" ] && MAX_PR="$PR_NUM"
-            done
-            NEXT_PR=$((MAX_PR + 1))
-            TAG_NAME="v${NEW_VER}-pr.${NEXT_PR}"
+            TAG_NAME="v${NEW_VER}"
 
             # Write version to package.json
             node -e "
@@ -135,14 +140,14 @@ jobs:
             git commit -m "Bump version to $NEW_VER [skip ci]"
             git push origin "refs/heads/${{ github.ref_name }}"
 
-            # Create and push pre-release tag
+            # Create and push final release tag
             git tag "$TAG_NAME"
             git push origin "$TAG_NAME"
 
-            gh release create "$TAG_NAME" --draft --prerelease --title "$TAG_NAME" --notes "Pre-release assets building..."
+            gh release create "$TAG_NAME" --draft --title "$TAG_NAME" --notes "Release assets building..."
 
             echo "version=$TAG_NAME" >> "$GITHUB_OUTPUT"
-            echo "is_prerelease=true" >> "$GITHUB_OUTPUT"
+            echo "is_prerelease=false" >> "$GITHUB_OUTPUT"
             echo "commit_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           fi
 
@@ -152,6 +157,7 @@ jobs:
   portable-zip:
     name: Portable zip (${{ matrix.os }}) for ${{ needs.resolve-version.outputs.version }}
     needs: [resolve-version]
+    if: needs.resolve-version.outputs.skip_build != 'true'
     runs-on: ${{ matrix.os }}
     permissions:
       contents: write
@@ -226,6 +232,7 @@ jobs:
   electron-installers:
     name: Electron installers (${{ matrix.os }}) for ${{ needs.resolve-version.outputs.version }}
     needs: [resolve-version]
+    if: needs.resolve-version.outputs.skip_build != 'true'
     runs-on: ${{ matrix.os }}
     permissions:
       contents: write
@@ -236,6 +243,11 @@ jobs:
 
     env:
       CSC_IDENTITY_AUTO_DISCOVERY: false
+      CSC_LINK: ${{ secrets.CSC_LINK }}
+      CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
 
     steps:
       - name: Checkout
@@ -316,8 +328,12 @@ jobs:
   publish:
     # Always run as long as version resolution succeeded, even if individual
     # build jobs (e.g. electron-installers) failed — we publish whatever was
-    # built successfully.
-    if: ${{ always() && needs.resolve-version.result == 'success' && !cancelled() }}
+    # built successfully. Skip when a duplicate tag-push run is suppressed.
+    if: >-
+      always() &&
+      needs.resolve-version.result == 'success' &&
+      needs.resolve-version.outputs.skip_build != 'true' &&
+      !cancelled()
     name: Publish ${{ needs.resolve-version.outputs.version }}
     needs: [portable-zip, electron-installers, resolve-version]
     runs-on: ubuntu-latest
@@ -328,30 +344,28 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Delete pre-releases with same base version (final release only)
-        if: needs.resolve-version.outputs.is_prerelease == 'false'
+      - name: Delete merged PR pre-releases (final release only)
+        if: >-
+          needs.resolve-version.outputs.is_prerelease == 'false' &&
+          needs.resolve-version.outputs.pr_number != ''
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          BASE=$(echo '${{ github.ref_name }}' | sed 's/^v//')
-          echo "Cleaning up pre-releases matching v${BASE}-pr.*"
+          PR_NUMBER='${{ needs.resolve-version.outputs.pr_number }}'
+          echo "Cleaning up PR pre-releases for PR #${PR_NUMBER} (tags matching *-pr.${PR_NUMBER})"
 
-          # Delete GitHub Releases
-          gh api "/repos/${{ github.repository }}/releases" --jq \
-            '.[] | select(.tag_name | startswith("v'"${BASE}"'-pr.")) | .id' \
-            | while read id; do
+          gh api "/repos/${{ github.repository }}/releases" --paginate --jq \
+            ".[] | select(.tag_name | test(\"-pr\\.${PR_NUMBER}$\")) | .id" \
+            | while read -r id; do
               echo "  Deleting release $id"
               gh api -X DELETE "/repos/${{ github.repository }}/releases/$id" || true
             done
 
-          # Delete git refs (tags)
-          gh api "/repos/${{ github.repository }}/git/refs/tags" --jq \
-            '.[] | select(.ref | startswith("refs/tags/v'"${BASE}"'-pr.")) | .ref' \
-            | while read ref; do
-              echo "  Deleting tag ref $ref"
-              gh api -X DELETE "/repos/${{ github.repository }}/git/refs/$ref" || true
-            done
+          for TAG in $(git ls-remote --tags origin "v*-pr.${PR_NUMBER}" | awk '{print $2}' | sed 's|refs/tags/||'); do
+            echo "  Deleting tag $TAG"
+            gh api -X DELETE "/repos/${{ github.repository }}/git/refs/tags/${TAG}" || true
+          done
 
       - name: Finalize GitHub Release
         env:
@@ -359,10 +373,6 @@ jobs:
         run: |
           set -euo pipefail
           VERSION='${{ needs.resolve-version.outputs.version }}'
-          if [ '${{ needs.resolve-version.outputs.is_prerelease }}' = 'true' ]; then
-            gh release edit "$VERSION" --draft=false --prerelease
-          else
-            gh release edit "$VERSION" --draft=false
-          fi
+          gh release edit "$VERSION" --draft=false
           echo "Release assets:"
           gh release view "$VERSION" --json assets --jq '.assets[] | "\(.name): \(.browser_download_url)"'

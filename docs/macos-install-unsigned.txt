@@ -1,0 +1,19 @@
+Poster — macOS install (unsigned / PR test build)
+=================================================
+
+These CI builds are NOT notarized. After downloading the DMG (especially via a
+browser), macOS quarantine may block launch with:
+
+  "Poster.app is damaged and can't be opened"
+
+The app is not corrupt. Clear quarantine, then open once:
+
+  1. Drag Poster.app to /Applications
+  2. In Terminal:
+
+       xattr -cr /Applications/Poster.app
+
+  3. Right-click Poster.app → Open → Open (first launch only)
+
+A production release signed with Apple Developer ID + notarization would not
+require these steps. PR/pre-release builds are unsigned for testing.

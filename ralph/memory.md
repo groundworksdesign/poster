@@ -6,11 +6,13 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 
 ## Commands
 
-<!-- Build, test, and lint commands discovered during the loop. Example:
-- Build: `npm run build`
-- Test: `npm run test:ci`
-- Lint: `npm run lint`
--->
+- Install: `pnpm install`
+- Dev: `pnpm dev` (Remix, port 3000)
+- Build: `pnpm run build:remix` then `pnpm start`
+- Unit tests: `CI=true pnpm test -- --watchAll=false`
+- E2E (Remix): `pnpm run test:e2e:remix`
+- Electron: `pnpm run electron`
+- No dedicated lint script; ESLint via react-scripts config
 
 ## Conventions
 
@@ -25,3 +27,8 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - Windows paths require backslashes in spawn() args
 - npm install must run before tsx can resolve modules
 -->
+
+## Epic-004 planning (loop 10)
+
+- REQ-001 through REQ-003 todos all passes true (directed-send, single-home, theme persist).
+- Only pending: program-thumbnail (REQ-004). No thumbnail/preview UI in src/; present-event is ready/closed only; lastPayloadByPresent not shown to deck. Thumbnail must stay on directed path (no shared bus).

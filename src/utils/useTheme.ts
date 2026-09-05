@@ -12,11 +12,15 @@ export const THEMES = [
 
 export type ThemeId = (typeof THEMES)[number]['id'];
 
+export function isThemeId(value: string | null | undefined): value is ThemeId {
+  return Boolean(value && THEMES.some((t) => t.id === value));
+}
+
 export function readStoredTheme(): ThemeId {
   try {
     const stored = localStorage.getItem(THEME_STORAGE_KEY);
-    if (stored && THEMES.some((t) => t.id === stored)) {
-      return stored as ThemeId;
+    if (isThemeId(stored)) {
+      return stored;
     }
   } catch {
     // ignore
@@ -24,6 +28,7 @@ export function readStoredTheme(): ThemeId {
   return 'light';
 }
 
+/** Apply theme to this document and persist for app restart / Home reopen. */
 export function applyTheme(theme: ThemeId): void {
   if (theme === 'light') {
     delete document.documentElement.dataset.theme;
@@ -37,12 +42,52 @@ export function applyTheme(theme: ThemeId): void {
   }
 }
 
+/**
+ * Theme for Home, deck builders, and Present windows.
+ * SSR-safe: starts as light, then hydrates from localStorage on the client
+ * so app restart and Home close/reopen restore the dropdown and data-theme.
+ * Listens for cross-window storage updates.
+ */
 export function useTheme(): [ThemeId, (theme: ThemeId) => void] {
-  const [theme, setThemeState] = useState<ThemeId>(readStoredTheme);
+  const [theme, setThemeState] = useState<ThemeId>('light');
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
+    const stored = readStoredTheme();
+    setThemeState(stored);
+    applyTheme(stored);
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
     applyTheme(theme);
-  }, [theme]);
+  }, [theme, hydrated]);
+
+  useEffect(() => {
+    const syncFromStorage = () => {
+      const stored = readStoredTheme();
+      setThemeState((current) => (current === stored ? current : stored));
+    };
+
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== null && event.key !== THEME_STORAGE_KEY) return;
+      syncFromStorage();
+    };
+
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        syncFromStorage();
+      }
+    };
+
+    window.addEventListener('storage', onStorage);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      window.removeEventListener('storage', onStorage);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, []);
 
   const setTheme = (next: ThemeId) => {
     applyTheme(next);

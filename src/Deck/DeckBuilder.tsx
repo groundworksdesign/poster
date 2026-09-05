@@ -1,6 +1,7 @@
 import React, { ChangeEvent, useEffect, useRef, useState } from 'react';
 import { useTheme } from '../utils/useTheme';
-import { connect, ChannelType, Connection } from '../Present/Broadcast';
+import { createDeckSession, type DeckSession, type ProgramThumbnailState } from '../Present/SessionTransport';
+import { ProgramThumbnailPanel } from './ProgramThumbnailPanel';
 import {
   PresentData,
   Slide,
@@ -17,25 +18,44 @@ import { parseSongXML, createSongSlide, isSongData } from '../utils/songParser';
 import { validateDeck } from '../utils/deckValidator';
 import { CURRENT_SCHEMA_VERSION } from '../utils/schema';
 import { remixDataUrl, REMIX_ROUTE_ID } from '../utils/remixDataUrl';
+import { notifyLibraryChanged } from '../utils/libraryRefresh';
 
 export default function DeckBuilder() {
   useTheme();
   const [message, setMessage] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [deck, setDeck] = useState<Deck | null>(null);
-  const [connection, setConnection] = useState<Connection | null | undefined>(null);
+  const deckSessionRef = useRef<DeckSession | null>(null);
+  const [presentChildren, setPresentChildren] = useState<string[]>([]);
+  /** Last program snapshot reported by a Present child (directed deck-event). */
+  const [programThumbnail, setProgramThumbnail] = useState<{
+    presentId: string;
+    program: ProgramThumbnailState;
+  } | null>(null);
+  /** 'all' = every child of this deck session only; otherwise a presentId of this session. */
+  const [sendTarget, setSendTarget] = useState<'all' | string>('all');
+  const sendTargetRef = useRef<'all' | string>('all');
+  sendTargetRef.current = sendTarget;
   const [isLoadingSong, setIsLoadingSong] = useState<boolean>(false);
   const [isSongMode, setIsSongMode] = useState<boolean>(false);
   const [, setCurrentSongIndex] = useState<number>(0);
   const [lastSentSlideId, setLastSentSlideId] = useState<string | null>(null);
+  /** Index of the slide currently on the presentation output (null = blank/end). */
+  const [presentSlideIndex, setPresentSlideIndex] = useState<number | null>(null);
+  const [presentationBlank, setPresentationBlank] = useState<boolean>(false);
   const [selectedSlideIndex, setSelectedSlideIndex] = useState<number | null>(null);
+  /** Draft copy of the slide being edited; committed to deck only via Save slide. */
+  const [slideEditDraft, setSlideEditDraft] = useState<any | null>(null);
+  const [jumpToSlideInput, setJumpToSlideInput] = useState<string>('');
+  const [moveTargetByIndex, setMoveTargetByIndex] = useState<Record<number, string>>({});
   const [operatorMessage, setOperatorMessage] = useState<string>('');
   const [libraryId, setLibraryId] = useState<string | null>(null);
-  const [libraryRefreshKey, setLibraryRefreshKey] = useState<number>(0);
   const [showSaveToLibraryPrompt, setShowSaveToLibraryPrompt] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   /** Last stage index sent via Advance/Reverse per song slide id (0 = title, 1+ = lyric pairs). */
   const [songLastStagedById, setSongLastStagedById] = useState<Record<string, number>>({});
+  /** Slide list index being dragged (visual feedback only; drop uses dataTransfer). */
+  const [dragSlideIndex, setDragSlideIndex] = useState<number | null>(null);
 
   const genId = () => (typeof (globalThis as any).crypto !== 'undefined' && typeof (globalThis as any).crypto.randomUUID === 'function') ? (globalThis as any).crypto.randomUUID() : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 
@@ -44,8 +64,47 @@ export default function DeckBuilder() {
   };
 
   useEffect(() => {
-    setConnection(connect(ChannelType.BUILDER, event => {}));
-    setMessage('Deck builder connected');
+    let disposed = false;
+    let unsubEvents: (() => void) | undefined;
+    createDeckSession().then(async (session) => {
+      if (disposed) {
+        session.dispose();
+        return;
+      }
+      deckSessionRef.current = session;
+      unsubEvents = session.onDeckEvent((event) => {
+        if (event.type === 'child-ready') {
+          setPresentChildren((prev) =>
+            prev.includes(event.presentId) ? prev : [...prev, event.presentId],
+          );
+        } else if (event.type === 'child-closed') {
+          setPresentChildren((prev) => prev.filter((id) => id !== event.presentId));
+          setSendTarget((current) => (current === event.presentId ? 'all' : current));
+          setProgramThumbnail((current) =>
+            current && current.presentId === event.presentId ? null : current,
+          );
+        } else if (event.type === 'program-thumbnail') {
+          if (event.program) {
+            setProgramThumbnail({ presentId: event.presentId, program: event.program });
+          } else {
+            setProgramThumbnail((current) =>
+              current && current.presentId === event.presentId ? null : current,
+            );
+          }
+        }
+      });
+      const listed = await session.listPresents();
+      if (!disposed) {
+        setPresentChildren(listed);
+        setMessage('Deck builder connected');
+      }
+    });
+    return () => {
+      disposed = true;
+      unsubEvents?.();
+      deckSessionRef.current?.dispose();
+      deckSessionRef.current = null;
+    };
   }, []);
 
   // Keyboard shortcut handler ref -- always reflects latest state without stale closures
@@ -54,35 +113,19 @@ export default function DeckBuilder() {
     const tag = (document.activeElement as HTMLElement)?.tagName?.toUpperCase();
     if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
 
-    if (isSongMode) {
-      if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        advanceSong();
-      } else if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        rewindSong();
-      }
-    } else {
-      if (!deck) return;
-      if (e.key === 'ArrowRight' || e.key === 'PageDown') {
-        e.preventDefault();
-        const currentIdx = selectedSlideIndex !== null
-          ? selectedSlideIndex
-          : deck.slides.findIndex((s: any) => (s as any).id === lastSentSlideId);
-        const nextIdx = Math.min((currentIdx < 0 ? -1 : currentIdx) + 1, deck.slides.length - 1);
-        if (nextIdx >= 0) {
-          handleSendClick({ slide: deck.slides[nextIdx], useGreenScreen: deck.useGreenScreen });
-          setSelectedSlideIndex(nextIdx);
-        }
-      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
-        e.preventDefault();
-        const currentIdx = selectedSlideIndex !== null
-          ? selectedSlideIndex
-          : deck.slides.findIndex((s: any) => (s as any).id === lastSentSlideId);
-        const prevIdx = Math.max((currentIdx <= 0 ? 0 : currentIdx) - 1, 0);
-        handleSendClick({ slide: deck.slides[prevIdx], useGreenScreen: deck.useGreenScreen });
-        setSelectedSlideIndex(prevIdx);
-      }
+    if (!deck) return;
+    if (e.key === 'ArrowRight' || e.key === 'PageDown') {
+      e.preventDefault();
+      navigatePresentationNext();
+    } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+      e.preventDefault();
+      navigatePresentationPrevious();
+    } else if (isSongMode && e.key === 'ArrowDown') {
+      e.preventDefault();
+      advanceSong();
+    } else if (isSongMode && e.key === 'ArrowUp') {
+      e.preventDefault();
+      rewindSong();
     }
   };
 
@@ -247,6 +290,13 @@ export default function DeckBuilder() {
   };
 
   const handleSendClick = (props: any) => {
+    if (props.slide === null) {
+      connection?.channel.postMessage(new PresentData({ ...props, slide: null }));
+      setLastSentSlideId(null);
+      setPresentSlideIndex(null);
+      setPresentationBlank(true);
+      return;
+    }
     const safeSlide = (sl: any) => {
     if (!sl) return sl;
     // ensure slide has an id so we can track it for sync across edits/reorder
@@ -255,8 +305,231 @@ export default function DeckBuilder() {
     return { ...sl, style: resolvedStyle };
   };
     const slideWithStyle = props.slide ? safeSlide(props.slide) : null;
-    connection?.channel.postMessage(new PresentData({ ...props, slide: slideWithStyle }));
+    const payload = new PresentData({ ...props, slide: slideWithStyle });
+    const target = sendTargetRef.current;
+    void deckSessionRef.current?.send(payload, target);
     setLastSentSlideId(slideWithStyle?.id ?? null);
+    setPresentationBlank(false);
+  };
+
+  /** Slide id currently on program output; null when blank/end. Keyed by identity for reorder safety. */
+  const getShowingSlideId = (): string | null => {
+    if (presentationBlank || !lastSentSlideId) return null;
+    return lastSentSlideId;
+  };
+
+  const isSlideEditorExpanded =
+    typeof selectedSlideIndex === 'number' &&
+    deck !== null &&
+    deck.slides[selectedSlideIndex] !== undefined;
+
+  const cloneSlideForEdit = (slide: any): any => {
+    const copy = { ...slide };
+    if (slide.style) copy.style = { ...slide.style };
+    if (slide.lyrics) copy.lyrics = JSON.parse(JSON.stringify(slide.lyrics));
+    return copy;
+  };
+
+  useEffect(() => {
+    if (typeof selectedSlideIndex !== 'number' || !deck || !deck.slides[selectedSlideIndex]) {
+      setSlideEditDraft(null);
+      return;
+    }
+    const source = deck.slides[selectedSlideIndex] as any;
+    setSlideEditDraft(prev => {
+      if (prev && prev.id === source.id) return prev;
+      return cloneSlideForEdit(source);
+    });
+  }, [selectedSlideIndex, deck]);
+
+  /** Collapse expanded slide editor back to the side rail; discards unsaved draft. */
+  const collapseSlideEditor = () => {
+    setSlideEditDraft(null);
+    setSelectedSlideIndex(null);
+  };
+
+  const updateDraftField = (field: string, value: any) => {
+    setSlideEditDraft((prev: any) => (prev ? { ...prev, [field]: value } : prev));
+  };
+
+  const updateDraftStyle = (key: keyof any, value: any) => {
+    setSlideEditDraft((prev: any) => {
+      if (!prev) return prev;
+      const style = { ...(prev.style || {}) } as any;
+      if (value === '' || value === null || value === undefined) {
+        delete style[key as string];
+      } else {
+        style[key as string] =
+          typeof value === 'string' ? maybeNormalizeStyleColor(String(key), value) : value;
+      }
+      return { ...prev, style };
+    });
+  };
+
+  const resetDraftStyleField = (key: keyof any) => {
+    setSlideEditDraft((prev: any) => {
+      if (!prev) return prev;
+      const style = { ...(prev.style || {}) } as any;
+      delete style[key as string];
+      return { ...prev, style };
+    });
+  };
+
+  const resetAllDraftStyleOverrides = () => {
+    setSlideEditDraft((prev: any) => (prev ? { ...prev, style: {} } : prev));
+  };
+
+  const saveSlideEdits = () => {
+    if (!deck || typeof selectedSlideIndex !== 'number' || !slideEditDraft) return;
+    let draft = slideEditDraft;
+    if (draft.type === SlideType.SONG) {
+      const t = document.getElementById('lyrics-json') as HTMLTextAreaElement | null;
+      if (t) {
+        try {
+          draft = { ...draft, lyrics: JSON.parse(t.value) as SongData };
+        } catch {
+          setMessage('Invalid Lyrics JSON — fix before saving');
+          return;
+        }
+      }
+    }
+    const slides = deck.slides.slice();
+    const prevSlide = slides[selectedSlideIndex] as any;
+    slides[selectedSlideIndex] = draft;
+    const newDeck = { ...deck, slides };
+    setDeck(newDeck);
+    const slideId = draft.id as string | undefined;
+    if (slideId && draft.lyrics !== prevSlide?.lyrics) {
+      setSongLastStagedById(s => {
+        const next = { ...s };
+        delete next[slideId];
+        return next;
+      });
+    }
+    syncSentSlideIfNeeded(newDeck);
+    setMessage('Slide saved');
+    collapseSlideEditor();
+  };
+
+  const getResolvedPresentIndex = (): number => {
+    if (!deck) return -1;
+    if (presentSlideIndex !== null && presentSlideIndex >= 0 && presentSlideIndex < deck.slides.length) {
+      return presentSlideIndex;
+    }
+    if (lastSentSlideId) {
+      const idx = deck.slides.findIndex((s: any) => (s as any).id === lastSentSlideId);
+      if (idx >= 0) return idx;
+    }
+    return -1;
+  };
+
+  const getPresentedSongSlide = (): Slide | null => {
+    if (!deck) return null;
+    const idx = getResolvedPresentIndex();
+    if (idx < 0) return null;
+    const slide = deck.slides[idx] as Slide;
+    if (slide.type !== SlideType.SONG || !slide.lyrics || !(slide as any).id) return null;
+    return slide;
+  };
+
+  const canReverseSongStage = (slide: Slide): boolean => {
+    const id = (slide as any).id as string;
+    const last = songLastStagedById[id];
+    return last !== undefined && last > 0;
+  };
+
+  const sendSlideAtIndex = (index: number) => {
+    if (!deck || index < 0 || index >= deck.slides.length) return;
+    const slide = deck.slides[index] as Slide;
+    const sid = (slide as any).id as string | undefined;
+    if (slide.type === SlideType.SONG && slide.lyrics && sid) {
+      const staged = buildStagedSongSlide(slide, 0);
+      handleSendClick({ slide: staged, useGreenScreen: deck.useGreenScreen });
+      setSongLastStagedById(s => ({ ...s, [sid]: 0 }));
+    } else {
+      handleSendClick({ slide, useGreenScreen: deck.useGreenScreen });
+    }
+    setPresentSlideIndex(index);
+    setPresentationBlank(false);
+  };
+
+  const sendBlankSlide = () => {
+    if (!deck) return;
+    handleSendClick({ slide: null, useGreenScreen: deck.useGreenScreen });
+  };
+
+  const navigatePresentationStart = () => {
+    if (!deck || deck.slides.length === 0) return;
+    if (deck.useGreenScreen) {
+      sendBlankSlide();
+      return;
+    }
+    sendSlideAtIndex(0);
+  };
+
+  const navigatePresentationEnd = () => {
+    sendBlankSlide();
+  };
+
+  const navigatePresentationNext = () => {
+    if (!deck || deck.slides.length === 0) return;
+    const current = getResolvedPresentIndex();
+    if (presentationBlank || current < 0) {
+      sendSlideAtIndex(0);
+      return;
+    }
+    const songSlide = getPresentedSongSlide();
+    if (songSlide) {
+      handleSongStageAdvance(songSlide);
+      return;
+    }
+    if (current >= deck.slides.length - 1) return;
+    sendSlideAtIndex(current + 1);
+  };
+
+  const navigatePresentationPrevious = () => {
+    if (!deck || deck.slides.length === 0) return;
+    const current = getResolvedPresentIndex();
+    if (presentationBlank || current < 0) {
+      sendSlideAtIndex(deck.slides.length - 1);
+      return;
+    }
+    const songSlide = getPresentedSongSlide();
+    if (songSlide && canReverseSongStage(songSlide)) {
+      handleSongStageReverse(songSlide);
+      return;
+    }
+    if (current <= 0) return;
+    sendSlideAtIndex(current - 1);
+  };
+
+  const navigatePresentationJump = () => {
+    if (!deck) return;
+    const n = parseInt(jumpToSlideInput, 10);
+    if (!Number.isFinite(n) || n < 1 || n > deck.slides.length) return;
+    sendSlideAtIndex(n - 1);
+  };
+
+  const handleOpenPresent = async () => {
+    const session = deckSessionRef.current;
+    if (!session) return;
+    const { url, presentId } = await session.spawnPresent();
+    setPresentChildren((prev) => (prev.includes(presentId) ? prev : [...prev, presentId]));
+    const features =
+      'width=1280,height=720,menubar=no,toolbar=no,location=no,status=no,scrollbars=yes,resizable=yes';
+    const w = window.open(url, '_blank', features);
+    if (w) {
+      w.opener = null;
+      w.focus();
+    }
+  };
+
+  const handleClosePresent = async (presentId: string) => {
+    const session = deckSessionRef.current;
+    if (!session) return;
+    await session.closePresent(presentId);
+    setPresentChildren((prev) => prev.filter((id) => id !== presentId));
+    setSendTarget((current) => (current === presentId ? 'all' : current));
   };
 
   const handleSongStageAdvance = (slideRef: any) => {
@@ -271,7 +544,14 @@ export default function DeckBuilder() {
     if (!id) return;
     const total = getSongStageCount(full);
     const last = songLastStagedById[id];
-    const nextStage = last === undefined ? 0 : (last + 1) % total;
+    const nextStage = last === undefined ? 0 : last + 1;
+    if (nextStage >= total) {
+      const currentIndex = getResolvedPresentIndex();
+      if (currentIndex >= 0 && currentIndex < deck.slides.length - 1) {
+        sendSlideAtIndex(currentIndex + 1);
+      }
+      return;
+    }
     const staged = buildStagedSongSlide(full, nextStage);
     handleSendClick({ slide: staged, useGreenScreen: deck.useGreenScreen });
     setSongLastStagedById(s => ({ ...s, [id]: nextStage }));
@@ -313,7 +593,10 @@ export default function DeckBuilder() {
 
   const sendLyricsNavigation = (command: 'next' | 'previous' | 'goToVerse', verseIndex?: number) => {
     const nav = command === 'goToVerse' ? { command, verseIndex } : { command };
-    connection?.channel.postMessage(new PresentData({ data: { lyricsNavigation: nav } }));
+    void deckSessionRef.current?.send(
+      new PresentData({ data: { lyricsNavigation: nav } }),
+      sendTargetRef.current,
+    );
   };
 
   const startSong = () => {
@@ -522,24 +805,77 @@ export default function DeckBuilder() {
     slides.splice(index, 1);
     const newDeck = { ...deck, slides };
     setDeck(newDeck);
-    setSelectedSlideIndex(null);
+    if (selectedSlideIndex !== null) {
+      if (selectedSlideIndex === index) setSelectedSlideIndex(null);
+      else if (selectedSlideIndex > index) setSelectedSlideIndex(selectedSlideIndex - 1);
+    }
+    if (presentSlideIndex !== null) {
+      if (presentSlideIndex === index) {
+        setPresentSlideIndex(null);
+        setPresentationBlank(true);
+        setLastSentSlideId(null);
+        handleSendClick({ slide: null, useGreenScreen: newDeck.useGreenScreen });
+      } else if (presentSlideIndex > index) {
+        setPresentSlideIndex(presentSlideIndex - 1);
+      }
+    }
     syncSentSlideIfNeeded(newDeck);
   };
 
-  const moveSlide = (index: number, direction: 'up' | 'down') => {
-    if (!deck) return;
+  const adjustSelectedIndexAfterReorder = (fromIndex: number, toIndex: number) => {
+    if (selectedSlideIndex === null) return;
+    let newSel = selectedSlideIndex;
+    if (selectedSlideIndex === fromIndex) {
+      newSel = toIndex;
+    } else if (fromIndex < selectedSlideIndex && toIndex >= selectedSlideIndex) {
+      newSel = selectedSlideIndex - 1;
+    } else if (fromIndex > selectedSlideIndex && toIndex <= selectedSlideIndex) {
+      newSel = selectedSlideIndex + 1;
+    }
+    setSelectedSlideIndex(newSel);
+  };
+
+  const adjustPresentIndexAfterReorder = (fromIndex: number, toIndex: number) => {
+    if (presentSlideIndex === null) return;
+    let newIdx = presentSlideIndex;
+    if (presentSlideIndex === fromIndex) {
+      newIdx = toIndex;
+    } else if (fromIndex < presentSlideIndex && toIndex >= presentSlideIndex) {
+      newIdx = presentSlideIndex - 1;
+    } else if (fromIndex > presentSlideIndex && toIndex <= presentSlideIndex) {
+      newIdx = presentSlideIndex + 1;
+    }
+    setPresentSlideIndex(newIdx);
+  };
+
+  const reorderSlide = (fromIndex: number, toIndex: number) => {
+    if (!deck || fromIndex === toIndex) return;
+    if (toIndex < 0 || toIndex >= deck.slides.length) return;
     const slides = deck.slides.slice();
-    const to = direction === 'up' ? index - 1 : index + 1;
-    if (to < 0 || to >= slides.length) return;
-    [slides[index], slides[to]] = [slides[to], slides[index]];
+    const [item] = slides.splice(fromIndex, 1);
+    slides.splice(toIndex, 0, item);
     const newDeck = { ...deck, slides };
     setDeck(newDeck);
+    adjustSelectedIndexAfterReorder(fromIndex, toIndex);
+    adjustPresentIndexAfterReorder(fromIndex, toIndex);
     syncSentSlideIfNeeded(newDeck);
   };
 
-  const handleSaveClick = () => {
+  const moveSlideToTop = (index: number) => {
+    if (!deck || index <= 0) return;
+    reorderSlide(index, 0);
+  };
+
+  const moveSlideToNumber = (fromIndex: number, oneBasedTarget: number) => {
+    if (!deck) return;
+    const toIndex = oneBasedTarget - 1;
+    if (toIndex < 0 || toIndex >= deck.slides.length) return;
+    reorderSlide(fromIndex, toIndex);
+  };
+
+  const handleExportClick = () => {
     if (!deck) {
-      setMessage('No deck to save');
+      setMessage('No deck to export');
       return;
     }
     const blob = new Blob([JSON.stringify(deck, null, 2)], { type: 'application/json' });
@@ -575,7 +911,7 @@ export default function DeckBuilder() {
       const data = await res.json();
       setLibraryId(data.id);
       setMessage(wasUpdate ? 'Library updated.' : 'Saved to library.');
-      setLibraryRefreshKey(k => k + 1);
+      notifyLibraryChanged();
     } catch (e) {
       setMessage(`Library save error: ${e instanceof Error ? e.message : 'Unknown'}`);
     }
@@ -605,6 +941,8 @@ export default function DeckBuilder() {
       setCurrentSongIndex(0);
       setSelectedSlideIndex(null);
       setLastSentSlideId(null);
+      setPresentSlideIndex(null);
+      setPresentationBlank(false);
       setSongLastStagedById({});
       setShowSaveToLibraryPrompt(false);
       setMessage('Opened from library.');
@@ -647,8 +985,8 @@ export default function DeckBuilder() {
       <div>
         <input ref={fileInputRef} id="file" type="file" onChange={handleFileChange} />
         <button id="load" onClick={() => handleUploadClick()} disabled={isLoadingSong}>{isLoadingSong ? 'Loading...' : 'Load'}</button>
-        <button id="save" onClick={handleSaveClick}>Save</button>
-        <button id="save-to-library" onClick={handleSaveToLibrary} disabled={!deck}>Save to Library</button>
+        <button id="export" onClick={handleExportClick}>Export</button>
+        <button id="save" onClick={handleSaveToLibrary} disabled={!deck}>Save</button>
         <button onClick={createNewDeck}>New Deck</button>
         <label style={{ marginLeft: '8px' }}>
           Add slide:
@@ -667,6 +1005,46 @@ export default function DeckBuilder() {
         <button onClick={startSong} disabled={!deck || !isSongMode}>Start Song</button>
         <button onClick={rewindSong} disabled={!deck || !isSongMode}>Prev 2 Lines</button>
         <button onClick={advanceSong} disabled={!deck || !isSongMode}>Next 2 Lines</button>
+        <button type="button" onClick={() => void handleOpenPresent()}>Open Present</button>
+
+        <div
+          data-testid="present-targets"
+          style={{ marginTop: '12px', padding: '8px', border: '1px solid #ddd' }}
+        >
+          <h3>Present windows</h3>
+          <label>
+            Send to:{' '}
+            <select
+              data-testid="send-target"
+              aria-label="Send target"
+              value={sendTarget}
+              onChange={(e) => setSendTarget(e.target.value)}
+            >
+              <option value="all">All children of this deck</option>
+              {presentChildren.map((id) => (
+                <option key={id} value={id}>
+                  {id.slice(0, 8)}…
+                </option>
+              ))}
+            </select>
+          </label>
+          {presentChildren.length === 0 ? (
+            <p data-testid="present-list-empty">No Present windows open. Use Open Present.</p>
+          ) : (
+            <ul data-testid="present-list">
+              {presentChildren.map((id) => (
+                <li key={id}>
+                  <code>{id}</code>{' '}
+                  <button type="button" onClick={() => void handleClosePresent(id)}>
+                    Close
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <ProgramThumbnailPanel program={programThumbnail?.program ?? null} />
 
         {deck && (
           <div style={{ marginTop: '12px', padding: '8px', border: '1px solid #ddd' }}>
@@ -705,6 +1083,37 @@ export default function DeckBuilder() {
             >Clear</button>
           </div>
         </div>
+
+        {deck && (
+          <div className="deck-page-panel" data-testid="presentation-controls">
+            <h3>Presentation</h3>
+            <div className="deck-presentation-controls">
+              <button type="button" onClick={navigatePresentationStart} disabled={deck.slides.length === 0}>Start</button>
+              <button type="button" onClick={navigatePresentationPrevious} disabled={deck.slides.length === 0}>Previous</button>
+              <button type="button" onClick={navigatePresentationNext} disabled={deck.slides.length === 0}>Next</button>
+              <button type="button" onClick={navigatePresentationEnd}>End</button>
+              <label>
+                Go to:
+                <input
+                  type="number"
+                  min={1}
+                  max={deck.slides.length || 1}
+                  className="deck-jump-input"
+                  value={jumpToSlideInput}
+                  onChange={e => setJumpToSlideInput(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') navigatePresentationJump(); }}
+                />
+              </label>
+              <button type="button" onClick={navigatePresentationJump} disabled={deck.slides.length === 0}>Go</button>
+              {presentSlideIndex !== null && (
+                <span style={{ fontSize: '0.85rem', opacity: 0.85 }}>On slide {presentSlideIndex + 1}</span>
+              )}
+              {presentationBlank && (
+                <span style={{ fontSize: '0.85rem', opacity: 0.85 }}>Blank</span>
+              )}
+            </div>
+          </div>
+        )}
 
         <div style={{ marginTop: '12px', padding: '8px', border: '1px solid #ddd' }}>
           <h3>Deck defaults (GENERAL)</h3>
@@ -757,229 +1166,329 @@ export default function DeckBuilder() {
         </div>
       </div>
 
-      <div>
-        <h2>Slides</h2>
-        {!deck && <p>No deck loaded yet.</p>}
-        <div id="slides">
-          <ul style={{ listStyle: 'none', padding: 0 }}>
-            {deck?.slides.map((slide: any, index: number) => (
-              <li key={(slide as any).id || index} style={{ border: '1px solid #ccc', margin: '4px 0', padding: '6px' }}>
-                <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                  <strong>{index + 1}.</strong>
-                  <span style={{ flex: 1 }}>{slide.title || slide.type || 'Slide'}</span>
-                  <button
-                    onClick={() => {
-                      const sid = (slide as any).id as string | undefined;
-                      if (slide.type === SlideType.SONG && slide.lyrics && sid && deck) {
-                        const full = deck.slides.find((s: any) => s.id === sid) as Slide;
-                        const staged = buildStagedSongSlide(full, 0);
-                        handleSendClick({ slide: staged, useGreenScreen: deck.useGreenScreen });
-                        setSongLastStagedById(st => ({ ...st, [sid]: 0 }));
-                      } else {
-                        handleSendClick({ slide, useGreenScreen: deck?.useGreenScreen || false });
-                      }
-                    }}
-                  >
-                    Send
-                  </button>
-                  {slide.type === SlideType.SONG && slide.lyrics && (slide as any).id ? (
-                    <>
-                      <button
-                        type="button"
-                        title="Full rewind to title"
-                        onClick={() => handleSongFullRewind(slide)}
-                      >
-                        |&lt;--
-                      </button>
-                      <button
-                        type="button"
-                        disabled={
-                          songLastStagedById[(slide as any).id] === undefined ||
-                          songLastStagedById[(slide as any).id] === 0
+      <div
+        className={`deck-slides-editor-row${isSlideEditorExpanded ? ' deck-slides-editor-row--expanded' : ''}`}
+        data-editor-expanded={isSlideEditorExpanded ? 'true' : 'false'}
+      >
+        <div className="deck-slides-list">
+          <div className="deck-slides-list-header">
+            <h2>Slides</h2>
+            {deck && deck.slides.length > 0 ? (
+              <span className="deck-slides-list-hint">Drag the handle to reorder · Top / Move still available</span>
+            ) : null}
+          </div>
+          {!deck && <p>No deck loaded yet.</p>}
+          <div id="slides">
+            <ul>
+              {deck?.slides.map((slide: any, index: number) => {
+                const slideId = (slide as any).id as string | undefined;
+                const showingSlideId = getShowingSlideId();
+                const isShowing = !!slideId && slideId === showingSlideId;
+                return (
+                <li
+                  key={slideId || index}
+                  className={`deck-slide-item${isShowing ? ' deck-slide-item--showing' : ''}${dragSlideIndex === index ? ' deck-slide-item--dragging' : ''}`}
+                  data-slide-id={slideId}
+                  data-showing={isShowing ? 'true' : undefined}
+                  onDragOver={e => {
+                    e.preventDefault();
+                    if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+                  }}
+                  onDrop={e => {
+                    e.preventDefault();
+                    const raw = e.dataTransfer?.getData('text/plain');
+                    const fromIndex = parseInt(raw, 10);
+                    if (!Number.isFinite(fromIndex) || fromIndex === index) {
+                      setDragSlideIndex(null);
+                      return;
+                    }
+                    reorderSlide(fromIndex, index);
+                    setDragSlideIndex(null);
+                  }}
+                >
+                  <div className="deck-slide-row">
+                    <span
+                      className="deck-slide-drag-handle"
+                      draggable
+                      data-testid="deck-slide-drag-handle"
+                      aria-label={`Drag slide ${index + 1} to reorder`}
+                      title="Drag to reorder"
+                      onDragStart={e => {
+                        e.dataTransfer.effectAllowed = 'move';
+                        e.dataTransfer.setData('text/plain', String(index));
+                        setDragSlideIndex(index);
+                      }}
+                      onDragEnd={() => setDragSlideIndex(null)}
+                    >
+                      ::
+                    </span>
+                    <strong>{index + 1}.</strong>
+                    <div className="deck-slide-row-title-wrap">
+                      <span className="deck-slide-row-title">{slide.title || slide.type || 'Slide'}</span>
+                      {isShowing ? (
+                        <span className="deck-slide-showing-label" data-testid="deck-slide-showing-label">SHOWING</span>
+                      ) : null}
+                    </div>
+                    <button
+                      onClick={() => {
+                        const sid = (slide as any).id as string | undefined;
+                        if (slide.type === SlideType.SONG && slide.lyrics && sid && deck) {
+                          const full = deck.slides.find((s: any) => s.id === sid) as Slide;
+                          const staged = buildStagedSongSlide(full, 0);
+                          handleSendClick({ slide: staged, useGreenScreen: deck.useGreenScreen });
+                          setSongLastStagedById(st => ({ ...st, [sid]: 0 }));
+                        } else {
+                          handleSendClick({ slide, useGreenScreen: deck?.useGreenScreen || false });
                         }
-                        onClick={() => handleSongStageReverse(slide)}
-                      >
-                        Reverse
-                      </button>
-                      <button type="button" onClick={() => handleSongStageAdvance(slide)}>Advance</button>
-                    </>
-                  ) : null}
-                  <button onClick={() => setSelectedSlideIndex(index)}>Edit</button>
-                  <button onClick={() => duplicateSlide(index)}>Duplicate</button>
-                  <button onClick={() => deleteSlide(index)}>Delete</button>
-                  <button onClick={() => moveSlide(index, 'up')} disabled={index === 0}>↑</button>
-                  <button onClick={() => moveSlide(index, 'down')} disabled={index === (deck!.slides.length - 1)}>↓</button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-
-      {typeof selectedSlideIndex === 'number' && deck && deck.slides[selectedSlideIndex] && (
-        <div style={{ marginTop: '12px', padding: '8px', border: '1px solid #ddd' }}>
-          <h3>Editing slide {selectedSlideIndex + 1}</h3>
-          {(() => {
-            const slide = deck.slides[selectedSlideIndex] as any;
-            return (
-              <div>
-                <div>
-                  <label>Type: 
-                    <select value={slide.type} onChange={e => updateSlideField(selectedSlideIndex, 'type', e.target.value as SlideType)}>
-                      <option value={SlideType.GENERAL}>GENERAL</option>
-                      <option value={SlideType.TITLE}>TITLE</option>
-                      <option value={SlideType.IMAGE}>IMAGE</option>
-                      <option value={SlideType.SONG}>SONG</option>
-                    </select>
-                  </label>
-                </div>
-                <div>
-                  <label>Title: <input type="text" value={slide.title || ''} onChange={e => updateSlideField(selectedSlideIndex, 'title', e.target.value)} /></label>
-                </div>
-                <div>
-                  <label>Subtitle: <input type="text" value={slide.subTitle || ''} onChange={e => updateSlideField(selectedSlideIndex, 'subTitle', e.target.value)} /></label>
-                </div>
-
-                {slide.type === SlideType.IMAGE && (
-                  <div>
-                    <label>Image URL/file: <input type="text" value={slide.file || slide.style?.backgroundImage || ''} onChange={e => updateSlideField(selectedSlideIndex, 'file', e.target.value)} /></label>
-                  </div>
-                )}
-
-                {slide.type === SlideType.SONG && (
-                  <div>
-                    <label>Lyrics (JSON):</label>
-                    <div>
-                      <textarea id="lyrics-json" style={{ width: '100%', height: '120px' }} defaultValue={slide.lyrics ? JSON.stringify(slide.lyrics, null, 2) : ''}></textarea>
-                      <div style={{ marginTop: '6px' }}>
-                        <button onClick={() => {
-                          const t = (document.getElementById('lyrics-json') as HTMLTextAreaElement | null);
-                          if (!t) return;
-                          try {
-                            const parsed = JSON.parse(t.value) as SongData;
-                            updateSlideField(selectedSlideIndex, 'lyrics', parsed);
-                          } catch (err) {
-                            setMessage('Invalid Lyrics JSON');
+                        setPresentSlideIndex(index);
+                        setPresentationBlank(false);
+                      }}
+                    >
+                      Send
+                    </button>
+                    {slide.type === SlideType.SONG && slide.lyrics && (slide as any).id ? (
+                      <>
+                        <button
+                          type="button"
+                          title="Full rewind to title"
+                          onClick={() => handleSongFullRewind(slide)}
+                        >
+                          |&lt;--
+                        </button>
+                        <button
+                          type="button"
+                          disabled={
+                            songLastStagedById[(slide as any).id] === undefined ||
+                            songLastStagedById[(slide as any).id] === 0
                           }
-                        }}>Apply Lyrics JSON</button>
-                        <button onClick={() => {
-                          // quick add an empty verse
-                          const s = { ...(deck.slides[selectedSlideIndex] as any) };
-                          const lyrics = s.lyrics || { title: '', author: '', verses: [] };
-                          lyrics.verses = lyrics.verses.concat([{ number: (lyrics.verses.length || 0) + 1, lines: [''] }]);
-                          updateSlideField(selectedSlideIndex, 'lyrics', lyrics);
-                        }} style={{ marginLeft: '8px' }}>Add Verse</button>
-                      </div>
-                    </div>
+                          onClick={() => handleSongStageReverse(slide)}
+                        >
+                          Reverse
+                        </button>
+                        <button type="button" onClick={() => handleSongStageAdvance(slide)}>Advance</button>
+                      </>
+                    ) : null}
+                    <button onClick={() => setSelectedSlideIndex(index)}>Edit</button>
+                    <button onClick={() => duplicateSlide(index)}>Duplicate</button>
+                    <button onClick={() => deleteSlide(index)}>Delete</button>
+                    <button type="button" onClick={() => moveSlideToTop(index)} disabled={index === 0} title="Move to top">Top</button>
+                    <input
+                      type="number"
+                      min={1}
+                      max={deck?.slides.length ?? 1}
+                      className="deck-move-to-input"
+                      aria-label={`Move slide ${index + 1} to position`}
+                      value={moveTargetByIndex[index] ?? ''}
+                      onChange={e => setMoveTargetByIndex(prev => ({ ...prev, [index]: e.target.value }))}
+                    />
+                    <button
+                      type="button"
+                      title="Move to number"
+                      onClick={() => {
+                        const n = parseInt(moveTargetByIndex[index] ?? '', 10);
+                        if (Number.isFinite(n)) moveSlideToNumber(index, n);
+                      }}
+                    >
+                      Move
+                    </button>
                   </div>
-                )}
-
-                <h4>Style (effective shown; overrides saved to slide.style)</h4>
-                {(() => {
-                  const effective = resolveSlideStyle(deck, slide);
-                  const textStyleKeys: Array<'backgroundColor' | 'color' | 'fontFamily' | 'fontSize'> = [
-                    'backgroundColor',
-                    'color',
-                    'fontFamily',
-                    'fontSize',
-                  ];
-                  const rawH = slide.style?.horizontalAlign ?? effective.horizontalAlign ?? HorizontalAlign.CENTER;
-                  const selectHorizontal =
-                    rawH === HorizontalAlign.LEFT || rawH === HorizontalAlign.CENTER || rawH === HorizontalAlign.RIGHT
-                      ? rawH
-                      : HorizontalAlign.CENTER;
-                  const rawV = slide.style?.verticalAlign ?? effective.verticalAlign ?? VerticalAlign.MIDDLE;
-                  const selectVertical =
-                    rawV === VerticalAlign.TOP || rawV === VerticalAlign.MIDDLE || rawV === VerticalAlign.BOTTOM
-                      ? rawV
-                      : VerticalAlign.MIDDLE;
-                  return (
-                    <div>
-                      {textStyleKeys.map((k) => (
-                        <div key={k} style={{ marginTop: '6px' }}>
-                          <label style={{ marginRight: '8px' }}>{`${k}: `}</label>
-                          <input
-                            type="text"
-                            value={(slide.style && slide.style[k]) || (effective as any)[k] || ''}
-                            onChange={e => updateSlideStyle(selectedSlideIndex, k, e.target.value)}
-                          />
-                          <button type="button" onClick={() => resetSlideStyleField(selectedSlideIndex, k)} style={{ marginLeft: '8px' }}>Reset</button>
-                        </div>
-                      ))}
-                      <div style={{ marginTop: '6px' }}>
-                        <label style={{ marginRight: '8px' }}>Horizontal alignment: </label>
-                        <select
-                          value={selectHorizontal}
-                          onChange={e => updateSlideStyle(selectedSlideIndex, 'horizontalAlign', e.target.value)}
-                        >
-                          <option value={HorizontalAlign.LEFT}>Left</option>
-                          <option value={HorizontalAlign.CENTER}>Center</option>
-                          <option value={HorizontalAlign.RIGHT}>Right</option>
-                        </select>
-                        <button type="button" onClick={() => resetSlideStyleField(selectedSlideIndex, 'horizontalAlign')} style={{ marginLeft: '8px' }}>Reset</button>
-                      </div>
-                      <div style={{ marginTop: '6px' }}>
-                        <label style={{ marginRight: '8px' }}>Vertical alignment: </label>
-                        <select
-                          value={selectVertical}
-                          onChange={e => updateSlideStyle(selectedSlideIndex, 'verticalAlign', e.target.value)}
-                        >
-                          <option value={VerticalAlign.TOP}>Top</option>
-                          <option value={VerticalAlign.MIDDLE}>Middle</option>
-                          <option value={VerticalAlign.BOTTOM}>Bottom</option>
-                        </select>
-                        <button type="button" onClick={() => resetSlideStyleField(selectedSlideIndex, 'verticalAlign')} style={{ marginLeft: '8px' }}>Reset</button>
-                      </div>
-                      <div style={{ marginTop: '8px' }}>
-                        {slide.type === SlideType.SONG && slide.lyrics && slide.id ? (
-                          <>
-                            <button
-                              type="button"
-                              title="Full rewind to title"
-                              onClick={() => handleSongFullRewind(slide)}
-                              style={{ marginRight: '8px' }}
-                            >
-                              |&lt;-- Full rewind
-                            </button>
-                            <button
-                              type="button"
-                              disabled={
-                                songLastStagedById[slide.id] === undefined ||
-                                songLastStagedById[slide.id] === 0
-                              }
-                              onClick={() => handleSongStageReverse(slide)}
-                              style={{ marginRight: '8px' }}
-                            >
-                              Reverse (staged)
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleSongStageAdvance(slide)}
-                              style={{ marginRight: '8px' }}
-                            >
-                              Advance (staged)
-                            </button>
-                          </>
-                        ) : null}
-                        <button onClick={() => resetAllSlideStyleOverrides(selectedSlideIndex)}>Reset all overrides</button>
-                        <button onClick={() => duplicateSlide(selectedSlideIndex)} style={{ marginLeft: '8px' }}>Duplicate</button>
-                        <button onClick={() => deleteSlide(selectedSlideIndex)} style={{ marginLeft: '8px' }}>Delete</button>
-                        <button onClick={() => setSelectedSlideIndex(null)} style={{ marginLeft: '8px' }}>Close editor</button>
-                      </div>
-                    </div>
-                  );
-                })()}
-              </div>
-            );
-          })()}
+                </li>
+                );
+              })}
+            </ul>
+          </div>
         </div>
-      )}
+
+        {isSlideEditorExpanded ? (
+        <div className="deck-slide-editor" data-testid="deck-slide-editor-panel">
+          {typeof selectedSlideIndex === 'number' && deck && slideEditDraft ? (
+            <>
+              <div className="deck-slide-editor-header">
+                <h3>Editing slide {selectedSlideIndex + 1}</h3>
+                <button
+                  type="button"
+                  className="deck-slide-editor-save-btn"
+                  data-testid="save-slide-button"
+                  onClick={saveSlideEdits}
+                >
+                  Save slide
+                </button>
+              </div>
+              {(() => {
+                const slide = slideEditDraft as any;
+                return (
+                  <div>
+                    <div>
+                      <label>Type: 
+                        <select value={slide.type} onChange={e => updateDraftField('type', e.target.value as SlideType)}>
+                          <option value={SlideType.GENERAL}>GENERAL</option>
+                          <option value={SlideType.TITLE}>TITLE</option>
+                          <option value={SlideType.IMAGE}>IMAGE</option>
+                          <option value={SlideType.SONG}>SONG</option>
+                        </select>
+                      </label>
+                    </div>
+                    <div>
+                      <label>Title: <input type="text" value={slide.title || ''} onChange={e => updateDraftField('title', e.target.value)} /></label>
+                    </div>
+                    <div>
+                      <label>Subtitle: <input type="text" value={slide.subTitle || ''} onChange={e => updateDraftField('subTitle', e.target.value)} /></label>
+                    </div>
+
+                    {slide.type === SlideType.IMAGE && (
+                      <div>
+                        <label>Image URL/file: <input type="text" value={slide.file || slide.style?.backgroundImage || ''} onChange={e => updateDraftField('file', e.target.value)} /></label>
+                      </div>
+                    )}
+
+                    {slide.type === SlideType.SONG && (
+                      <div>
+                        <label>Lyrics (JSON):</label>
+                        <div>
+                          <textarea id="lyrics-json" style={{ width: '100%', height: '120px' }} defaultValue={slide.lyrics ? JSON.stringify(slide.lyrics, null, 2) : ''}></textarea>
+                          <div style={{ marginTop: '6px' }}>
+                            <button onClick={() => {
+                              const t = (document.getElementById('lyrics-json') as HTMLTextAreaElement | null);
+                              if (!t) return;
+                              try {
+                                const parsed = JSON.parse(t.value) as SongData;
+                                updateDraftField('lyrics', parsed);
+                                setMessage('Lyrics applied to draft — click Save slide to commit');
+                              } catch (err) {
+                                setMessage('Invalid Lyrics JSON');
+                              }
+                            }}>Apply Lyrics JSON</button>
+                            <button onClick={() => {
+                              const lyrics = slide.lyrics || { title: '', author: '', verses: [] };
+                              const nextLyrics = {
+                                ...lyrics,
+                                verses: lyrics.verses.concat([{ number: (lyrics.verses.length || 0) + 1, lines: [''] }]),
+                              };
+                              updateDraftField('lyrics', nextLyrics);
+                            }} style={{ marginLeft: '8px' }}>Add Verse</button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    <h4>Style (effective shown; overrides saved to slide.style)</h4>
+                    {(() => {
+                      const effective = resolveSlideStyle(deck, slide);
+                      const textStyleKeys: Array<'backgroundColor' | 'color' | 'fontFamily' | 'fontSize'> = [
+                        'backgroundColor',
+                        'color',
+                        'fontFamily',
+                        'fontSize',
+                      ];
+                      const rawH = slide.style?.horizontalAlign ?? effective.horizontalAlign ?? HorizontalAlign.CENTER;
+                      const selectHorizontal =
+                        rawH === HorizontalAlign.LEFT || rawH === HorizontalAlign.CENTER || rawH === HorizontalAlign.RIGHT
+                          ? rawH
+                          : HorizontalAlign.CENTER;
+                      const rawV = slide.style?.verticalAlign ?? effective.verticalAlign ?? VerticalAlign.MIDDLE;
+                      const selectVertical =
+                        rawV === VerticalAlign.TOP || rawV === VerticalAlign.MIDDLE || rawV === VerticalAlign.BOTTOM
+                          ? rawV
+                          : VerticalAlign.MIDDLE;
+                      return (
+                        <div>
+                          {textStyleKeys.map((k) => (
+                            <div key={k} style={{ marginTop: '6px' }}>
+                              <label style={{ marginRight: '8px' }}>{`${k}: `}</label>
+                              <input
+                                type="text"
+                                value={(slide.style && slide.style[k]) || (effective as any)[k] || ''}
+                                onChange={e => updateDraftStyle(k, e.target.value)}
+                              />
+                              <button type="button" onClick={() => resetDraftStyleField(k)} style={{ marginLeft: '8px' }}>Reset</button>
+                            </div>
+                          ))}
+                          <div style={{ marginTop: '6px' }}>
+                            <label style={{ marginRight: '8px' }}>Horizontal alignment: </label>
+                            <select
+                              value={selectHorizontal}
+                              onChange={e => updateDraftStyle('horizontalAlign', e.target.value)}
+                            >
+                              <option value={HorizontalAlign.LEFT}>Left</option>
+                              <option value={HorizontalAlign.CENTER}>Center</option>
+                              <option value={HorizontalAlign.RIGHT}>Right</option>
+                            </select>
+                            <button type="button" onClick={() => resetDraftStyleField('horizontalAlign')} style={{ marginLeft: '8px' }}>Reset</button>
+                          </div>
+                          <div style={{ marginTop: '6px' }}>
+                            <label style={{ marginRight: '8px' }}>Vertical alignment: </label>
+                            <select
+                              value={selectVertical}
+                              onChange={e => updateDraftStyle('verticalAlign', e.target.value)}
+                            >
+                              <option value={VerticalAlign.TOP}>Top</option>
+                              <option value={VerticalAlign.MIDDLE}>Middle</option>
+                              <option value={VerticalAlign.BOTTOM}>Bottom</option>
+                            </select>
+                            <button type="button" onClick={() => resetDraftStyleField('verticalAlign')} style={{ marginLeft: '8px' }}>Reset</button>
+                          </div>
+                          <div className="deck-slide-editor-footer-actions">
+                            {slide.type === SlideType.SONG && slide.lyrics && slide.id ? (
+                              <>
+                                <button
+                                  type="button"
+                                  title="Full rewind to title"
+                                  onClick={() => handleSongFullRewind(slide)}
+                                >
+                                  |&lt;-- Full rewind
+                                </button>
+                                <button
+                                  type="button"
+                                  disabled={
+                                    songLastStagedById[slide.id] === undefined ||
+                                    songLastStagedById[slide.id] === 0
+                                  }
+                                  onClick={() => handleSongStageReverse(slide)}
+                                >
+                                  Reverse (staged)
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleSongStageAdvance(slide)}
+                                >
+                                  Advance (staged)
+                                </button>
+                              </>
+                            ) : null}
+                            <button onClick={resetAllDraftStyleOverrides}>Reset all overrides</button>
+                            <button onClick={() => duplicateSlide(selectedSlideIndex)}>Duplicate</button>
+                            <button onClick={() => deleteSlide(selectedSlideIndex)}>Delete</button>
+                            <button type="button" onClick={collapseSlideEditor}>Close editor</button>
+                            <button
+                              type="button"
+                              className="deck-slide-editor-save-btn"
+                              data-testid="save-slide-button"
+                              onClick={saveSlideEdits}
+                            >
+                              Save slide
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                );
+              })()}
+            </>
+          ) : null}
+        </div>
+        ) : (
+          <div className="deck-slide-editor-rail" data-testid="deck-slide-editor-rail" aria-label="Edit rail">
+            <span className="deck-slide-editor-rail-label">Edit</span>
+          </div>
+        )}
+      </div>
 
       <div id="status" style={{ marginTop: '12px' }}>{message}</div>
       {showSaveToLibraryPrompt && (
         <div data-testid="import-save-prompt" style={{ marginTop: '8px', padding: '8px', border: '1px solid #aaa', display: 'inline-flex', gap: '8px', alignItems: 'center' }}>
           <span>Save this import to the library?</span>
-          <button id="import-save-to-library" onClick={async () => { setShowSaveToLibraryPrompt(false); await handleSaveToLibrary(); }}>Save to Library</button>
+          <button id="import-save-to-library" onClick={async () => { setShowSaveToLibraryPrompt(false); await handleSaveToLibrary(); }}>Save</button>
           <button id="import-skip-save-to-library" onClick={() => setShowSaveToLibraryPrompt(false)}>Skip</button>
         </div>
       )}

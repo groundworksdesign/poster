@@ -1,14 +1,22 @@
 import React, { act } from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 
-// Mock Broadcast connection used by DeckBuilder to avoid BroadcastChannel in the test environment
-jest.mock('../Present/Broadcast', () => ({
-  connect: (channelType: any, handler: any) => ({
-    id: 'mock-id',
-    channel: { postMessage: jest.fn(), onmessage: null },
-    channelType,
+// Mock session transport used by DeckBuilder
+jest.mock('../Present/SessionTransport', () => ({
+  createDeckSession: async () => ({
+    peerId: 'mock-peer',
+    sessionId: 'mock-session',
+    send: jest.fn(),
+    spawnPresent: jest.fn(async () => ({
+      sessionId: 'mock-session',
+      presentId: 'mock-present',
+      url: '/presentation?sessionId=mock-session&presentId=mock-present',
+    })),
+    listPresents: jest.fn(async () => []),
+    closePresent: jest.fn(async () => {}),
+    onDeckEvent: jest.fn(() => () => {}),
+    dispose: jest.fn(),
   }),
-  ChannelType: { BUILDER: 0, PRESENTER: 1 },
 }));
 
 // Mock fetch for library panel rendering
@@ -70,9 +78,18 @@ test('DeckBuilder shows header and handles save with no deck', () => {
   expect(screen.getByText('No deck to save')).toBeInTheDocument();
 });
 
-test('does not render Library toggle; Save and Load remain', () => {
+test('DeckBuilder shows present targets UI with send-to all default', async () => {
+  render(<DeckBuilder />);
+  await waitFor(() => expect(screen.getByTestId('present-targets')).toBeInTheDocument());
+  expect(screen.getByTestId('send-target')).toHaveValue('all');
+  expect(screen.getByTestId('present-list-empty')).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: /open present/i })).toBeInTheDocument();
+});
+
+test('does not render Library toggle; Export, Save, and Load remain', () => {
   render(<DeckBuilder />);
   expect(screen.queryByRole('button', { name: /^library$/i })).not.toBeInTheDocument();
+  expect(screen.getByRole('button', { name: /^export$/i })).toBeInTheDocument();
   expect(screen.getByRole('button', { name: /^save$/i })).toBeInTheDocument();
   expect(screen.getByRole('button', { name: /^load$/i })).toBeInTheDocument();
 });

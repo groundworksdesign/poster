@@ -48,11 +48,30 @@ describe('electron/main.cjs launch safety (all Electron installers)', () => {
     expect(mainSource).not.toMatch(/spawn\(\s*process\.execPath\s*,\s*\[\s*__filename/);
   });
 
-  it('recreates the window on macOS activate without relaunching', () => {
+  it('recreates or focuses Home on macOS activate without relaunching', () => {
     const activateBlock = mainSource.slice(mainSource.indexOf("app.on('activate'"));
-    expect(activateBlock).toMatch(/createWindow\(serverPort\)/);
+    expect(activateBlock).toMatch(/ensureHomeWindow\(serverPort\)/);
     expect(activateBlock).not.toMatch(/app\.relaunch\(\)/);
   });
+
+  it('only kills the server on window-all-closed for non-macOS', () => {
+    const closedBlock = mainSource.slice(
+      mainSource.indexOf("app.on('window-all-closed'"),
+      mainSource.indexOf("app.on('activate'"),
+    );
+    expect(closedBlock).toMatch(
+      /if\s*\(\s*process\.platform\s*!==\s*['"]darwin['"]\s*\)\s*\{[\s\S]*killServer\(\)/,
+    );
+  });
+
+  it('never creates a second Home: ensureHomeWindow + window-open home deny', () => {
+    expect(mainSource).toMatch(/function ensureHomeWindow/);
+    expect(mainSource).toMatch(/shouldCreateHomeWindow/);
+    expect(mainSource).toMatch(/setWindowOpenHandler/);
+    expect(mainSource).toMatch(/classifyOpenUrl/);
+    expect(mainSource).toMatch(/present-bare/);
+  });
+
   it('fails fast when packaged node_modules/express is missing', () => {
     expect(mainSource).toMatch(/node_modules['"].*express/);
     expect(mainSource).toMatch(/missing node_modules\/express/);
@@ -88,6 +107,22 @@ describe('electron packaging includes production node_modules', () => {
     );
     expect(runtimeBlock).not.toMatch(/react-scripts/);
     expect(runtimeBlock).not.toMatch(/@testing-library/);
+  });
+
+  it('ad-hoc re-signs unsigned mac builds after pack', () => {
+    expect(builderYml).toMatch(/afterPack:\s*scripts\/mac-adhoc-sign\.cjs/);
+    const adhocSrc = fs.readFileSync(
+      path.join(__dirname, '../../scripts/mac-adhoc-sign.cjs'),
+      'utf8',
+    );
+    expect(adhocSrc).toMatch(/CSC_LINK/);
+    expect(adhocSrc).toMatch(/codesign/);
+    expect(adhocSrc).toMatch(/--sign', '-'/);
+  });
+
+  it('allows window.open child windows in Electron main', () => {
+    expect(mainSource).toMatch(/setWindowOpenHandler/);
+    expect(mainSource).toMatch(/did-create-window/);
   });
 });
 

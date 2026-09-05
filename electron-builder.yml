@@ -17,6 +17,7 @@ extends: null
 # returns false so we never rely on its dependency installer.
 nodeGypRebuild: false
 beforeBuild: ./scripts/electron-before-build.cjs
+afterPack: scripts/mac-adhoc-sign.cjs
 
 # Disable packing into asar so the child Node process can access server files
 # and native modules on disk (avoids requiring asar unpack patterns).
@@ -33,6 +34,7 @@ artifactName: "${productName}-${version}-${os}-${arch}.${ext}"
 # prepare-electron-pack output (not the workspace pnpm store layout).
 files:
   - electron/**
+  - shared/**
   - server/**
   - build/**
   - public/**
