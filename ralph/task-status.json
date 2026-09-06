@@ -12,79 +12,79 @@
     {
       "id": 2,
       "title": "End blank program state",
-      "description": "Implement the directed blank/clear command for End and keep present state bookkeeping in sync so Start resumes from slide one after a blank.",
-      "status": "backlog",
-      "devIterations": 0,
+      "description": "Route End through the main-owned deck session so it sends a directed blank payload to the selected Present children and clears the presenter viewport state. Ensure Deck state becomes blank and Start after End sends the first slide again.",
+      "status": "done",
+      "devIterations": 4,
       "createdAt": "2026-09-06T19:42:03.828Z",
-      "updatedAt": "2026-09-06T19:42:03.828Z"
+      "updatedAt": "2026-09-06T20:14:18.089Z"
     },
     {
       "id": 3,
       "title": "Program thumbnail fidelity",
-      "description": "Make the on-program preview reflect the actual Present payload, including blank after End, and move it under the presentation controls without breaking layout.",
-      "status": "backlog",
-      "devIterations": 0,
+      "description": "Make the on-program preview derive from the same program state sent to Present, including messages, song lyric segments, green-screen behavior, and blank output after End. Move the preview into the Presentation controls region and verify updates for every navigation and send action.",
+      "status": "done",
+      "devIterations": 3,
       "createdAt": "2026-09-06T19:42:03.828Z",
-      "updatedAt": "2026-09-06T19:42:03.828Z"
+      "updatedAt": "2026-09-06T20:35:04.437Z"
     },
     {
       "id": 4,
       "title": "Theme persistence relaunch",
-      "description": "Persist the chosen theme in a user-owned settings location and restore it before first paint across quit and relaunch while keeping live updates in sync.",
+      "description": "Replace browser-only theme persistence with a durable user-owned preference store that is independent of the application working directory, while preserving live synchronization across Home, deck, and Present windows. Restore valid themes before first paint where possible and safely fall back for missing or invalid values.",
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-09-06T19:42:03.828Z",
-      "updatedAt": "2026-09-06T19:42:03.828Z"
+      "updatedAt": "2026-09-06T20:15:11.235Z"
     },
     {
       "id": 5,
       "title": "Durable library storage",
-      "description": "Move the default library to ~/.poster, migrate existing cwd SQLite or JSON data once, and support re-pointing settings without moving old data.",
+      "description": "Move the default SQLite and JSON library roots to ~/.poster, add one-time migration from cwd poster.sqlite or poster.library.json, and provide settings to re-point the library without moving or deleting the old directory. Preserve library data across application updates, cwd changes, and reinstall simulations.",
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-09-06T19:42:03.828Z",
-      "updatedAt": "2026-09-06T19:42:03.828Z"
+      "updatedAt": "2026-09-06T20:15:11.235Z"
     },
     {
       "id": 6,
       "title": "Home regression guard",
-      "description": "Keep the Home route free of the Open Present CTA while preserving the deck-driven presenter flow and guarding against regressions in the launcher UX.",
+      "description": "Add a regression check that Home does not expose a bare Open Present action and that the deck remains the only route that creates session-scoped Present windows. Keep the existing Home library and Open Presentation behavior covered.",
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-09-06T19:42:03.828Z",
-      "updatedAt": "2026-09-06T19:42:03.828Z"
+      "updatedAt": "2026-09-06T20:15:11.235Z"
     },
     {
       "id": 7,
       "title": "Test harness and CI",
-      "description": "Add the required unit, integration, and smoke tests for the A-E defects and wire them into the PR pipeline so the next-cycle regressions stay caught.",
+      "description": "Add the required unit, integration, and Playwright smoke coverage for End blanking, thumbnail fidelity and placement, theme relaunch, Present close cleanup, durable library migration and re-pointing, and the Home guard. Wire stable unit and integration suites into PR CI and document isolated Electron relaunch coverage where applicable.",
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-09-06T19:42:03.828Z",
-      "updatedAt": "2026-09-06T19:42:03.828Z"
+      "updatedAt": "2026-09-06T20:15:11.235Z"
     },
     {
       "id": 8,
       "title": "Acceptance documentation sync",
-      "description": "Update the canonical product and epic docs to match shipped behavior and keep the acceptance checklist aligned with runtime and packaging changes.",
+      "description": "Update README.md, ralph/epic.md, the applicable epic plan, and requirements.md to describe the shipped durable preferences, ~/.poster library behavior, migration, re-pointing, and Present regression fixes. Keep operator commands and acceptance status consistent with the implementation.",
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-09-06T19:42:03.828Z",
-      "updatedAt": "2026-09-06T19:42:03.828Z"
+      "updatedAt": "2026-09-06T20:15:11.235Z"
     }
   ],
-  "currentTaskNum": 1,
-  "totalLLMCalls": 2,
+  "currentTaskNum": 3,
+  "totalLLMCalls": 18,
   "maxLLMCalls": 400,
   "nextTask": {
-    "taskId": 1,
-    "content": "## Task: Session child cleanup\n\nUnregister closed Present windows from the deck session graph and exclude them from directed sends so the UI and program state stay consistent.",
-    "updatedAt": "2026-09-06T19:56:36.730Z"
+    "taskId": 3,
+    "content": "## Task: Program thumbnail fidelity\n\nMake the on-program preview derive from the same program state sent to Present, including messages, song lyric segments, green-screen behavior, and blank output after End. Move the preview into the Presentation controls region and verify updates for every navigation and send action.",
+    "updatedAt": "2026-09-06T20:15:11.258Z"
   },
   "feedback": {
-    "taskId": 1,
-    "content": "<status>verified</status>\nReviewed the session child cleanup implementation and validated the focused regression tests for closed Present window removal and directed-send exclusion.",
-    "updatedAt": "2026-09-06T19:59:11.372Z"
+    "taskId": 3,
+    "content": "No significant issues found in the reviewed changes. Targeted tests, the complete Jest suite, and the production build passed.\n<status>verified</status>",
+    "updatedAt": "2026-09-06T20:35:04.424Z"
   },
-  "lastUpdated": "2026-09-06T19:59:11.384Z"
+  "lastUpdated": "2026-09-06T20:35:04.437Z"
 }

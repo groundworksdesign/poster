@@ -249,6 +249,7 @@ export default function Presentation() {
       maxWidth: '100%',
       fontFamily: slide?.style?.fontFamily,
       fontSize: slide?.style?.fontSize,
+      fontWeight: slide?.style?.fontWeight,
       padding: 0,
       margin: 0,
       backgroundImage: backgroundImage ? `url(${backgroundImage})` : undefined,

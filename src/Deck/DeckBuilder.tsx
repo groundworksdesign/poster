@@ -294,7 +294,9 @@ export default function DeckBuilder() {
 
   const handleSendClick = (props: any) => {
     if (props.slide === null) {
-      connection?.channel.postMessage(new PresentData({ ...props, slide: null }));
+      const payload = new PresentData({ ...props, slide: null });
+      const target = sendTargetRef.current;
+      void deckSessionRef.current?.send(payload, target);
       setLastSentSlideId(null);
       setPresentSlideIndex(null);
       setPresentationBlank(true);
@@ -339,7 +341,7 @@ export default function DeckBuilder() {
       return;
     }
     const source = deck.slides[selectedSlideIndex] as any;
-    setSlideEditDraft(prev => {
+    setSlideEditDraft((prev: any) => {
       if (prev && prev.id === source.id) return prev;
       return cloneSlideForEdit(source);
     });
@@ -463,10 +465,6 @@ export default function DeckBuilder() {
 
   const navigatePresentationStart = () => {
     if (!deck || deck.slides.length === 0) return;
-    if (deck.useGreenScreen) {
-      sendBlankSlide();
-      return;
-    }
     sendSlideAtIndex(0);
   };
 
@@ -683,68 +681,6 @@ export default function DeckBuilder() {
     syncSentSlideIfNeeded(newDeck);
   };
 
-  const updateSlideField = (index: number, field: string, value: any) => {
-    if (!deck) return;
-    const slides = deck.slides.slice();
-    const slide = { ...slides[index] } as any;
-    const slideId = slide.id as string | undefined;
-    (slide as any)[field] = value;
-    slides[index] = slide;
-    const newDeck = { ...deck, slides };
-    setDeck(newDeck);
-    if (field === 'lyrics' && slideId) {
-      setSongLastStagedById(s => {
-        const next = { ...s };
-        delete next[slideId];
-        return next;
-      });
-    }
-    syncSentSlideIfNeeded(newDeck);
-  };
-
-  const updateSlideStyle = (index: number, key: keyof any, value: any) => {
-    if (!deck) return;
-    const slides = deck.slides.slice();
-    const slide = { ...slides[index] } as any;
-    const style = { ...(slide.style || {}) } as any;
-    if (value === '' || value === null || value === undefined) {
-      delete style[key as string];
-    } else {
-      const stored =
-        typeof value === 'string' ? maybeNormalizeStyleColor(String(key), value) : value;
-      style[key as string] = stored;
-    }
-    slide.style = style;
-    slides[index] = slide;
-    const newDeck = { ...deck, slides };
-    setDeck(newDeck);
-    syncSentSlideIfNeeded(newDeck);
-  };
-
-  const resetSlideStyleField = (index: number, key: keyof any) => {
-    if (!deck) return;
-    const slides = deck.slides.slice();
-    const slide = { ...slides[index] } as any;
-    const style = { ...(slide.style || {}) } as any;
-    delete style[key as string];
-    slide.style = style;
-    slides[index] = slide;
-    const newDeck = { ...deck, slides };
-    setDeck(newDeck);
-    syncSentSlideIfNeeded(newDeck);
-  };
-
-  const resetAllSlideStyleOverrides = (index: number) => {
-    if (!deck) return;
-    const slides = deck.slides.slice();
-    const slide = { ...slides[index] } as any;
-    slide.style = {};
-    slides[index] = slide;
-    const newDeck = { ...deck, slides };
-    setDeck(newDeck);
-    syncSentSlideIfNeeded(newDeck);
-  };
-
   const createNewDeck = () => {
     const newDeck: Deck = {
       schemaVersion: CURRENT_SCHEMA_VERSION,
@@ -892,9 +828,9 @@ export default function DeckBuilder() {
     reorderSlide(fromIndex, toIndex);
   };
 
-  const handleExportClick = () => {
+  const triggerDeckDownload = (label: string) => {
     if (!deck) {
-      setMessage('No deck to export');
+      setMessage('No deck to save');
       return;
     }
     const blob = new Blob([JSON.stringify(deck, null, 2)], { type: 'application/json' });
@@ -906,8 +842,10 @@ export default function DeckBuilder() {
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
-    setMessage('Deck downloaded');
+    setMessage(label);
   };
+
+  const handleExportClick = () => triggerDeckDownload('Deck downloaded');
 
   const handleSaveToLibrary = async () => {
     if (!deck) {
@@ -1073,8 +1011,6 @@ export default function DeckBuilder() {
           )}
         </div>
 
-        <ProgramThumbnailPanel program={programThumbnail?.program ?? null} />
-
         {deck && (
           <div style={{ marginTop: '12px', padding: '8px', border: '1px solid #ddd' }}>
             <h3>Deck metadata</h3>
@@ -1141,6 +1077,7 @@ export default function DeckBuilder() {
                 <span style={{ fontSize: '0.85rem', opacity: 0.85 }}>Blank</span>
               )}
             </div>
+            <ProgramThumbnailPanel program={programThumbnail?.program ?? null} />
           </div>
         )}
 
@@ -1517,7 +1454,7 @@ export default function DeckBuilder() {
       {showSaveToLibraryPrompt && (
         <div data-testid="import-save-prompt" style={{ marginTop: '8px', padding: '8px', border: '1px solid #aaa', display: 'inline-flex', gap: '8px', alignItems: 'center' }}>
           <span>Save this import to the library?</span>
-          <button id="import-save-to-library" onClick={async () => { setShowSaveToLibraryPrompt(false); await handleSaveToLibrary(); }}>Save</button>
+          <button id="import-save-to-library" onClick={async () => { setShowSaveToLibraryPrompt(false); await handleSaveToLibrary(); }}>Save to Library</button>
           <button id="import-skip-save-to-library" onClick={() => setShowSaveToLibraryPrompt(false)}>Skip</button>
         </div>
       )}

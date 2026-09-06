@@ -112,6 +112,42 @@ describe('PosterSessionGraph', () => {
     expect(payloadsFor('present-a1')).not.toContain(payload);
   });
 
+  test('blank payload is directed only to the selected Present child', () => {
+    const { presentIds } = registerDeckWithPresents('deck-a', ['present-a1', 'present-a2']);
+    const blank = { slide: null, message: null, useGreenScreen: false };
+
+    const result = graph.handleDeckCommand('deck-a', {
+      type: 'send',
+      payload: blank,
+      target: presentIds[0],
+    });
+
+    expect(result).toEqual({ ok: true, delivered: 1 });
+    expect(payloadsFor('present-a1')).toContain(blank);
+    expect(payloadsFor('present-a2')).not.toContain(blank);
+  });
+
+  test('blank payload is replayed when its Present child becomes ready', () => {
+    const deckPeer = 'deck-a';
+    const presentPeer = 'present-a1';
+    const reg = graph.registerDeck(deckPeer, makeDeliver(deckPeer));
+    const spawn = graph.handleDeckCommand(deckPeer, { type: 'spawn' });
+    const blank = { slide: null, message: null, useGreenScreen: false };
+
+    graph.handleDeckCommand(deckPeer, {
+      type: 'send',
+      payload: blank,
+      target: spawn.presentId,
+    });
+    graph.handlePresentEvent(
+      presentPeer,
+      { type: 'ready', sessionId: reg.sessionId, presentId: spawn.presentId },
+      makeDeliver(presentPeer),
+    );
+
+    expect(payloadsFor(presentPeer)).toContain(blank);
+  });
+
   test('closing a Present drops it; reopen gets a new presentId', () => {
     const deckPeer = 'deck-a';
     const reg = graph.registerDeck(deckPeer, makeDeliver(deckPeer));

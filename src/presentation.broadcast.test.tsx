@@ -49,13 +49,17 @@ test('lyricsNavigation partial updates do not clear song slide or message', asyn
 });
 
 test('explicit null slide clears presentation output', async () => {
+  const { deck, sessionId, presentId } = await setupDeckPresentPair();
+  setPresentationSearch(sessionId, presentId);
+
   await act(async () => {
     render(<Presentation />);
   });
 
+  await waitFor(() => expect(screen.queryByText('Loading...')).not.toBeInTheDocument());
+
   await act(async () => {
-    const chan = new (global as any).BroadcastChannel('presentation');
-    chan.postMessage({
+    await deck.send({
       slide: {
         type: SlideType.TITLE,
         title: 'Visible Title',
@@ -68,8 +72,7 @@ test('explicit null slide clears presentation output', async () => {
   expect(screen.getByText('Visible Title')).toBeInTheDocument();
 
   await act(async () => {
-    const chan = new (global as any).BroadcastChannel('presentation');
-    chan.postMessage({ slide: null, useGreenScreen: false });
+    await deck.send({ slide: null, useGreenScreen: false });
   });
 
   expect(screen.queryByText('Visible Title')).not.toBeInTheDocument();

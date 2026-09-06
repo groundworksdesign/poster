@@ -5,7 +5,7 @@ import { SlideType } from './PresentTypes';
 export function applyPresentPayload(
   present: PresentData,
   handlers: {
-    setSlide: (slide: PresentData['slide']) => void;
+    setSlide: (slide: Exclude<PresentData['slide'], undefined>) => void;
     setMessage: (message: string | null) => void;
     setUseGreenScreen: (value: boolean) => void;
     setSongData: (data: SongData | null) => void;
@@ -23,7 +23,14 @@ export function applyPresentPayload(
     return;
   }
 
-  if (present.slide) {
+  // `slide: null` is an explicit program-out command, not an omitted field.
+  if (present.slide === null) {
+    handlers.setSlide(null);
+    handlers.setMessage(null);
+    handlers.setUseGreenScreen(!!present.useGreenScreen);
+    handlers.setSongData(null);
+    handlers.setSegmentIndex(() => 0);
+  } else if (present.slide) {
     handlers.setSlide(present.slide);
     handlers.setMessage(present.message ?? null);
     handlers.setUseGreenScreen(!!present.useGreenScreen);

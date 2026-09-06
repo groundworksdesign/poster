@@ -61,7 +61,7 @@ async function loadFile(file: File) {
   });
 }
 
-test('DeckBuilder shows header and handles save with no deck', () => {
+test('DeckBuilder disables library save with no deck', () => {
   render(<DeckBuilder />);
 
   // header
@@ -70,12 +70,7 @@ test('DeckBuilder shows header and handles save with no deck', () => {
   // no deck message
   expect(screen.getByText('No deck loaded yet.')).toBeInTheDocument();
 
-  // click save and assert message
-  act(() => {
-    fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
-  });
-
-  expect(screen.getByText('No deck to save')).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: /^save$/i })).toBeDisabled();
 });
 
 test('DeckBuilder shows present targets UI with send-to all default', async () => {
@@ -85,6 +80,14 @@ test('DeckBuilder shows present targets UI with send-to all default', async () =
   expect(screen.getByTestId('present-list-empty')).toBeInTheDocument();
   await waitFor(() => expect(screen.getByTestId('open-present')).toBeEnabled());
   expect(screen.getByTestId('deck-session-ready')).toHaveAttribute('data-ready', 'true');
+});
+
+test('DeckBuilder places the on-program preview in Presentation controls', async () => {
+  render(<DeckBuilder />);
+  await loadFile(makeJsonFile(VALID_DECK));
+
+  const controls = await screen.findByTestId('presentation-controls');
+  expect(controls).toContainElement(screen.getByTestId('program-thumbnail'));
 });
 
 test('Open Present opens about:blank before spawn so the click gesture is kept', async () => {
@@ -212,7 +215,7 @@ test('new deck includes schemaVersion 1', async () => {
   const appendSpy = jest.spyOn(document.body, 'appendChild').mockImplementation((n: any) => n);
 
   act(() => {
-    fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^export$/i }));
   });
 
   expect(capturedBlob).toBeDefined();
@@ -244,7 +247,7 @@ test('imported JSON deck without schemaVersion defaults to 1', async () => {
   (global.URL as any).revokeObjectURL = jest.fn();
   const appendSpy = jest.spyOn(document.body, 'appendChild').mockImplementation((n: any) => n);
 
-  act(() => { fireEvent.click(screen.getByRole('button', { name: /^save$/i })); });
+  act(() => { fireEvent.click(screen.getByRole('button', { name: /^export$/i })); });
 
   expect(capturedBlob).toBeDefined();
   const text = await new Promise<string>((resolve) => {

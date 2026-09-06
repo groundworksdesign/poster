@@ -309,9 +309,9 @@ if (!gotTheLock) {
   });
 
   app.on('window-all-closed', () => {
-    killServer();
     // On macOS, keep app in Dock until Cmd+Q (standard behaviour)
     if (process.platform !== 'darwin') {
+      killServer();
       app.quit();
     }
   });
