@@ -48,7 +48,7 @@ Aligned with [`docs/epics/epic-002-theme-install-reorg.plan.md`](docs/epics/epic
 ### Themes
 
 - **Four** selectable dark themes on home: **Dracula**, **Tokyo Night**, **dark blue** (navy), **GitHub-dark-style** neutrals.
-- Theming uses **`[data-theme]`** on the document root with CSS variables; home persists choice in **`localStorage`** (e.g. key **`poster-theme`**). Optional early script to reduce theme **FOUC** is acceptable.
+- Theming uses **`[data-theme]`** on the document root with CSS variables; home persists the selected theme in a durable, user-owned preference file (for example **`~/.poster/theme.json`** or the Electron app user-data equivalent), while keeping a local browser fallback for live runtime sync. Optional early script to reduce theme **FOUC** is acceptable.
 
 ### Home library UX
 

@@ -3,6 +3,9 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('poster', {
+  readThemeSync: () => ipcRenderer.sendSync('poster:read-theme-sync'),
+  readTheme: () => ipcRenderer.invoke('poster:read-theme'),
+  setTheme: (theme) => ipcRenderer.invoke('poster:set-theme', theme),
   deckCommand: (command) => ipcRenderer.invoke('poster:deck-command', command),
   presentEvent: (event) => ipcRenderer.send('poster:present-event', event),
   onDeckEvent: (handler) => {

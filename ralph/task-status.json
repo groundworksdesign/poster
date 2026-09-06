@@ -30,61 +30,61 @@
     {
       "id": 4,
       "title": "Theme persistence relaunch",
-      "description": "Replace browser-only theme persistence with a durable user-owned preference store that is independent of the application working directory, while preserving live synchronization across Home, deck, and Present windows. Restore valid themes before first paint where possible and safely fall back for missing or invalid values.",
-      "status": "backlog",
-      "devIterations": 0,
+      "description": "Persist the selected theme in a durable user-owned preference location rather than browser storage or the application working directory. Restore valid themes across full quit and relaunch for Home, deck, and Present while preserving live synchronization and safe fallback behavior.",
+      "status": "done",
+      "devIterations": 4,
       "createdAt": "2026-09-06T19:42:03.828Z",
-      "updatedAt": "2026-09-06T20:15:11.235Z"
+      "updatedAt": "2026-09-06T20:49:02.809Z"
     },
     {
       "id": 5,
       "title": "Durable library storage",
-      "description": "Move the default SQLite and JSON library roots to ~/.poster, add one-time migration from cwd poster.sqlite or poster.library.json, and provide settings to re-point the library without moving or deleting the old directory. Preserve library data across application updates, cwd changes, and reinstall simulations.",
+      "description": "Use ~/.poster as the default durable library root, migrate existing cwd SQLite or JSON data once, and add settings to re-point the library without moving or deleting the old directory. Verify data survives cwd changes, application updates, and reinstall simulations.",
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-09-06T19:42:03.828Z",
-      "updatedAt": "2026-09-06T20:15:11.235Z"
+      "updatedAt": "2026-09-06T20:35:43.963Z"
     },
     {
       "id": 6,
       "title": "Home regression guard",
-      "description": "Add a regression check that Home does not expose a bare Open Present action and that the deck remains the only route that creates session-scoped Present windows. Keep the existing Home library and Open Presentation behavior covered.",
+      "description": "Add regression coverage proving Home does not expose a bare Open Present action and that Present windows are created only through the deck workflow. Preserve coverage for Home library actions and Open Presentation navigation.",
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-09-06T19:42:03.828Z",
-      "updatedAt": "2026-09-06T20:15:11.235Z"
+      "updatedAt": "2026-09-06T20:35:43.963Z"
     },
     {
       "id": 7,
       "title": "Test harness and CI",
-      "description": "Add the required unit, integration, and Playwright smoke coverage for End blanking, thumbnail fidelity and placement, theme relaunch, Present close cleanup, durable library migration and re-pointing, and the Home guard. Wire stable unit and integration suites into PR CI and document isolated Electron relaunch coverage where applicable.",
+      "description": "Add the required unit, integration, and Playwright smoke coverage for theme relaunch, library migration and re-pointing, Present close cleanup, End blanking, program preview behavior, and the Home guard. Wire stable unit and integration suites into pull request CI and document isolated Electron relaunch coverage.",
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-09-06T19:42:03.828Z",
-      "updatedAt": "2026-09-06T20:15:11.235Z"
+      "updatedAt": "2026-09-06T20:35:43.963Z"
     },
     {
       "id": 8,
       "title": "Acceptance documentation sync",
-      "description": "Update README.md, ralph/epic.md, the applicable epic plan, and requirements.md to describe the shipped durable preferences, ~/.poster library behavior, migration, re-pointing, and Present regression fixes. Keep operator commands and acceptance status consistent with the implementation.",
+      "description": "Synchronize README.md, ralph/epic.md, the applicable epic plan, and requirements.md with the durable theme and library behavior, migration rules, re-pointing semantics, regression fixes, and verification status.",
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-09-06T19:42:03.828Z",
-      "updatedAt": "2026-09-06T20:15:11.235Z"
+      "updatedAt": "2026-09-06T20:35:43.963Z"
     }
   ],
-  "currentTaskNum": 3,
-  "totalLLMCalls": 18,
+  "currentTaskNum": 4,
+  "totalLLMCalls": 27,
   "maxLLMCalls": 400,
   "nextTask": {
-    "taskId": 3,
-    "content": "## Task: Program thumbnail fidelity\n\nMake the on-program preview derive from the same program state sent to Present, including messages, song lyric segments, green-screen behavior, and blank output after End. Move the preview into the Presentation controls region and verify updates for every navigation and send action.",
-    "updatedAt": "2026-09-06T20:15:11.258Z"
+    "taskId": 4,
+    "content": "## Task: Theme persistence relaunch\n\nPersist the selected theme in a durable user-owned preference location rather than browser storage or the application working directory. Restore valid themes across full quit and relaunch for Home, deck, and Present while preserving live synchronization and safe fallback behavior.",
+    "updatedAt": "2026-09-06T20:35:43.998Z"
   },
   "feedback": {
-    "taskId": 3,
-    "content": "No significant issues found in the reviewed changes. Targeted tests, the complete Jest suite, and the production build passed.\n<status>verified</status>",
-    "updatedAt": "2026-09-06T20:35:04.424Z"
+    "taskId": 4,
+    "content": "<status>verified</status>\nReviewed the theme persistence implementation and verified it meets the assigned requirements. Focused unit tests, TypeScript checking, Remix persistence E2E, and Electron full relaunch smoke coverage pass; no code changes were made.",
+    "updatedAt": "2026-09-06T20:49:02.795Z"
   },
-  "lastUpdated": "2026-09-06T20:35:04.437Z"
+  "lastUpdated": "2026-09-06T20:49:02.809Z"
 }

@@ -12,11 +12,28 @@ export const THEMES = [
 
 export type ThemeId = (typeof THEMES)[number]['id'];
 
-export function isThemeId(value: string | null | undefined): value is ThemeId {
-  return Boolean(value && THEMES.some((t) => t.id === value));
+function getThemeBridge(): { readThemeSync?: () => unknown; readTheme?: () => unknown; setTheme?: (theme: ThemeId) => unknown } | undefined {
+  if (typeof window === 'undefined') return undefined;
+  const bridge = (window as typeof window & { poster?: unknown }).poster;
+  if (!bridge || typeof bridge !== 'object') return undefined;
+  return bridge as { readThemeSync?: () => unknown; readTheme?: () => unknown; setTheme?: (theme: ThemeId) => unknown };
+}
+
+export function isThemeId(value: unknown): value is ThemeId {
+  return typeof value === 'string' && THEMES.some((t) => t.id === value);
 }
 
 export function readStoredTheme(): ThemeId {
+  try {
+    const bridge = getThemeBridge();
+    const bridgeTheme = bridge?.readThemeSync?.();
+    if (isThemeId(bridgeTheme)) {
+      return bridgeTheme;
+    }
+  } catch {
+    // ignore bridge issues; fall through to browser storage
+  }
+
   try {
     const stored = localStorage.getItem(THEME_STORAGE_KEY);
     if (isThemeId(stored)) {
@@ -25,6 +42,7 @@ export function readStoredTheme(): ThemeId {
   } catch {
     // ignore
   }
+
   return 'light';
 }
 
@@ -35,6 +53,16 @@ export function applyTheme(theme: ThemeId): void {
   } else {
     document.documentElement.dataset.theme = theme;
   }
+
+  try {
+    const bridge = getThemeBridge();
+    if (bridge?.setTheme) {
+      bridge.setTheme(theme);
+    }
+  } catch {
+    // ignore bridge failures; browser storage remains fallback
+  }
+
   try {
     localStorage.setItem(THEME_STORAGE_KEY, theme);
   } catch {

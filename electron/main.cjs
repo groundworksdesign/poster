@@ -1,16 +1,26 @@
 'use strict';
 
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const { spawn } = require('child_process');
 const fs = require('fs');
 const net = require('net');
 const http = require('http');
+const os = require('os');
 const path = require('path');
 const { registerSessionIpc } = require('./sessionIpc.cjs');
 const {
   classifyOpenUrl,
   shouldCreateHomeWindow,
 } = require('./homeWindowPolicy.cjs');
+const { readThemePrefs, writeThemePrefs } = require('./themePrefs.cjs');
+
+ipcMain.on('poster:read-theme-sync', (event) => {
+  event.returnValue = readThemePrefs();
+});
+
+ipcMain.handle('poster:read-theme', () => readThemePrefs());
+
+ipcMain.handle('poster:set-theme', (_event, theme) => writeThemePrefs(theme));
 
 const sessionIpc = registerSessionIpc();
 

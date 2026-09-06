@@ -14,7 +14,7 @@ export const meta: V2_MetaFunction = () => [
 ];
 
 // Inline script applied before paint to restore saved theme and avoid FOUC.
-const themeInitScript = `(function(){try{var t=localStorage.getItem('poster-theme');if(t&&t!=='light')document.documentElement.dataset.theme=t;else delete document.documentElement.dataset.theme;}catch(e){}})();`;
+export const themeInitScript = `(function(){try{var valid={light:1,dracula:1,'tokyo-night':1,'dark-blue':1,'github-dark':1};var saved=null;try{if(window.poster&&typeof window.poster.readThemeSync==='function'){saved=window.poster.readThemeSync();}}catch(e){}if(!valid[saved]){try{saved=localStorage.getItem('poster-theme');}catch(e){}}if(!valid[saved]||saved==='light')delete document.documentElement.dataset.theme;else document.documentElement.dataset.theme=saved;}catch(e){delete document.documentElement.dataset.theme;}})();`;
 
 export default function App() {
   return (

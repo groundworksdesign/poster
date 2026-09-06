@@ -37,6 +37,24 @@ describe('useTheme persist + sync', () => {
     expect(readStoredTheme()).toBe('tokyo-night');
   });
 
+  it('prefers the durable app theme bridge when available', () => {
+    const setTheme = jest.fn();
+    Object.defineProperty(window, 'poster', {
+      configurable: true,
+      value: {
+        readThemeSync: () => 'dracula',
+        setTheme,
+      },
+    });
+
+    expect(readStoredTheme()).toBe('dracula');
+    applyTheme('tokyo-night');
+    expect(setTheme).toHaveBeenCalledWith('tokyo-night');
+    expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe('tokyo-night');
+
+    delete (window as typeof window & { poster?: unknown }).poster;
+  });
+
   it('restores stored theme after remount (app restart / Home reopen)', async () => {
     applyTheme('github-dark');
     const first = render(<ThemeProbe />);
