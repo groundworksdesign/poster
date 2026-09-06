@@ -2,366 +2,89 @@
   "tasks": [
     {
       "id": 1,
-      "title": "Expose horizontalAlign in slide style editor",
-      "description": "Add horizontalAlign to the slide style editor's styleKeys array in DeckBuilder so operators can set the horizontal component of the 3x3 placement grid. The presenter already reads slide.style.horizontalAlign; the builder must expose it alongside verticalAlign.",
+      "title": "Session child cleanup",
+      "description": "Unregister closed Present windows from the deck session graph and exclude them from directed sends so the UI and program state stay consistent.",
       "status": "done",
       "devIterations": 1,
-      "createdAt": "2026-04-11T20:48:19.837Z",
-      "updatedAt": "2026-04-11T20:52:04.307Z"
+      "createdAt": "2026-09-06T19:42:03.828Z",
+      "updatedAt": "2026-09-06T19:59:11.384Z"
     },
     {
       "id": 2,
-      "title": "Add deck metadata editing UI",
-      "description": "Add inputs to the DeckBuilder for editing deck-level fields: title, date, location, notes, and a useGreenScreen toggle checkbox. Currently these fields are read-only after load except via manual JSON edits.",
-      "status": "done",
-      "devIterations": 1,
-      "createdAt": "2026-04-11T20:48:19.837Z",
-      "updatedAt": "2026-04-11T20:59:33.740Z"
+      "title": "End blank program state",
+      "description": "Implement the directed blank/clear command for End and keep present state bookkeeping in sync so Start resumes from slide one after a blank.",
+      "status": "backlog",
+      "devIterations": 0,
+      "createdAt": "2026-09-06T19:42:03.828Z",
+      "updatedAt": "2026-09-06T19:42:03.828Z"
     },
     {
       "id": 3,
-      "title": "Add operator message send UI",
-      "description": "Add a dedicated text input and Send Message button in DeckBuilder that broadcasts a PresentData with only the message field set (no slide), satisfying design principle 5: supers go on program only when explicitly sent.",
-      "status": "done",
-      "devIterations": 2,
-      "createdAt": "2026-04-11T20:48:19.837Z",
-      "updatedAt": "2026-04-11T21:15:57.996Z"
+      "title": "Program thumbnail fidelity",
+      "description": "Make the on-program preview reflect the actual Present payload, including blank after End, and move it under the presentation controls without breaking layout.",
+      "status": "backlog",
+      "devIterations": 0,
+      "createdAt": "2026-09-06T19:42:03.828Z",
+      "updatedAt": "2026-09-06T19:42:03.828Z"
     },
     {
       "id": 4,
-      "title": "Add keyboard shortcuts for operator navigation",
-      "description": "Implement keyboard event handling in DeckBuilder so the operator can navigate slides (ArrowRight/ArrowLeft or PageDown/PageUp) and step lyrics (ArrowDown/ArrowUp when in song mode) without using the mouse.",
-      "status": "done",
-      "devIterations": 1,
-      "createdAt": "2026-04-11T20:48:19.837Z",
-      "updatedAt": "2026-04-11T21:23:28.020Z"
+      "title": "Theme persistence relaunch",
+      "description": "Persist the chosen theme in a user-owned settings location and restore it before first paint across quit and relaunch while keeping live updates in sync.",
+      "status": "backlog",
+      "devIterations": 0,
+      "createdAt": "2026-09-06T19:42:03.828Z",
+      "updatedAt": "2026-09-06T19:42:03.828Z"
     },
     {
       "id": 5,
-      "title": "Add fullscreen API to presenter route",
-      "description": "Add a button (or keyboard shortcut F) to the Presentation component that calls document.documentElement.requestFullscreen() so the presenter window can occupy the full capture surface for the video mixer feed.",
-      "status": "done",
-      "devIterations": 2,
-      "createdAt": "2026-04-11T20:48:19.837Z",
-      "updatedAt": "2026-04-11T21:35:29.244Z"
+      "title": "Durable library storage",
+      "description": "Move the default library to ~/.poster, migrate existing cwd SQLite or JSON data once, and support re-pointing settings without moving old data.",
+      "status": "backlog",
+      "devIterations": 0,
+      "createdAt": "2026-09-06T19:42:03.828Z",
+      "updatedAt": "2026-09-06T19:42:03.828Z"
     },
     {
       "id": 6,
-      "title": "Verify and pass lyrics navigation E2E tests",
-      "description": "The Playwright spec in e2e/lyrics-navigation.spec.ts was written but has not been confirmed passing. Run the suite against a live dev server, fix any failures in the presenter or broadcast handling, and ensure all six lyrics-navigation scenarios pass cleanly.",
-      "status": "done",
-      "devIterations": 1,
-      "createdAt": "2026-04-11T20:48:19.837Z",
-      "updatedAt": "2026-04-12T20:07:57.967Z"
+      "title": "Home regression guard",
+      "description": "Keep the Home route free of the Open Present CTA while preserving the deck-driven presenter flow and guarding against regressions in the launcher UX.",
+      "status": "backlog",
+      "devIterations": 0,
+      "createdAt": "2026-09-06T19:42:03.828Z",
+      "updatedAt": "2026-09-06T19:42:03.828Z"
     },
     {
       "id": 7,
-      "title": "E2E tests for 3x3 alignment grid",
-      "description": "Write Playwright tests that send slides with each of the 9 horizontal+vertical alignment combinations and assert that the title overlay element has the expected CSS positioning in the presenter view, covering all cells of the upper/center/bottom x left/middle/right grid.",
-      "status": "done",
-      "devIterations": 1,
-      "createdAt": "2026-04-11T20:48:19.837Z",
-      "updatedAt": "2026-04-12T20:26:57.259Z"
+      "title": "Test harness and CI",
+      "description": "Add the required unit, integration, and smoke tests for the A-E defects and wire them into the PR pipeline so the next-cycle regressions stay caught.",
+      "status": "backlog",
+      "devIterations": 0,
+      "createdAt": "2026-09-06T19:42:03.828Z",
+      "updatedAt": "2026-09-06T19:42:03.828Z"
     },
     {
       "id": 8,
-      "title": "Standalone song JSON import in DeckBuilder",
-      "description": "Extend the file upload handler to accept a standalone song JSON file matching the SongData shape (with title, author, verses, lines) without requiring a full Deck wrapper, auto-creating a single-slide song deck on load.",
-      "status": "done",
-      "devIterations": 1,
-      "createdAt": "2026-04-11T20:48:19.837Z",
-      "updatedAt": "2026-04-12T20:33:46.867Z"
-    },
-    {
-      "id": 9,
-      "title": "SQLite library schema and Remix loader scaffolding",
-      "description": "Create the server-side SQLite schema (presentations, songs, assets tables) and stub Remix loader/action routes for the library, setting up the persistence layer so subsequent tasks can implement save, open, and list workflows.",
-      "status": "done",
-      "devIterations": 1,
-      "createdAt": "2026-04-11T20:48:19.837Z",
-      "updatedAt": "2026-04-12T20:44:37.701Z"
-    },
-    {
-      "id": 10,
-      "title": "SQLite library save and open deck",
-      "description": "Implement the save deck action (persist current deck JSON and linked song records to SQLite) and the open deck loader (list saved presentations and hydrate the builder from a selected record), wiring them to the DeckBuilder UI.",
-      "status": "done",
-      "devIterations": 2,
-      "createdAt": "2026-04-11T20:48:19.837Z",
-      "updatedAt": "2026-04-12T21:09:37.707Z"
-    },
-    {
-      "id": 11,
-      "title": "SQLite library browser UI in DeckBuilder",
-      "description": "Add a library panel to the DeckBuilder that lists saved presentations from SQLite (title, date, location) and lets the operator open, update, or delete them, completing the local working archive workflow from the epic.",
-      "status": "done",
-      "devIterations": 1,
-      "createdAt": "2026-04-11T20:48:19.837Z",
-      "updatedAt": "2026-04-12T21:19:30.247Z"
-    },
-    {
-      "id": 12,
-      "title": "Verify E2E library tests pass",
-      "description": "The Playwright spec in e2e/library.spec.ts exists with five library workflow tests (save, list, open, delete entry, delete active entry). Run the suite against the live dev server, fix any assertion failures in the DeckBuilder or LibraryPanel components, and confirm all five tests pass cleanly.",
-      "status": "done",
-      "devIterations": 1,
-      "createdAt": "2026-04-12T21:37:07.308Z",
-      "updatedAt": "2026-04-13T14:35:22.686Z"
-    },
-    {
-      "id": 13,
-      "title": "Export deck from library panel",
-      "description": "Add an Export (Download) button to each row in LibraryPanel that fetches the full deck JSON from /library/open/:id and triggers a browser download, completing the epic's Export workflow so operators can archive a library record to file without first loading it into the builder.",
-      "status": "done",
-      "devIterations": 1,
-      "createdAt": "2026-04-12T21:37:07.308Z",
-      "updatedAt": "2026-04-13T14:45:31.371Z"
-    },
-    {
-      "id": 14,
-      "title": "JSON import validation with operator errors",
-      "description": "Improve the DeckBuilder file-load path to validate required deck fields (title, slides array, each slide's type) and emit specific, operator-facing error messages rather than the generic 'Invalid JSON', matching the epic's requirement for clear import errors.",
-      "status": "done",
-      "devIterations": 1,
-      "createdAt": "2026-04-12T21:37:07.308Z",
-      "updatedAt": "2026-04-13T14:57:12.693Z"
-    },
-    {
-      "id": 15,
-      "title": "Save-to-library option on file import",
-      "description": "After a successful JSON deck or XML song import, offer an optional 'Save to Library' action in the DeckBuilder so the uploaded file becomes a first-class library record, completing the epic's Import workflow for the Local Library (SQLite) section.",
-      "status": "done",
-      "devIterations": 3,
-      "createdAt": "2026-04-13T14:51:13.534Z",
-      "updatedAt": "2026-04-13T15:26:25.346Z"
-    },
-    {
-      "id": 17,
-      "title": "Verify import-validation E2E spec passes",
-      "description": "The spec at e2e/import-validation-save-to-library.spec.ts was written as part of task 16 but could not be verified because the CRA dev server was unavailable. Start the CRA dev server on the configured E2E port and confirm all tests in that spec pass cleanly with no regressions in other suites.",
-      "status": "done",
-      "devIterations": 1,
-      "createdAt": "2026-04-13T15:55:05.682Z",
-      "updatedAt": "2026-04-13T15:59:40.164Z"
-    },
-    {
-      "id": 18,
-      "title": "SQLite library backup and restore",
-      "description": "Add a Backup button to the LibraryPanel that triggers a download of the raw poster.sqlite file, and an Import Database button that accepts a .sqlite file upload and replaces the current database, completing the backup/restore workflow called out in the Local Library (SQLite) section of the epic.",
-      "status": "done",
-      "devIterations": 2,
-      "createdAt": "2026-04-13T15:55:05.682Z",
-      "updatedAt": "2026-04-13T16:21:59.986Z"
-    },
-    {
-      "id": 19,
-      "title": "Add deck schema version field",
-      "description": "Introduce a schemaVersion integer (starting at 1) on the Deck type and persist it in SQLite and JSON exports. Add a migration note pattern so future Deck/Slide shape changes can be detected and handled gracefully on import.",
-      "status": "done",
-      "devIterations": 1,
-      "createdAt": "2026-04-13T15:55:05.682Z",
-      "updatedAt": "2026-04-13T16:33:13.089Z"
-    },
-    {
-      "id": 20,
-      "title": "Contract tests for PresentData broadcast",
-      "description": "Write unit or integration tests that assert the PresentData payload shape and BroadcastChannel message contract: slide-only send, message-only send, lyrics-navigation partial update, and useGreenScreen flag, ensuring the presenter and builder stay in sync against a typed contract.",
-      "status": "done",
-      "devIterations": 1,
-      "createdAt": "2026-04-13T15:55:05.682Z",
-      "updatedAt": "2026-04-13T16:42:26.201Z"
-    },
-    {
-      "id": 21,
-      "title": "Broadcast-safe layout overlay in presenter",
-      "description": "Add an optional visual overlay to the Presentation route (toggled by operator or a query param) that renders title-safe and action-safe margin guides for 16:9 output, helping TDs and operators confirm slide content sits inside broadcast-safe areas before going to air.",
-      "status": "done",
-      "devIterations": 1,
-      "createdAt": "2026-04-13T15:55:05.682Z",
-      "updatedAt": "2026-04-13T16:51:49.036Z"
-    },
-    {
-      "id": 22,
-      "title": "E2E tests for backup and restore",
-      "description": "Write Playwright tests covering the SQLite library backup download flow and the restore (database upload/replace) flow added in task 18, ensuring both the Backup and Import Database buttons function end-to-end with no regressions in existing library tests.",
-      "status": "blocked",
-      "devIterations": 1,
-      "createdAt": "2026-04-13T16:47:19.445Z",
-      "updatedAt": "2026-05-15T03:42:52.355Z",
-      "blocked": {
-        "summary": "Playwright webServer (CRA dev) exits early",
-        "impact": "Cannot run Playwright e2e tests locally, so backup/restore tests cannot be executed/verified in CI here",
-        "nextStep": "Install dependencies and start the CRA dev server successfully (npm ci / pnpm install, ensure Node version and env), then run playwright test",
-        "needs": "Run `npm ci` (or `pnpm install`) and `npx playwright install --with-deps`; ensure `npm run start:cra` succeeds locally",
-        "capturedAt": "2026-05-15T03:42:52.351Z"
-      }
-    },
-    {
-      "id": 24,
-      "title": "CSS custom properties and four dark themes",
-      "description": "Introduce CSS custom properties for all hardcoded color values in src/App.css, then define four [data-theme] palettes: dracula, tokyo-night, dark-blue, and github-dark. Migrate .home-page* and other fixed colors to var(--) references.",
-      "status": "done",
-      "devIterations": 1,
-      "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T03:49:44.110Z"
-    },
-    {
-      "id": 25,
-      "title": "Theme picker on HomePage with persistence",
-      "description": "Add a theme picker UI to src/HomePage.tsx that sets document.documentElement.dataset.theme and saves the selection to localStorage under poster-theme. Add an optional inline script in app/root.tsx to restore the theme before paint and reduce FOUC.",
-      "status": "done",
-      "devIterations": 1,
-      "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T03:53:09.188Z"
-    },
-    {
-      "id": 26,
-      "title": "Mount LibraryPanel on HomePage",
-      "description": "Render LibraryPanel on src/HomePage.tsx with onOpen navigating to /deck?open=<id>. Update DeckBuilder to read the open search param, load the matching library record, and strip the param from the URL. Add a link/button to /deck?focusImport=1 from home and handle that param in DeckBuilder to trigger the file input once.",
-      "status": "done",
-      "devIterations": 1,
-      "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T04:01:03.273Z"
-    },
-    {
-      "id": 27,
-      "title": "Clean up DeckBuilder duplicate library toggle",
-      "description": "Remove or de-emphasize the duplicate Library toggle/panel from DeckBuilder now that LibraryPanel lives on the home page. Keep Save to Library and Load on /deck. Update existing unit and E2E tests (LibraryPanel.unit.test.tsx, e2e/library.spec.ts) to reflect the reorganized UI.",
-      "status": "done",
-      "devIterations": 2,
-      "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T04:10:24.496Z"
-    },
-    {
-      "id": 28,
-      "title": "Add home-library E2E coverage",
-      "description": "Write Playwright tests in e2e/home-library.spec.ts covering: opening a deck from the home LibraryPanel navigates to /deck?open=<id>, the focusImport CTA link routes to /deck?focusImport=1, and library list/delete actions on the home page do not regress existing DeckBuilder library flows.",
-      "status": "done",
-      "devIterations": 1,
-      "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T04:55:57.226Z"
-    },
-    {
-      "id": 16,
-      "title": "E2E tests for import validation and save-to-library",
-      "description": "Write Playwright tests covering the import validation error paths (missing title, missing slides, unknown slide type) and the save-to-library import workflow, ensuring both features are exercised end-to-end against the Remix dev server.",
-      "status": "done",
-      "devIterations": 1,
-      "createdAt": "2026-04-13T14:51:13.534Z",
-      "updatedAt": "2026-05-15T05:08:56.206Z"
-    },
-    {
-      "id": 23,
-      "title": "Visual regression tests for presenter layouts",
-      "description": "Add Playwright screenshot-based visual regression tests that capture the presenter view for each of the 9 alignment grid cells and for green screen mode, locking pixel-level layout so future style changes do not silently break broadcast-critical output positioning.",
-      "status": "done",
-      "devIterations": 1,
-      "createdAt": "2026-04-13T16:47:19.445Z",
-      "updatedAt": "2026-05-15T05:31:12.408Z"
-    },
-    {
-      "id": 29,
-      "title": "Portable zip packager script",
-      "description": "Create scripts/package-portable.sh (or .mjs) that builds a zip containing build/, server/, public/, package.json, pnpm-lock.yaml, and prod node_modules (rebuilt for the runner OS). Name artifacts poster-portable-<os>-<sha>.zip and include a PORTABLE.md with startup instructions.",
-      "status": "done",
-      "devIterations": 1,
-      "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T05:57:00.911Z"
-    },
-    {
-      "id": 30,
-      "title": "PR CI workflow for portable zip",
-      "description": "Add .github/workflows/pr.yml with a matrix across ubuntu-latest, windows-latest, and macos-latest that installs dependencies, runs pnpm rebuild better-sqlite3, builds the Remix app, calls the portable packager script, and uploads each zip as a workflow artifact.",
-      "status": "done",
-      "devIterations": 1,
-      "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T06:01:41.533Z"
-    },
-    {
-      "id": 31,
-      "title": "Electron main process entry point",
-      "description": "Create electron/main.cjs that resolves paths from app.getAppPath()/resourcesPath, finds an ephemeral port, spawns a Node child process running server/index.js, and opens a BrowserWindow pointing at http://127.0.0.1:<port>/ with contextIsolation: true and nodeIntegration: false.",
-      "status": "done",
-      "devIterations": 1,
-      "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T06:08:24.628Z"
-    },
-    {
-      "id": 32,
-      "title": "electron-builder config for per-OS installers",
-      "description": "Add electron-builder configuration (package.json or electron-builder.yml) targeting DMG for macOS, NSIS .exe for Windows, and .deb and/or AppImage for Linux. Set npmRebuild: true, include the Remix build and server directories in the package, and align artifactName with semver from package.json.",
-      "status": "done",
-      "devIterations": 1,
-      "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T14:53:01.318Z"
-    },
-    {
-      "id": 33,
-      "title": "PR CI matrix for Electron installers",
-      "description": "Extend GitHub Actions for pull_request so electron-builder runs on ubuntu-latest, windows-latest, and macos-latest jobs that install with pnpm --frozen-lockfile, rebuild better-sqlite3, build Remix, produce per-OS installers (DMG on macOS, NSIS exe on Windows, deb and AppImage targets on Linux as configured), and upload all outputs with distinguishable artifact names.",
-      "status": "done",
-      "devIterations": 1,
-      "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T15:10:00.586Z"
-    },
-    {
-      "id": 34,
-      "title": "Release workflow for GitHub Release assets",
-      "description": "Add a tag-driven GitHub Actions workflow (e.g. on semver v*.*.* pushes) that repeats portable zip packaging and per-OS Electron installer builds like the PR pipeline, then uploads every produced artifact to the GitHub Release for that tag using a supported release-assets action, with contents write permission and filenames that include the tag or package version.",
-      "status": "done",
-      "devIterations": 1,
-      "createdAt": "2026-05-15T03:48:04.797Z",
-      "updatedAt": "2026-05-15T15:13:04.214Z"
-    },
-    {
-      "id": 35,
-      "title": "Document packaging, CI, and releases",
-      "description": "Extend README (and optionally sync docs/epics/epic-002-theme-install-reorg.plan.md frontmatter todos) so operators know how to run portable packaging locally, produce Electron installers, locate PR workflow artifacts, and trigger semver-tag release uploads.",
-      "status": "done",
-      "devIterations": 1,
-      "createdAt": "2026-05-15T15:10:36.965Z",
-      "updatedAt": "2026-05-15T15:16:17.778Z"
-    },
-    {
-      "id": 36,
-      "title": "Remix E2E for library backup and restore",
-      "description": "Move or duplicate the backup/restore Playwright coverage so it runs under the Remix config (remix dev, baseURL on the Remix port), navigates to `/` where `LibraryPanel` is mounted, and drops reliance on removed `#toggle-library` on `/deck`. Keep or extend route mocks so list/save/open/delete/backup/restore behave like existing remix specs; ensure `pnpm run test:e2e:remix` passes including all scenarios.",
-      "status": "done",
-      "devIterations": 1,
-      "createdAt": "2026-05-15T15:16:55.462Z",
-      "updatedAt": "2026-05-15T15:22:10.433Z"
-    },
-    {
-      "id": 37,
-      "title": "Run Remix Playwright suite in PR CI",
-      "description": "Add a GitHub Actions job (or extend an existing workflow) that installs Playwright browsers, runs `pnpm run test:e2e:remix` with frozen lockfile, and fails the workflow on test failure so backup/restore and other Remix-only specs stay green after merges.",
-      "status": "done",
-      "devIterations": 1,
-      "createdAt": "2026-05-15T15:16:55.462Z",
-      "updatedAt": "2026-05-15T15:24:03.448Z"
-    },
-    {
-      "id": 38,
-      "title": "Add root requirements.md for acceptance",
-      "description": "Create `requirements.md` at the repo root summarizing product acceptance aligned with `ralph/epic.md`, canonical epic plans under `docs/epics/`, and operator behavior documented in `README.md`, so future task loops have a single requirements entry point.",
-      "status": "done",
-      "devIterations": 1,
-      "createdAt": "2026-05-15T15:16:55.462Z",
-      "updatedAt": "2026-05-15T15:48:10.984Z"
+      "title": "Acceptance documentation sync",
+      "description": "Update the canonical product and epic docs to match shipped behavior and keep the acceptance checklist aligned with runtime and packaging changes.",
+      "status": "backlog",
+      "devIterations": 0,
+      "createdAt": "2026-09-06T19:42:03.828Z",
+      "updatedAt": "2026-09-06T19:42:03.828Z"
     }
   ],
-  "currentTaskNum": 38,
+  "currentTaskNum": 1,
   "totalLLMCalls": 2,
-  "maxLLMCalls": 500,
+  "maxLLMCalls": 400,
   "nextTask": {
-    "taskId": null,
-    "content": "",
-    "updatedAt": "2026-05-15T15:49:45.088Z"
+    "taskId": 1,
+    "content": "## Task: Session child cleanup\n\nUnregister closed Present windows from the deck session graph and exclude them from directed sends so the UI and program state stay consistent.",
+    "updatedAt": "2026-09-06T19:56:36.730Z"
   },
   "feedback": {
-    "taskId": null,
-    "content": "",
-    "updatedAt": "2026-05-15T15:49:45.088Z"
+    "taskId": 1,
+    "content": "<status>verified</status>\nReviewed the session child cleanup implementation and validated the focused regression tests for closed Present window removal and directed-send exclusion.",
+    "updatedAt": "2026-09-06T19:59:11.372Z"
   },
-  "lastUpdated": "2026-05-15T15:49:45.088Z"
+  "lastUpdated": "2026-09-06T19:59:11.384Z"
 }

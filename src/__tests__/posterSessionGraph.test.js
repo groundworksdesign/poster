@@ -128,6 +128,31 @@ describe('PosterSessionGraph', () => {
     expect(spawn2.presentId).not.toBe(spawn1.presentId);
   });
 
+  test('window-close unregister removes the child and notifies the deck once', () => {
+    const deckPeer = 'deck-a';
+    const reg = graph.registerDeck(deckPeer, makeDeliver(deckPeer));
+    const spawn = graph.handleDeckCommand(deckPeer, { type: 'spawn' });
+    graph.handlePresentEvent(
+      'present-a1',
+      { type: 'ready', sessionId: reg.sessionId, presentId: spawn.presentId },
+      makeDeliver('present-a1'),
+    );
+
+    graph.handlePresentEvent('present-a1', { type: 'closed' }, makeDeliver('present-a1'));
+
+    const listed = graph.handleDeckCommand(deckPeer, { type: 'list' });
+    expect(listed.presents).not.toContain(spawn.presentId);
+    expect(
+      (deliveries.get(deckPeer) || []).filter(
+        (m) => m.channel === 'poster:deck-event' && m.payload.type === 'child-closed',
+      ),
+    ).toHaveLength(1);
+
+    const payload = { slide: { title: 'no stale sends' } };
+    graph.handleDeckCommand(deckPeer, { type: 'send', payload, target: 'all' });
+    expect(payloadsFor('present-a1')).not.toContain(payload);
+  });
+
   test('program-state present-event forwards thumbnail only to owning deck', () => {
     const a = registerDeckWithPresents('deck-a', ['present-a1']);
     registerDeckWithPresents('deck-b', ['present-b1']);
