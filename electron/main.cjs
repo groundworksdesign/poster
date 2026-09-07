@@ -1,6 +1,6 @@
 'use strict';
 
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const { spawn } = require('child_process');
 const fs = require('fs');
 const net = require('net');
@@ -21,6 +21,25 @@ ipcMain.on('poster:read-theme-sync', (event) => {
 ipcMain.handle('poster:read-theme', () => readThemePrefs());
 
 ipcMain.handle('poster:set-theme', (_event, theme) => writeThemePrefs(theme));
+
+// Native folder picker so Home "Change..." can re-point the library root in
+// packaged Electron (renderers do not support window.prompt). Returns the
+// chosen directory path, or null when the operator cancels.
+ipcMain.handle('poster:pick-library-folder', async (event) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  const options = {
+    title: 'Choose library folder',
+    properties: ['openDirectory', 'createDirectory'],
+    defaultPath: process.env.POSTER_LIBRARY_PATH || undefined,
+  };
+  const result = win
+    ? await dialog.showOpenDialog(win, options)
+    : await dialog.showOpenDialog(options);
+  if (result.canceled || !result.filePaths || result.filePaths.length === 0) {
+    return null;
+  }
+  return result.filePaths[0];
+});
 
 const sessionIpc = registerSessionIpc();
 

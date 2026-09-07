@@ -208,7 +208,7 @@ Authoritative suite map: [`next-cycle-test-harness.md`](./next-cycle-test-harnes
 
 - [x] Roy explicit **go** before implementation (given 2026-09-06).
 - [x] Items A–E acceptance met on shipped build (tasks 1–6 closed).
-- [x] All suites in the map exist and are green in CI (unit + integration + Remix smoke + Electron relaunch smoke; harness reports 38 jest suites / 226 tests and 52 Remix smoke green locally).
+- [x] All suites in the map exist and are green in CI (unit + integration + Remix smoke + Electron relaunch smoke; harness reports 38 jest suites / 229 tests and 52 Remix smoke green locally, 8 Electron packaged smoke).
 - [x] Harness “would-have-caught” rows mapped to real test names in [`next-cycle-test-harness.md`](./next-cycle-test-harness.md).
 - [x] **Jack confirm (merge gate):** harness signed off.
 - [x] Packaged/Electron smoke evidence collected for End blank, close-list cleanup, theme relaunch, library default `~/.poster` + re-point leave-old, and Home no-Open-Present (`ralph/qa-report.md`) — task 9.

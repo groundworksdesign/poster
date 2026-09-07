@@ -130,3 +130,71 @@ test('choosing a theme on Home persists for later reopen', async () => {
   expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe('tokyo-night');
   expect(document.documentElement.dataset.theme).toBe('tokyo-night');
 });
+
+describe('Home Change... library root', () => {
+  const settingsOk = (libraryRoot: string) =>
+    Promise.resolve({
+      ok: true,
+      json: async () => ({ libraryRoot }),
+    } as Response);
+
+  const fetchWithSettingsPost = (chosenRoot: string) => {
+    return jest.fn((input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+      const url = String(input);
+      if (url.includes('/library/settings') && init && init.method === 'POST') {
+        return settingsOk(chosenRoot);
+      }
+      if (url.includes('/library/settings')) {
+        return Promise.resolve({ ok: true, json: async () => ({}) } as Response);
+      }
+      return Promise.resolve({ ok: true, json: async () => [] } as Response);
+    });
+  };
+
+  beforeEach(() => {
+    delete (window as typeof window & { poster?: unknown }).poster;
+  });
+
+  afterEach(() => {
+    delete (window as typeof window & { poster?: unknown }).poster;
+  });
+
+  test('uses the native folder picker when window.poster is present (not window.prompt)', async () => {
+    const pickLibraryFolder = jest.fn().mockResolvedValue('/picked/library');
+    const togglePoster = (window as {
+      poster?: { pickLibraryFolder: jest.Mock };
+    });
+    togglePoster.poster = { pickLibraryFolder };
+    const promptSpy = jest.spyOn(window, 'prompt').mockReturnValue(null);
+    jest.spyOn(global, 'fetch').mockImplementation(fetchWithSettingsPost('/picked/library'));
+
+    render(<HomePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /change/i })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: /change/i }));
+
+    await waitFor(() => expect(pickLibraryFolder).toHaveBeenCalledTimes(1));
+    expect(promptSpy).not.toHaveBeenCalled();
+    await waitFor(() =>
+      expect(screen.getByText(/\/picked\/library/)).toBeInTheDocument(),
+    );
+    promptSpy.mockRestore();
+  });
+
+  test('falls back to window.prompt when window.poster is absent (browser)', async () => {
+    const promptSpy = jest
+      .spyOn(window, 'prompt')
+      .mockReturnValue('/typed/library');
+    jest.spyOn(global, 'fetch').mockImplementation(fetchWithSettingsPost('/typed/library'));
+
+    render(<HomePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /change/i })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: /change/i }));
+
+    await waitFor(() => expect(promptSpy).toHaveBeenCalledTimes(1));
+    expect(promptSpy).toHaveBeenCalledWith('Library folder', expect.any(String));
+    await waitFor(() =>
+      expect(screen.getByText(/\/typed\/library/)).toBeInTheDocument(),
+    );
+    promptSpy.mockRestore();
+  });
+});

@@ -35,6 +35,7 @@ declare global {
       presentEvent: (event: PresentEvent) => void;
       onDeckEvent: (handler: (payload: DeckEvent) => void) => () => void;
       onPresentPush: (handler: (payload: unknown) => void) => () => void;
+      pickLibraryFolder: () => Promise<string | null>;
     };
   }
 }

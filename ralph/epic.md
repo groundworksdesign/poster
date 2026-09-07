@@ -2,7 +2,7 @@
 name: Next-cycle Present/deck fixes + durable library
 epic: epic-005
 status: in_progress
-overview: "Epic-005 items 1–7 are shipped (product fixes + regression harness). Remaining: packaged/Electron acceptance evidence only. Do not reimplement directed-send, epic-004, or Items A–E."
+overview: "Epic-005 is fully shipped: items 1–9 (product fixes, regression harness, docs sync, packaged/Electron acceptance evidence) plus the Electron Home Change... re-point fix and its guard. Packaged acceptance is marked shipped; no canonical doc claims the re-point control is broken. Do not reimplement directed-send, epic-004, or Items A–E."
 todos:
   - id: present-close-list
     content: Closing Present removes it from the deck child list.
@@ -30,24 +30,24 @@ todos:
     status: done
   - id: packaged-acceptance
     content: Packaged/Electron smoke evidence for key flows.
-    status: pending
+    status: done
+  - id: change-repoint-fix
+    content: Electron Home Change... re-point works (native folder picker bridge, not window.prompt).
+    status: done
 isProject: false
 ---
 
-# Epic-005 remaining work (re-anchored)
+# Epic-005 complete (re-anchored)
 
 **Repo:** `/Users/hpractv/ralph-runs/poster` only. Never implement in `izep/ralph-gui`.
 
-## Already done (do not redo)
+## All shipped (do not redo)
 
-Tasks 1–7 shipped: Present close list cleanup, End blank, on-program thumbnail, theme persist, `~/.poster` library, Home Open Present guard, complete regression harness (unit/integration + Remix/Electron smoke, wired into PR CI).
+Tasks 1–9 complete: Present close list cleanup, End blank, on-program thumbnail, theme persist, `~/.poster` library (default + migrate + re-point leave-old), Home Open Present guard, complete regression harness (unit/integration + Remix/Electron smoke wired into PR CI), acceptance docs sync, and packaged/Electron acceptance evidence in `ralph/qa-report.md`.
 
-## Remaining backlog only
-
-9. Validate packaged acceptance flows (Electron / packaged smoke + evidence in `ralph/qa-report.md`)
+Additionally, the Electron Home **Change...** re-point control is fixed: it uses a native folder-picker IPC bridge (`poster:pick-library-folder` via `dialog.showOpenDialog`) when `window.poster` is present, with the browser `window.prompt` fallback otherwise. The prior packaged-only `window.prompt` finding (QA finding 2) is closed; re-point is no longer broken on any surface.
 
 ## Hard rules for planning
 
-- Do **not** emit tasks to port directed-send / rebuild session graph / re-do Items A–E product features or the harness.
-- If planning runs, output only remaining unfinished work among 8–9 (or mark complete when packaged acceptance lands).
-- Preserve existing task ids 1–9; never invent a parallel duplicate epic.
+- Do **not** emit tasks to port directed-send / rebuild session graph / re-do Items A–E product features, the harness, or the docs sync.
+- If planning runs, output no new work: the epic is shipped. Never invent a parallel duplicate epic or overwrite task ids 1–12.

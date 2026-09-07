@@ -55,7 +55,18 @@ export default function HomePage() {
   }, []);
 
   const changeLibraryRoot = async () => {
-    const next = window.prompt('Library folder', libraryRoot ?? '');
+    let next: string | null = null;
+    const bridge = (window as typeof window & { poster?: unknown }).poster;
+    const picker = bridge as { pickLibraryFolder?: () => Promise<string | null> } | undefined;
+    if (picker && typeof picker.pickLibraryFolder === 'function') {
+      try {
+        next = await picker.pickLibraryFolder();
+      } catch {
+        next = null;
+      }
+    } else {
+      next = window.prompt('Library folder', libraryRoot ?? '');
+    }
     if (!next || next === libraryRoot) return;
     const response = await fetch(remixDataUrl('/library/settings', REMIX_ROUTE_ID.librarySettings), {
       method: 'POST',

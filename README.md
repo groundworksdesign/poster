@@ -68,7 +68,7 @@ The in-app home page (`/`) includes the same overview and links to open the deck
 
 ### SQLite library storage
 
-The app stores its durable data under **`~/.poster`** by default (override the durable home with **`POSTER_HOME`**, the active library root with **`POSTER_LIBRARY_PATH`**, or an individual store file with **`POSTER_DB_PATH`** / `POSTER_LIBRARY_JSON_PATH`). The Home page's **Change...** control re-points the library to another folder (persisted in `library-settings.json`) and leaves the previous folder untouched. A legacy `poster.sqlite` or `poster.library.json` in the process working directory is copied to the durable library once when the durable library is first initialized (a marker under the home prevents re-runs); the source is never deleted.
+The app stores its durable data under **`~/.poster`** by default (override the durable home with **`POSTER_HOME`**, the active library root with **`POSTER_LIBRARY_PATH`**, or an individual store file with **`POSTER_DB_PATH`** / `POSTER_LIBRARY_JSON_PATH`). The Home page's **Change...** control re-points the library to another folder (persisted in `library-settings.json`) and leaves the previous folder untouched. In the packaged Electron app the control uses a native folder picker; in a plain browser it prompts for the path. A legacy `poster.sqlite` or `poster.library.json` in the process working directory is copied to the durable library once when the durable library is first initialized (a marker under the home prevents re-runs); the source is never deleted.
 
 The selected **theme** also persists in the same durable home at **`~/.poster/theme.json`** and is restored for Home, deck, and Present windows across a full quit and relaunch.
 
@@ -89,7 +89,7 @@ pnpm run rebuild:sqlite
 | `pnpm test` | Jest tests (interactive watch by default) |
 | `pnpm run test:e2e` | Playwright end-to-end tests (see `playwright.config.ts`) |
 | `pnpm run test:e2e:remix` | Playwright against Remix dev (`playwright.remix.config.ts`) — unit/smoke for Present, theme, thumbnail, library |
-| `pnpm run test:e2e:electron` | Playwright Electron smoke (`playwright.electron.config.ts`) — quit/relaunch theme persistence |
+| `pnpm run test:e2e:electron` | Playwright Electron smoke (`playwright.electron.config.ts`) — packaged app at the real `electron/main.cjs`: End blank, Present close-list cleanup, library default `~/.poster` + re-point leave-old, Home guard, theme relaunch |
 | `pnpm run build` | CRA production build to `build/` |
 | `pnpm run build:remix` | Remix production build |
 | `pnpm run package:portable` | Zip a **portable** server bundle to `dist/` (requires `build/`; see below) |
