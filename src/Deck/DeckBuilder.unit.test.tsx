@@ -88,6 +88,9 @@ test('DeckBuilder places the on-program preview in Presentation controls', async
 
   const controls = await screen.findByTestId('presentation-controls');
   expect(controls).toContainElement(screen.getByTestId('program-thumbnail'));
+  expect(screen.getByText('Deck metadata').closest('div')).not.toContainElement(
+    screen.getByTestId('program-thumbnail'),
+  );
 });
 
 test('Open Present opens about:blank before spawn so the click gesture is kept', async () => {

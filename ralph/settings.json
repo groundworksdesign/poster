@@ -1,14 +1,14 @@
 {
   "maxLLMCalls": 400,
-  "planModel": "auto",
-  "devModel": "auto",
-  "qaModel": "auto",
+  "planModel": "opencode/big-pickle",
+  "devModel": "opencode/big-pickle",
+  "qaModel": "opencode/mimo-v2.5-free",
   "devReasoningEffort": "",
   "qaReasoningEffort": "",
   "autoCommit": true,
-  "planFrequency": 1,
-  "minBacklogSize": 3,
-  "agentBackend": "copilot",
+  "planFrequency": 50,
+  "minBacklogSize": 1,
+  "agentBackend": "opencode",
   "fleetMode": false,
   "useDocker": false,
   "dockerComposeFile": "",
@@ -33,9 +33,14 @@
       "planModel": "claude-4.6-sonnet-medium",
       "devModel": "gpt-5-mini",
       "qaModel": "gpt-5-mini"
+    },
+    "opencode": {
+      "planModel": "opencode/big-pickle",
+      "devModel": "opencode/big-pickle",
+      "qaModel": "opencode/mimo-v2.5-free"
     }
   },
-  "agentIdleTimeoutMinutes": 10,
+  "agentIdleTimeoutMinutes": 0,
   "agentTimeoutMinutes": 0,
   "agentMaxConsecutiveRepeats": 10
 }

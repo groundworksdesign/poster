@@ -1,25 +1,18 @@
-import Database from 'better-sqlite3';
 import { initSchema } from '../../app/utils/schema.server';
 import { upsertPresentationWithDb } from '../../app/utils/library.server';
+import {
+  createInMemorySqliteDb,
+  sqliteDriversAvailable,
+  type SqliteTestDb,
+} from './sqliteTestDb';
 
-function makeDb() {
-  const db = new Database(':memory:');
-  db.pragma('foreign_keys = ON');
+function makeDb(): SqliteTestDb {
+  const db = createInMemorySqliteDb();
   initSchema(db);
   return db;
 }
 
-function sqliteBindingsAvailable(): boolean {
-  try {
-    const d = new Database(':memory:');
-    d.close();
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-const describeSqlite = sqliteBindingsAvailable() ? describe : describe.skip;
+const describeSqlite = sqliteDriversAvailable() ? describe : describe.skip;
 
 const baseDeck = {
   title: 'Sunday Service',
@@ -32,7 +25,7 @@ const baseDeck = {
 };
 
 describeSqlite('upsertPresentationWithDb', () => {
-  let db: any;
+  let db: SqliteTestDb;
 
   beforeEach(() => {
     db = makeDb();

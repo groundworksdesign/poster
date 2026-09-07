@@ -38,17 +38,15 @@ test('Home lists Open Presentation targeting /deck (not bare /presentation)', ()
   const openPresentation = screen.getByTestId('open-presentation');
   expect(openPresentation).toHaveAttribute('href', '/deck');
   expect(openPresentation).toHaveTextContent(/Open Presentation/i);
+  expect(screen.queryByRole('link', { name: /^open present$/i })).not.toBeInTheDocument();
   expect(
     screen.queryByRole('link', { name: /open presentation \(new window\)/i }),
   ).not.toBeInTheDocument();
-  const barePresent = screen.queryAllByRole('link').filter((a) => {
-    const href = a.getAttribute('href') || '';
-    return (
-      href === '/presentation' ||
-      (href.startsWith('/presentation?') && !href.includes('sessionId'))
-    );
-  });
-  expect(barePresent).toHaveLength(0);
+  const workflowHrefs = screen
+    .queryAllByRole('link')
+    .map((link) => link.getAttribute('href') || '')
+    .filter((href) => href.startsWith('/deck') || href.startsWith('/presentation'));
+  expect(workflowHrefs).toEqual(['/deck', '/deck', '/deck?focusImport=1']);
 });
 
 test('Open Presentation opens a deck window and leaves Home put', () => {
@@ -71,26 +69,37 @@ test('Open Presentation opens a deck window and leaves Home put', () => {
 });
 
 test('REQ-007: library save notification refreshes Home list in place without reload', async () => {
-  const fetchMock = jest
-    .fn()
-    .mockResolvedValueOnce({ ok: true, json: async () => [] } as Response)
-    .mockResolvedValueOnce({
+  let libraryFetchCount = 0;
+  const fetchMock = jest.fn((input: RequestInfo | URL): Promise<Response> => {
+    const url = String(input);
+    if (url.includes('/library/settings')) {
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({ libraryRoot: '/tmp/poster' }),
+      } as Response);
+    }
+    libraryFetchCount += 1;
+    return Promise.resolve({
       ok: true,
-      json: async () => [
-        {
-          id: 'saved-1',
-          title: 'Saved deck',
-          date: '2026-01-01',
-          location: 'Hall',
-          created_at: '2026-01-01T00:00:00Z',
-        },
-      ],
+      json: async () =>
+        libraryFetchCount === 1
+          ? []
+          : [
+              {
+                id: 'saved-1',
+                title: 'Saved deck',
+                date: '2026-01-01',
+                location: 'Hall',
+                created_at: '2026-01-01T00:00:00Z',
+              },
+            ],
     } as Response);
+  });
   jest.spyOn(global, 'fetch').mockImplementation(fetchMock);
 
   render(<HomePage />);
   await waitFor(() => expect(screen.getByTestId('library-empty')).toBeInTheDocument());
-  expect(fetchMock).toHaveBeenCalledTimes(1);
+  expect(libraryFetchCount).toBe(1);
 
   act(() => {
     notifyLibraryChanged();
@@ -98,7 +107,7 @@ test('REQ-007: library save notification refreshes Home list in place without re
 
   await waitFor(() => expect(screen.getByTestId('library-entry')).toBeInTheDocument());
   expect(screen.getByText('Saved deck')).toBeInTheDocument();
-  expect(fetchMock).toHaveBeenCalledTimes(2);
+  expect(libraryFetchCount).toBe(2);
 });
 
 test('Home theme dropdown restores after remount (restart / Home reopen)', async () => {

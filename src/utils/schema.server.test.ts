@@ -1,24 +1,17 @@
-import Database from 'better-sqlite3';
 import { initSchema } from '../../app/utils/schema.server';
+import {
+  createInMemorySqliteDb,
+  sqliteDriversAvailable,
+  type SqliteTestDb,
+} from './sqliteTestDb';
 
-function sqliteBindingsAvailable(): boolean {
-  try {
-    const d = new Database(':memory:');
-    d.close();
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-const describeSqlite = sqliteBindingsAvailable() ? describe : describe.skip;
+const describeSqlite = sqliteDriversAvailable() ? describe : describe.skip;
 
 describeSqlite('initSchema', () => {
-  let db: InstanceType<typeof Database>;
+  let db: SqliteTestDb;
 
   beforeEach(() => {
-    db = new Database(':memory:');
-    db.pragma('foreign_keys = ON');
+    db = createInMemorySqliteDb();
   });
 
   afterEach(() => {

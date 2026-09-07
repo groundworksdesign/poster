@@ -14,7 +14,6 @@ test('deck shows program thumbnail after Present receives a send', async ({ brow
   const deckPage = await context.newPage();
   await deckPage.goto(`${base}/deck`, { waitUntil: 'domcontentloaded' });
 
-  await expect(deckPage.getByTestId('program-thumbnail-empty')).toBeVisible();
   await expect(deckPage.getByTestId('deck-session-ready')).toHaveAttribute('data-ready', 'true', {
     timeout: 15000,
   });
@@ -66,6 +65,7 @@ test('deck shows program thumbnail after Present receives a send', async ({ brow
   if (await skip.isVisible().catch(() => false)) {
     await skip.click();
   }
+  await expect(deckPage.getByTestId('program-thumbnail-empty')).toBeVisible();
   await deckPage.click('#slides button:has-text("Send")');
 
   await expect(presentation.getByText('On Program Now')).toBeVisible({ timeout: 10000 });

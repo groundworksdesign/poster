@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import LibraryPanel from './Deck/LibraryPanel';
 import { THEMES, useTheme, type ThemeId } from './utils/useTheme';
 import { subscribeLibraryChanged } from './utils/libraryRefresh';
+import { remixDataUrl, REMIX_ROUTE_ID } from './utils/remixDataUrl';
 
 const POPUP_FEATURES =
   'width=1280,height=720,menubar=no,toolbar=no,location=no,status=no,scrollbars=yes,resizable=yes';
@@ -40,10 +41,35 @@ function openDeckWindow(e: React.MouseEvent<HTMLAnchorElement>) {
 export default function HomePage() {
   const [theme, setTheme] = useTheme();
   const [libraryRefreshKey, setLibraryRefreshKey] = useState(0);
+  const [libraryRoot, setLibraryRoot] = useState<string | null>(null);
 
   useEffect(() => {
     return subscribeLibraryChanged(() => setLibraryRefreshKey((k) => k + 1));
   }, []);
+
+  useEffect(() => {
+    fetch(remixDataUrl('/library/settings', REMIX_ROUTE_ID.librarySettings))
+      .then((response) => response.json() as Promise<{ libraryRoot?: string }>)
+      .then((data) => setLibraryRoot(data.libraryRoot ?? null))
+      .catch(() => setLibraryRoot(null));
+  }, []);
+
+  const changeLibraryRoot = async () => {
+    const next = window.prompt('Library folder', libraryRoot ?? '');
+    if (!next || next === libraryRoot) return;
+    const response = await fetch(remixDataUrl('/library/settings', REMIX_ROUTE_ID.librarySettings), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ libraryRoot: next }),
+    });
+    const data = await response.json() as { libraryRoot?: string; error?: string };
+    if (!response.ok || !data.libraryRoot) {
+      window.alert(data.error ?? 'Unable to change library folder.');
+      return;
+    }
+    setLibraryRoot(data.libraryRoot);
+    setLibraryRefreshKey((k) => k + 1);
+  };
 
   const handleOpenFromLibrary = (id: string) => {
     const url = `${window.location.origin}/deck?open=${encodeURIComponent(id)}`;
@@ -74,6 +100,10 @@ export default function HomePage() {
             ))}
           </select>
         </label>
+      </div>
+      <div className="home-page-library-settings">
+        <span>Library folder: {libraryRoot ?? 'Loading...'}</span>{' '}
+        <button type="button" onClick={changeLibraryRoot}>Change...</button>
       </div>
 
       <p className="home-page-lead">

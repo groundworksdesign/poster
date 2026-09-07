@@ -12,6 +12,41 @@ permissions:
 
 jobs:
   # ---------------------------------------------------------------------------
+  # Jest unit and integration coverage
+  # ---------------------------------------------------------------------------
+  unit-integration:
+    name: Unit and integration tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Rebuild better-sqlite3 for runner OS
+        run: pnpm rebuild better-sqlite3
+
+      - name: Type-check
+        run: pnpm exec tsc --noEmit
+
+      - name: Run unit and integration tests
+        run: pnpm exec react-scripts test --watchAll=false --runInBand
+
+  # ---------------------------------------------------------------------------
   # Remix Playwright E2E (Chromium; remix dev webServer)
   # ---------------------------------------------------------------------------
   remix-e2e:
@@ -40,11 +75,52 @@ jobs:
       - name: Rebuild better-sqlite3 for runner OS
         run: pnpm rebuild better-sqlite3
 
+      - name: Build Remix app for process relaunch smoke
+        run: pnpm run build:remix
+
       - name: Install Playwright Chromium (+ system deps)
         run: pnpm exec playwright install --with-deps chromium
 
       - name: Run Remix E2E
         run: pnpm run test:e2e:remix
+
+  # ---------------------------------------------------------------------------
+  # Electron smoke (full process relaunch and durable theme preferences)
+  # ---------------------------------------------------------------------------
+  electron-smoke:
+    name: Electron durable theme smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Rebuild better-sqlite3 for runner OS
+        run: pnpm rebuild better-sqlite3
+
+      - name: Build Remix app
+        run: pnpm run build:remix
+
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run Electron relaunch smoke
+        run: xvfb-run -a pnpm run test:e2e:electron
 
   # ---------------------------------------------------------------------------
   # Resolve PR pre-release tag (vX.Y.Z-pr.<PR_NUMBER>) and ensure GitHub Release

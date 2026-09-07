@@ -14,13 +14,14 @@ test.describe('Electron durable theme persistence', () => {
     const launch = async (userDataDir: string) =>
       electron.launch({
         executablePath: electronPath,
-        args: [root, `--user-data-dir=${userDataDir}`],
+        args: [`--user-data-dir=${userDataDir}`, root],
         env: { ...process.env, HOME: posterHome, POSTER_HOME: path.join(posterHome, '.poster') },
       });
 
     try {
       const first = await launch(path.join(sandbox, 'user-data-1'));
       const firstWindow = await first.firstWindow();
+      await firstWindow.waitForLoadState('domcontentloaded');
       await firstWindow.getByLabel('Select theme').selectOption('dracula');
       await expect.poll(() => fs.existsSync(path.join(posterHome, '.poster', 'theme.json'))).toBe(true);
       await expect(firstWindow.getByLabel('Select theme')).toHaveValue('dracula');

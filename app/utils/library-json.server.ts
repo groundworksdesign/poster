@@ -1,10 +1,13 @@
 import fs from 'fs';
 import path from 'path';
 import type { Deck } from '../../src/Present/PresentTypes';
+import { libraryPaths } from './library-root.server';
 
-export const jsonLibraryPath = process.env.POSTER_LIBRARY_JSON_PATH
-  ? process.env.POSTER_LIBRARY_JSON_PATH
-  : path.join(process.cwd(), 'poster.library.json');
+export let jsonLibraryPath = libraryPaths().json;
+
+export function setLibraryJsonPath(root: string): void {
+  jsonLibraryPath = path.join(root, 'poster.library.json');
+}
 
 export type LibraryListEntry = {
   id: string;

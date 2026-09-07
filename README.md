@@ -62,11 +62,11 @@ The in-app home page (`/`) includes the same overview and links to open the deck
 
 ### SQLite library storage
 
-The app stores the local library in **`poster.sqlite`** next to the process working directory (override with **`POSTER_DB_PATH`**).
+The app stores the local library in **`~/.poster`** by default (override with **`POSTER_DB_PATH`**). The Home page's **Change...** control re-points the library to another folder and leaves the previous folder untouched. A legacy `poster.sqlite` or `poster.library.json` in the process working directory is copied to `~/.poster` once when the durable library is first initialized; the source is never deleted.
 
 1. **`better-sqlite3`** is used when the native addon loads (typical on Node LTS with a successful `pnpm rebuild better-sqlite3`).
 2. If that fails (for example Node 24+ before a matching prebuild), the server automatically uses Node’s built-in **`node:sqlite`** (`DatabaseSync`) so the same `poster.sqlite` file still works—no extra install (startup stays quiet; set **`POSTER_SQLITE_LOG_BACKEND=1`** to log which driver was chosen).
-3. If both fail, the app falls back to **`poster.library.json`**.
+3. If both fail, the app falls back to **`poster.library.json`** in the active library folder.
 
 To prefer rebuilding the native module on supported Node versions:
 

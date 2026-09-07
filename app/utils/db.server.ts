@@ -2,10 +2,11 @@ import fs from 'fs';
 import path from 'path';
 import type { Database as BetterSqliteDatabase } from 'better-sqlite3';
 import { initSchema } from './schema.server';
+import { libraryPaths, migrateLegacyLibrary } from './library-root.server';
 
-export const dbPath = process.env.POSTER_DB_PATH
-  ? process.env.POSTER_DB_PATH
-  : path.join(process.cwd(), 'poster.sqlite');
+let currentDbPath = libraryPaths().db;
+migrateLegacyLibrary(path.dirname(currentDbPath));
+export let dbPath = currentDbPath;
 
 /** Runtime DB handle: native better-sqlite3 or Node built-in `node:sqlite`. */
 export type SqliteDatabaseHandle = BetterSqliteDatabase | import('node:sqlite').DatabaseSync;
@@ -17,6 +18,17 @@ function openDbWithBetterSqlite3(filePath: string): BetterSqliteDatabase {
   database.pragma('foreign_keys = ON');
   initSchema(database);
   return database;
+}
+
+/** Loads `node:sqlite` via getBuiltinModule when available (also satisfies Jest's resolver), else require. */
+function loadNodeSqlite(): typeof import('node:sqlite') {
+  const getBuiltinModule = (process as unknown as { getBuiltinModule?: (id: string) => unknown }).getBuiltinModule;
+  const builtin = typeof getBuiltinModule === 'function' ? getBuiltinModule('node:sqlite') : undefined;
+  if (builtin) {
+    return builtin as typeof import('node:sqlite');
+  }
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  return require('node:sqlite') as typeof import('node:sqlite');
 }
 
 /** Suppresses Node's ExperimentalWarning when first loading/using `node:sqlite`. */
@@ -33,7 +45,7 @@ function openNodeSqliteWithoutExperimentalWarning(filePath: string): import('nod
     return (emitWarning as (w: unknown, ...a: unknown[]) => void).apply(process, [warning, ...args]);
   };
   try {
-    const { DatabaseSync } = require('node:sqlite') as typeof import('node:sqlite');
+    const { DatabaseSync } = loadNodeSqlite();
     const database = new DatabaseSync(filePath);
     database.exec('PRAGMA journal_mode = WAL;');
     database.exec('PRAGMA foreign_keys = ON;');
@@ -85,7 +97,7 @@ export function tryGetSqliteDb(): SqliteDatabaseHandle | null {
   if (sqliteLoadFailed) return null;
   if (sqliteDb) return sqliteDb;
   try {
-    sqliteDb = openDb(dbPath);
+    sqliteDb = openDb(currentDbPath);
     return sqliteDb;
   } catch (e) {
     sqliteLoadFailed = true;
@@ -126,7 +138,7 @@ const dbProxy = new Proxy({} as BetterSqliteDatabase, {
  * reopens so subsequent queries go to the restored database.
  */
 export function replaceDb(newFilePath: string): void {
-  const dir = path.dirname(dbPath);
+  const dir = path.dirname(currentDbPath);
   let candidatePath = newFilePath;
   let copiedTempPath: string | null = null;
 
@@ -157,15 +169,16 @@ export function replaceDb(newFilePath: string): void {
       }
     }
 
-    sqliteDb = openDb(dbPath);
+    sqliteDb = openDb(currentDbPath);
   } catch (err) {
     try {
       sqliteLoadFailed = false;
-      sqliteDb = openDb(dbPath);
+      sqliteDb = openDb(currentDbPath);
     } catch {
       sqliteDb = null;
       sqliteLoadFailed = true;
     }
+
     throw err;
   } finally {
     if (copiedTempPath) {
@@ -176,6 +189,18 @@ export function replaceDb(newFilePath: string): void {
       }
     }
   }
+}
+
+export function setLibraryDbPath(root: string): void {
+  try {
+    sqliteDb?.close();
+  } catch {
+    // The next connection will surface any actual open failure.
+  }
+  sqliteDb = null;
+  sqliteLoadFailed = false;
+  currentDbPath = path.join(root, 'poster.sqlite');
+  dbPath = currentDbPath;
 }
 
 export default dbProxy;
