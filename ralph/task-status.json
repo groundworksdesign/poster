@@ -67,10 +67,10 @@
       "id": 8,
       "title": "Synchronize acceptance documentation",
       "description": "In /Users/hpractv/ralph-runs/poster only: update requirements.md, docs/epics/epic-005-next-cycle-fixes.plan.md, README where needed, and ralph/epic.md so acceptance matches shipped 1–6 behavior and remaining harness/packaged work. Do not reopen directed-send architecture work.",
-      "status": "backlog",
-      "devIterations": 0,
+      "status": "done",
+      "devIterations": 2,
       "createdAt": "2026-09-07T03:05:40.294586Z",
-      "updatedAt": "2026-09-07T03:05:40.294586Z"
+      "updatedAt": "2026-09-07T05:16:14.683Z"
     },
     {
       "id": 9,
@@ -82,18 +82,18 @@
       "updatedAt": "2026-09-07T03:05:40.294586Z"
     }
   ],
-  "currentTaskNum": 7,
-  "totalLLMCalls": 1,
+  "currentTaskNum": 8,
+  "totalLLMCalls": 5,
   "maxLLMCalls": 400,
   "nextTask": {
-    "taskId": 7,
-    "content": "## Task: Complete regression test harness\n\nWORK ONLY IN THIS REPO: /Users/hpractv/ralph-runs/poster (groundworksdesign/poster). Do NOT work in izep/ralph-gui. Finish missing unit/integration coverage for Items A–E (End blank, Present close list cleanup, theme persist, on-program thumbnail placement/fidelity, ~/.poster library migrate/re-point/cwd-wipe) plus Home Open Present guard. Wire stable suites into PR CI. Prefer focused jest/react-scripts and Playwright remix specs already under e2e/ and src/__tests__. Do not reimplement directed-send / session graph / epic-004 features that are already done (tasks 1–6).",
-    "updatedAt": "2026-09-07T05:06:20.857Z"
+    "taskId": 8,
+    "content": "## Task: Synchronize acceptance documentation\n\nIn /Users/hpractv/ralph-runs/poster only: update requirements.md, docs/epics/epic-005-next-cycle-fixes.plan.md, README where needed, and ralph/epic.md so acceptance matches shipped 1–6 behavior and remaining harness/packaged work. Do not reopen directed-send architecture work.",
+    "updatedAt": "2026-09-07T05:07:33.150Z"
   },
   "feedback": {
-    "taskId": 7,
-    "content": "Let me read the test harness and the key existing test files in parallel.\nNow let me check the remaining test files referenced by the harness.\nNow let me check the e2e specs and CI workflow.\nI have systematically cross-referenced the test harness (`docs/epics/next-cycle-test-harness.md`) against the actual test files in the repo. Here is the item-by-item verification:\n\n**Item A (End blank):**\n- `src/__tests__/posterSessionGraph.test.js` lines 115-149: \"blank payload is directed only to the selected Present child\" and \"blank payload is replayed when its Present child becomes ready\" -- present\n- `src/Present/applyPresentPayload.test.ts` lines 15-28: blank clears the viewport -- present\n- `e2e/remix-present-end.spec.ts` line 3: \"End blanks Present and Start resumes at the first slide\" -- present\n\n**Item B (Theme persistence):**\n- `src/utils/themePrefs.test.js`: round-trip, fallback, default path -- all present\n- `src/utils/useTheme.unit.test.tsx` lines 58-88: restore after remount, cross-window sync -- present\n- `src/rootThemeBootstrap.test.ts`: applies/ignores pre-paint values -- present\n- `e2e/electron-theme-relaunch.spec.ts`: full process relaunch restore -- present\n- `e2e/remix-theme-persist.spec.ts`: cross-window + new-context restore -- present\n\n**Item C (Close removes stale UUID):**\n- `src/__tests__/posterSessionGraph.test.js` lines 167-253: window-close unregister, idempotent close, explicit close -- all present\n- `src/__tests__/electron-main.regression.test.js`: window lifecycle tests -- present\n- `src/__tests__/homeWindowPolicy.test.js`: present-bare denied -- present\n- `e2e/remix-present-close.spec.ts`: closing Present removes from deck session list -- present\n\n**Item D (Thumbnail fidelity + placement):**\n- `src/Present/programThumbnail.test.ts`: null when nothing on program, song lyric pair, message/green-screen -- present\n- `src/Present/programThumbnail.integration.test.tsx`: blank payload clear, exact program-state reporting -- present\n- `src/Deck/DeckBuilder.unit.test.tsx` line 85: \"places the on-program preview in Presentation controls\" -- present\n- `e2e/remix-program-thumbnail.spec.ts`: thumbnail shows after send -- present\n\n**Item E (Library persistence):**\n- `src/__tests__/library-root.server.test.ts`: HOME/.poster default, migration once (SQLite + JSON + WAL), populated-dest skip, malformed settings fallback, re-point leave-old, rejects file path -- all present\n- `src/__tests__/library-json.server.test.ts`: upsert, update, open, delete -- present\n- `src/integration/library-survive-cwd-wipe.test.ts`: SQLite survives cwd wipe -- present\n- `src/integration/library-json-survive-cwd-wipe.test.ts`: JSON survives cwd wipe -- present\n- `e2e/remix-library-relaunch.spec.ts`: library entries survive server quit+relaunch -- present\n- `e2e/remix-library-repoint.spec.ts`: re-point without moving old folder -- present\n\n**Guard (Home Open Present):**\n- `src/__tests__/homeWindowPolicy.test.js`: present-bare denied -- present\n- `src/__tests__/electron-main.regression.test.js` line 67: never creates second Home -- present\n- `e2e/remix-single-home.spec.ts`: no bare Open Present, Present from deck only, bare /presentation guidance -- present\n\n**CI gates (`.github/workflows/pr.yml`):**\n- `unit-integration` job: `pnpm exec react-scripts test --watchAll=false --runInBand` -- present\n- `remix-e2e` job: `pnpm run test:e2e:remix` -- present\n- `electron-smoke` job: `xvfb-run -a pnpm run test:e2e:electron` -- present\n\nAll harness-specified test files, test names, fixtures, and CI gates are implemented and wired.\n\n<status>verified</status>\n",
-    "updatedAt": "2026-09-07T05:07:32.904Z"
+    "taskId": 8,
+    "content": "<status>verified</status>\n",
+    "updatedAt": "2026-09-07T05:16:14.679Z"
   },
-  "lastUpdated": "2026-09-07T05:07:32.906Z"
+  "lastUpdated": "2026-09-07T05:16:14.683Z"
 }

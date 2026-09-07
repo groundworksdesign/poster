@@ -13384,3 +13384,1203 @@ const { _electron: electron } = require('@playwright/test'); const path=require(
 2026-09-07T05:07:32.823Z [qa/opencode] - `src/Present/programThumbnail.test.ts`: null when nothing on program, song lyric pair, message/green-screen -- present
 2026-09-07T05:07:32.823Z [qa/opencode] - `src/Present/programThumbnail.integration.test.tsx`: blank payload clear, exact program-state reporting -- present
 2026-09-07T05:07:32.823Z [qa/opencode] - `src/Deck/DeckBuilder.unit.test.tsx` line 85: "places the on-program preview in Presentation controls" -- present
+2026-09-07T05:07:32.823Z [qa/opencode] - `e2e/remix-program-thumbnail.spec.ts`: thumbnail shows after send -- present
+2026-09-07T05:07:32.823Z [qa/opencode] **Item E (Library persistence):**
+2026-09-07T05:07:32.823Z [qa/opencode] - `src/__tests__/library-root.server.test.ts`: HOME/.poster default, migration once (SQLite + JSON + WAL), populated-dest skip, malformed settings fallback, re-point leave-old, rejects file path -- all present
+2026-09-07T05:07:32.823Z [qa/opencode] - `src/__tests__/library-json.server.test.ts`: upsert, update, open, delete -- present
+2026-09-07T05:07:32.823Z [qa/opencode] - `src/integration/library-survive-cwd-wipe.test.ts`: SQLite survives cwd wipe -- present
+2026-09-07T05:07:32.823Z [qa/opencode] - `src/integration/library-json-survive-cwd-wipe.test.ts`: JSON survives cwd wipe -- present
+2026-09-07T05:07:32.823Z [qa/opencode] - `e2e/remix-library-relaunch.spec.ts`: library entries survive server quit+relaunch -- present
+2026-09-07T05:07:32.823Z [qa/opencode] - `e2e/remix-library-repoint.spec.ts`: re-point without moving old folder -- present
+2026-09-07T05:07:32.823Z [qa/opencode] **Guard (Home Open Present):**
+2026-09-07T05:07:32.823Z [qa/opencode] - `src/__tests__/homeWindowPolicy.test.js`: present-bare denied -- present
+2026-09-07T05:07:32.823Z [qa/opencode] - `src/__tests__/electron-main.regression.test.js` line 67: never creates second Home -- present
+2026-09-07T05:07:32.823Z [qa/opencode] - `e2e/remix-single-home.spec.ts`: no bare Open Present, Present from deck only, bare /presentation guidance -- present
+2026-09-07T05:07:32.823Z [qa/opencode] **CI gates (`.github/workflows/pr.yml`):**
+2026-09-07T05:07:32.823Z [qa/opencode] - `unit-integration` job: `pnpm exec react-scripts test --watchAll=false --runInBand` -- present
+2026-09-07T05:07:32.823Z [qa/opencode] - `remix-e2e` job: `pnpm run test:e2e:remix` -- present
+2026-09-07T05:07:32.823Z [qa/opencode] - `electron-smoke` job: `xvfb-run -a pnpm run test:e2e:electron` -- present
+2026-09-07T05:07:32.823Z [qa/opencode] All harness-specified test files, test names, fixtures, and CI gates are implemented and wired.
+2026-09-07T05:07:32.823Z [qa/opencode] <status>verified</status>
+2026-09-07T05:07:32.903Z [qa] QA agent finished in 1m 12s
+2026-09-07T05:07:32.907Z Task #7 verified!
+2026-09-07T05:07:33.147Z [ralph] Committed: Task #7 - Complete regression test harness
+2026-09-07T05:07:33.147Z Total LLM calls: 1/400
+2026-09-07T05:07:33.147Z [ralph] Skipping plan phase (2 backlog tasks, plan every 50 tasks)
+2026-09-07T05:07:33.153Z [ralph] Dev iteration #1 for task #8: Synchronize acceptance documentation
+2026-09-07T05:07:33.154Z [dev] Running dev agent...
+2026-09-07T05:07:34.161Z [dev/opencode] (stderr) [0m
+2026-09-07T05:07:34.161Z [dev/opencode] (stderr) > build · big-pickle
+2026-09-07T05:07:34.161Z [dev/opencode] (stderr) [0m
+2026-09-07T05:07:35.959Z [dev/opencode] (stderr) [0m$ [0mls -la /Users/hpractv/ralph-runs/poster/
+2026-09-07T05:07:35.959Z [dev/opencode] (stderr) total 1424
+2026-09-07T05:07:35.959Z [dev/opencode] (stderr) drwxr-xr-x@ 39 hpractv  staff    1248 Sep  6 22:13 .
+2026-09-07T05:07:35.959Z [dev/opencode] (stderr) drwxr-xr-x@ 10 hpractv  staff     320 Sep  6 22:45 ..
+2026-09-07T05:07:35.959Z [dev/opencode] (stderr) drwxr-xr-x@  5 hpractv  staff     160 Sep  6 14:01 .cache
+2026-09-07T05:07:35.959Z [dev/opencode] (stderr) drwxr-xr-x@ 16 hpractv  staff     512 Sep  6 23:07 .git
+2026-09-07T05:07:35.959Z [dev/opencode] (stderr) drwxr-xr-x@  3 hpractv  staff      96 Sep  6 13:32 .github
+2026-09-07T05:07:35.959Z [dev/opencode] (stderr) -rw-r--r--@  1 hpractv  staff     911 Sep  6 13:32 .gitignore
+2026-09-07T05:07:35.959Z [dev/opencode] (stderr) -rw-r--r--@  1 hpractv  staff     332 Sep  6 13:32 .npmrc
+2026-09-07T05:07:35.959Z [dev/opencode] (stderr) drwxr-xr-x@  8 hpractv  staff     256 Sep  6 13:32 .ralph
+2026-09-07T05:07:35.959Z [dev/opencode] (stderr) -rw-r--r--@  1 hpractv  staff    9166 Sep  6 14:50 README.md
+2026-09-07T05:07:35.959Z [dev/opencode] (stderr) drwxr-xr-x@  8 hpractv  staff     256 Sep  6 20:10 app
+2026-09-07T05:07:35.959Z [dev/opencode] (stderr) drwxr-xr-x@ 21 hpractv  staff     672 Sep  6 14:47 build
+2026-09-07T05:07:35.959Z [dev/opencode] (stderr) drwxr-xr-x@  6 hpractv  staff     192 Sep  6 13:32 docs
+2026-09-07T05:07:35.959Z [dev/opencode] (stderr) drwxr-xr-x@ 29 hpractv  staff     928 Sep  6 15:15 e2e
+2026-09-07T05:07:35.959Z [dev/opencode] (stderr) drwxr-xr-x@  7 hpractv  staff     224 Sep  6 14:40 electron
+2026-09-07T05:07:35.959Z [dev/opencode] (stderr) -rw-r--r--@  1 hpractv  staff    2617 Sep  6 13:32 electron-builder.yml
+2026-09-07T05:07:35.959Z [dev/opencode] (stderr) drwxr-xr-x@ 48 hpractv  staff    1536 Sep  6 14:00 node_modules
+2026-09-07T05:07:35.959Z [dev/opencode] (stderr) -rw-r--r--@  1 hpractv  staff    3413 Sep  6 19:54 package.json
+2026-09-07T05:07:35.959Z [dev/opencode] (stderr) -rw-r--r--@  1 hpractv  staff     500 Sep  6 13:32 playwright.config.js
+2026-09-07T05:07:35.959Z [dev/opencode] (stderr) -rw-r--r--@  1 hpractv  staff     951 Sep  6 13:32 playwright.config.ts
+2026-09-07T05:07:35.959Z [dev/opencode] (stderr) -rw-r--r--@  1 hpractv  staff     371 Sep  6 19:54 playwright.electron.config.ts
+2026-09-07T05:07:35.959Z [dev/opencode] (stderr) -rw-r--r--@  1 hpractv  staff     840 Sep  6 13:32 playwright.local.config.ts
+2026-09-07T05:07:35.959Z [dev/opencode] (stderr) -rw-r--r--@  1 hpractv  staff    1109 Sep  6 13:32 playwright.remix.config.ts
+2026-09-07T05:07:35.959Z [dev/opencode] (stderr) -rw-r--r--@  1 hpractv  staff  577537 Sep  6 13:32 pnpm-lock.yaml
+2026-09-07T05:07:35.959Z [dev/opencode] (stderr) -rw-r--r--@  1 hpractv  staff    4096 Sep  6 14:45 poster.sqlite
+2026-09-07T05:07:35.959Z [dev/opencode] (stderr) -rw-r--r--@  1 hpractv  staff   32768 Sep  6 14:48 poster.sqlite-shm
+2026-09-07T05:07:35.959Z [dev/opencode] (stderr) -rw-r--r--@  1 hpractv  staff   37112 Sep  6 14:45 poster.sqlite-wal
+2026-09-07T05:07:35.959Z [dev/opencode] (stderr) drwxr-xr-x@ 14 hpractv  staff     448 Sep  6 14:53 public
+2026-09-07T05:07:35.959Z [dev/opencode] (stderr) drwxr-xr-x@ 18 hpractv  staff     576 Sep  6 13:34 ralph
+2026-09-07T05:07:35.959Z [dev/opencode] (stderr) -rw-r--r--@  1 hpractv  staff     787 Sep  6 13:32 remix.config.js
+2026-09-07T05:07:35.959Z [dev/opencode] (stderr) -rw-r--r--@  1 hpractv  staff    7808 Sep  6 14:38 requirements.md
+2026-09-07T05:07:35.959Z [dev/opencode] (stderr) drwxr-xr-x@ 13 hpractv  staff     416 Sep  6 13:32 scripts
+2026-09-07T05:07:35.959Z [dev/opencode] (stderr) drwxr-xr-x@  4 hpractv  staff     128 Sep  6 13:32 server
+2026-09-07T05:07:35.959Z [dev/opencode] (stderr) drwxr-xr-x@  3 hpractv  staff      96 Sep  6 13:32 shared
+2026-09-07T05:07:35.959Z [dev/opencode] (stderr) drwxr-xr-x@ 24 hpractv  staff     768 Sep  6 14:40 src
+2026-09-07T05:07:35.959Z [dev/opencode] (stderr) drwxr-xr-x@  4 hpractv  staff     128 Sep  6 22:13 test-results
+2026-09-07T05:07:35.959Z [dev/opencode] (stderr) -rw-r--r--@  1 hpractv  staff     562 Sep  6 14:06 tsconfig.json
+2026-09-07T05:07:35.959Z [dev/opencode] (stderr) drwxr-xr-x@  3 hpractv  staff      96 Sep  6 14:05 types
+2026-09-07T05:07:35.959Z [dev/opencode] (stderr) drwxr-xr-x@  3 hpractv  staff      96 Sep  6 13:32 vendor
+2026-09-07T05:07:35.959Z [dev/opencode] (stderr) -rw-r--r--@  1 hpractv  staff     269 Sep  6 13:32 vite.config.ts
+2026-09-07T05:07:35.959Z [dev/opencode] (stderr) [0m
+2026-09-07T05:07:36.095Z [dev/opencode] I'll start by exploring the project structure to understand what's being worked on.
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) [0m$ [0mfind /Users/hpractv/ralph-runs/poster/ -type f -name "*.md" | head -50
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/requirements.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/postcss-import@15.1.0_postcss@8.5.10/node_modules/postcss-import/README.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/coa@2.0.2/node_modules/coa/README.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/coa@2.0.2/node_modules/coa/README.ru.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/performance-now@2.1.0/node_modules/performance-now/README.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/address@1.2.2/node_modules/address/README.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/hast-util-to-estree@2.3.3/node_modules/hast-util-to-estree/readme.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/utf8-byte-length@1.0.5/node_modules/utf8-byte-length/README.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/css-what@6.2.2/node_modules/css-what/readme.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/safe-array-concat@1.1.3/node_modules/safe-array-concat/CHANGELOG.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/safe-array-concat@1.1.3/node_modules/safe-array-concat/README.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/http-proxy-middleware@2.0.9_@types+express@4.17.25/node_modules/http-proxy-middleware/README.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/extract-zip@2.0.1/node_modules/extract-zip/readme.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/form-data@4.0.5/node_modules/form-data/CHANGELOG.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/form-data@4.0.5/node_modules/form-data/README.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/is-extglob@2.1.1/node_modules/is-extglob/README.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/browserslist@4.28.2/node_modules/browserslist/README.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/estree-util-is-identifier-name@1.1.0/node_modules/estree-util-is-identifier-name/readme.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/compressible@2.0.18/node_modules/compressible/HISTORY.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/compressible@2.0.18/node_modules/compressible/README.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/globby@10.0.0/node_modules/globby/readme.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/duplexer2@0.1.4/node_modules/duplexer2/LICENSE.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/duplexer2@0.1.4/node_modules/duplexer2/README.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/serve-static@1.16.3/node_modules/serve-static/HISTORY.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/serve-static@1.16.3/node_modules/serve-static/README.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/workbox-window@6.6.0/node_modules/workbox-window/README.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/caniuse-api@3.0.0/node_modules/caniuse-api/CHANGELOG.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/caniuse-api@3.0.0/node_modules/caniuse-api/README.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/eslint-visitor-keys@2.1.0/node_modules/eslint-visitor-keys/CHANGELOG.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/eslint-visitor-keys@2.1.0/node_modules/eslint-visitor-keys/README.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/css-loader@6.11.0_webpack@5.106.2_esbuild@0.17.6_/node_modules/css-loader/README.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/@humanwhocodes+object-schema@2.0.3/node_modules/@humanwhocodes/object-schema/CHANGELOG.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/@humanwhocodes+object-schema@2.0.3/node_modules/@humanwhocodes/object-schema/README.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/dir-glob@3.0.1/node_modules/dir-glob/readme.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/unist-builder@3.0.1/node_modules/unist-builder/readme.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/supports-color@7.2.0/node_modules/supports-color/readme.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/accepts@1.3.8/node_modules/accepts/HISTORY.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/accepts@1.3.8/node_modules/accepts/README.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/isbot@3.8.0/node_modules/isbot/README.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/@leichtgewicht+ip-codec@2.0.5/node_modules/@leichtgewicht/ip-codec/Readme.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/@babel+plugin-transform-dynamic-import@7.27.1_@babel+core@7.29.0/node_modules/@babel/plugin-transform-dynamic-import/README.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/unified@10.1.2/node_modules/unified/readme.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/react-is@18.3.1/node_modules/react-is/README.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/@types+yargs@17.0.35/node_modules/@types/yargs/README.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/rimraf@3.0.2/node_modules/rimraf/CHANGELOG.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/rimraf@3.0.2/node_modules/rimraf/README.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/@babel+plugin-syntax-async-generators@7.8.4_@babel+core@7.29.0/node_modules/@babel/plugin-syntax-async-generators/README.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/get-own-enumerable-property-symbols@3.0.2/node_modules/get-own-enumerable-property-symbols/CHANGELOG.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/get-own-enumerable-property-symbols@3.0.2/node_modules/get-own-enumerable-property-symbols/README.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/node_modules/.pnpm/@csstools+postcss-progressive-custom-properties@1.3.0_postcss@8.5.10/node_modules/@csstools/postcss-progressive-custom-properties/LICENSE.md
+2026-09-07T05:07:36.270Z [dev/opencode] (stderr) [0m
+2026-09-07T05:07:37.481Z [dev/opencode] (stderr) [0m$ [0mls -la /Users/hpractv/ralph-runs/poster/docs/epics/
+2026-09-07T05:07:37.481Z [dev/opencode] (stderr) total 104
+2026-09-07T05:07:37.481Z [dev/opencode] (stderr) drwxr-xr-x@ 7 hpractv  staff    224 Sep  6 20:14 .
+2026-09-07T05:07:37.481Z [dev/opencode] (stderr) drwxr-xr-x@ 6 hpractv  staff    192 Sep  6 13:32 ..
+2026-09-07T05:07:37.481Z [dev/opencode] (stderr) -rw-r--r--@ 1 hpractv  staff   6886 Sep  6 13:32 epic-001-tech-stack-and-runtime-workflows.plan.md
+2026-09-07T05:07:37.481Z [dev/opencode] (stderr) -rw-r--r--@ 1 hpractv  staff  11147 Sep  6 14:45 epic-002-theme-install-reorg.plan.md
+2026-09-07T05:07:37.481Z [dev/opencode] (stderr) -rw-r--r--@ 1 hpractv  staff   7515 Sep  6 13:32 epic-004-multi-deck-directed-present.plan.md
+2026-09-07T05:07:37.481Z [dev/opencode] (stderr) -rw-r--r--@ 1 hpractv  staff  15330 Sep  6 13:33 epic-005-next-cycle-fixes.plan.md
+2026-09-07T05:07:37.481Z [dev/opencode] (stderr) -rw-r--r--@ 1 hpractv  staff   6933 Sep  6 20:14 next-cycle-test-harness.md
+2026-09-07T05:07:37.481Z [dev/opencode] (stderr) [0m
+2026-09-07T05:07:37.638Z [dev/opencode] Let me look at the documentation files I need to sync and understand the shipped behavior.
+2026-09-07T05:07:37.643Z [dev/opencode] (stderr) [0m$ [0mls -la /Users/hpractv/ralph-runs/poster/ralph/
+2026-09-07T05:07:37.643Z [dev/opencode] (stderr) total 4744
+2026-09-07T05:07:37.643Z [dev/opencode] (stderr) drwxr-xr-x@ 18 hpractv  staff      576 Sep  6 13:34 .
+2026-09-07T05:07:37.643Z [dev/opencode] (stderr) drwxr-xr-x@ 39 hpractv  staff     1248 Sep  6 22:13 ..
+2026-09-07T05:07:37.643Z [dev/opencode] (stderr) -rw-r--r--@  1 hpractv  staff     2254 Sep  6 13:32 AGENT.md
+2026-09-07T05:07:37.643Z [dev/opencode] (stderr) -rw-r--r--@  1 hpractv  staff     1124 Sep  6 13:32 PROMPT_planning.md
+2026-09-07T05:07:37.643Z [dev/opencode] (stderr) -rw-r--r--@  1 hpractv  staff      485 Sep  6 13:32 PROMPT_release.md
+2026-09-07T05:07:37.643Z [dev/opencode] (stderr) -rw-r--r--@  1 hpractv  staff     3690 Sep  6 13:32 dev-prompt.md
+2026-09-07T05:07:37.643Z [dev/opencode] (stderr) -rw-r--r--@  1 hpractv  staff     7503 Sep  6 13:32 epic-004-complete.md.bak
+2026-09-07T05:07:37.643Z [dev/opencode] (stderr) -rw-r--r--@  1 hpractv  staff     2112 Sep  6 21:07 epic.md
+2026-09-07T05:07:37.643Z [dev/opencode] (stderr) -rw-r--r--@  1 hpractv  staff     1263 Sep  6 13:32 memory.md
+2026-09-07T05:07:37.643Z [dev/opencode] (stderr) -rw-r--r--@  1 hpractv  staff     3559 Sep  6 13:32 plan-prompt.md
+2026-09-07T05:07:37.643Z [dev/opencode] (stderr) -rw-r--r--@  1 hpractv  staff     1808 Sep  6 13:32 qa-prompt.md
+2026-09-07T05:07:37.643Z [dev/opencode] (stderr) -rw-r--r--@  1 hpractv  staff     2829 Sep  6 13:32 qa-report.md
+2026-09-07T05:07:37.643Z [dev/opencode] (stderr) -rw-r--r--@  1 hpractv  staff      207 Sep  6 23:07 run-status.json
+2026-09-07T05:07:37.643Z [dev/opencode] (stderr) -rw-r--r--@  1 hpractv  staff  1524290 Sep  6 23:07 run.log
+2026-09-07T05:07:37.643Z [dev/opencode] (stderr) -rw-r--r--@  1 hpractv  staff     1325 Sep  6 23:06 settings.json
+2026-09-07T05:07:37.643Z [dev/opencode] (stderr) -rw-r--r--@  1 hpractv  staff    20642 Sep  6 13:32 task-status.epic004.bak.json
+2026-09-07T05:07:37.643Z [dev/opencode] (stderr) -rw-r--r--@  1 hpractv  staff     5451 Sep  6 23:07 task-status.json
+2026-09-07T05:07:37.643Z [dev/opencode] (stderr) -rw-r--r--@  1 hpractv  staff     5197 Sep  6 13:32 task_status.json
+2026-09-07T05:07:37.643Z [dev/opencode] (stderr) [0m
+2026-09-07T05:07:48.656Z [dev/opencode] (stderr) [0m$ [0mcd /Users/hpractv/ralph-runs/poster && git log --oneline -20
+2026-09-07T05:07:48.656Z [dev/opencode] (stderr) 7bbdad8 ralph: Task #7 - Complete regression test harness
+2026-09-07T05:07:48.656Z [dev/opencode] (stderr) c124883 ralph: Task #4 - Theme persistence relaunch
+2026-09-07T05:07:48.656Z [dev/opencode] (stderr) 444b544 ralph: Task #3 - Program thumbnail fidelity
+2026-09-07T05:07:48.656Z [dev/opencode] (stderr) a3e2ea6 ralph: Task #1 - Session child cleanup
+2026-09-07T05:07:48.656Z [dev/opencode] (stderr) 143179d Bump version to 0.1.9 [skip ci]
+2026-09-07T05:07:48.656Z [dev/opencode] (stderr) 9cf56e0 Merge pull request #16 from groundworksdesign/cursor/fix-release-mac-unsigned-publish-6573
+2026-09-07T05:07:48.656Z [dev/opencode] (stderr) 4c1b6de fix(deck): keep Open Present user-gesture for CI popups
+2026-09-07T05:07:48.656Z [dev/opencode] (stderr) ffc0ce8 fix(release): unsigned mac Electron + Publish jq undraft
+2026-09-07T05:07:48.656Z [dev/opencode] (stderr) 2eb360e Bump version to 0.1.8 [skip ci]
+2026-09-07T05:07:48.656Z [dev/opencode] (stderr) 114a224 Merge pull request #15 from groundworksdesign/cursor/land-12-13-14-6573
+2026-09-07T05:07:48.656Z [dev/opencode] (stderr) 1fb2dcc merge: land PR #14 epic-004 into land-12-13-14
+2026-09-07T05:07:48.656Z [dev/opencode] (stderr) da2ba5b merge: land PR #13 ralph epic-001 into land-12-13-14
+2026-09-07T05:07:48.656Z [dev/opencode] (stderr) b50c715 merge: land PR #12 deck-editor-ux into land-12-13-14
+2026-09-07T05:07:48.656Z [dev/opencode] (stderr) 4a47299 fix(e2e): align Remix Playwright expectations with Present overlay CSS
+2026-09-07T05:07:48.656Z [dev/opencode] (stderr) 3f52769 ralph: release epic-004 open PR against main
+2026-09-07T05:07:48.656Z [dev/opencode] (stderr) 405284e ralph: set completeEpic true for epic-004 [skip ci]
+2026-09-07T05:07:48.656Z [dev/opencode] (stderr) 7d1f58c ralph: epic-004 complete after full QA re-verify [skip ci]
+2026-09-07T05:07:48.656Z [dev/opencode] (stderr) a2171ed ralph: QA verify program-thumbnail [skip ci]
+2026-09-07T05:07:48.656Z [dev/opencode] (stderr) 147aafe feat: show on-program thumbnail via directed present-event [skip ci]
+2026-09-07T05:07:48.656Z [dev/opencode] (stderr) 74de626 ralph: planning loop 10 select program-thumbnail [skip ci]
+2026-09-07T05:07:48.656Z [dev/opencode] (stderr) [0m
+2026-09-07T05:07:48.859Z [dev/opencode] (stderr) [0m$ [0mcd /Users/hpractv/ralph-runs/poster && git status
+2026-09-07T05:07:48.859Z [dev/opencode] (stderr) On branch ralph/epic-005-next-cycle
+2026-09-07T05:07:48.859Z [dev/opencode] (stderr) Changes not staged for commit:
+2026-09-07T05:07:48.859Z [dev/opencode] (stderr)   (use "git add <file>..." to update what will be committed)
+2026-09-07T05:07:48.859Z [dev/opencode] (stderr)   (use "git restore <file>..." to discard changes in working directory)
+2026-09-07T05:07:48.859Z [dev/opencode] (stderr) 	modified:   ralph/run-status.json
+2026-09-07T05:07:48.859Z [dev/opencode] (stderr) 	modified:   ralph/run.log
+2026-09-07T05:07:48.859Z [dev/opencode] (stderr) 	modified:   ralph/task-status.json
+2026-09-07T05:07:48.859Z [dev/opencode] (stderr) no changes added to commit (use "git add" and/or "git commit -a")
+2026-09-07T05:07:48.859Z [dev/opencode] (stderr) [0m
+2026-09-07T05:07:48.882Z [dev/opencode] Let me look at the git log and current status to understand what "shipped 1-6 behavior" refers to. The task says "matches shipped 1-6 behavior". Let me check the git history and the current state of the docs.
+2026-09-07T05:07:51.220Z [dev/opencode] (stderr) [0m→ [0mRead requirements.md
+2026-09-07T05:07:51.338Z [dev/opencode] (stderr) [0m→ [0mRead ralph/epic.md
+2026-09-07T05:07:51.345Z [dev/opencode] The task is about the "next-cycle" epic 005 which covers items 1-6 (the A-E defects). The task says "matches shipped 1-6 behavior". Let me understand what "1-6" refers to. Looking at the git log, tasks #1 (Session child cleanup), #3 (Program thumbnail fidelity), #4 (Theme persistence relaunch), #7 (Complete regression test harness) have been committed. Let me look at the current docs and understand what's been shipped.
+2026-09-07T05:07:51.345Z [dev/opencode] Let me read the key documentation files first.
+2026-09-07T05:07:53.507Z [dev/opencode] (stderr) [0m→ [0mRead docs/epics/epic-005-next-cycle-fixes.plan.md
+2026-09-07T05:07:53.701Z [dev/opencode] Now let me read the epic-005 plan and the current README to understand what needs syncing. Let me also check what "shipped 1-6" means - tasks 1-6 in the epic.
+2026-09-07T05:07:53.712Z [dev/opencode] (stderr) [0m→ [0mRead README.md
+2026-09-07T05:07:57.038Z [dev/opencode] (stderr) [0m→ [0mRead ralph/task-status.json
+2026-09-07T05:07:57.076Z [dev/opencode] (stderr) [0m→ [0mRead docs/epics/next-cycle-test-harness.md
+2026-09-07T05:07:57.096Z [dev/opencode] Now let me understand what "shipped 1-6 behavior" is. Looking at the epic.md, tasks 1-6 are already done and shipped. My task is to synchronize the acceptance documentation (requirements.md, epic-005 plan, README, ralph/epic.md) so it matches the shipped behavior.
+2026-09-07T05:07:57.096Z [dev/opencode] Let me look at what was actually shipped in the code to sync accurately. Let me examine the task status and shipped implementations.
+2026-09-07T05:08:00.899Z [dev/opencode] (stderr) [0m
+2026-09-07T05:08:00.899Z [dev/opencode] (stderr) [0m$ [0mcd /Users/hpractv/ralph-runs/poster && ls src/__tests__/ 2>/dev/null; echo "---"; ls src/ 2>/dev/null
+2026-09-07T05:08:00.899Z [dev/opencode] (stderr) SafeAreaOverlay.test.tsx
+2026-09-07T05:08:00.899Z [dev/opencode] (stderr) clear-empty-csc-env.test.js
+2026-09-07T05:08:00.899Z [dev/opencode] (stderr) electron-main.regression.test.js
+2026-09-07T05:08:00.899Z [dev/opencode] (stderr) homeWindowPolicy.test.js
+2026-09-07T05:08:00.899Z [dev/opencode] (stderr) library-json.server.test.ts
+2026-09-07T05:08:00.899Z [dev/opencode] (stderr) library-root.server.test.ts
+2026-09-07T05:08:00.899Z [dev/opencode] (stderr) posterSessionGraph.test.js
+2026-09-07T05:08:00.899Z [dev/opencode] (stderr) presentDataContract.test.tsx
+2026-09-07T05:08:00.899Z [dev/opencode] (stderr) ---
+2026-09-07T05:08:00.899Z [dev/opencode] (stderr) App.css
+2026-09-07T05:08:00.899Z [dev/opencode] (stderr) App.test.tsx
+2026-09-07T05:08:00.899Z [dev/opencode] (stderr) App.tsx
+2026-09-07T05:08:00.899Z [dev/opencode] (stderr) Deck
+2026-09-07T05:08:00.899Z [dev/opencode] (stderr) HomePage.tsx
+2026-09-07T05:08:00.899Z [dev/opencode] (stderr) HomePage.unit.test.tsx
+2026-09-07T05:08:00.899Z [dev/opencode] (stderr) Present
+2026-09-07T05:08:00.899Z [dev/opencode] (stderr) __tests__
+2026-09-07T05:08:00.899Z [dev/opencode] (stderr) css.d.ts
+2026-09-07T05:08:00.899Z [dev/opencode] (stderr) index.css
+2026-09-07T05:08:00.899Z [dev/opencode] (stderr) index.tsx
+2026-09-07T05:08:00.899Z [dev/opencode] (stderr) integration
+2026-09-07T05:08:00.899Z [dev/opencode] (stderr) logo.svg
+2026-09-07T05:08:00.899Z [dev/opencode] (stderr) presentation.broadcast.test.tsx
+2026-09-07T05:08:00.899Z [dev/opencode] (stderr) presentation.lyrics-reset.test.tsx
+2026-09-07T05:08:00.899Z [dev/opencode] (stderr) react-app-env.d.ts
+2026-09-07T05:08:00.899Z [dev/opencode] (stderr) reportWebVitals.ts
+2026-09-07T05:08:00.899Z [dev/opencode] (stderr) rootThemeBootstrap.test.ts
+2026-09-07T05:08:00.900Z [dev/opencode] (stderr) setupTests.ts
+2026-09-07T05:08:00.900Z [dev/opencode] (stderr) test-data
+2026-09-07T05:08:00.900Z [dev/opencode] (stderr) themes.css
+2026-09-07T05:08:00.900Z [dev/opencode] (stderr) utils
+2026-09-07T05:08:00.900Z [dev/opencode] (stderr) [0m
+2026-09-07T05:08:01.237Z [dev/opencode] Now I have a comprehensive understanding. The task is to synchronize acceptance documentation. Tasks 1-6 (Items A-E + Home guard) are shipped and done. Task 7 (harness) is also done. My task (8) is to update requirements.md, epic-005 plan, README, and ralph/epic.md to reflect the shipped behavior.
+2026-09-07T05:08:01.237Z [dev/opencode] Let me look at the current state of the code to verify what's actually shipped so my docs are accurate. Let me check the actual implementation of key features. Let me look at what test files and implementation exist.
+2026-09-07T05:08:01.237Z [dev/opencode] Let me first check the current epic.md - it already says tasks 1-6 are done. Let me verify the current state of things and understand what's actually shipped (what the acceptance should now state).
+2026-09-07T05:08:01.237Z [dev/opencode] Let me look at the actual shipped implementation to sync docs accurately.
+2026-09-07T05:08:01.242Z [dev/opencode] (stderr) [0m$ [0mcd /Users/hpractv/ralph-runs/poster && ls e2e/ | grep -iE "present|theme|library|thumbnail|home"
+2026-09-07T05:08:01.242Z [dev/opencode] (stderr) electron-theme-relaunch.spec.ts
+2026-09-07T05:08:01.242Z [dev/opencode] (stderr) home-library.spec.ts
+2026-09-07T05:08:01.242Z [dev/opencode] (stderr) import-validation-save-to-library.spec.ts
+2026-09-07T05:08:01.242Z [dev/opencode] (stderr) library-backup-restore.spec.ts
+2026-09-07T05:08:01.242Z [dev/opencode] (stderr) library.spec.ts
+2026-09-07T05:08:01.242Z [dev/opencode] (stderr) remix-import-validation-save-to-library.spec.ts
+2026-09-07T05:08:01.242Z [dev/opencode] (stderr) remix-library-backup-restore.spec.ts
+2026-09-07T05:08:01.242Z [dev/opencode] (stderr) remix-library-relaunch.spec.ts
+2026-09-07T05:08:01.242Z [dev/opencode] (stderr) remix-library-repoint.spec.ts
+2026-09-07T05:08:01.242Z [dev/opencode] (stderr) remix-present-close.spec.ts
+2026-09-07T05:08:01.242Z [dev/opencode] (stderr) remix-present-end.spec.ts
+2026-09-07T05:08:01.242Z [dev/opencode] (stderr) remix-program-thumbnail.spec.ts
+2026-09-07T05:08:01.242Z [dev/opencode] (stderr) remix-single-home.spec.ts
+2026-09-07T05:08:01.242Z [dev/opencode] (stderr) remix-theme-persist.spec.ts
+2026-09-07T05:08:01.242Z [dev/opencode] (stderr) [0m
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) [0m$ [0mcd /Users/hpractv/ralph-runs/poster && ls src/utils/ src/Present/ src/integration/ server/ 2>/dev/null
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) server/:
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) index.js
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) posterSessionRelay.js
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) src/Present/:
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) Broadcast.ts
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) LyricsDisplay.test.tsx
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) LyricsDisplay.tsx
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) Present.theme.test.tsx
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) Present.tsx
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) PresentTypes.tsx
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) SafeAreaOverlay.tsx
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) SessionTransport.ts
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) applyPresentPayload.test.ts
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) applyPresentPayload.ts
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) programThumbnail.integration.test.tsx
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) programThumbnail.test.ts
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) programThumbnail.ts
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) testSessionBackend.js
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) testSessionHelpers.ts
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) src/integration/:
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) deck-to-presentation.test.tsx
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) directed-send-targeting.test.ts
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) library-json-survive-cwd-wipe.test.ts
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) library-survive-cwd-wipe.test.ts
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) src/utils/:
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) deckValidator.test.ts
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) deckValidator.ts
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) library-save.test.ts
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) libraryRefresh.ts
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) libraryRefresh.unit.test.ts
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) normalizeCssColor.test.ts
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) normalizeCssColor.ts
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) remixDataUrl.test.ts
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) remixDataUrl.ts
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) resolveSlideStyle.test.ts
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) resolveSlideStyle.ts
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) schema.server.test.ts
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) schema.ts
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) songParser.edge.test.ts
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) songParser.test.ts
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) songParser.ts
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) sqliteTestDb.ts
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) stagedSongSlide.test.ts
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) stagedSongSlide.ts
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) themePrefs.test.js
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) useTheme.ts
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) useTheme.unit.test.tsx
+2026-09-07T05:08:04.815Z [dev/opencode] (stderr) [0m
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr) [0m$ [0mcd /Users/hpractv/ralph-runs/poster && cat package.json
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr) {
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)   "name": "poster",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)   "version": "0.1.9",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)   "private": true,
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)   "description": "Live slide presentation tool with operator deck builder and presenter view.",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)   "author": "Groundworks Design",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)   "main": "electron/main.cjs",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)   "dependencies": {
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "@remix-run/express": "1.19.3",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "@remix-run/node": "^1.19.0",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "@remix-run/react": "^1.19.3",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "@remix-run/serve": "^1.19.3",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "@testing-library/jest-dom": "^5.17.0",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "@testing-library/react": "^13.4.0",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "@testing-library/user-event": "^13.5.0",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "@types/jest": "^27.5.2",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "@types/node": "^16.18.108",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "@types/react": "^18.3.5",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "@types/react-dom": "^18.3.0",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "baseline-browser-mapping": "^2.10.9",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "better-sqlite3": "^12.9.0",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "caniuse-lite": "^1.0.30001780",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "express": "^4.22.1",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "isbot": "^3.8.0",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "react": "^18.3.1",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "react-dom": "^18.3.1",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "react-router-dom": "^6.26.1",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "react-scripts": "5.0.1",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "typescript": "^4.9.5",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "web-vitals": "^2.1.4"
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)   },
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)   "devDependencies": {
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "@playwright/test": "^1.44.3",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "@remix-run/dev": "^1.19.0",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "@types/better-sqlite3": "^7.6.13",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "@types/testing-library__jest-dom": "^5.14.9",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "@vitejs/plugin-react": "^4.0.0",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "electron": "^40.10.0",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "electron-builder": "^26.11.1",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "playwright": "^1.44.3",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "remix": "^1.19.0",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "vite": "^5.0.0"
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)   },
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)   "scripts": {
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "dev": "node scripts/ensure-remix-public-index.cjs && remix dev",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "start": "node ./server/index.js",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "start:cra": "node scripts/sync-cra-index.cjs && BROWSER=none react-scripts start",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "prebuild": "node scripts/sync-cra-index.cjs",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "build": "react-scripts build",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "test": "react-scripts test",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "test:coverage": "react-scripts test --coverage --watchAll=false",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "coverage": "react-scripts test --coverage --watchAll=false",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "eject": "react-scripts eject",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "dev:remix": "node scripts/ensure-remix-public-index.cjs && remix dev",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "build:remix": "remix build",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "start:remix": "node ./server/index.js",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "start:spa": "node ./server/index.js",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "vendor:prepare": "echo \"Vendorization placeholder: add vendor/ dir or prebuilt /build artifacts\"",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "test:e2e": "playwright test",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "test:e2e:remix": "playwright test --config=playwright.remix.config.ts",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "test:e2e:electron": "playwright test --config=playwright.electron.config.ts",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "rebuild:sqlite": "pnpm rebuild better-sqlite3",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "package:portable": "node scripts/package-portable.mjs",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "electron": "electron .",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "prepare:electron": "node scripts/prepare-electron-pack.cjs",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "build:electron": "node scripts/prepare-electron-pack.cjs && node scripts/run-electron-builder.cjs build --publish never",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "build:electron:dir": "node scripts/prepare-electron-pack.cjs && node scripts/run-electron-builder.cjs build --dir --publish never"
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)   },
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)   "jest": {
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "collectCoverageFrom": [
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)       "src/**/*.{js,jsx,ts,tsx}",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)       "!src/**/*.d.ts"
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     ],
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "coverageThreshold": {
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)       "global": {
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)         "branches": 40,
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)         "functions": 40,
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)         "lines": 50,
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)         "statements": 50
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)       }
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     }
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)   },
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)   "eslintConfig": {
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "extends": [
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)       "react-app",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)       "react-app/jest"
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     ]
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)   },
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)   "browserslist": {
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "production": [
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)       ">0.2%",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)       "not dead",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)       "not op_mini all"
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     ],
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     "development": [
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)       "last 1 chrome version",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)       "last 1 firefox version",
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)       "last 1 safari version"
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)     ]
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr)   }
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr) }
+2026-09-07T05:08:04.834Z [dev/opencode] (stderr) [0m
+2026-09-07T05:08:04.854Z [dev/opencode] Let me verify the shipped implementation details so the docs are accurate about the real module paths and behavior.
+2026-09-07T05:08:21.622Z [dev/opencode] (stderr) [0m$ [0mcd /Users/hpractv/ralph-runs/poster && grep -rn "theme.json\|\.poster\|homedir\|POSTER_DB_PATH" src/utils/useTheme.ts src/utils/themePrefs.test.js 2>/dev/null | head -30
+2026-09-07T05:08:21.622Z [dev/opencode] (stderr) src/utils/useTheme.ts:17:  const bridge = (window as typeof window & { poster?: unknown }).poster;
+2026-09-07T05:08:21.622Z [dev/opencode] (stderr) src/utils/themePrefs.test.js:25:    expect(resolvePosterHome({}, root)).toBe(path.join(root, '.poster'));
+2026-09-07T05:08:21.622Z [dev/opencode] (stderr) src/utils/themePrefs.test.js:26:    expect(resolveThemePrefsPath({}, root)).toBe(path.join(root, '.poster', 'theme.json'));
+2026-09-07T05:08:21.622Z [dev/opencode] (stderr) src/utils/themePrefs.test.js:32:  it('round-trips valid themes in theme.json', () => {
+2026-09-07T05:08:21.622Z [dev/opencode] (stderr) src/utils/themePrefs.test.js:35:    expect(JSON.parse(fs.readFileSync(path.join(root, '.poster', 'theme.json'), 'utf8'))).toEqual({
+2026-09-07T05:08:21.622Z [dev/opencode] (stderr) src/utils/themePrefs.test.js:42:    const filePath = path.join(root, '.poster', 'theme.json');
+2026-09-07T05:08:21.622Z [dev/opencode] (stderr) [0m
+2026-09-07T05:08:22.299Z [dev/opencode] Let me verify the shipped implementation details (theme prefs path, library root, session graph) so docs are accurate.
+2026-09-07T05:08:22.304Z [dev/opencode] (stderr) [0m$ [0mcd /Users/hpractv/ralph-runs/poster && ls src/__tests__/ && echo "---SERVER---" && grep -rn "\.poster\|homedir\|POSTER_DB_PATH" server/index.js src/__tests__/library-root.server.test.ts 2>/dev/null | head -20
+2026-09-07T05:08:22.304Z [dev/opencode] (stderr) SafeAreaOverlay.test.tsx
+2026-09-07T05:08:22.304Z [dev/opencode] (stderr) clear-empty-csc-env.test.js
+2026-09-07T05:08:22.304Z [dev/opencode] (stderr) electron-main.regression.test.js
+2026-09-07T05:08:22.304Z [dev/opencode] (stderr) homeWindowPolicy.test.js
+2026-09-07T05:08:22.304Z [dev/opencode] (stderr) library-json.server.test.ts
+2026-09-07T05:08:22.304Z [dev/opencode] (stderr) library-root.server.test.ts
+2026-09-07T05:08:22.304Z [dev/opencode] (stderr) posterSessionGraph.test.js
+2026-09-07T05:08:22.304Z [dev/opencode] (stderr) presentDataContract.test.tsx
+2026-09-07T05:08:22.304Z [dev/opencode] (stderr) ---SERVER---
+2026-09-07T05:08:22.304Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:13:  it('defaults to HOME/.poster and supports a tilde path', () => {
+2026-09-07T05:08:22.304Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:15:    expect(resolvePosterHome({}, home)).toBe(path.join(home, '.poster'));
+2026-09-07T05:08:22.304Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:24:    const root = path.join(home, '.poster');
+2026-09-07T05:08:22.304Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:40:    const root = path.join(home, '.poster');
+2026-09-07T05:08:22.304Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:55:    const root = path.join(home, '.poster');
+2026-09-07T05:08:22.304Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:63:    expect(fs.existsSync(path.join(home, '.poster-library-migrated'))).toBe(true);
+2026-09-07T05:08:22.304Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:74:    const root = path.join(home, '.poster');
+2026-09-07T05:08:22.304Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:89:    const root = path.join(home, '.poster');
+2026-09-07T05:08:22.304Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:102:    const root = path.join(home, '.poster');
+2026-09-07T05:08:22.304Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:106:    expect(fs.existsSync(path.join(home, '.poster-library-migrated'))).toBe(true);
+2026-09-07T05:08:22.304Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:112:    const root = path.join(home, '.poster');
+2026-09-07T05:08:22.304Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:115:    migrateLegacyLibrary(root, cwd, { POSTER_HOME: home, POSTER_DB_PATH: '/custom/poster.sqlite' });
+2026-09-07T05:08:22.304Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:117:    expect(fs.existsSync(path.join(home, '.poster-library-migrated'))).toBe(false);
+2026-09-07T05:08:22.304Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:125:    const oldRoot = path.join(home, '.poster');
+2026-09-07T05:08:22.304Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:173:    const settingsPath = path.join(home, '.poster', 'library-settings.json');
+2026-09-07T05:08:22.304Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:177:    expect(resolveLibraryRoot({}, home)).toBe(path.join(home, '.poster'));
+2026-09-07T05:08:22.304Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:180:    expect(resolveLibraryRoot({}, home)).toBe(path.join(home, '.poster'));
+2026-09-07T05:08:22.304Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:183:    expect(resolveLibraryRoot({}, home)).toBe(path.join(home, '.poster'));
+2026-09-07T05:08:22.304Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:188:    const settingsPath = path.join(home, '.poster', 'library-settings.json');
+2026-09-07T05:08:22.304Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:195:    expect(resolved).toBe(path.join(home, '.poster'));
+2026-09-07T05:08:22.304Z [dev/opencode] (stderr) [0m
+2026-09-07T05:08:36.099Z [dev/opencode] (stderr) [0m$ [0mcd /Users/hpractv/ralph-runs/poster && grep -rn "POSTER_HOME\|POSTER_DB_PATH\|library-settings.json\|resolvePosterHome\|POSTER_SQLITE" src/__tests__/library-root.server.test.ts server/index.js src/integration/library-survive-cwd-wipe.test.ts 2>/dev/null | head -30
+2026-09-07T05:08:36.099Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:8:  resolvePosterHome,
+2026-09-07T05:08:36.099Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:15:    expect(resolvePosterHome({}, home)).toBe(path.join(home, '.poster'));
+2026-09-07T05:08:36.099Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:28:    migrateLegacyLibrary(root, cwd, { POSTER_HOME: home });
+2026-09-07T05:08:36.099Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:33:    migrateLegacyLibrary(root, cwd, { POSTER_HOME: home });
+2026-09-07T05:08:36.099Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:46:    migrateLegacyLibrary(root, cwd, { POSTER_HOME: home });
+2026-09-07T05:08:36.099Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:59:    migrateLegacyLibrary(root, cwd, { POSTER_HOME: home });
+2026-09-07T05:08:36.099Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:66:    migrateLegacyLibrary(root, cwd, { POSTER_HOME: home });
+2026-09-07T05:08:36.099Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:79:    migrateLegacyLibrary(root, cwd, { POSTER_HOME: home });
+2026-09-07T05:08:36.099Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:94:    migrateLegacyLibrary(root, cwd, { POSTER_HOME: home });
+2026-09-07T05:08:36.099Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:104:    migrateLegacyLibrary(root, path.join(home, 'missing-cwd'), { POSTER_HOME: home });
+2026-09-07T05:08:36.099Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:115:    migrateLegacyLibrary(root, cwd, { POSTER_HOME: home, POSTER_DB_PATH: '/custom/poster.sqlite' });
+2026-09-07T05:08:36.099Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:119:    migrateLegacyLibrary(root, cwd, { POSTER_HOME: home, POSTER_LIBRARY_JSON_PATH: '/custom/library.json' });
+2026-09-07T05:08:36.099Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:130:    const previousHome = process.env.POSTER_HOME;
+2026-09-07T05:08:36.099Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:131:    process.env.POSTER_HOME = home;
+2026-09-07T05:08:36.099Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:137:      if (previousHome === undefined) delete process.env.POSTER_HOME;
+2026-09-07T05:08:36.099Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:138:      else process.env.POSTER_HOME = previousHome;
+2026-09-07T05:08:36.099Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:146:    const previousHome = process.env.POSTER_HOME;
+2026-09-07T05:08:36.099Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:147:    process.env.POSTER_HOME = home;
+2026-09-07T05:08:36.099Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:151:      if (previousHome === undefined) delete process.env.POSTER_HOME;
+2026-09-07T05:08:36.099Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:152:      else process.env.POSTER_HOME = previousHome;
+2026-09-07T05:08:36.099Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:160:    const previousHome = process.env.POSTER_HOME;
+2026-09-07T05:08:36.099Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:161:    process.env.POSTER_HOME = home;
+2026-09-07T05:08:36.099Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:166:      if (previousHome === undefined) delete process.env.POSTER_HOME;
+2026-09-07T05:08:36.099Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:167:      else process.env.POSTER_HOME = previousHome;
+2026-09-07T05:08:36.099Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:173:    const settingsPath = path.join(home, '.poster', 'library-settings.json');
+2026-09-07T05:08:36.099Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:188:    const settingsPath = path.join(home, '.poster', 'library-settings.json');
+2026-09-07T05:08:36.099Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:196:    expect(() => migrateLegacyLibrary(resolved, path.join(home, 'cwd'), { POSTER_HOME: home })).not.toThrow();
+2026-09-07T05:08:36.099Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts:205:      path.join(home, '.poster', 'library-settings.json'),
+2026-09-07T05:08:36.099Z [dev/opencode] (stderr) src/integration/library-survive-cwd-wipe.test.ts:40:    const previousPosterHome = process.env.POSTER_HOME;
+2026-09-07T05:08:36.099Z [dev/opencode] (stderr) src/integration/library-survive-cwd-wipe.test.ts:42:    const previousDbPath = process.env.POSTER_DB_PATH;
+2026-09-07T05:08:36.099Z [dev/opencode] (stderr) [0m
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr) [0m$ [0mcd /Users/hpractv/ralph-runs/poster && cat ralph/run-status.json && echo "---" && cat ralph/settings.json
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr) {
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)   "updatedAt": "2026-09-07T05:08:36.099Z",
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)   "lastLog": "[dev/opencode] (stderr) \u001b[0m",
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)   "loopStatus": "running",
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)   "tag": "dev/opencode",
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)   "elapsed": null,
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)   "idle": null,
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)   "idleKillAfter": null
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr) }---
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr) {
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)   "maxLLMCalls": 400,
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)   "planModel": "opencode/big-pickle",
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)   "devModel": "opencode/big-pickle",
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)   "qaModel": "opencode/mimo-v2.5-free",
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)   "devReasoningEffort": "",
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)   "qaReasoningEffort": "",
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)   "autoCommit": true,
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)   "planFrequency": 50,
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)   "minBacklogSize": 1,
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)   "agentBackend": "opencode",
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)   "fleetMode": false,
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)   "useDocker": false,
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)   "dockerComposeFile": "",
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)   "dockerService": "ralph-agent",
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)   "epicBaseBranch": "",
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)   "dockerWorkBranch": "",
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)   "dockerIsolateBranch": false,
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)   "dockerMergeStrategy": "work-branch",
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)   "dockerPoolSize": 1,
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)   "dockerParallelTasks": false,
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)   "dockerPlanParallel": false,
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)   "dockerInstalledBackends": [],
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)   "dockerMountSocket": false,
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)   "dockerAutoMergeEpicWork": true,
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)   "copilotOutputFormat": "streaming",
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)   "epicFile": "docs/epics/epic-005-next-cycle-fixes.plan.md",
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)   "requirementsFile": "requirements.md",
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)   "pauseAfterPlan": false,
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)   "taskColumnSort": "updatedAtDesc",
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)   "savedModelsByBackend": {
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)     "cursor-agent": {
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)       "planModel": "claude-4.6-sonnet-medium",
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)       "devModel": "gpt-5-mini",
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)       "qaModel": "gpt-5-mini"
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)     },
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)     "opencode": {
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)       "planModel": "opencode/big-pickle",
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)       "devModel": "opencode/big-pickle",
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)       "qaModel": "opencode/mimo-v2.5-free"
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)     }
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)   },
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)   "agentIdleTimeoutMinutes": 0,
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)   "agentTimeoutMinutes": 0,
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr)   "agentMaxConsecutiveRepeats": 10
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr) }
+2026-09-07T05:08:36.172Z [dev/opencode] (stderr) [0m
+2026-09-07T05:08:43.348Z [dev/opencode] (stderr) [0m$ [0mcd /Users/hpractv/ralph-runs/poster && ls src/utils/libraryRoot* src/server* 2>/dev/null; find src -name "*.server.*" -o -name "*root*" | grep -v node_modules | head; echo "---server env---"; grep -n "POSTER_" server/index.js | head -20
+2026-09-07T05:08:43.348Z [dev/opencode] (stderr) zsh:1: no matches found: src/utils/libraryRoot*
+2026-09-07T05:08:43.348Z [dev/opencode] (stderr) src/utils/schema.server.test.ts
+2026-09-07T05:08:43.348Z [dev/opencode] (stderr) src/__tests__/library-root.server.test.ts
+2026-09-07T05:08:43.348Z [dev/opencode] (stderr) src/__tests__/library-json.server.test.ts
+2026-09-07T05:08:43.348Z [dev/opencode] (stderr) src/rootThemeBootstrap.test.ts
+2026-09-07T05:08:43.348Z [dev/opencode] (stderr) ---server env---
+2026-09-07T05:08:43.348Z [dev/opencode] (stderr) [0m
+2026-09-07T05:09:08.440Z [dev/opencode] (stderr) [0m$ [0mcd /Users/hpractv/ralph-runs/poster && grep -rn "Section 5\|Section 6\|section 5\|section 6" --include="*.md" --include="*.json" . 2>/dev/null | grep -v node_modules | head
+2026-09-07T05:09:08.440Z [dev/opencode] (stderr) (no output)
+2026-09-07T05:09:08.440Z [dev/opencode] (stderr) [0m
+2026-09-07T05:09:13.929Z [dev/opencode] (stderr) [0m$ [0mcd /Users/hpractv/ralph-runs/poster && grep -rln "resolvePosterHome\|migrateLegacyLibrary\|resolveLibraryRoot" app/ src/ server/ shared/ 2>/dev/null | grep -v "__tests__" | head
+2026-09-07T05:09:13.929Z [dev/opencode] (stderr) app/utils/library-root.server.ts
+2026-09-07T05:09:13.929Z [dev/opencode] (stderr) app/utils/db.server.ts
+2026-09-07T05:09:13.929Z [dev/opencode] (stderr) src/integration/library-json-survive-cwd-wipe.test.ts
+2026-09-07T05:09:13.929Z [dev/opencode] (stderr) src/utils/themePrefs.test.js
+2026-09-07T05:09:13.929Z [dev/opencode] (stderr) [0m
+2026-09-07T05:09:14.629Z [dev/opencode] (stderr) [0m$ [0mcd /Users/hpractv/ralph-runs/poster && grep -n "POSTER_HOME\|POSTER_DB_PATH\|POSTER_LIBRARY_JSON_PATH\|POSTER_SQLITE_LOG" app/ src/ server/ -r 2>/dev/null | grep -v "__tests__" | head -20
+2026-09-07T05:09:14.629Z [dev/opencode] (stderr) app/utils/library-root.server.ts:10:  return path.resolve(env.POSTER_HOME || path.join(homeDir, '.poster'));
+2026-09-07T05:09:14.629Z [dev/opencode] (stderr) app/utils/library-root.server.ts:82:  if (env.POSTER_DB_PATH || env.POSTER_LIBRARY_JSON_PATH) return;
+2026-09-07T05:09:14.629Z [dev/opencode] (stderr) app/utils/library-root.server.ts:111:    db: process.env.POSTER_DB_PATH || path.join(root, 'poster.sqlite'),
+2026-09-07T05:09:14.629Z [dev/opencode] (stderr) app/utils/library-root.server.ts:112:    json: process.env.POSTER_LIBRARY_JSON_PATH || path.join(root, 'poster.library.json'),
+2026-09-07T05:09:14.629Z [dev/opencode] (stderr) app/utils/db.server.ts:74:      if (process.env.POSTER_SQLITE_LOG_BACKEND === '1') {
+2026-09-07T05:09:14.629Z [dev/opencode] (stderr) src/integration/library-survive-cwd-wipe.test.ts:40:    const previousPosterHome = process.env.POSTER_HOME;
+2026-09-07T05:09:14.629Z [dev/opencode] (stderr) src/integration/library-survive-cwd-wipe.test.ts:42:    const previousDbPath = process.env.POSTER_DB_PATH;
+2026-09-07T05:09:14.629Z [dev/opencode] (stderr) src/integration/library-survive-cwd-wipe.test.ts:43:    const previousJsonPath = process.env.POSTER_LIBRARY_JSON_PATH;
+2026-09-07T05:09:14.629Z [dev/opencode] (stderr) src/integration/library-survive-cwd-wipe.test.ts:46:    delete process.env.POSTER_HOME;
+2026-09-07T05:09:14.629Z [dev/opencode] (stderr) src/integration/library-survive-cwd-wipe.test.ts:48:    delete process.env.POSTER_DB_PATH;
+2026-09-07T05:09:14.629Z [dev/opencode] (stderr) src/integration/library-survive-cwd-wipe.test.ts:49:    delete process.env.POSTER_LIBRARY_JSON_PATH;
+2026-09-07T05:09:14.629Z [dev/opencode] (stderr) src/integration/library-survive-cwd-wipe.test.ts:91:      if (previousPosterHome === undefined) delete process.env.POSTER_HOME;
+2026-09-07T05:09:14.629Z [dev/opencode] (stderr) src/integration/library-survive-cwd-wipe.test.ts:92:      else process.env.POSTER_HOME = previousPosterHome;
+2026-09-07T05:09:14.629Z [dev/opencode] (stderr) src/integration/library-survive-cwd-wipe.test.ts:95:      if (previousDbPath === undefined) delete process.env.POSTER_DB_PATH;
+2026-09-07T05:09:14.629Z [dev/opencode] (stderr) src/integration/library-survive-cwd-wipe.test.ts:96:      else process.env.POSTER_DB_PATH = previousDbPath;
+2026-09-07T05:09:14.629Z [dev/opencode] (stderr) src/integration/library-survive-cwd-wipe.test.ts:97:      if (previousJsonPath === undefined) delete process.env.POSTER_LIBRARY_JSON_PATH;
+2026-09-07T05:09:14.629Z [dev/opencode] (stderr) src/integration/library-survive-cwd-wipe.test.ts:98:      else process.env.POSTER_LIBRARY_JSON_PATH = previousJsonPath;
+2026-09-07T05:09:14.629Z [dev/opencode] (stderr) src/integration/library-json-survive-cwd-wipe.test.ts:20:    const previousPosterHome = process.env.POSTER_HOME;
+2026-09-07T05:09:14.629Z [dev/opencode] (stderr) src/integration/library-json-survive-cwd-wipe.test.ts:22:    const previousDbPath = process.env.POSTER_DB_PATH;
+2026-09-07T05:09:14.629Z [dev/opencode] (stderr) src/integration/library-json-survive-cwd-wipe.test.ts:23:    const previousJsonPath = process.env.POSTER_LIBRARY_JSON_PATH;
+2026-09-07T05:09:14.629Z [dev/opencode] (stderr) [0m
+2026-09-07T05:09:15.723Z [dev/opencode] (stderr) [0m→ [0mRead app/utils/library-root.server.ts
+2026-09-07T05:09:23.745Z [dev/opencode] (stderr) [0m
+2026-09-07T05:09:23.745Z [dev/opencode] (stderr) [0m$ [0mcd /Users/hpractv/ralph-runs/poster && git log --oneline -5 -- README.md && echo "---requirements---" && git log --oneline -5 -- requirements.md && echo "---plan---" && git log --oneline -5 -- docs/epics/epic-005-next-cycle-fixes.plan.md && echo "---epic.md---" && git log --oneline -5 -- ralph/epic.md
+2026-09-07T05:09:23.745Z [dev/opencode] (stderr) 7bbdad8 ralph: Task #7 - Complete regression test harness
+2026-09-07T05:09:23.745Z [dev/opencode] (stderr) 5026b87 fix: enhance release workflow for automatic pre-releases and manual final releases
+2026-09-07T05:09:23.745Z [dev/opencode] (stderr) dae9ec0 ralph: Task #35 - Document packaging, CI, and releases
+2026-09-07T05:09:23.745Z [dev/opencode] (stderr) c1048b4 feat: update task status and add cache files for exports
+2026-09-07T05:09:23.745Z [dev/opencode] (stderr) 748ac1c Project rename
+2026-09-07T05:09:23.745Z [dev/opencode] (stderr) ---requirements---
+2026-09-07T05:09:23.745Z [dev/opencode] (stderr) c124883 ralph: Task #4 - Theme persistence relaunch
+2026-09-07T05:09:23.745Z [dev/opencode] (stderr) 1327e3a ralph: Task #38 - Add root requirements.md for acceptance
+2026-09-07T05:09:23.745Z [dev/opencode] (stderr) cff0cd0 ralph: Task #24 - CSS custom properties and four dark themes
+2026-09-07T05:09:23.745Z [dev/opencode] (stderr) 84daf9f Save Point
+2026-09-07T05:09:23.745Z [dev/opencode] (stderr) ---plan---
+2026-09-07T05:09:23.745Z [dev/opencode] (stderr) a3e2ea6 ralph: Task #1 - Session child cleanup
+2026-09-07T05:09:23.745Z [dev/opencode] (stderr) ---epic.md---
+2026-09-07T05:09:23.745Z [dev/opencode] (stderr) 7bbdad8 ralph: Task #7 - Complete regression test harness
+2026-09-07T05:09:23.745Z [dev/opencode] (stderr) a3e2ea6 ralph: Task #1 - Session child cleanup
+2026-09-07T05:09:23.745Z [dev/opencode] (stderr) 405284e ralph: set completeEpic true for epic-004 [skip ci]
+2026-09-07T05:09:23.745Z [dev/opencode] (stderr) a2171ed ralph: QA verify program-thumbnail [skip ci]
+2026-09-07T05:09:23.745Z [dev/opencode] (stderr) 2cb5069 ralph: QA verify persist-theme-all-windows [skip ci]
+2026-09-07T05:09:23.745Z [dev/opencode] (stderr) [0m
+2026-09-07T05:09:26.142Z [dev/opencode] (stderr) [0m$ [0mcd /Users/hpractv/ralph-runs/poster && git show 7bbdad8 --stat | head -40
+2026-09-07T05:09:26.142Z [dev/opencode] (stderr) commit 7bbdad82f0413b6d058f7207832d852037427eda
+2026-09-07T05:09:26.142Z [dev/opencode] (stderr) Author: hpractv <hpractv@groundworksdesign.com>
+2026-09-07T05:09:26.142Z [dev/opencode] (stderr) Date:   Sun Sep 6 23:07:33 2026 -0600
+2026-09-07T05:09:26.142Z [dev/opencode] (stderr)     ralph: Task #7 - Complete regression test harness
+2026-09-07T05:09:26.142Z [dev/opencode] (stderr)  .github/workflows/pr.yml                           |    76 +
+2026-09-07T05:09:26.142Z [dev/opencode] (stderr)  README.md                                          |     4 +-
+2026-09-07T05:09:26.142Z [dev/opencode] (stderr)  app/entry.server.tsx                               |   111 +
+2026-09-07T05:09:26.142Z [dev/opencode] (stderr)  app/routes/library.settings.tsx                    |    33 +
+2026-09-07T05:09:26.142Z [dev/opencode] (stderr)  app/utils/db.server.ts                             |    41 +-
+2026-09-07T05:09:26.142Z [dev/opencode] (stderr)  app/utils/library-json.server.ts                   |     9 +-
+2026-09-07T05:09:26.142Z [dev/opencode] (stderr)  app/utils/library-root.server.ts                   |   114 +
+2026-09-07T05:09:26.142Z [dev/opencode] (stderr)  docs/epics/next-cycle-test-harness.md              |    52 +
+2026-09-07T05:09:26.142Z [dev/opencode] (stderr)  e2e/electron-theme-relaunch.spec.ts                |     3 +-
+2026-09-07T05:09:26.142Z [dev/opencode] (stderr)  e2e/remix-library-relaunch.spec.ts                 |   121 +
+2026-09-07T05:09:26.142Z [dev/opencode] (stderr)  e2e/remix-library-repoint.spec.ts                  |   150 +
+2026-09-07T05:09:26.142Z [dev/opencode] (stderr)  e2e/remix-present-close.spec.ts                    |    37 +
+2026-09-07T05:09:26.142Z [dev/opencode] (stderr)  e2e/remix-program-thumbnail.spec.ts                |     2 +-
+2026-09-07T05:09:26.142Z [dev/opencode] (stderr)  e2e/remix-single-home.spec.ts                      |    41 +-
+2026-09-07T05:09:26.142Z [dev/opencode] (stderr)  package.json                                       |     1 +
+2026-09-07T05:09:26.142Z [dev/opencode] (stderr)  playwright.electron.config.ts                      |    15 +
+2026-09-07T05:09:26.142Z [dev/opencode] (stderr)  ralph/epic.md                                      |    87 +-
+2026-09-07T05:09:26.142Z [dev/opencode] (stderr)  ralph/run-status.json                              |    12 +-
+2026-09-07T05:09:26.142Z [dev/opencode] (stderr)  ralph/run.log                                      | 11642 +++++++++++++++++++
+2026-09-07T05:09:26.142Z [dev/opencode] (stderr)  ralph/settings.json                                |    19 +-
+2026-09-07T05:09:26.142Z [dev/opencode] (stderr)  ralph/task-status.json                             |    59 +-
+2026-09-07T05:09:26.142Z [dev/opencode] (stderr)  src/Deck/DeckBuilder.unit.test.tsx                 |     3 +
+2026-09-07T05:09:26.142Z [dev/opencode] (stderr)  src/HomePage.tsx                                   |    30 +
+2026-09-07T05:09:26.142Z [dev/opencode] (stderr)  src/HomePage.unit.test.tsx                         |    55 +-
+2026-09-07T05:09:26.142Z [dev/opencode] (stderr)  src/Present/Present.tsx                            |    14 +-
+2026-09-07T05:09:26.142Z [dev/opencode] (stderr)  src/Present/SessionTransport.ts                    |    25 +-
+2026-09-07T05:09:26.142Z [dev/opencode] (stderr)  src/__tests__/library-root.server.test.ts          |   211 +
+2026-09-07T05:09:26.142Z [dev/opencode] (stderr)  src/__tests__/posterSessionGraph.test.js           |    63 +
+2026-09-07T05:09:26.142Z [dev/opencode] (stderr)  .../library-json-survive-cwd-wipe.test.ts          |    92 +
+2026-09-07T05:09:26.142Z [dev/opencode] (stderr)  src/integration/library-survive-cwd-wipe.test.ts   |   104 +
+2026-09-07T05:09:26.142Z [dev/opencode] (stderr)  src/utils/library-save.test.ts                     |    27 +-
+2026-09-07T05:09:26.142Z [dev/opencode] (stderr)  src/utils/remixDataUrl.ts                          |     1 +
+2026-09-07T05:09:26.142Z [dev/opencode] (stderr)  src/utils/schema.server.test.ts                    |    23 +-
+2026-09-07T05:09:26.142Z [dev/opencode] (stderr)  src/utils/sqliteTestDb.ts                          |    60 +
+2026-09-07T05:09:26.142Z [dev/opencode] (stderr) [0m
+2026-09-07T05:09:26.435Z [dev/opencode] (stderr) [0m$ [0mcd /Users/hpractv/ralph-runs/poster && git show c124883 -- README.md | head -60
+2026-09-07T05:09:26.435Z [dev/opencode] (stderr) commit c124883017fb361ac0038b1e626ceef2b81803bc
+2026-09-07T05:09:26.435Z [dev/opencode] (stderr) Author: hpractv <hpractv@groundworksdesign.com>
+2026-09-07T05:09:26.435Z [dev/opencode] (stderr) Date:   Sun Sep 6 14:49:02 2026 -0600
+2026-09-07T05:09:26.435Z [dev/opencode] (stderr)     ralph: Task #4 - Theme persistence relaunch
+2026-09-07T05:09:26.435Z [dev/opencode] (stderr) [0m
+2026-09-07T05:09:28.301Z [dev/opencode] (stderr) [0m$ [0mcd /Users/hpractv/ralph-runs/poster && git show 7bbdad8 -- README.md
+2026-09-07T05:09:28.301Z [dev/opencode] (stderr) commit 7bbdad82f0413b6d058f7207832d852037427eda
+2026-09-07T05:09:28.301Z [dev/opencode] (stderr) Author: hpractv <hpractv@groundworksdesign.com>
+2026-09-07T05:09:28.301Z [dev/opencode] (stderr) Date:   Sun Sep 6 23:07:33 2026 -0600
+2026-09-07T05:09:28.301Z [dev/opencode] (stderr)     ralph: Task #7 - Complete regression test harness
+2026-09-07T05:09:28.301Z [dev/opencode] (stderr) diff --git a/README.md b/README.md
+2026-09-07T05:09:28.301Z [dev/opencode] (stderr) index e9a99b3..9ed673e 100644
+2026-09-07T05:09:28.301Z [dev/opencode] (stderr) --- a/README.md
+2026-09-07T05:09:28.301Z [dev/opencode] (stderr) +++ b/README.md
+2026-09-07T05:09:28.301Z [dev/opencode] (stderr) @@ -62,11 +62,11 @@ The in-app home page (`/`) includes the same overview and links to open the deck
+2026-09-07T05:09:28.301Z [dev/opencode] (stderr)  ### SQLite library storage
+2026-09-07T05:09:28.301Z [dev/opencode] (stderr) -The app stores the local library in **`poster.sqlite`** next to the process working directory (override with **`POSTER_DB_PATH`**).
+2026-09-07T05:09:28.301Z [dev/opencode] (stderr) +The app stores the local library in **`~/.poster`** by default (override with **`POSTER_DB_PATH`**). The Home page's **Change...** control re-points the library to another folder and leaves the previous folder untouched. A legacy `poster.sqlite` or `poster.library.json` in the process working directory is copied to `~/.poster` once when the durable library is first initialized; the source is never deleted.
+2026-09-07T05:09:28.301Z [dev/opencode] (stderr)  1. **`better-sqlite3`** is used when the native addon loads (typical on Node LTS with a successful `pnpm rebuild better-sqlite3`).
+2026-09-07T05:09:28.301Z [dev/opencode] (stderr)  2. If that fails (for example Node 24+ before a matching prebuild), the server automatically uses Node’s built-in **`node:sqlite`** (`DatabaseSync`) so the same `poster.sqlite` file still works—no extra install (startup stays quiet; set **`POSTER_SQLITE_LOG_BACKEND=1`** to log which driver was chosen).
+2026-09-07T05:09:28.301Z [dev/opencode] (stderr) -3. If both fail, the app falls back to **`poster.library.json`**.
+2026-09-07T05:09:28.301Z [dev/opencode] (stderr) +3. If both fail, the app falls back to **`poster.library.json`** in the active library folder.
+2026-09-07T05:09:28.301Z [dev/opencode] (stderr)  To prefer rebuilding the native module on supported Node versions:
+2026-09-07T05:09:28.301Z [dev/opencode] (stderr) [0m
+2026-09-07T05:09:28.912Z [dev/opencode] (stderr) [0m$ [0mcd /Users/hpractv/ralph-runs/poster && git show a3e2ea6 -- docs/epics/epic-005-next-cycle-fixes.plan.md | head -80
+2026-09-07T05:09:28.912Z [dev/opencode] (stderr) commit a3e2ea69d1f4f340a41dd5c786eea5719be0ddff
+2026-09-07T05:09:28.912Z [dev/opencode] (stderr) Author: hpractv <hpractv@groundworksdesign.com>
+2026-09-07T05:09:28.912Z [dev/opencode] (stderr) Date:   Sun Sep 6 13:59:11 2026 -0600
+2026-09-07T05:09:28.912Z [dev/opencode] (stderr)     ralph: Task #1 - Session child cleanup
+2026-09-07T05:09:28.912Z [dev/opencode] (stderr) diff --git a/docs/epics/epic-005-next-cycle-fixes.plan.md b/docs/epics/epic-005-next-cycle-fixes.plan.md
+2026-09-07T05:09:28.912Z [dev/opencode] (stderr) new file mode 100644
+2026-09-07T05:09:28.912Z [dev/opencode] (stderr) index 0000000..437f1f3
+2026-09-07T05:09:28.912Z [dev/opencode] (stderr) --- /dev/null
+2026-09-07T05:09:28.912Z [dev/opencode] (stderr) +++ b/docs/epics/epic-005-next-cycle-fixes.plan.md
+2026-09-07T05:09:28.912Z [dev/opencode] (stderr) @@ -0,0 +1,248 @@
+2026-09-07T05:09:28.912Z [dev/opencode] (stderr) +# Poster next-cycle plan: defect fixes + library persistence
+2026-09-07T05:09:28.912Z [dev/opencode] (stderr) +
+2026-09-07T05:09:28.912Z [dev/opencode] (stderr) +Status: **GO — Ralph via headless izep/ralph-gui** (Roy 2026-09-06; cloud agent cancelled — don’t wait on bc-47ced3f7)
+2026-09-07T05:09:28.912Z [dev/opencode] (stderr) +Owners: Manny (impl / Ralph), Jack (test plan + harness), Moe (confirm / architecture challenge)
+2026-09-07T05:09:28.912Z [dev/opencode] (stderr) +Baseline confirm: Moe Linux **v0.1.7-pr.15** + Roy Mac notes (2026-09-06)
+2026-09-07T05:09:28.912Z [dev/opencode] (stderr) +Auto-update: remains **parked** (`auto-update-plan.md`) until after this cycle lands.
+2026-09-07T05:09:28.912Z [dev/opencode] (stderr) +
+2026-09-07T05:09:28.912Z [dev/opencode] (stderr) +## Goals
+2026-09-07T05:09:28.912Z [dev/opencode] (stderr) +
+2026-09-07T05:09:28.912Z [dev/opencode] (stderr) +1. Fix confirmed Present/deck regressions so they cannot return.
+2026-09-07T05:09:28.912Z [dev/opencode] (stderr) +2. Ship durable presentations library storage (`~/.poster` default + migrate + settings).
+2026-09-07T05:09:28.912Z [dev/opencode] (stderr) +3. Gate every item with **unit tests** where logic is pure/main-owned, plus **regression** (Playwright / packaged smoke) for UI and cross-window behavior.
+2026-09-07T05:09:28.912Z [dev/opencode] (stderr) +
+2026-09-07T05:09:28.912Z [dev/opencode] (stderr) +## Out of scope
+2026-09-07T05:09:28.912Z [dev/opencode] (stderr) +
+2026-09-07T05:09:28.912Z [dev/opencode] (stderr) +- Auto-update / electron-updater (parked).
+2026-09-07T05:09:28.912Z [dev/opencode] (stderr) +- Home “Open Present” removal (already **PASS** on v0.1.7-pr.15 — keep a regression guard only).
+2026-09-07T05:09:28.912Z [dev/opencode] (stderr) +- New Present features beyond the items below.
+2026-09-07T05:09:28.912Z [dev/opencode] (stderr) +
+2026-09-07T05:09:28.912Z [dev/opencode] (stderr) +---
+2026-09-07T05:09:28.912Z [dev/opencode] (stderr) +
+2026-09-07T05:09:28.912Z [dev/opencode] (stderr) +## Item A — End blanks Present
+2026-09-07T05:09:28.912Z [dev/opencode] (stderr) +
+2026-09-07T05:09:28.912Z [dev/opencode] (stderr) +**Bug:** Start / Next / Previous / Go work; **End** leaves Present on the last titled slide (e.g. black + “Title”) instead of a blank/cleared program-out.
+2026-09-07T05:09:28.912Z [dev/opencode] (stderr) +
+2026-09-07T05:09:28.912Z [dev/opencode] (stderr) +**Acceptance**
+2026-09-07T05:09:28.912Z [dev/opencode] (stderr) +
+2026-09-07T05:09:28.913Z [dev/opencode] (stderr) +- End sends a directed clear/blank to the target Present child(ren) only.
+2026-09-07T05:09:28.913Z [dev/opencode] (stderr) +- Present viewport shows blank (no title/body slide content).
+2026-09-07T05:09:28.913Z [dev/opencode] (stderr) +- Deck “On program” reflects blank after End (once Item D lands).
+2026-09-07T05:09:28.913Z [dev/opencode] (stderr) +- Start after End shows first slide again.
+2026-09-07T05:09:28.913Z [dev/opencode] (stderr) +
+2026-09-07T05:09:28.913Z [dev/opencode] (stderr) +**Unit / automated tests (required)**
+2026-09-07T05:09:28.913Z [dev/opencode] (stderr) +
+2026-09-07T05:09:28.913Z [dev/opencode] (stderr) +| Suite / file (proposed) | Layer | Assertion that fails on today’s bug |
+2026-09-07T05:09:28.913Z [dev/opencode] (stderr) +|-------------------------|-------|-------------------------------------|
+2026-09-07T05:09:28.913Z [dev/opencode] (stderr) +| `tests/unit/main/present-commands.test.ts` → `describe("end → blank")` | Unit | `end` builds blank/clear payload (`kind: "blank"` or equivalent); `webContents.send` mock called only for selected presentId(s); zero sends if no children. |
+2026-09-07T05:09:28.913Z [dev/opencode] (stderr) +| same → `describe("program state after end")` | Unit | Session program state is blank/null after End; Start resets index to first slide and pushes non-blank payload. |
+2026-09-07T05:09:28.913Z [dev/opencode] (stderr) +| `tests/smoke/present-end.spec.ts` | Smoke | Open Present → Start → End → Present DOM has no title/body slide content (blank program-out). Fail screenshot: `smoke-end-not-blank.png`. |
+2026-09-07T05:09:28.913Z [dev/opencode] (stderr) +
+2026-09-07T05:09:28.913Z [dev/opencode] (stderr) +---
+2026-09-07T05:09:28.913Z [dev/opencode] (stderr) +
+2026-09-07T05:09:28.913Z [dev/opencode] (stderr) +## Item B — Theme persistence across quit + relaunch
+2026-09-07T05:09:28.913Z [dev/opencode] (stderr) +
+2026-09-07T05:09:28.913Z [dev/opencode] (stderr) +**Bug:** Theme applies live to Home / deck / Present in-session; after full quit + relaunch, Home returns to Light. Home-only close/reopen path blocked (closing Home closes all windows) — treat full quit+relaunch as the must-pass path; document Home-close behavior separately if product wants app stay-alive later.
+2026-09-07T05:09:28.913Z [dev/opencode] (stderr) +
+2026-09-07T05:09:28.913Z [dev/opencode] (stderr) +**Acceptance**
+2026-09-07T05:09:28.913Z [dev/opencode] (stderr) +
+2026-09-07T05:09:28.913Z [dev/opencode] (stderr) +- Selected theme id persisted to durable prefs (stable location under user library / app prefs — not wiped by AppImage cwd).
+2026-09-07T05:09:28.913Z [dev/opencode] (stderr) +- On relaunch, Home / deck / Present all restore the same theme before first paint when possible.
+2026-09-07T05:09:28.913Z [dev/opencode] (stderr) +- Changing theme still applies live to open windows.
+2026-09-07T05:09:28.913Z [dev/opencode] (stderr) +
+2026-09-07T05:09:28.913Z [dev/opencode] (stderr) +**Unit / automated tests (required)**
+2026-09-07T05:09:28.913Z [dev/opencode] (stderr) +
+2026-09-07T05:09:28.913Z [dev/opencode] (stderr) +| Suite / file (proposed) | Layer | Assertion that fails on today’s bug |
+2026-09-07T05:09:28.913Z [dev/opencode] (stderr) +|-------------------------|-------|-------------------------------------|
+2026-09-07T05:09:28.913Z [dev/opencode] (stderr) +| `tests/unit/prefs/theme-store.test.ts` | Unit | get/set round-trip; missing → default; invalid id → safe fallback. |
+2026-09-07T05:09:28.913Z [dev/opencode] (stderr) +| same → `describe("prefs root")` | Unit | With `HOME` = temp dir, prefs path is under user-owned root (`~/.poster` or agreed prefs), **not** `process.cwd()` / AppImage extract dir. |
+2026-09-07T05:09:28.913Z [dev/opencode] (stderr) +| `tests/smoke/theme-relaunch.spec.ts` | Smoke | Set Tokyo Night → quit → relaunch → Home `data-theme` / class matches; not Light. |
+2026-09-07T05:09:28.913Z [dev/opencode] (stderr) +| `tests/smoke/theme-live-apply.spec.ts` | Smoke | Deck+Present open → change theme → all windows update (live path stays green). |
+2026-09-07T05:09:28.913Z [dev/opencode] (stderr) +
+2026-09-07T05:09:28.913Z [dev/opencode] (stderr) +---
+2026-09-07T05:09:28.913Z [dev/opencode] (stderr) +
+2026-09-07T05:09:28.913Z [dev/opencode] (stderr) +## Item C — Closing Present removes it from deck child list
+2026-09-07T05:09:28.913Z [dev/opencode] (stderr) +
+2026-09-07T05:09:28.913Z [dev/opencode] (stderr) +**Bug:** Closing Present via window **X** leaves UUID in deck “Present windows” list (no `child-closed` / list remove).
+2026-09-07T05:09:28.913Z [dev/opencode] (stderr) +
+2026-09-07T05:09:28.913Z [dev/opencode] (stderr) +**Acceptance**
+2026-09-07T05:09:28.913Z [dev/opencode] (stderr) [0m
+2026-09-07T05:09:41.513Z [dev/opencode] (stderr) [0m→ [0mRead .github/workflows/pr.yml
+2026-09-07T05:09:42.156Z [dev/opencode] (stderr) [0m
+2026-09-07T05:09:42.156Z [dev/opencode] (stderr) [0m$ [0mcd /Users/hpractv/ralph-runs/poster && ls .github/workflows/
+2026-09-07T05:09:42.156Z [dev/opencode] (stderr) cleanup-artifacts.yml
+2026-09-07T05:09:42.156Z [dev/opencode] (stderr) pr.yml
+2026-09-07T05:09:42.156Z [dev/opencode] (stderr) release.yml
+2026-09-07T05:09:42.156Z [dev/opencode] (stderr) [0m
+2026-09-07T05:09:44.141Z [dev/opencode] (stderr) [0m→ [0mRead ralph/qa-report.md
+2026-09-07T05:09:44.393Z [dev/opencode] (stderr) [0m→ [0mRead ralph/memory.md
+2026-09-07T05:10:07.816Z [dev/opencode] (stderr) [0m
+2026-09-07T05:10:07.816Z [dev/opencode] (stderr) [0m$ [0mcd /Users/hpractv/ralph-runs/poster && grep -rln "resolveThemePrefsPath\|theme.json" app/ src/ server/ shared/ electron/ 2>/dev/null | grep -v "__tests__" | head
+2026-09-07T05:10:07.816Z [dev/opencode] (stderr) src/utils/themePrefs.test.js
+2026-09-07T05:10:07.816Z [dev/opencode] (stderr) electron/themePrefs.cjs
+2026-09-07T05:10:07.816Z [dev/opencode] (stderr) [0m
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr) [0m$ [0mcd /Users/hpractv/ralph-runs/poster && cat electron/main.cjs 2>/dev/null | head -80
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr) 'use strict';
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr) const { app, BrowserWindow, ipcMain } = require('electron');
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr) const { spawn } = require('child_process');
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr) const fs = require('fs');
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr) const net = require('net');
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr) const http = require('http');
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr) const os = require('os');
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr) const path = require('path');
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr) const { registerSessionIpc } = require('./sessionIpc.cjs');
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr) const {
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr)   classifyOpenUrl,
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr)   shouldCreateHomeWindow,
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr) } = require('./homeWindowPolicy.cjs');
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr) const { readThemePrefs, writeThemePrefs } = require('./themePrefs.cjs');
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr) ipcMain.on('poster:read-theme-sync', (event) => {
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr)   event.returnValue = readThemePrefs();
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr) });
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr) ipcMain.handle('poster:read-theme', () => readThemePrefs());
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr) ipcMain.handle('poster:set-theme', (_event, theme) => writeThemePrefs(theme));
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr) const sessionIpc = registerSessionIpc();
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr) let serverProcess = null;
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr) let mainWindow = null;
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr) let serverPort = null;
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr) let serverExitInfo = null;
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr) // ---------------------------------------------------------------------------
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr) // Resolve app root (works both from `electron .` dev and packaged mode)
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr) // ---------------------------------------------------------------------------
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr) function getAppRoot() {
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr)   if (app.isPackaged) {
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr)     // In a packaged app, resources live in process.resourcesPath/app
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr)     return path.join(process.resourcesPath, 'app');
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr)   }
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr)   return app.getAppPath();
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr) }
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr) function logLine(message) {
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr)   const line = `[main] ${message}\n`;
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr)   process.stderr.write(line);
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr)   try {
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr)     const logFile = path.join(app.getPath('userData'), 'poster-main.log');
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr)     fs.appendFileSync(logFile, line);
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr)   } catch (_) {
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr)     // logging must never block startup
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr)   }
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr) }
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr) // ---------------------------------------------------------------------------
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr) // Pick an ephemeral free TCP port by asking the OS for port 0
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr) // ---------------------------------------------------------------------------
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr) function findFreePort() {
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr)   return new Promise((resolve, reject) => {
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr)     const srv = net.createServer();
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr)     srv.listen(0, '127.0.0.1', () => {
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr)       const { port } = srv.address();
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr)       srv.close((err) => {
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr)         if (err) reject(err);
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr)         else resolve(port);
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr)       });
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr)     });
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr)     srv.on('error', reject);
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr)   });
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr) }
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr) // ---------------------------------------------------------------------------
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr) // Poll until the server responds 200 (or any HTTP response) on the given port
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr) // ---------------------------------------------------------------------------
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr) function waitForServer(port, timeoutMs = 15000) {
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr)   const interval = 200;
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr)   const deadline = Date.now() + timeoutMs;
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr)   return new Promise((resolve, reject) => {
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr)     function attempt() {
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr)       if (serverExitInfo) {
+2026-09-07T05:10:08.271Z [dev/opencode] (stderr) [0m
+2026-09-07T05:10:08.315Z [dev/opencode] Let me check the theme prefs implementation and the deploy/useTheme to confirm the durable path.
+2026-09-07T05:10:10.409Z [dev/opencode] (stderr) [0m→ [0mRead electron/themePrefs.cjs
+2026-09-07T05:10:28.521Z [dev/opencode] (stderr) [0m
+2026-09-07T05:10:28.521Z [dev/opencode] (stderr) [0m# [0mTodos
+2026-09-07T05:10:28.521Z [dev/opencode] (stderr) [•] Update ralph/epic.md frontmatter + backlog to shipped 1-7 / remaining 9
+2026-09-07T05:10:28.521Z [dev/opencode] (stderr) [ ] Update requirements.md with shipped epic-005 acceptance + library/theme sync
+2026-09-07T05:10:28.521Z [dev/opencode] (stderr) [ ] Restructure epic-005 plan doc to shipped status + real suite paths + remaining work
+2026-09-07T05:10:28.521Z [dev/opencode] (stderr) [ ] Sync README where needed (Present behavior, theme prefs, env overrides, test scripts)
+2026-09-07T05:10:28.521Z [dev/opencode] (stderr) [ ] Validate: local test run of affected suites (no code changed)
+2026-09-07T05:10:28.522Z [dev/opencode] (stderr) [0m
+2026-09-07T05:10:28.545Z [dev/opencode] I have a complete picture now. Let me set up a task list and make the documentation updates.
+2026-09-07T05:10:33.431Z [dev/opencode] (stderr) [0m← [0mWrite ralph/epic.md
+2026-09-07T05:10:33.431Z [dev/opencode] (stderr) Wrote file successfully.
+2026-09-07T05:10:33.431Z [dev/opencode] (stderr) [0m
+2026-09-07T05:10:33.483Z [dev/opencode] Now let me update `ralph/epic.md`:
+2026-09-07T05:10:37.189Z [dev/opencode] (stderr) [0m← [0mEdit requirements.md
+2026-09-07T05:10:37.189Z [dev/opencode] (stderr) Index: /Users/hpractv/ralph-runs/poster/requirements.md
+2026-09-07T05:10:37.189Z [dev/opencode] (stderr) ===================================================================
+2026-09-07T05:10:37.189Z [dev/opencode] (stderr) --- /Users/hpractv/ralph-runs/poster/requirements.md
+2026-09-07T05:10:37.189Z [dev/opencode] (stderr) +++ /Users/hpractv/ralph-runs/poster/requirements.md
+2026-09-07T05:10:37.190Z [dev/opencode] (stderr) @@ -46,10 +46,10 @@
+2026-09-07T05:10:37.190Z [dev/opencode] (stderr)  Aligned with [`docs/epics/epic-002-theme-install-reorg.plan.md`](docs/epics/epic-002-theme-install-reorg.plan.md) and operator steps in [`README.md`](README.md).
+2026-09-07T05:10:37.190Z [dev/opencode] (stderr)  ### Themes
+2026-09-07T05:10:37.190Z [dev/opencode] (stderr) -- **Four** selectable dark themes on home: **Dracula**, **Tokyo Night**, **dark blue** (navy), **GitHub-dark-style** neutrals.
+2026-09-07T05:10:37.190Z [dev/opencode] (stderr) -- Theming uses **`[data-theme]`** on the document root with CSS variables; home persists the selected theme in a durable, user-owned preference file (for example **`~/.poster/theme.json`** or the Electron app user-data equivalent), while keeping a local browser fallback for live runtime sync. Optional early script to reduce theme **FOUC** is acceptable.
+2026-09-07T05:10:37.190Z [dev/opencode] (stderr) +- **Four** selectable dark themes on home: **Dracula**, **Tokyo Night**, **dark blue** (navy), **GitHub-dark-style** neutrals (plus Light as the default).
+2026-09-07T05:10:37.190Z [dev/opencode] (stderr) +- Theming uses **`[data-theme]`** on the document root with CSS variables; the selected theme persists across quit + relaunch in a durable, user-owned preference file at **`~/.poster/theme.json`** (Electron reads/writes the same file), while a local browser fallback keeps live runtime sync across windows. An early script reduces theme **FOUC** before first paint.
+2026-09-07T05:10:37.190Z [dev/opencode] (stderr)  ### Home library UX
+2026-09-07T05:10:37.190Z [dev/opencode] (stderr)  - **Home** exposes the same **library** capabilities as the deck-side panel (list, open, export, delete, backup, restore) via shared **`LibraryPanel`** (deck remains the place for file import and full editing workflow).
+2026-09-07T05:10:37.190Z [dev/opencode] (stderr) [0m
+2026-09-07T05:10:37.253Z [dev/opencode] Now let me update `requirements.md`. First, the Epic 002 themes bullet and Home library UX to reflect shipped durable prefs:
+2026-09-07T05:10:42.135Z [dev/opencode] (stderr) [0m← [0mEdit requirements.md
+2026-09-07T05:10:42.135Z [dev/opencode] (stderr) Index: /Users/hpractv/ralph-runs/poster/requirements.md
+2026-09-07T05:10:42.135Z [dev/opencode] (stderr) ===================================================================
+2026-09-07T05:10:42.135Z [dev/opencode] (stderr) --- /Users/hpractv/ralph-runs/poster/requirements.md
+2026-09-07T05:10:42.135Z [dev/opencode] (stderr) +++ /Users/hpractv/ralph-runs/poster/requirements.md
+2026-09-07T05:10:42.135Z [dev/opencode] (stderr) @@ -55,8 +55,9 @@
+2026-09-07T05:10:42.135Z [dev/opencode] (stderr)  - **Home** exposes the same **library** capabilities as the deck-side panel (list, open, export, delete, backup, restore) via shared **`LibraryPanel`** (deck remains the place for file import and full editing workflow).
+2026-09-07T05:10:42.135Z [dev/opencode] (stderr)  - **Open from home** navigates to **`/deck?open=<id>`**; **`DeckBuilder`** loads from the library and **clears** the `open` query param after handling.
+2026-09-07T05:10:42.135Z [dev/opencode] (stderr)  - **Import path from home** uses **`/deck?focusImport=1`** (or equivalent); deck focuses/opens the file input once and **removes** the flag.
+2026-09-07T05:10:42.135Z [dev/opencode] (stderr)  - **Deck route** does not duplicate two full library panels by default (trimmed or de-emphasized per epic).
+2026-09-07T05:10:42.135Z [dev/opencode] (stderr) +- **Library root is re-pointable** via the Home **Change...** control: the new folder becomes the active library root (persisted in `library-settings.json` under the durable home), and the previous folder is left **untouched** (no automatic move or copy).
+2026-09-07T05:10:42.135Z [dev/opencode] (stderr)  ### Portable zip packaging
+2026-09-07T05:10:42.135Z [dev/opencode] (stderr)  - Production bundle is **zipped per OS** in CI; **`better-sqlite3`** (and native deps) must be **built on the target OS** -- no mixing `node_modules` across platforms.
+2026-09-07T05:10:42.135Z [dev/opencode] (stderr) [0m
+2026-09-07T05:10:51.242Z [dev/opencode] Now the SQLite library section (section 4) to reflect shipped `~/.poster` root + environment overrides, and the new epic-005 section:
+2026-09-07T05:10:51.242Z [dev/opencode] (stderr) [0m← [0mEdit requirements.md
+2026-09-07T05:10:51.242Z [dev/opencode] (stderr) Index: /Users/hpractv/ralph-runs/poster/requirements.md
+2026-09-07T05:10:51.242Z [dev/opencode] (stderr) ===================================================================
+2026-09-07T05:10:51.242Z [dev/opencode] (stderr) --- /Users/hpractv/ralph-runs/poster/requirements.md
+2026-09-07T05:10:51.242Z [dev/opencode] (stderr) +++ /Users/hpractv/ralph-runs/poster/requirements.md
+2026-09-07T05:10:51.242Z [dev/opencode] (stderr) @@ -78,20 +78,52 @@
+2026-09-07T05:10:51.242Z [dev/opencode] (stderr)  ## 4. SQLite library operator acceptance
+2026-09-07T05:10:51.242Z [dev/opencode] (stderr)  Aligned with [`README.md`](README.md) and library direction in [`ralph/epic.md`](ralph/epic.md).
+2026-09-07T05:10:51.242Z [dev/opencode] (stderr) -- Default DB file location and **`POSTER_DB_PATH`** override behavior match documented operator expectations.
+2026-09-07T05:10:51.242Z [dev/opencode] (stderr) -- Driver selection (**`better-sqlite3`**, fallback **`node:sqlite`**, then JSON file fallback) behaves as documented; optional logging env vars work as described.
+2026-09-07T05:10:51.242Z [dev/opencode] (stderr) +- The local library lives under a **durable user-owned root**, defaulting to **`~/.poster`**; it is not tied to the process working directory or an AppImage extraction dir (so it survives updates and reinstall).
+2026-09-07T05:10:51.242Z [dev/opencode] (stderr) +- Driver selection (**`better-sqlite3`**, fallback **`node:sqlite`**, then JSON file fallback) and optional logging env vars behave as documented.
+2026-09-07T05:10:51.242Z [dev/opencode] (stderr) +- Legacy `poster.sqlite` / `poster.library.json` from the process working directory **migrates once** to the durable root; a marker under the user home prevents re-running; the source is never modified or deleted.
+2026-09-07T05:10:51.242Z [dev/opencode] (stderr) +- Environment overrides are honored: `POSTER_HOME` (durable home root), `POSTER_LIBRARY_PATH` (active library root), and **`POSTER_DB_PATH`** / `POSTER_LIBRARY_JSON_PATH` (individual store file paths).
+2026-09-07T05:10:51.242Z [dev/opencode] (stderr)  ---
+2026-09-07T05:10:51.242Z [dev/opencode] (stderr) -## 5. Explicit non-goals (reference)
+2026-09-07T05:10:51.242Z [dev/opencode] (stderr) +## 5. Epic 005 delivery acceptance (Present fixes, theme persistence, durable library, Home guard)
+2026-09-07T05:10:51.242Z [dev/opencode] (stderr) +Aligned with [`docs/epics/epic-005-next-cycle-fixes.plan.md`](docs/epics/epic-005-next-cycle-fixes.plan.md); shipped in tasks 1–6 and guarded by the regression harness (task 7). Do not re-propose these as open work.
+2026-09-07T05:10:51.242Z [dev/opencode] (stderr) +
+2026-09-07T05:10:51.242Z [dev/opencode] (stderr) +### Present session lifecycle
+2026-09-07T05:10:51.242Z [dev/opencode] (stderr) +
+2026-09-07T05:10:51.242Z [dev/opencode] (stderr) +- **End blanks Present:** End sends a directed blank/clear to the selected Present child(ren) only; the Present viewport clears (no title/body slide content); Start after End sends the first slide again.
+2026-09-07T05:10:51.242Z [dev/opencode] (stderr) +- **Closing Present cleans up:** closing a Present window (or using an explicit close) unregisters it from the deck session list; the deck UI list drops the stale UUID; directed/all-child sends never target a closed id; closing one of N Presents leaves the others intact.
+2026-09-07T05:10:51.243Z [dev/opencode] (stderr) +
+2026-09-07T05:10:51.243Z [dev/opencode] (stderr) +### On-program thumbnail
+2026-09-07T05:10:51.243Z [dev/opencode] (stderr) +
+2026-09-07T05:10:51.243Z [dev/opencode] (stderr) +- The deck shows a **true program-out preview** derived from the same program state pushed to Present (slides, messages, song lyric segments, green-screen flag, blank after End).
+2026-09-07T05:10:51.243Z [dev/opencode] (stderr) +- Placement is **with the Presentation controls region** (Start / Previous / Next / End / Go), not in the deck metadata block.
+2026-09-07T05:10:51.243Z [dev/opencode] (stderr) +- It updates on Start / Next / Previous / Go / End / Send.
+2026-09-07T05:10:51.243Z [dev/opencode] (stderr) +
+2026-09-07T05:10:51.243Z [dev/opencode] (stderr) +### Theme persistence
+2026-09-07T05:10:51.243Z [dev/opencode] (stderr) +
+2026-09-07T05:10:51.243Z [dev/opencode] (stderr) +- The selected theme persists across full quit + relaunch for Home, deck, and Present from **`~/.poster/theme.json`** (invalid/missing values fall back safely); changing the theme still applies live to all open windows.
+2026-09-07T05:10:51.243Z [dev/opencode] (stderr) +
+2026-09-07T05:10:51.243Z [dev/opencode] (stderr) +### Home guard
+2026-09-07T05:10:51.243Z [dev/opencode] (stderr) +
+2026-09-07T05:10:51.243Z [dev/opencode] (stderr) +- Home exposes **no bare "Open Present"** action; Present windows open only through the deck workflow, and a bare `/presentation` route shows operator guidance.
+2026-09-07T05:10:51.243Z [dev/opencode] (stderr) +
+2026-09-07T05:10:51.243Z [dev/opencode] (stderr) +### Library durability
+2026-09-07T05:10:51.243Z [dev/opencode] (stderr) +
+2026-09-07T05:10:51.243Z [dev/opencode] (stderr) +- Fresh installs default to **`~/.poster`** (no forced first-run picker); an optional **Change...** re-points the library and leaves the old folder untouched.
+2026-09-07T05:10:51.243Z [dev/opencode] (stderr) +- Data survives relaunch, cwd changes/wipe, and reinstall simulations (install dir wiped, `~/.poster` kept).
+2026-09-07T05:10:51.243Z [dev/opencode] (stderr) +
+2026-09-07T05:10:51.243Z [dev/opencode] (stderr) +---
+2026-09-07T05:10:51.243Z [dev/opencode] (stderr) +
+2026-09-07T05:10:51.243Z [dev/opencode] (stderr) +## 6. Explicit non-goals (reference)
+2026-09-07T05:10:51.243Z [dev/opencode] (stderr) +
+2026-09-07T05:10:51.243Z [dev/opencode] (stderr)  Do not treat the following as required acceptance unless promoted in [`ralph/epic.md`](ralph/epic.md) or an epic plan: mandatory cloud accounts, cross-WAN multi-operator authority, full motion-graphics timelines as a baseline, **codesign/notarize** for Apple builds unless an epic adds secrets and workflow.
+2026-09-07T05:10:51.243Z [dev/opencode] (stderr)  ---
+2026-09-07T05:10:51.243Z [dev/opencode] (stderr) -## 6. Maintenance
+2026-09-07T05:10:51.243Z [dev/opencode] (stderr) +## 7. Maintenance
+2026-09-07T05:10:51.243Z [dev/opencode] (stderr)  When product behavior, packaging, or CI changes:
+2026-09-07T05:10:51.243Z [dev/opencode] (stderr)  1. Update the **relevant canonical doc** ([`ralph/epic.md`](ralph/epic.md), [`docs/epics/`](docs/epics/), [`README.md`](README.md)).
+2026-09-07T05:10:51.243Z [dev/opencode] (stderr) [0m
+2026-09-07T05:10:57.269Z [dev/opencode] (stderr) [0m← [0mEdit requirements.md
+2026-09-07T05:10:57.270Z [dev/opencode] (stderr) Index: /Users/hpractv/ralph-runs/poster/requirements.md
+2026-09-07T05:10:57.270Z [dev/opencode] (stderr) ===================================================================
+2026-09-07T05:10:57.270Z [dev/opencode] (stderr) --- /Users/hpractv/ralph-runs/poster/requirements.md
+2026-09-07T05:10:57.270Z [dev/opencode] (stderr) +++ /Users/hpractv/ralph-runs/poster/requirements.md
+2026-09-07T05:10:57.270Z [dev/opencode] (stderr) @@ -6,9 +6,10 @@
+2026-09-07T05:10:57.270Z [dev/opencode] (stderr)  | Layer | Path | Role |
+2026-09-07T05:10:57.270Z [dev/opencode] (stderr)  | --- | --- | --- |
+2026-09-07T05:10:57.270Z [dev/opencode] (stderr)  | Product vision, roles, design principles, layout contract, SQLite library direction | [`ralph/epic.md`](ralph/epic.md) | Long-form design guide |
+2026-09-07T05:10:57.270Z [dev/opencode] (stderr) -| Epic plans (scoped deliverables, status, todos) | [`docs/epics/`](docs/epics/) | e.g. [`epic-001-tech-stack-and-runtime-workflows.plan.md`](docs/epics/epic-001-tech-stack-and-runtime-workflows.plan.md), [`epic-002-theme-install-reorg.plan.md`](docs/epics/epic-002-theme-install-reorg.plan.md) |
+2026-09-07T05:10:57.270Z [dev/opencode] (stderr) +| Epic plans (scoped deliverables, status, todos) | [`docs/epics/`](docs/epics/) | e.g. [`epic-001-tech-stack-and-runtime-workflows.plan.md`](docs/epics/epic-001-tech-stack-and-runtime-workflows.plan.md), [`epic-002-theme-install-reorg.plan.md`](docs/epics/epic-002-theme-install-reorg.plan.md), [`epic-005-next-cycle-fixes.plan.md`](docs/epics/epic-005-next-cycle-fixes.plan.md) |
+2026-09-07T05:10:57.270Z [dev/opencode] (stderr) +| Regression suite map: real test files per defect | [`next-cycle-test-harness.md`](docs/epics/next-cycle-test-harness.md) | Pass/fail assertions for the epic-005 fixes |
+2026-09-07T05:10:57.270Z [dev/opencode] (stderr)  | Operator how-to: dev server, production start, SQLite, portable zip, Electron, CI, Releases | [`README.md`](README.md) | Day-to-day run and ship instructions |
+2026-09-07T05:10:57.270Z [dev/opencode] (stderr)  If acceptance criteria conflict, resolve in this order: **safety and correctness** > **documented epic plan for that area** > **`ralph/epic.md` principles** > **this summary**.
+2026-09-07T05:10:57.270Z [dev/opencode] (stderr) [0m
+2026-09-07T05:10:57.276Z [dev/opencode] Let me update the canonical sources table to include the epic-005 plan:
+2026-09-07T05:11:39.144Z [dev/opencode] (stderr) [0m← [0mWrite docs/epics/epic-005-next-cycle-fixes.plan.md
+2026-09-07T05:11:39.144Z [dev/opencode] (stderr) Wrote file successfully.
+2026-09-07T05:11:39.144Z [dev/opencode] (stderr) [0m
+2026-09-07T05:11:39.168Z [dev/opencode] Now the epic-005 plan doc. Let me write the updated version preserving acceptance text but marking shipped status and real suite paths:
+2026-09-07T05:11:51.172Z [dev/opencode] (stderr) [0m← [0mEdit README.md
+2026-09-07T05:11:51.172Z [dev/opencode] (stderr) Index: /Users/hpractv/ralph-runs/poster/README.md
+2026-09-07T05:11:51.172Z [dev/opencode] (stderr) ===================================================================
+2026-09-07T05:11:51.172Z [dev/opencode] (stderr) --- /Users/hpractv/ralph-runs/poster/README.md
+2026-09-07T05:11:51.172Z [dev/opencode] (stderr) +++ /Users/hpractv/ralph-runs/poster/README.md
+2026-09-07T05:11:51.172Z [dev/opencode] (stderr) @@ -57,14 +57,22 @@
+2026-09-07T05:11:51.172Z [dev/opencode] (stderr)  1. **Deck builder** (`/deck`): Load a slide deck (JSON), import a song (XML), or use the **library** (when the full server is running). Pick slides and send them to the presentation.
+2026-09-07T05:11:51.172Z [dev/opencode] (stderr)  2. **Presentation** (`/presentation`): Open this on your projector or second monitor—fullscreen it there. It shows whatever the builder last sent.
+2026-09-07T05:11:51.172Z [dev/opencode] (stderr)  3. Keep both views open in the **same browser** so the live channel works. Use the on-screen controls or keyboard shortcuts in the builder to move through slides or song lyrics.
+2026-09-07T05:11:51.172Z [dev/opencode] (stderr) -The in-app home page (`/`) includes the same overview and links to open the deck builder (new tab) and presentation (new window).
+2026-09-07T05:11:51.172Z [dev/opencode] (stderr) +Live Present behavior:
+2026-09-07T05:11:51.172Z [dev/opencode] (stderr) +- **Start / Previous / Next / Go** move the program and update the deck's **on-program thumbnail** (a preview of the exact program output, shown with the Presentation controls).
+2026-09-07T05:11:51.172Z [dev/opencode] (stderr) +- **End** blanks the program output (no title/body on Present) and clears the thumbnail; **Start** after End resumes at the first slide.
+2026-09-07T05:11:51.172Z [dev/opencode] (stderr) +- Closing a **Present** window removes it from the deck's Present window list, so stale windows are never sent to and closing one of several Present windows leaves the others intact.
+2026-09-07T05:11:51.172Z [dev/opencode] (stderr) +
+2026-09-07T05:11:51.172Z [dev/opencode] (stderr) +The in-app home page (`/`) includes the same overview and links to open the deck builder (new tab) and presentation (new window). Present windows open from the deck — Home has no bare "Open Present" action.
+2026-09-07T05:11:51.172Z [dev/opencode] (stderr) +
+2026-09-07T05:11:51.172Z [dev/opencode] (stderr)  ### SQLite library storage
+2026-09-07T05:11:51.172Z [dev/opencode] (stderr) -The app stores the local library in **`~/.poster`** by default (override with **`POSTER_DB_PATH`**). The Home page's **Change...** control re-points the library to another folder and leaves the previous folder untouched. A legacy `poster.sqlite` or `poster.library.json` in the process working directory is copied to `~/.poster` once when the durable library is first initialized; the source is never deleted.
+2026-09-07T05:11:51.172Z [dev/opencode] (stderr) +The app stores its durable data under **`~/.poster`** by default (override the durable home with **`POSTER_HOME`**, the active library root with **`POSTER_LIBRARY_PATH`**, or an individual store file with **`POSTER_DB_PATH`** / `POSTER_LIBRARY_JSON_PATH`). The Home page's **Change...** control re-points the library to another folder (persisted in `library-settings.json`) and leaves the previous folder untouched. A legacy `poster.sqlite` or `poster.library.json` in the process working directory is copied to the durable library once when the durable library is first initialized (a marker under the home prevents re-runs); the source is never deleted.
+2026-09-07T05:11:51.172Z [dev/opencode] (stderr) +The selected **theme** also persists in the same durable home at **`~/.poster/theme.json`** and is restored for Home, deck, and Present windows across a full quit and relaunch.
+2026-09-07T05:11:51.172Z [dev/opencode] (stderr) +
+2026-09-07T05:11:51.172Z [dev/opencode] (stderr)  1. **`better-sqlite3`** is used when the native addon loads (typical on Node LTS with a successful `pnpm rebuild better-sqlite3`).
+2026-09-07T05:11:51.172Z [dev/opencode] (stderr)  2. If that fails (for example Node 24+ before a matching prebuild), the server automatically uses Node’s built-in **`node:sqlite`** (`DatabaseSync`) so the same `poster.sqlite` file still works—no extra install (startup stays quiet; set **`POSTER_SQLITE_LOG_BACKEND=1`** to log which driver was chosen).
+2026-09-07T05:11:51.172Z [dev/opencode] (stderr)  3. If both fail, the app falls back to **`poster.library.json`** in the active library folder.
+2026-09-07T05:11:51.172Z [dev/opencode] (stderr) [0m
+2026-09-07T05:11:51.221Z [dev/opencode] Now the README. Let me update the "How to use Poster", "SQLite library storage", and "Other scripts" sections:
+2026-09-07T05:11:54.088Z [dev/opencode] (stderr) [0m← [0mEdit README.md
+2026-09-07T05:11:54.088Z [dev/opencode] (stderr) Index: /Users/hpractv/ralph-runs/poster/README.md
+2026-09-07T05:11:54.088Z [dev/opencode] (stderr) ===================================================================
+2026-09-07T05:11:54.088Z [dev/opencode] (stderr) --- /Users/hpractv/ralph-runs/poster/README.md
+2026-09-07T05:11:54.088Z [dev/opencode] (stderr) +++ /Users/hpractv/ralph-runs/poster/README.md
+2026-09-07T05:11:54.088Z [dev/opencode] (stderr) @@ -87,9 +87,10 @@
+2026-09-07T05:11:54.088Z [dev/opencode] (stderr)  | Command | Description |
+2026-09-07T05:11:54.088Z [dev/opencode] (stderr)  | --- | --- |
+2026-09-07T05:11:54.088Z [dev/opencode] (stderr)  | `pnpm test` | Jest tests (interactive watch by default) |
+2026-09-07T05:11:54.088Z [dev/opencode] (stderr)  | `pnpm run test:e2e` | Playwright end-to-end tests (see `playwright.config.ts`) |
+2026-09-07T05:11:54.088Z [dev/opencode] (stderr) -| `pnpm run test:e2e:remix` | Playwright against Remix dev (`playwright.remix.config.ts`) |
+2026-09-07T05:11:54.088Z [dev/opencode] (stderr) +| `pnpm run test:e2e:remix` | Playwright against Remix dev (`playwright.remix.config.ts`) — unit/smoke for Present, theme, thumbnail, library |
+2026-09-07T05:11:54.088Z [dev/opencode] (stderr) +| `pnpm run test:e2e:electron` | Playwright Electron smoke (`playwright.electron.config.ts`) — quit/relaunch theme persistence |
+2026-09-07T05:11:54.088Z [dev/opencode] (stderr)  | `pnpm run build` | CRA production build to `build/` |
+2026-09-07T05:11:54.088Z [dev/opencode] (stderr)  | `pnpm run build:remix` | Remix production build |
+2026-09-07T05:11:54.088Z [dev/opencode] (stderr)  | `pnpm run package:portable` | Zip a **portable** server bundle to `dist/` (requires `build/`; see below) |
+2026-09-07T05:11:54.088Z [dev/opencode] (stderr)  | `pnpm run build:electron` | Build desktop **installers** with electron-builder (`dist/electron/`) |
+2026-09-07T05:11:54.088Z [dev/opencode] (stderr) [0m
+2026-09-07T05:11:57.746Z [dev/opencode] (stderr) [0m→ [0mRead requirements.md
+2026-09-07T05:11:59.905Z [dev/opencode] (stderr) [0m
+2026-09-07T05:11:59.905Z [dev/opencode] (stderr) [0m$ [0mcd /Users/hpractv/ralph-runs/poster && grep -rn "workspace/poster-plans\|workspace/poster-regression" docs/ requirements.md README.md ralph/*.md 2>/dev/null | grep -v node_modules
+2026-09-07T05:11:59.905Z [dev/opencode] (stderr) (no output)
+2026-09-07T05:11:59.905Z [dev/opencode] (stderr) [0m
+2026-09-07T05:11:59.920Z [dev/opencode] Let me verify the updated files for consistency and stale references:
+2026-09-07T05:12:01.892Z [dev/opencode] (stderr) [0m→ [0mRead README.md[90m [offset=55, limit=50][0m
+2026-09-07T05:12:02.639Z [dev/opencode] Let me review the final README and verify the plan doc:
+2026-09-07T05:12:02.654Z [dev/opencode] (stderr) [0m
+2026-09-07T05:12:02.654Z [dev/opencode] (stderr) [0m$ [0mcd /Users/hpractv/ralph-runs/poster && grep -n "docs/epics\|windowPolicy\|remix-" docs/epics/epic-005-next-cycle-fixes.plan.md | head -40
+2026-09-07T05:12:02.654Z [dev/opencode] (stderr) 55:| `e2e/remix-present-end.spec.ts` | Smoke | Open Present → Start → End → Present DOM has no title/body slide content; Start resumes at the first slide. |
+2026-09-07T05:12:02.654Z [dev/opencode] (stderr) 76:| `e2e/remix-theme-persist.spec.ts` | Smoke | Cross-window + new-context restore (live path stays green). |
+2026-09-07T05:12:02.654Z [dev/opencode] (stderr) 97:| `e2e/remix-present-close.spec.ts` | Smoke | Open Present → close via window X → deck Present list has no that UUID. |
+2026-09-07T05:12:02.654Z [dev/opencode] (stderr) 118:| `e2e/remix-program-thumbnail.spec.ts` | Smoke | Deck shows program thumbnail after Present receives a send; blank after End. |
+2026-09-07T05:12:02.654Z [dev/opencode] (stderr) 147:| `e2e/remix-library-relaunch.spec.ts` | Smoke | **Default** `~/.poster` (no picker) → save → quit → relaunch → deck present. |
+2026-09-07T05:12:02.654Z [dev/opencode] (stderr) 148:| `e2e/remix-library-repoint.spec.ts` | Smoke | Change… to new folder → app uses new root; old `~/.poster` (or prior path) still on disk unchanged. |
+2026-09-07T05:12:02.654Z [dev/opencode] (stderr) 156:| Home has no “Open Present” | Home CTAs are Open Presentation (deck) / builders / import only; Present opens from deck; bare `/presentation` shows connect guidance. Covered by `src/__tests__/homeWindowPolicy.test.js`, `src/__tests__/electron-main.regression.test.js`, `e2e/remix-single-home.spec.ts`. |
+2026-09-07T05:12:02.654Z [dev/opencode] (stderr) 172:  - `remix-e2e`: `pnpm run test:e2e:remix` (Remix dev webServer) — A, C, D, E smoke + Home guard.
+2026-09-07T05:12:02.654Z [dev/opencode] (stderr) 180:| A End blank | `src/__tests__/posterSessionGraph.test.js`, `src/Present/applyPresentPayload.test.ts` | `e2e/remix-present-end.spec.ts` |
+2026-09-07T05:12:02.654Z [dev/opencode] (stderr) 181:| B Theme | `src/utils/themePrefs.test.js`, `src/utils/useTheme.unit.test.tsx`, `src/rootThemeBootstrap.test.ts` | `e2e/electron-theme-relaunch.spec.ts`, `e2e/remix-theme-persist.spec.ts` |
+2026-09-07T05:12:02.654Z [dev/opencode] (stderr) 182:| C Close list | `src/__tests__/posterSessionGraph.test.js`, `src/__tests__/electron-main.regression.test.js`, `src/__tests__/homeWindowPolicy.test.js` | `e2e/remix-present-close.spec.ts` |
+2026-09-07T05:12:02.654Z [dev/opencode] (stderr) 183:| D Thumbnail | `src/Present/programThumbnail.test.ts`, `src/Present/programThumbnail.integration.test.tsx`, `src/Deck/DeckBuilder.unit.test.tsx` | `e2e/remix-program-thumbnail.spec.ts` + Mac manual |
+2026-09-07T05:12:02.654Z [dev/opencode] (stderr) 184:| E Library | `src/__tests__/library-root.server.test.ts`, `src/__tests__/library-json.server.test.ts`, `src/integration/library-survive-cwd-wipe.test.ts`, `src/integration/library-json-survive-cwd-wipe.test.ts` | `e2e/remix-library-relaunch.spec.ts`, `e2e/remix-library-repoint.spec.ts` |
+2026-09-07T05:12:02.654Z [dev/opencode] (stderr) 185:| Guard | `src/__tests__/homeWindowPolicy.test.js`, `src/__tests__/electron-main.regression.test.js` | `e2e/remix-single-home.spec.ts` |
+2026-09-07T05:12:02.654Z [dev/opencode] (stderr) 249:- Epic-004 context: directed send, theme persist, program thumbnail (repo `docs/epics`)
+2026-09-07T05:12:02.654Z [dev/opencode] (stderr) [0m
+2026-09-07T05:12:08.707Z [dev/opencode] (stderr) [0m$ [0mcd /Users/hpractv/ralph-runs/poster && for f in src/Present/applyPresentPayload.test.ts src/Deck/DeckBuilder.unit.test.tsx src/utils/themePrefs.test.js src/rootThemeBootstrap.test.ts src/utils/useTheme.unit.test.tsx src/Present/programThumbnail.test.ts src/Present/programThumbnail.integration.test.tsx src/integration/library-json-survive-cwd-wipe.test.ts; do [ -f "$f" ] && echo "OK  $f" || echo "MISSING  $f"; done
+2026-09-07T05:12:08.707Z [dev/opencode] (stderr) OK  src/Present/applyPresentPayload.test.ts
+2026-09-07T05:12:08.707Z [dev/opencode] (stderr) OK  src/Deck/DeckBuilder.unit.test.tsx
+2026-09-07T05:12:08.707Z [dev/opencode] (stderr) OK  src/utils/themePrefs.test.js
+2026-09-07T05:12:08.707Z [dev/opencode] (stderr) OK  src/rootThemeBootstrap.test.ts
+2026-09-07T05:12:08.707Z [dev/opencode] (stderr) OK  src/utils/useTheme.unit.test.tsx
+2026-09-07T05:12:08.707Z [dev/opencode] (stderr) OK  src/Present/programThumbnail.test.ts
+2026-09-07T05:12:08.707Z [dev/opencode] (stderr) OK  src/Present/programThumbnail.integration.test.tsx
+2026-09-07T05:12:08.707Z [dev/opencode] (stderr) OK  src/integration/library-json-survive-cwd-wipe.test.ts
+2026-09-07T05:12:08.707Z [dev/opencode] (stderr) [0m
+2026-09-07T05:12:08.764Z [dev/opencode] Let me verify the real suite paths cited in the docs all exist:
+2026-09-07T05:12:14.541Z [dev/opencode] (stderr) [0m→ [0mRead ralph/AGENT.md
+2026-09-07T05:12:18.333Z [dev/opencode] (stderr) [0m
+2026-09-07T05:12:18.333Z [dev/opencode] (stderr) [0m$ [0mcd /Users/hpractv/ralph-runs/poster && npx --no-install markdownlint --version 2>/dev/null || echo "no markdownlint"; ls .markdownlint* 2>/dev/null; echo "---"; git diff --stat
+2026-09-07T05:12:18.333Z [dev/opencode] (stderr) no markdownlint
+2026-09-07T05:12:18.333Z [dev/opencode] (stderr) zsh:1: no matches found: .markdownlint*
+2026-09-07T05:12:18.333Z [dev/opencode] (stderr) ---
+2026-09-07T05:12:18.333Z [dev/opencode] (stderr)  README.md                                    |   15 +-
+2026-09-07T05:12:18.333Z [dev/opencode] (stderr)  docs/epics/epic-005-next-cycle-fixes.plan.md |  243 +++---
+2026-09-07T05:12:18.333Z [dev/opencode] (stderr)  ralph/epic.md                                |   18 +-
+2026-09-07T05:12:18.333Z [dev/opencode] (stderr)  ralph/run-status.json                        |    6 +-
+2026-09-07T05:12:18.333Z [dev/opencode] (stderr)  ralph/run.log                                | 1029 ++++++++++++++++++++++++++
+2026-09-07T05:12:18.333Z [dev/opencode] (stderr)  ralph/task-status.json                       |   20 +-
+2026-09-07T05:12:18.333Z [dev/opencode] (stderr)  requirements.md                              |   48 +-
+2026-09-07T05:12:18.333Z [dev/opencode] (stderr)  7 files changed, 1225 insertions(+), 154 deletions(-)
+2026-09-07T05:12:18.333Z [dev/opencode] (stderr) [0m
+2026-09-07T05:12:27.560Z [dev/opencode] Let me validate the frontmatter YAML in epic.md and double-check the plan doc headings:
+2026-09-07T05:12:27.636Z [dev/opencode] (stderr) [0m$ [0mcd /Users/hpractv/ralph-runs/poster && python3 -c "
+2026-09-07T05:12:27.636Z [dev/opencode] (stderr) import re, yaml, sys
+2026-09-07T05:12:27.636Z [dev/opencode] (stderr) raw = open('ralph/epic.md').read()
+2026-09-07T05:12:27.636Z [dev/opencode] (stderr) fm = re.match(r'^---\n(.*?)\n---\n', raw, re.S)
+2026-09-07T05:12:27.636Z [dev/opencode] (stderr) if not fm:
+2026-09-07T05:12:27.636Z [dev/opencode] (stderr)     print('NO FRONTMATTER'); sys.exit(1)
+2026-09-07T05:12:27.636Z [dev/opencode] (stderr) data = yaml.safe_load(fm.group(1))
+2026-09-07T05:12:27.636Z [dev/opencode] (stderr) print('name:', data['name'])
+2026-09-07T05:12:27.636Z [dev/opencode] (stderr) print('epic:', data['epic'])
+2026-09-07T05:12:27.636Z [dev/opencode] (stderr) print('status:', data['status'])
+2026-09-07T05:12:27.636Z [dev/opencode] (stderr) print('todos:')
+2026-09-07T05:12:27.636Z [dev/opencode] (stderr) for t in data['todos']:
+2026-09-07T05:12:27.636Z [dev/opencode] (stderr)     print('  -', t['id'], t['status'])
+2026-09-07T05:12:27.636Z [dev/opencode] (stderr) "
+2026-09-07T05:12:27.636Z [dev/opencode] (stderr) name: Next-cycle Present/deck fixes + durable library
+2026-09-07T05:12:27.636Z [dev/opencode] (stderr) epic: epic-005
+2026-09-07T05:12:27.636Z [dev/opencode] (stderr) status: in_progress
+2026-09-07T05:12:27.636Z [dev/opencode] (stderr) todos:
+2026-09-07T05:12:27.636Z [dev/opencode] (stderr)   - present-close-list done
+2026-09-07T05:12:27.636Z [dev/opencode] (stderr)   - end-blanks-present done
+2026-09-07T05:12:27.636Z [dev/opencode] (stderr)   - on-program-thumbnail done
+2026-09-07T05:12:27.636Z [dev/opencode] (stderr)   - theme-persist-relaunch done
+2026-09-07T05:12:27.636Z [dev/opencode] (stderr)   - library-poster-home done
+2026-09-07T05:12:27.636Z [dev/opencode] (stderr)   - home-no-open-present-guard done
+2026-09-07T05:12:27.636Z [dev/opencode] (stderr)   - regression-harness done
+2026-09-07T05:12:27.636Z [dev/opencode] (stderr)   - docs-sync done
+2026-09-07T05:12:27.636Z [dev/opencode] (stderr)   - packaged-acceptance pending
+2026-09-07T05:12:27.636Z [dev/opencode] (stderr) [0m
+2026-09-07T05:12:31.498Z [dev/opencode] (stderr) [0m→ [0mRead docs/epics/epic-005-next-cycle-fixes.plan.md[90m [offset=1, limit=60][0m
+2026-09-07T05:12:38.293Z [dev/opencode] The docs are consistent. Let me run the key jest suites cited in the docs to confirm the "shipped + green" claims hold:
+2026-09-07T05:12:40.299Z [dev/opencode] (stderr) [0m
+2026-09-07T05:12:40.299Z [dev/opencode] (stderr) [0m$ [0mcd /Users/hpractv/ralph-runs/poster && CI=true pnpm exec react-scripts test --watchAll=false --runInBand --silent src/__tests__/posterSessionGraph.test.js src/__tests__/library-root.server.test.ts src/utils/themePrefs.test.js src/Present/programThumbnail.test.ts src/__tests__/homeWindowPolicy.test.js 2>&1 | tail -25
+2026-09-07T05:12:40.299Z [dev/opencode] (stderr) PASS src/__tests__/library-root.server.test.ts
+2026-09-07T05:12:40.299Z [dev/opencode] (stderr) PASS src/utils/themePrefs.test.js
+2026-09-07T05:12:40.299Z [dev/opencode] (stderr) PASS src/__tests__/posterSessionGraph.test.js
+2026-09-07T05:12:40.299Z [dev/opencode] (stderr) PASS src/Present/programThumbnail.test.ts
+2026-09-07T05:12:40.299Z [dev/opencode] (stderr) PASS src/__tests__/homeWindowPolicy.test.js
+2026-09-07T05:12:40.299Z [dev/opencode] (stderr) Test Suites: 5 passed, 5 total
+2026-09-07T05:12:40.299Z [dev/opencode] (stderr) Tests:       42 passed, 42 total
+2026-09-07T05:12:40.299Z [dev/opencode] (stderr) Snapshots:   0 total
+2026-09-07T05:12:40.299Z [dev/opencode] (stderr) Time:        1.11 s
+2026-09-07T05:12:40.299Z [dev/opencode] (stderr) [0m
+2026-09-07T05:12:44.227Z [dev/opencode] (stderr) [0m# [0mTodos
+2026-09-07T05:12:44.227Z [dev/opencode] (stderr) [✓] Update ralph/epic.md frontmatter + backlog to shipped 1-7 / remaining 9
+2026-09-07T05:12:44.227Z [dev/opencode] (stderr) [✓] Update requirements.md with shipped epic-005 acceptance + library/theme sync
+2026-09-07T05:12:44.227Z [dev/opencode] (stderr) [✓] Restructure epic-005 plan doc to shipped status + real suite paths + remaining work
+2026-09-07T05:12:44.227Z [dev/opencode] (stderr) [✓] Sync README where needed (Present behavior, theme prefs, env overrides, test scripts)
+2026-09-07T05:12:44.227Z [dev/opencode] (stderr) [✓] Validate: local test run of affected suites (no code changed)
+2026-09-07T05:12:44.227Z [dev/opencode] (stderr) [0m
+2026-09-07T05:12:51.028Z [dev/opencode] # Task: Synchronize acceptance documentation
+2026-09-07T05:12:51.028Z [dev/opencode] ## Summary
+2026-09-07T05:12:51.028Z [dev/opencode] - Updated the four acceptance docs in `/Users/hpractv/ralph-runs/poster` so acceptance matches the shipped epic-005 behavior (tasks 1–6: End blank, Present close-list cleanup, on-program thumbnail, theme persistence, `~/.poster` library, Home guard) and the remaining harness/packaged work (task 7 done, task 8 this sync, task 9 packaged acceptance still open). No directed-send/architecture work was reopened.
+2026-09-07T05:12:51.028Z [dev/opencode] ## Changes Made
+2026-09-07T05:12:51.028Z [dev/opencode] - **`ralph/epic.md`**: frontmatter todos now mark regression-harness and docs-sync as `done`, `packaged-acceptance` stays `pending`; "Already done" covers tasks 1–7; remaining backlog is only task 9.
+2026-09-07T05:12:51.028Z [dev/opencode] - **`requirements.md`**: added a canonical-source row for the epic-005 plan and harness; tightened Epic 002 theme bullet to the shipped `~/.poster/theme.json` path; added the re-pointable library-root bullet; rewrote section 4 to shipped `~/.poster` root, one-time migration, and env overrides (`POSTER_HOME`, `POSTER_LIBRARY_PATH`, `POSTER_DB_PATH`, `POSTER_LIBRARY_JSON_PATH`); added new section 5 "Epic 005 delivery acceptance" (shipped checklists) and renumbered non-goals/maintenance to 6/7.
+2026-09-07T05:12:51.028Z [dev/opencode] - **`docs/epics/epic-005-next-cycle-fixes.plan.md`**: re-anchored from "to do" to "shipped" — status table (A–E/Guard/7 done, 8 done, 9 remaining), each item marked shipped with acceptance preserved, "proposed" test paths replaced with the real suite files from the harness, DoD/order referenced as shipped, risks/decisions kept, stale `/workspace` references removed.
+2026-09-07T05:12:51.028Z [dev/opencode] - **`README.md`**: added Live Present behavior bullets (End blank + thumbnail reset, close removes from list, one-of-N), tightened SQLite storage env overrides, documented `~/.poster/theme.json`, and added `test:e2e:electron` to the script table.
+2026-09-07T05:12:51.028Z [dev/opencode] ## Validation
+2026-09-07T05:12:51.028Z [dev/opencode] - `ralph/epic.md` YAML frontmatter parses cleanly (9 todos, only `packaged-acceptance` pending).
+2026-09-07T05:12:51.028Z [dev/opencode] - All test-suite paths cited in the updated docs exist (verified each file).
+2026-09-07T05:12:51.028Z [dev/opencode] - No stale `/workspace/...` cross-references remain.
+2026-09-07T05:12:51.028Z [dev/opencode] - Ran the five key doc-cited Jest suites: `posterSessionGraph`, `library-root.server`, `themePrefs`, `programThumbnail`, `homeWindowPolicy` — **5 suites / 42 tests passed**, confirming the "shipped and green" claims in the docs. No code was changed, so no build step is required.
+2026-09-07T05:12:51.028Z [dev/opencode] <status>done</status>
+2026-09-07T05:12:51.113Z [dev] Dev agent finished in 5m 18s
+2026-09-07T05:12:51.113Z [dev] I'll start by exploring the project structure to understand what's being worked on. Let me look at the documentation files I need to sync and understand the shipped behavior. Let me look at the git lo...
+2026-09-07T05:12:51.115Z [qa] Running QA agent...
+2026-09-07T05:12:52.091Z [qa/opencode] (stderr) [0m
+2026-09-07T05:12:52.091Z [qa/opencode] (stderr) > build · mimo-v2.5-free
+2026-09-07T05:12:52.091Z [qa/opencode] (stderr) [0m
+2026-09-07T05:13:00.608Z [qa/opencode] (stderr) [0m→ [0mRead requirements.md
+2026-09-07T05:13:07.800Z [qa/opencode] (stderr) [0m→ [0mRead docs/epics/epic-005-next-cycle-fixes.plan.md
+2026-09-07T05:13:13.133Z [qa/opencode] (stderr) [0m→ [0mRead ralph/epic.md
+2026-09-07T05:13:17.705Z [qa/opencode] (stderr) [0m→ [0mRead README.md
+2026-09-07T05:13:48.623Z [qa/opencode] (stderr) [0m→ [0mRead docs/epics/epic-005-next-cycle-fixes.plan.md[90m [limit=10][0m
+2026-09-07T05:13:53.992Z [qa/opencode] (stderr) [0m✱ [0mGrep "task 8"[90m in docs/epics/epic-005-next-cycle-fixes.plan.md · 1 match[0m
+2026-09-07T05:14:01.516Z [qa/opencode] (stderr) [0m→ [0mRead docs/epics/epic-005-next-cycle-fixes.plan.md[90m [offset=205, limit=15][0m
+2026-09-07T05:14:11.161Z [qa/opencode] (stderr) [0m✱ [0mGrep "acceptance documentation sync"[90m in . · 1 match[0m
+2026-09-07T05:14:30.294Z [qa/opencode] <status>not_verified</status>
+2026-09-07T05:14:30.295Z [qa/opencode] # Feedback
+2026-09-07T05:14:30.295Z [qa/opencode] The acceptance documentation synchronization is incomplete due to an inconsistency in `docs/epics/epic-005-next-cycle-fixes.plan.md`:
+2026-09-07T05:14:30.295Z [qa/opencode] - The **status line** (line 3) states: *"Remaining: acceptance documentation sync (task 8) and packaged/Electron smoke evidence (task 9)"*.
+2026-09-07T05:14:30.295Z [qa/opencode] - However, the **status table** (item 8) and the **Definition of Done** checklist both mark task 8 as **Done**.
+2026-09-07T05:14:30.295Z [qa/opencode] This contradiction leaves the plan’s top‑level status misaligned with its own detail. The status line must be updated to reflect that only task 9 (packaged/Electron acceptance evidence) remains.
+2026-09-07T05:14:30.295Z [qa/opencode] **Suggested fix:**
+2026-09-07T05:14:30.295Z [qa/opencode] Change line 3 from:
+2026-09-07T05:14:30.295Z [qa/opencode] ```
+2026-09-07T05:14:30.295Z [qa/opencode] Remaining: acceptance documentation sync (task 8) and packaged/Electron smoke evidence (task 9).
+2026-09-07T05:14:30.295Z [qa/opencode] ```
+2026-09-07T05:14:30.295Z [qa/opencode] to:
+2026-09-07T05:14:30.295Z [qa/opencode] ```
+2026-09-07T05:14:30.295Z [qa/opencode] Remaining: packaged/Electron smoke evidence (task 9).
+2026-09-07T05:14:30.295Z [qa/opencode] ```
+2026-09-07T05:14:30.296Z [qa/opencode] All other files (`requirements.md`, `ralph/epic.md`, `README.md`) correctly reflect the shipped behavior and do not require changes.
+2026-09-07T05:14:30.381Z [qa] QA agent finished in 1m 39s
+2026-09-07T05:14:30.384Z [qa] Feedback: <status>not_verified</status>  # Feedback  The acceptance documentation synchronization is incomplete due to an inconsis...
+2026-09-07T05:14:30.384Z Total LLM calls: 3/400
+2026-09-07T05:14:30.384Z [ralph] Dev iteration #2 for task #8: Synchronize acceptance documentation
+2026-09-07T05:14:30.385Z [dev] Running dev agent...
+2026-09-07T05:14:31.377Z [dev/opencode] (stderr) [0m
+2026-09-07T05:14:31.377Z [dev/opencode] (stderr) > build · big-pickle
+2026-09-07T05:14:31.378Z [dev/opencode] (stderr) [0m
+2026-09-07T05:14:33.604Z [dev/opencode] I'll address the feedback. The task is to sync acceptance documentation, and the feedback identifies one specific inconsistency in the epic-005 plan file. Let me look at the file.
+2026-09-07T05:14:33.604Z [dev/opencode] The task says "In /Users/hpractv/ralph-runs/poster" but I should check both locations. Let me find the file.
+2026-09-07T05:14:35.606Z [dev/opencode] (stderr) [0m$ [0mfind /Users/hpractv/ralph-runs/poster -name "epic-005-next-cycle-fixes.plan.md" 2>/dev/null; echo "---workspace---"; find /Users/hpractv/github/third-party/izep/ralph-gui -name "epic-005-next-cycle-fixes.plan.md" 2>/dev/null
+2026-09-07T05:14:35.606Z [dev/opencode] (stderr) /Users/hpractv/ralph-runs/poster/docs/epics/epic-005-next-cycle-fixes.plan.md
+2026-09-07T05:14:35.606Z [dev/opencode] (stderr) ---workspace---
+2026-09-07T05:14:35.606Z [dev/opencode] (stderr) [0m
+2026-09-07T05:14:36.986Z [dev/opencode] (stderr) [0m→ [0mRead docs/epics/epic-005-next-cycle-fixes.plan.md[90m [offset=1, limit=30][0m
+2026-09-07T05:14:36.989Z [dev/opencode] The file exists at `/Users/hpractv/ralph-runs/poster/docs/epics/epic-005-next-cycle-fixes.plan.md`. Let me read the relevant lines.
+2026-09-07T05:14:39.174Z [dev/opencode] The feedback is correct. Line 3 still mentions task 8 as remaining even though the status table (line 19) and Definition of Done mark task 8 as Done. I'll update line 3 to reflect that only task 9 remains.
+2026-09-07T05:14:39.188Z [dev/opencode] (stderr) [0m
+2026-09-07T05:14:39.188Z [dev/opencode] (stderr) [0m← [0mEdit docs/epics/epic-005-next-cycle-fixes.plan.md
+2026-09-07T05:14:39.188Z [dev/opencode] (stderr) Index: /Users/hpractv/ralph-runs/poster/docs/epics/epic-005-next-cycle-fixes.plan.md
+2026-09-07T05:14:39.188Z [dev/opencode] (stderr) ===================================================================
+2026-09-07T05:14:39.188Z [dev/opencode] (stderr) --- /Users/hpractv/ralph-runs/poster/docs/epics/epic-005-next-cycle-fixes.plan.md
+2026-09-07T05:14:39.188Z [dev/opencode] (stderr) +++ /Users/hpractv/ralph-runs/poster/docs/epics/epic-005-next-cycle-fixes.plan.md
+2026-09-07T05:14:39.188Z [dev/opencode] (stderr) @@ -1,7 +1,7 @@
+2026-09-07T05:14:39.188Z [dev/opencode] (stderr)  # Poster next-cycle plan: defect fixes + library persistence
+2026-09-07T05:14:39.188Z [dev/opencode] (stderr) -Status: **Shipped — Items A–E product fixes (tasks 1–6) and the regression harness (task 7) are done**. Remaining: acceptance documentation sync (task 8) and packaged/Electron smoke evidence (task 9). See the re-anchored plan in [`ralph/epic.md`](../../ralph/epic.md).
+2026-09-07T05:14:39.188Z [dev/opencode] (stderr) +Status: **Shipped — Items A–E product fixes (tasks 1–6), the regression harness (task 7), and acceptance documentation sync (task 8) are done**. Remaining: packaged/Electron smoke evidence (task 9). See the re-anchored plan in [`ralph/epic.md`](../../ralph/epic.md).
+2026-09-07T05:14:39.188Z [dev/opencode] (stderr)  Owners: Manny (impl / Ralph), Jack (test plan + harness), Moe (confirm / architecture challenge)
+2026-09-07T05:14:39.188Z [dev/opencode] (stderr)  Baseline confirm: Moe Linux **v0.1.7-pr.15** + Roy Mac notes (2026-09-06)
+2026-09-07T05:14:39.188Z [dev/opencode] (stderr)  Auto-update: remains **parked** (`auto-update-plan.md`) until after this cycle lands.
+2026-09-07T05:14:39.188Z [dev/opencode] (stderr) [0m
+2026-09-07T05:14:40.587Z [dev/opencode] Let me verify the Definition of Done checklist is consistent with only task 9 remaining, to confirm my edit aligns.
+2026-09-07T05:14:40.600Z [dev/opencode] (stderr) [0m$ [0mgrep -n "Remaining\|task 8\|task 9\|documentation sync\|smoke evidence" "/Users/hpractv/ralph-runs/poster/docs/epics/epic-005-next-cycle-fixes.plan.md"
+2026-09-07T05:14:40.600Z [dev/opencode] (stderr) 3:Status: **Shipped — Items A–E product fixes (tasks 1–6), the regression harness (task 7), and acceptance documentation sync (task 8) are done**. Remaining: packaged/Electron smoke evidence (task 9). See the re-anchored plan in [`ralph/epic.md`](../../ralph/epic.md).
+2026-09-07T05:14:40.600Z [dev/opencode] (stderr) 19:| 8 | Acceptance documentation sync (this plan, `requirements.md`, `README.md`, `ralph/epic.md`) | **Done** |
+2026-09-07T05:14:40.600Z [dev/opencode] (stderr) 20:| 9 | Packaged/Electron acceptance evidence for key flows | **Remaining** |
+2026-09-07T05:14:40.600Z [dev/opencode] (stderr) 214:- [ ] Packaged/Electron smoke evidence collected for End blank, close-list cleanup, theme relaunch, library default `~/.poster` + re-point leave-old, and Home no-Open-Present (`ralph/qa-report.md`) — task 9.
+2026-09-07T05:14:40.600Z [dev/opencode] (stderr) 247:- Packaged acceptance evidence (task 9): [`ralph/qa-report.md`](../../ralph/qa-report.md)
+2026-09-07T05:14:40.600Z [dev/opencode] (stderr) [0m
+2026-09-07T05:14:42.360Z [dev/opencode] The status line now aligns with the status table (task 8 Done, task 9 Remaining) and the Definition of Done checklist (only task 9 unchecked at line 214). The fix is complete and consistent.
+2026-09-07T05:14:42.360Z [dev/opencode] # Synchronize acceptance documentation
+2026-09-07T05:14:42.360Z [dev/opencode] ## Summary
+2026-09-07T05:14:42.360Z [dev/opencode] - Fixed the top-level status line in `epic-005-next-cycle-fixes.plan.md` so it no longer contradicts the status table / Definition of Done checklist, which both mark task 8 as Done and only task 9 as remaining.
+2026-09-07T05:14:42.360Z [dev/opencode] ## Changes Made
+2026-09-07T05:14:42.360Z [dev/opencode] - `docs/epics/epic-005-next-cycle-fixes.plan.md` (line 3): changed status line from "Remaining: acceptance documentation sync (task 8) and packaged/Electron smoke evidence (task 9)" to "Remaining: packaged/Electron smoke evidence (task 9)", now also stating task 8 is done.
+2026-09-07T05:14:42.360Z [dev/opencode] ## Validation
+2026-09-07T05:14:42.360Z [dev/opencode] - Confirmed line 3, status table item 8 (Done), item 9 (Remaining), and Definition of Done line 214 (only task 9 unchecked) all align.
+2026-09-07T05:14:42.360Z [dev/opencode] <status>done</status>
+2026-09-07T05:14:42.429Z [dev] Dev agent finished in 12.0s
+2026-09-07T05:14:42.429Z [dev] I'll address the feedback. The task is to sync acceptance documentation, and the feedback identifies one specific inconsistency in the epic-005 plan file. Let me look at the file.  The task says "In /...
+2026-09-07T05:14:42.430Z [qa] Running QA agent...
+2026-09-07T05:14:43.284Z [qa/opencode] (stderr) [0m
+2026-09-07T05:14:43.284Z [qa/opencode] (stderr) > build · mimo-v2.5-free
+2026-09-07T05:14:43.284Z [qa/opencode] (stderr) [0m
+2026-09-07T05:14:49.741Z [qa/opencode] (stderr) [0m✱ [0mGlob "**/requirements.md"[90m in . · 2 matches[0m
+2026-09-07T05:14:54.204Z [qa/opencode] (stderr) [0m→ [0mRead requirements.md
+2026-09-07T05:14:58.271Z [qa/opencode] (stderr) [0m→ [0mRead docs/epics/epic-005-next-cycle-fixes.plan.md
+2026-09-07T05:15:04.990Z [qa/opencode] (stderr) [0m→ [0mRead ralph/epic.md
+2026-09-07T05:15:33.579Z [qa/opencode] (stderr) [0m→ [0mRead README.md
+2026-09-07T05:15:48.616Z [qa/opencode] (stderr) [0m→ [0mRead docs/epics/next-cycle-test-harness.md
+2026-09-07T05:16:14.583Z [qa/opencode] <status>verified</status>
+2026-09-07T05:16:14.678Z [qa] QA agent finished in 1m 32s
+2026-09-07T05:16:14.683Z Task #8 verified!
