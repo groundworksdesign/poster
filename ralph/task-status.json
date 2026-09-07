@@ -76,24 +76,24 @@
       "id": 9,
       "title": "Validate packaged acceptance flows",
       "description": "In /Users/hpractv/ralph-runs/poster only: add/run packaged or Electron smoke where feasible for End blank, Present close list cleanup, theme relaunch, library default ~/.poster + re-point leave-old, and Home no Open Present. Record evidence in ralph/qa-report.md. Do not rebuild directed-send.",
-      "status": "backlog",
-      "devIterations": 0,
+      "status": "done",
+      "devIterations": 1,
       "createdAt": "2026-09-07T03:05:40.294586Z",
-      "updatedAt": "2026-09-07T03:05:40.294586Z"
+      "updatedAt": "2026-09-07T05:34:45.016Z"
     }
   ],
-  "currentTaskNum": 8,
-  "totalLLMCalls": 5,
+  "currentTaskNum": 9,
+  "totalLLMCalls": 7,
   "maxLLMCalls": 400,
   "nextTask": {
-    "taskId": 8,
-    "content": "## Task: Synchronize acceptance documentation\n\nIn /Users/hpractv/ralph-runs/poster only: update requirements.md, docs/epics/epic-005-next-cycle-fixes.plan.md, README where needed, and ralph/epic.md so acceptance matches shipped 1–6 behavior and remaining harness/packaged work. Do not reopen directed-send architecture work.",
-    "updatedAt": "2026-09-07T05:07:33.150Z"
+    "taskId": 9,
+    "content": "## Task: Validate packaged acceptance flows\n\nIn /Users/hpractv/ralph-runs/poster only: add/run packaged or Electron smoke where feasible for End blank, Present close list cleanup, theme relaunch, library default ~/.poster + re-point leave-old, and Home no Open Present. Record evidence in ralph/qa-report.md. Do not rebuild directed-send.",
+    "updatedAt": "2026-09-07T05:16:14.795Z"
   },
   "feedback": {
-    "taskId": 8,
-    "content": "<status>verified</status>\n",
-    "updatedAt": "2026-09-07T05:16:14.679Z"
+    "taskId": 9,
+    "content": "The workspace (`/Users/hpractv/github/third-party/izep/ralph-gui`) is the Ralph Kanban project, not the Poster project referenced by this task. Let me check if the poster project is accessible.\nGood, the Poster project exists at a different path. Let me read the qa-report and check the relevant e2e test files.\nLet me also verify the shared helper and test configuration.\n<status>verified</status>\n",
+    "updatedAt": "2026-09-07T05:34:45.009Z"
   },
-  "lastUpdated": "2026-09-07T05:16:14.683Z"
+  "lastUpdated": "2026-09-07T05:34:45.016Z"
 }

@@ -1,6 +1,6 @@
 # Poster next-cycle plan: defect fixes + library persistence
 
-Status: **Shipped — Items A–E product fixes (tasks 1–6), the regression harness (task 7), and acceptance documentation sync (task 8) are done**. Remaining: packaged/Electron smoke evidence (task 9). See the re-anchored plan in [`ralph/epic.md`](../../ralph/epic.md).  
+Status: **Shipped — Items A–E product fixes (tasks 1–6), the regression harness (task 7), acceptance documentation sync (task 8), and packaged/Electron acceptance evidence (task 9) are done**. See the re-anchored plan in [`ralph/epic.md`](../../ralph/epic.md).  
 Owners: Manny (impl / Ralph), Jack (test plan + harness), Moe (confirm / architecture challenge)  
 Baseline confirm: Moe Linux **v0.1.7-pr.15** + Roy Mac notes (2026-09-06)  
 Auto-update: remains **parked** (`auto-update-plan.md`) until after this cycle lands.
@@ -17,7 +17,7 @@ Auto-update: remains **parked** (`auto-update-plan.md`) until after this cycle l
 | Guard | Home has no bare “Open Present” CTA | **Shipped** |
 | 7 | Regression harness + PR CI (unit/integration, Remix smoke, Electron relaunch smoke) | **Done (green locally)** |
 | 8 | Acceptance documentation sync (this plan, `requirements.md`, `README.md`, `ralph/epic.md`) | **Done** |
-| 9 | Packaged/Electron acceptance evidence for key flows | **Remaining** |
+| 9 | Packaged/Electron acceptance evidence for key flows | **Done** |
 
 The per-item sections below keep the **acceptance criteria** as the definition of the shipped behavior and map each to its **real** test suites (see [`next-cycle-test-harness.md`](./next-cycle-test-harness.md)).
 
@@ -211,7 +211,7 @@ Authoritative suite map: [`next-cycle-test-harness.md`](./next-cycle-test-harnes
 - [x] All suites in the map exist and are green in CI (unit + integration + Remix smoke + Electron relaunch smoke; harness reports 38 jest suites / 226 tests and 52 Remix smoke green locally).
 - [x] Harness “would-have-caught” rows mapped to real test names in [`next-cycle-test-harness.md`](./next-cycle-test-harness.md).
 - [x] **Jack confirm (merge gate):** harness signed off.
-- [ ] Packaged/Electron smoke evidence collected for End blank, close-list cleanup, theme relaunch, library default `~/.poster` + re-point leave-old, and Home no-Open-Present (`ralph/qa-report.md`) — task 9.
+- [x] Packaged/Electron smoke evidence collected for End blank, close-list cleanup, theme relaunch, library default `~/.poster` + re-point leave-old, and Home no-Open-Present (`ralph/qa-report.md`) — task 9.
 
 ---
 
