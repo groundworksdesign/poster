@@ -1,4 +1,0 @@
-When epic-005 unfinished tasks are done, run one cursor-agent review of ALL shipped work on this branch (not only task 10–11) before telling Roy it is finished.
-Repo: /Users/hpractv/ralph-runs/poster only. Do not use izep/ralph-gui.
-Check: End blank Present, theme persist across relaunch, Present close drops from deck child list, on-program thumbnail, library default ~/.poster + re-point leave-old, Home has no Open Present, Electron Home Change… uses a native folder picker (not window.prompt), and the Change… guard tests.
-Write findings to ralph/final-cursor-review.md. Do not open a PR.
