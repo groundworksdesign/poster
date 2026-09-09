@@ -8,7 +8,7 @@ import {
   waitForHome,
   closeApp,
 } from './electronHelpers';
-import { hasLibraryStore, listLibraryRootFiles } from './libraryStoreHelpers';
+import { hasLibraryStore, listLibraryRootFiles, LIBRARY_STORE_NAMES } from './libraryStoreHelpers';
 import type { ElectronApplication, Page } from '@playwright/test';
 
 const deck = {
@@ -109,16 +109,24 @@ test.describe.serial('Electron packaged flow: durable ~/.poster library', () => 
       await saveDeck(home, { ...deck, title: 'Stay in default root' });
       await expect.poll(() => hasLibraryStore(defaultRoot)).toBe(true);
       fs.writeFileSync(sentinel, 'leave this library untouched');
-      const oldFiles = listLibraryRootFiles(defaultRoot);
+      const oldStoreFiles = listLibraryRootFiles(defaultRoot).filter((name) =>
+        LIBRARY_STORE_NAMES.includes(name as (typeof LIBRARY_STORE_NAMES)[number]),
+      );
 
       await chooseLibraryRoot(app, home, newRoot);
       await expect(home.getByTestId('library-empty')).toBeVisible({ timeout: 15000 });
 
       // Old folder is left untouched: still exists, still holds its own deck store,
       // operator sentinel untouched (re-point must not move/delete the old root).
+      // Note: defaultRoot is also the durable home, so library-settings.json may be
+      // written here on re-point — that is settings, not a move of library data.
       expect(fs.existsSync(defaultRoot)).toBe(true);
       expect(hasLibraryStore(defaultRoot)).toBe(true);
-      expect(listLibraryRootFiles(defaultRoot)).toEqual(oldFiles);
+      expect(
+        listLibraryRootFiles(defaultRoot).filter((name) =>
+          LIBRARY_STORE_NAMES.includes(name as (typeof LIBRARY_STORE_NAMES)[number]),
+        ),
+      ).toEqual(oldStoreFiles);
       expect(fs.readFileSync(sentinel, 'utf8')).toBe('leave this library untouched');
 
       // New root receives the next save (sqlite or JSON fallback).
