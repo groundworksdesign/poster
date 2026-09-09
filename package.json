@@ -64,7 +64,8 @@
     "electron": "electron .",
     "prepare:electron": "node scripts/prepare-electron-pack.cjs",
     "build:electron": "node scripts/prepare-electron-pack.cjs && node scripts/run-electron-builder.cjs build --publish never",
-    "build:electron:dir": "node scripts/prepare-electron-pack.cjs && node scripts/run-electron-builder.cjs build --dir --publish never"
+    "build:electron:dir": "node scripts/prepare-electron-pack.cjs && node scripts/run-electron-builder.cjs build --dir --publish never",
+    "install:electron": "node node_modules/electron/install.js"
   },
   "jest": {
     "collectCoverageFrom": [
