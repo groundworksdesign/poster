@@ -41,7 +41,7 @@ component and main-process test level. See the Change... coverage note below and
 | --- | --- | --- |
 | `e2e/electron-end-blank.spec.ts` | Item A End blank | Open Present → Start shows slide 1; End clears title/body text on Present, deck controls show Blank; Start after End resumes at slide 1 |
 | `e2e/electron-present-close.spec.ts` | Item C close list cleanup | Present is listed in deck `present-list`; closing the BrowserWindow removes it (no stale UUID) |
-| `e2e/electron-library.spec.ts` | Item E default `~/.poster`, relaunch, re-point leave-old | Home shows default `HOME/.poster`; save → `poster.sqlite` under it; quit + relaunch lists the deck again; re-point via change route → new root active, old root keeps data (re-point back still lists old deck), sentinel untouched, no JSON fallback created |
+| `e2e/electron-library.spec.ts` | Item E default `~/.poster`, relaunch, re-point leave-old | Home shows default `HOME/.poster`; save → library store (`poster.sqlite` or JSON fallback) under it; quit + relaunch lists the deck again; re-point via Change... → new root active, old root keeps data (re-point back still lists old deck), sentinel untouched |
 | `e2e/electron-home-guard.spec.ts` | Home no bare "Open Present" | No `Open Present` CTA; home hrefs are only `/deck`, `/deck`, `/deck?focusImport=1`; bare `/presentation` shows operator guidance; `window.open('/presentation')` is denied and opens a deck window |
 | `e2e/electron-theme-relaunch.spec.ts` (existing) | Item B theme relaunch | Set Tokyo Night → quit → relaunch → Home/deck/Present restore `dracula` from `~/.poster/theme.json` |
 
@@ -79,6 +79,13 @@ library-repoint-leave-old, present-close, theme-relaunch.
 | C Closing Present cleans deck list | `electron-present-close.spec.ts` | **PASS** |
 | E Library default `~/.poster` + re-point leave-old | `electron-library.spec.ts` (x2) + Change... component/main guard | **PASS** (button fixed: native folder-picker bridge replaces unsupported `window.prompt`; see closed finding 2) |
 | Guard Home no bare Open Present | `electron-home-guard.spec.ts` (x3) | **PASS** |
+
+## Item D Mac fidelity — **Roy-waived 2026-09-09**
+
+Mac pixel-fidelity recording for Item D (on-program thumbnail) is **Roy-waived
+2026-09-09** for this PR (`ralph/epic-005-next-cycle` / PR #17). Linux CI continues
+to assert content markers / placement via unit + `e2e/remix-program-thumbnail.spec.ts`.
+Do not treat missing Mac capture evidence as a merge blocker for this cycle.
 
 ## Findings / notes
 

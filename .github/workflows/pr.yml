@@ -116,6 +116,23 @@ jobs:
       - name: Build Remix app
         run: pnpm run build:remix
 
+      - name: Cache Electron binary
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/electron
+            ~/.cache/electron-builder
+          key: electron-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+
+      # pnpm 10 ignores dependency install scripts by default ("Ignored build scripts:
+      # electron@…"), so the Electron binary never lands and Playwright fails with
+      # "Electron failed to install correctly". Mirror the better-sqlite3 rebuild step.
+      - name: Install Electron binary
+        run: pnpm rebuild electron
+
+      - name: Verify Electron binary
+        run: pnpm exec electron --version
+
       - name: Install Playwright Chromium
         run: pnpm exec playwright install --with-deps chromium
 

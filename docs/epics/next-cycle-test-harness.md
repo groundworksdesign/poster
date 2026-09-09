@@ -41,6 +41,8 @@ the cycle PR merges.
   process/quit level.
 - **Mac manual (documented, not a CI gate):** Item D pixel-fidelity spot-check once the Mac
   build exists; Linux CI asserts content markers, not bit-identical pixels.
+  **Roy-waived 2026-09-09** for PR #17 / `ralph/epic-005-next-cycle` — no Mac fidelity
+  recording required for Jack merge sign-off on this PR.
 
 ## Fixture / environment notes
 

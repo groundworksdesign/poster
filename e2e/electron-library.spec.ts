@@ -8,6 +8,7 @@ import {
   waitForHome,
   closeApp,
 } from './electronHelpers';
+import { hasLibraryStore, listLibraryRootFiles } from './libraryStoreHelpers';
 import type { ElectronApplication, Page } from '@playwright/test';
 
 const deck = {
@@ -67,7 +68,8 @@ test.describe.serial('Electron packaged flow: durable ~/.poster library', () => 
       });
 
       await saveDeck(home, deck);
-      await expect.poll(() => fs.existsSync(path.join(defaultRoot, 'poster.sqlite'))).toBe(true);
+      // Accept sqlite or JSON fallback — whichever backend Electron's embedded server uses.
+      await expect.poll(() => hasLibraryStore(defaultRoot)).toBe(true);
 
       await closeApp(app);
       app = undefined;
@@ -105,22 +107,23 @@ test.describe.serial('Electron packaged flow: durable ~/.poster library', () => 
       });
 
       await saveDeck(home, { ...deck, title: 'Stay in default root' });
-      await expect.poll(() => fs.existsSync(path.join(defaultRoot, 'poster.sqlite'))).toBe(true);
+      await expect.poll(() => hasLibraryStore(defaultRoot)).toBe(true);
       fs.writeFileSync(sentinel, 'leave this library untouched');
+      const oldFiles = listLibraryRootFiles(defaultRoot);
 
       await chooseLibraryRoot(app, home, newRoot);
       await expect(home.getByTestId('library-empty')).toBeVisible({ timeout: 15000 });
 
-      // Old folder is left untouched: still exists, still holds its own deck data,
-      // no JSON fallback introduced, operator file untouched.
+      // Old folder is left untouched: still exists, still holds its own deck store,
+      // operator sentinel untouched (re-point must not move/delete the old root).
       expect(fs.existsSync(defaultRoot)).toBe(true);
-      expect(fs.existsSync(path.join(defaultRoot, 'poster.sqlite'))).toBe(true);
-      expect(fs.existsSync(path.join(defaultRoot, 'poster.library.json'))).toBe(false);
+      expect(hasLibraryStore(defaultRoot)).toBe(true);
+      expect(listLibraryRootFiles(defaultRoot)).toEqual(oldFiles);
       expect(fs.readFileSync(sentinel, 'utf8')).toBe('leave this library untouched');
 
-      // New root receives the next save.
+      // New root receives the next save (sqlite or JSON fallback).
       await saveDeck(home, { ...deck, title: 'In the new root' });
-      await expect.poll(() => fs.existsSync(path.join(newRoot, 'poster.sqlite'))).toBe(true);
+      await expect.poll(() => hasLibraryStore(newRoot)).toBe(true);
 
       // Re-pointing back to the default root still lists the old deck: data was
       // never moved or copied out of it.

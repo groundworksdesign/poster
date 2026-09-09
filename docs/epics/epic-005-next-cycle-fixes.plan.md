@@ -172,6 +172,7 @@ Authoritative suite map: [`next-cycle-test-harness.md`](./next-cycle-test-harnes
   - `remix-e2e`: `pnpm run test:e2e:remix` (Remix dev webServer) — A, C, D, E smoke + Home guard.
   - `electron-smoke`: `xvfb-run -a pnpm run test:e2e:electron` — B theme relaunch at full process/quit level.
 - Manual Mac: Item D fidelity + theme/library spot-check once the Mac build exists. Not a substitute for unit coverage.
+  **Roy-waived 2026-09-09** for PR #17 — Mac fidelity recording is not required for merge sign-off on this PR.
 
 ### Suite map (real, shipped)
 

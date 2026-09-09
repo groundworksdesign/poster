@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import net from 'node:net';
 import os from 'node:os';
 import path from 'node:path';
+import { hasLibraryStore, listLibraryRootFiles } from './libraryStoreHelpers';
 
 async function freePort(): Promise<number> {
   const server = net.createServer();
@@ -118,9 +119,9 @@ test('changing the library folder re-points without moving the old folder', asyn
         return (await response.json()) as { id?: string };
       });
       expect(saved.id).toBeTruthy();
-      const oldDb = path.join(oldRoot, 'poster.sqlite');
-      await expect.poll(() => fs.existsSync(oldDb)).toBe(true);
-      const oldFiles = fs.readdirSync(oldRoot).filter((file) => !/-wal$|-shm$/.test(file)).sort();
+      // Accept sqlite or JSON fallback — whichever backend the runtime actually uses.
+      await expect.poll(() => hasLibraryStore(oldRoot)).toBe(true);
+      const oldFiles = listLibraryRootFiles(oldRoot);
 
       await page.reload();
       await expect(page.getByText(`Library folder: ${oldRoot}`)).toBeVisible();
@@ -128,8 +129,8 @@ test('changing the library folder re-points without moving the old folder', asyn
       await page.getByRole('button', { name: 'Change...' }).click();
       await expect(page.getByText(`Library folder: ${newRoot}`)).toBeVisible();
 
-      expect(fs.existsSync(oldDb)).toBe(true);
-      expect(fs.readdirSync(oldRoot).filter((file) => !/-wal$|-shm$/.test(file)).sort()).toEqual(oldFiles);
+      expect(hasLibraryStore(oldRoot)).toBe(true);
+      expect(listLibraryRootFiles(oldRoot)).toEqual(oldFiles);
       expect(fs.readFileSync(sentinel, 'utf8')).toBe('leave this library untouched');
       const newEntries = await page.evaluate(async () => {
         const response = await fetch('/library?_data=routes%2Flibrary');

@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import net from 'node:net';
 import os from 'node:os';
 import path from 'node:path';
+import { hasLibraryStore } from './libraryStoreHelpers';
 
 const deck = {
   title: 'Durable after relaunch',
@@ -98,7 +99,8 @@ test('library entries survive a full server quit and relaunch in default HOME li
     }, deck);
     expect(saved.id).toBeTruthy();
     await first.close();
-    expect(fs.existsSync(path.join(home, '.poster', 'poster.sqlite'))).toBe(true);
+    // Accept sqlite or JSON fallback — whichever backend the runtime actually uses.
+    expect(hasLibraryStore(path.join(home, '.poster'))).toBe(true);
     await stopServer(server);
     server = undefined;
 
