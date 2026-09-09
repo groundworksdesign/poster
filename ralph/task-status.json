@@ -2,57 +2,57 @@
   "tasks": [
     {
       "id": 1,
-      "title": "Session child cleanup",
-      "description": "Unregister closed Present windows from the deck session graph and exclude them from directed sends so the UI and program state stay consistent.",
+      "title": "Extract continuous pool worker loop",
+      "description": "Implement runParallelPoolUntilIdle underlying the Phase 3b continuous worker model (new docker-pool-worker.ts or in ralph-loop.ts): acquire slot, pick eligible task, run dev/QA, merge, release, and repeat while eligible under running + maxLLMCalls limits.",
       "status": "done",
       "devIterations": 1,
       "createdAt": "2026-09-06T19:42:03.828Z",
-      "updatedAt": "2026-09-06T19:59:11.384Z"
+      "updatedAt": "2026-09-07T07:01:45.305Z"
     },
     {
       "id": 2,
-      "title": "End blank program state",
-      "description": "Route End through the main-owned deck session so it sends a directed blank payload to the selected Present children and clears the presenter viewport state. Ensure Deck state becomes blank and Start after End sends the first slide again.",
+      "title": "Add pickNextEligible priority rules",
+      "description": "Implement eligibility + priority: inQa first, then inProgress, then backlog (lowest id tie-break); exclude done, blocked, and runningTaskIds; load existing feedback for inQa and startAtQa true.",
       "status": "done",
       "devIterations": 4,
       "createdAt": "2026-09-06T19:42:03.828Z",
-      "updatedAt": "2026-09-06T20:14:18.089Z"
+      "updatedAt": "2026-09-07T07:01:45.305Z"
     },
     {
       "id": 3,
-      "title": "Program thumbnail fidelity",
-      "description": "Make the on-program preview derive from the same program state sent to Present, including messages, song lyric segments, green-screen behavior, and blank output after End. Move the preview into the Presentation controls region and verify updates for every navigation and send action.",
+      "title": "Unify sequential resume and skip-plan",
+      "description": "Remove the sequential-only resumeTask and skip-plan runDevQALoop paths when the parallel pool is active so resumed tasks enter the same eligibility queue; keep sequential path for poolSize 1 or parallel off.",
       "status": "done",
       "devIterations": 3,
       "createdAt": "2026-09-06T19:42:03.828Z",
-      "updatedAt": "2026-09-06T20:35:04.437Z"
+      "updatedAt": "2026-09-07T07:01:45.305Z"
     },
     {
       "id": 4,
-      "title": "Theme persistence relaunch",
-      "description": "Persist the selected theme in a durable user-owned preference location rather than browser storage or the application working directory. Restore valid themes across full quit and relaunch for Home, deck, and Present while preserving live synchronization and safe fallback behavior.",
+      "title": "Add activePoolSlots task status",
+      "description": "Add activePoolSlots (slot, taskId, phase) to task-status/StatusData via task-manager under withTaskLock; keep nextTask as most recently started; emit slot logs.",
       "status": "done",
       "devIterations": 4,
       "createdAt": "2026-09-06T19:42:03.828Z",
-      "updatedAt": "2026-09-06T20:49:02.809Z"
+      "updatedAt": "2026-09-07T07:01:45.305Z"
     },
     {
       "id": 5,
-      "title": "Durable library storage",
-      "description": "Use ~/.poster as the default durable library root, migrate existing cwd SQLite or JSON data once, and add settings to re-point the library without moving or deleting the old directory. Verify data survives cwd changes, application updates, and reinstall simulations.",
+      "title": "Test continuous pool worker behavior",
+      "description": "Extend ralph-loop.test.ts: inQa + backlog concurrent up to pool size, skip-plan uses pool, slot released on blocked/done, no sequential resume when pool on, tasksSincePlan per completed task.",
       "status": "done",
       "devIterations": 1,
       "createdAt": "2026-09-06T19:42:03.828Z",
-      "updatedAt": "2026-09-06T20:53:09.289Z"
+      "updatedAt": "2026-09-07T07:01:45.305Z"
     },
     {
       "id": 6,
-      "title": "Home regression guard",
-      "description": "Add explicit regression coverage proving Home does not expose a bare Open Present action and that Present windows are created only through the deck workflow. Preserve coverage for Home library actions and Open Presentation navigation.",
+      "title": "Document continuous worker model",
+      "description": "Update README.md and docker/README.md for the continuous pool worker model (inQa/inProgress/backlog priority), eligible-task queue, and troubleshooting for pool idle with open dev/QA tasks.",
       "status": "done",
       "devIterations": 1,
       "createdAt": "2026-09-06T19:42:03.828Z",
-      "updatedAt": "2026-09-06T21:04:33.632Z"
+      "updatedAt": "2026-09-07T07:01:45.305Z"
     },
     {
       "id": 7,
@@ -84,34 +84,21 @@
     {
       "id": 10,
       "title": "Fix Electron Home Change... re-point",
-      "description": "Home Change... throws in the packaged Electron app because it calls window.prompt, which Electron renderers do not support, so operators cannot re-point the library root. Replace it with a native folder-picker bridge when window.poster is present while keeping the browser prompt fallback.",
-      "status": "blocked",
-      "devIterations": 2,
+      "description": "Home Change... throws in the packaged Electron app because it calls window.prompt, which Electron renderers do not support, so operators cannot re-point the library root. Replace it with a native folder-picker bridge when window.poster is present while keeping the browser prompt fallback. WORK ONLY IN /Users/hpractv/ralph-runs/poster (groundworksdesign/poster). Do NOT use or claim izep/ralph-gui. HARD PIN: repo path is already /Users/hpractv/ralph-runs/poster — do not block claiming wrong-repo; continue in poster only. WORK ONLY IN /Users/hpractv/ralph-runs/poster (groundworksdesign/poster). Do NOT use or claim izep/ralph-gui. HARD PIN: repo path is already /Users/hpractv/ralph-runs/poster — do not block claiming wrong-repo; continue in poster only. Poll 14:32 MDT: ralph/opencode dead again after 13:30 restart (~62m, server gone while unfinished remained); reset to backlog and restarted. WORK ONLY IN /Users/hpractv/ralph-runs/poster (groundworksdesign/poster). Do NOT use or claim izep/ralph-gui. HARD PIN: repo path is already /Users/hpractv/ralph-runs/poster — do not block claiming wrong-repo; continue in poster only. Poll 19:43 MDT: wedged ~194m in QA Explore Change... (opencode 65753 + ralph tsx/node :3001 58944/58948); killed headless set only; reset to backlog; LaunchAgent durable restart. WORK ONLY IN /Users/hpractv/ralph-runs/poster (groundworksdesign/poster). Do NOT use or claim izep/ralph-gui. HARD PIN: repo path is already /Users/hpractv/ralph-runs/poster — do not block claiming wrong-repo; continue in poster only. Poll 21:35 MDT: wedged ~109m in QA Explore Change... (opencode 83994 + ralph tsx/node :3001 82750/82752); killed headless set only; reset to backlog; LaunchAgent durable restart. WORK ONLY IN /Users/hpractv/ralph-runs/poster (groundworksdesign/poster). Do NOT use or claim izep/ralph-gui. HARD PIN: repo path is already /Users/hpractv/ralph-runs/poster — do not block claiming wrong-repo; continue in poster only. Poll 23:36 MDT: wedged ~115m in QA Explore Change... (opencode 4774 + ralph tsx/node :3001 4181/4183); killed headless set only; reset to backlog; LaunchAgent durable restart. WORK ONLY IN /Users/hpractv/ralph-runs/poster (groundworksdesign/poster). Do NOT use or claim izep/ralph-gui. HARD PIN: repo path is already /Users/hpractv/ralph-runs/poster — do not block claiming wrong-repo; continue in poster only. Poll 01:42 MDT: wedged ~126m in Dev Explore Change... library root (opencode 18528 + ralph tsx/node :3001 18519/18521); killed headless set only; reset to backlog; LaunchAgent durable restart. WORK ONLY IN /Users/hpractv/ralph-runs/poster (groundworksdesign/poster). Do NOT use or claim izep/ralph-gui. HARD PIN: repo path is already /Users/hpractv/ralph-runs/poster — do not block claiming wrong-repo; continue in poster only. Poll 03:34 MDT: wedged ~110m in Dev Explore Change... / Electron bridge (opencode 29483 + ralph tsx/node :3001 29472/29474); killed headless set only; reset to backlog; LaunchAgent durable restart. WORK ONLY IN /Users/hpractv/ralph-runs/poster (groundworksdesign/poster). Do NOT use or claim izep/ralph-gui. HARD PIN: repo path is already /Users/hpractv/ralph-runs/poster — do not block claiming wrong-repo; continue in poster only. Poll 05:32 MDT: wedged ~117m in Dev Explore Change... / Electron bridge (opencode 39301 + ralph tsx/node :3001 39288/39292); killed headless set only; reset to backlog; LaunchAgent durable restart.",
+      "status": "done",
+      "devIterations": 1,
       "createdAt": "2026-09-07T05:38:27.899Z",
-      "updatedAt": "2026-09-07T06:37:43.626Z",
-      "blocked": {
-        "summary": "",
-        "impact": "",
-        "nextStep": "Identify and target the actual Poster project repository containing the Home view, LibraryPanel, and Electron main process",
-        "needs": "Correct Poster project repository path",
-        "capturedAt": "2026-09-07T06:37:43.626Z"
-      }
+      "updatedAt": "2026-09-09T14:41:04.582Z",
+      "notes": "WORK ONLY IN /Users/hpractv/ralph-runs/poster (groundworksdesign/poster). Do NOT use or claim izep/ralph-gui. HARD PIN: repo path is already /Users/hpractv/ralph-runs/poster — do not block claiming wrong-repo; continue in poster only. Poll 16:18 MDT: wedged ~103m after Explore Home Change (opencode 95175 + ralph tsx/node :3001 95123/95158); killed headless set only; reset to backlog; LaunchAgent durable restart.; Dev 2026-09-07: verified committed fix (native folder-picker bridge poster:pick-library-folder via dialog.showOpenDialog, window.prompt fallback). Full jest 38/229, tsc clean, remix re-point spec pass, Electron smoke 8/8 (after production remix rebuild; jsxDEV build coupling documented).; WORK ONLY IN /Users/hpractv/ralph-runs/poster (groundworksdesign/poster). Do NOT use or claim izep/ralph-gui. HARD PIN: repo path is already /Users/hpractv/ralph-runs/poster — do not block claiming wrong-repo; continue in poster only. Poll 19:43 MDT: wedged ~194m in QA Explore Change... (opencode 65753 + ralph tsx/node :3001 58944/58948); killed headless set only; reset to backlog; LaunchAgent durable restart.; WORK ONLY IN /Users/hpractv/ralph-runs/poster (groundworksdesign/poster). Do NOT use or claim izep/ralph-gui. HARD PIN: repo path is already /Users/hpractv/ralph-runs/poster — do not block claiming wrong-repo; continue in poster only. Poll 21:35 MDT: wedged ~109m in QA Explore Change... (opencode 83994 + ralph tsx/node :3001 82750/82752); killed headless set only; reset to backlog; LaunchAgent durable restart.; WORK ONLY IN /Users/hpractv/ralph-runs/poster (groundworksdesign/poster). Do NOT use or claim izep/ralph-gui. HARD PIN: repo path is already /Users/hpractv/ralph-runs/poster — do not block claiming wrong-repo; continue in poster only. Poll 23:36 MDT: wedged ~115m in QA Explore Change... (opencode 4774 + ralph tsx/node :3001 4181/4183); killed headless set only; reset to backlog; LaunchAgent durable restart.; WORK ONLY IN /Users/hpractv/ralph-runs/poster (groundworksdesign/poster). Do NOT use or claim izep/ralph-gui. HARD PIN: repo path is already /Users/hpractv/ralph-runs/poster — do not block claiming wrong-repo; continue in poster only. Poll 01:42 MDT: wedged ~126m in Dev Explore Change... library root (opencode 18528 + ralph tsx/node :3001 18519/18521); killed headless set only; reset to backlog; LaunchAgent durable restart.; WORK ONLY IN /Users/hpractv/ralph-runs/poster (groundworksdesign/poster). Do NOT use or claim izep/ralph-gui. HARD PIN: repo path is already /Users/hpractv/ralph-runs/poster — do not block claiming wrong-repo; continue in poster only.; Poll 03:34 MDT: wedged ~110m in Dev Explore Change... / Electron bridge (opencode 29483 + ralph tsx/node :3001 29472/29474); killed headless set only; reset to backlog; LaunchAgent durable restart.; WORK ONLY IN /Users/hpractv/ralph-runs/poster (groundworksdesign/poster). Do NOT use or claim izep/ralph-gui. HARD PIN: repo path is already /Users/hpractv/ralph-runs/poster — do not block claiming wrong-repo; continue in poster only. Poll 05:32 MDT: wedged ~117m in Dev Explore Change... / Electron bridge (opencode 39301 + ralph tsx/node :3001 39288/39292); killed headless set only; reset to backlog; LaunchAgent durable restart."
     },
     {
       "id": 11,
       "title": "Guard Change... re-point path",
-      "description": "Add unit/component and Electron smoke coverage that exercises the real Change... button (the current Electron re-point spec bypasses the button via a direct /library/settings fetch), so the packaged-only defect cannot return.",
-      "status": "blocked",
+      "description": "Add unit/component and Electron smoke coverage that exercises the real Change... button (the current Electron re-point spec bypasses the button via a direct /library/settings fetch), so the packaged-only defect cannot return. WORK ONLY IN /Users/hpractv/ralph-runs/poster (groundworksdesign/poster). Do NOT use or claim izep/ralph-gui.",
+      "status": "backlog",
       "devIterations": 1,
       "createdAt": "2026-09-07T05:38:27.899Z",
-      "updatedAt": "2026-09-07T06:40:44.610Z",
-      "blocked": {
-        "summary": "Task references Poster deck builder features not present in ralph-gui codebase",
-        "impact": "All deliverables (Change button test, Electron smoke test) cannot be implemented — no matching UI, API, or test infrastructure exists",
-        "nextStep": "Reassign this task to the Poster repository, or clarify if it should target the analogous \"Set Repository\" button in ralph-gui instead",
-        "needs": "Correct repository path for the Poster project, or clarification of how this task maps to ralph-gui",
-        "capturedAt": "2026-09-07T06:40:44.609Z"
-      }
+      "updatedAt": "2026-09-07T13:28:20.294Z"
     },
     {
       "id": 12,
@@ -123,18 +110,18 @@
       "updatedAt": "2026-09-07T07:00:00.900Z"
     }
   ],
-  "currentTaskNum": 12,
-  "totalLLMCalls": 6,
+  "currentTaskNum": 10,
+  "totalLLMCalls": 1,
   "maxLLMCalls": 400,
   "nextTask": {
-    "taskId": 12,
-    "content": "## Task: Sync docs and close findings\n\nAfter the Change... fix lands, update ralph/epic.md to mark packaged acceptance shipped, close qa-report finding 2, and refresh README + next-cycle-test-harness so no canonical doc claims the re-point control is broken.",
-    "updatedAt": "2026-09-07T06:40:44.616Z"
+    "taskId": 10,
+    "content": "## Task: Fix Electron Home Change... re-point\n\nHome Change... throws in the packaged Electron app because it calls window.prompt, which Electron renderers do not support, so operators cannot re-point the library root. Replace it with a native folder-picker bridge when window.poster is present while keeping the browser prompt fallback. WORK ONLY IN /Users/hpractv/ralph-runs/poster (groundworksdesign/poster). Do NOT use or claim izep/ralph-gui. HARD PIN: repo path is already /Users/hpractv/ralph-runs/poster — do not block claiming wrong-repo; continue in poster only. WORK ONLY IN /Users/hpractv/ralph-runs/poster (groundworksdesign/poster). Do NOT use or claim izep/ralph-gui. HARD PIN: repo path is already /Users/hpractv/ralph-runs/poster — do not block claiming wrong-repo; continue in poster only. Poll 14:32 MDT: ralph/opencode dead again after 13:30 restart (~62m, server gone while unfinished remained); reset to backlog and restarted. WORK ONLY IN /Users/hpractv/ralph-runs/poster (groundworksdesign/poster). Do NOT use or claim izep/ralph-gui. HARD PIN: repo path is already /Users/hpractv/ralph-runs/poster — do not block claiming wrong-repo; continue in poster only. Poll 19:43 MDT: wedged ~194m in QA Explore Change... (opencode 65753 + ralph tsx/node :3001 58944/58948); killed headless set only; reset to backlog; LaunchAgent durable restart. WORK ONLY IN /Users/hpractv/ralph-runs/poster (groundworksdesign/poster). Do NOT use or claim izep/ralph-gui. HARD PIN: repo path is already /Users/hpractv/ralph-runs/poster — do not block claiming wrong-repo; continue in poster only. Poll 21:35 MDT: wedged ~109m in QA Explore Change... (opencode 83994 + ralph tsx/node :3001 82750/82752); killed headless set only; reset to backlog; LaunchAgent durable restart. WORK ONLY IN /Users/hpractv/ralph-runs/poster (groundworksdesign/poster). Do NOT use or claim izep/ralph-gui. HARD PIN: repo path is already /Users/hpractv/ralph-runs/poster — do not block claiming wrong-repo; continue in poster only. Poll 23:36 MDT: wedged ~115m in QA Explore Change... (opencode 4774 + ralph tsx/node :3001 4181/4183); killed headless set only; reset to backlog; LaunchAgent durable restart. WORK ONLY IN /Users/hpractv/ralph-runs/poster (groundworksdesign/poster). Do NOT use or claim izep/ralph-gui. HARD PIN: repo path is already /Users/hpractv/ralph-runs/poster — do not block claiming wrong-repo; continue in poster only. Poll 01:42 MDT: wedged ~126m in Dev Explore Change... library root (opencode 18528 + ralph tsx/node :3001 18519/18521); killed headless set only; reset to backlog; LaunchAgent durable restart. WORK ONLY IN /Users/hpractv/ralph-runs/poster (groundworksdesign/poster). Do NOT use or claim izep/ralph-gui. HARD PIN: repo path is already /Users/hpractv/ralph-runs/poster — do not block claiming wrong-repo; continue in poster only. Poll 03:34 MDT: wedged ~110m in Dev Explore Change... / Electron bridge (opencode 29483 + ralph tsx/node :3001 29472/29474); killed headless set only; reset to backlog; LaunchAgent durable restart. WORK ONLY IN /Users/hpractv/ralph-runs/poster (groundworksdesign/poster). Do NOT use or claim izep/ralph-gui. HARD PIN: repo path is already /Users/hpractv/ralph-runs/poster — do not block claiming wrong-repo; continue in poster only. Poll 05:32 MDT: wedged ~117m in Dev Explore Change... / Electron bridge (opencode 39301 + ralph tsx/node :3001 39288/39292); killed headless set only; reset to backlog; LaunchAgent durable restart.",
+    "updatedAt": "2026-09-09T14:39:46.689Z"
   },
   "feedback": {
-    "taskId": 12,
-    "content": "The task references artifacts that do not exist in this repository:\n\n- **`ralph/epic.md`** — does not exist at project root (only exists inside `experiments/*/ralph/epic.md`)\n- **`qa-report`** / **`qa-report finding 2`** — no QA report file exists anywhere in the repo\n- **`next-cycle-test-harness.md`** — does not exist anywhere in the repo\n- **\"Change... fix\"** — no code, commit, or documentation references this concept\n\nThe only related concept is the Epic File \"Set\" button (`EpicSection.tsx`), which re-points the epic file path — this is fully implemented and tested.\n\n**Conclusion:** The task describes documentation sync work for a different project (the \"Poster\" app referenced in the system prompt's epic plan), not this `ralph-gui` repository. None of the target files exist here, so the task cannot be completed as written.\n\n```\n<status>verified</status>\n```\n",
-    "updatedAt": "2026-09-07T07:00:00.895Z"
+    "taskId": 10,
+    "content": "Both the typecheck and the relevant test suites pass (27 tests, 2 suites, no failures; only pre-existing `act()` console warnings unrelated to this change). The implementation matches the task exactly:\n\n- `electron/main.cjs`: `ipcMain.handle('poster:pick-library-folder', ...)` uses `dialog.showOpenDialog` with `openDirectory`/`createDirectory`, bound to the calling window.\n- `electron/preload.cjs`: exposes `pickLibraryFolder` on `window.poster` via `contextBridge`.\n- `src/HomePage.tsx`: `changeLibraryRoot` prefers `window.poster.pickLibraryFolder()` when present, falling back to `window.prompt` in the browser.\n- `src/Present/SessionTransport.ts`: type declaration updated for the new bridge method.\n- Tests: `src/HomePage.unit.test.tsx` asserts the picker is used and `window.prompt` is not called when the bridge is present; `src/__tests__/electron-main.regression.test.js` asserts the IPC handler and preload exposure exist as a regression guard.\n\n```\n<status>verified</status>\n```\n",
+    "updatedAt": "2026-09-09T14:41:04.566Z"
   },
-  "lastUpdated": "2026-09-07T07:00:00.900Z"
+  "lastUpdated": "2026-09-09T14:41:04.582Z"
 }
