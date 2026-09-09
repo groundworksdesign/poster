@@ -79,7 +79,16 @@ jobs:
         run: pnpm run build:remix
 
       - name: Install Playwright Chromium (+ system deps)
-        run: pnpm exec playwright install --with-deps chromium
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3; do
+            if pnpm exec playwright install --with-deps chromium; then
+              exit 0
+            fi
+            echo "playwright install attempt ${attempt} failed; retrying..."
+            sleep $((attempt * 8))
+          done
+          exit 1
 
       - name: Run Remix E2E
         run: pnpm run test:e2e:remix
@@ -142,7 +151,16 @@ jobs:
           xvfb-run -a pnpm exec electron --version
 
       - name: Install Playwright Chromium
-        run: pnpm exec playwright install --with-deps chromium
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3; do
+            if pnpm exec playwright install --with-deps chromium; then
+              exit 0
+            fi
+            echo "playwright install attempt ${attempt} failed; retrying..."
+            sleep $((attempt * 8))
+          done
+          exit 1
 
       - name: Run Electron relaunch smoke
         run: xvfb-run -a pnpm run test:e2e:electron
