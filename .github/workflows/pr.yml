@@ -81,6 +81,9 @@ jobs:
       - name: Install Playwright Chromium (+ system deps)
         run: |
           set -euo pipefail
+          # GitHub ubuntu images ship a google-chrome apt source that intermittently
+          # 404/hash-mismatches and breaks `playwright install --with-deps`.
+          sudo rm -f /etc/apt/sources.list.d/google-chrome*.list || true
           for attempt in 1 2 3; do
             if pnpm exec playwright install --with-deps chromium; then
               exit 0
@@ -150,17 +153,9 @@ jobs:
           test -x "$(node -p "require('electron')")"
           xvfb-run -a pnpm exec electron --version
 
-      - name: Install Playwright Chromium
-        run: |
-          set -euo pipefail
-          for attempt in 1 2 3; do
-            if pnpm exec playwright install --with-deps chromium; then
-              exit 0
-            fi
-            echo "playwright install attempt ${attempt} failed; retrying..."
-            sleep $((attempt * 8))
-          done
-          exit 1
+      # Electron smoke launches Electron via Playwright's _electron API; it does not
+      # need a Chromium browser download. Skipping `playwright install --with-deps`
+      # avoids flaky google-chrome apt hash mismatches on GHA ubuntu images.
 
       - name: Run Electron relaunch smoke
         run: xvfb-run -a pnpm run test:e2e:electron
