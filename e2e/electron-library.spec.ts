@@ -33,17 +33,21 @@ async function saveDeck(page: Page, body: unknown): Promise<string> {
   return result.id;
 }
 
-async function setLibraryRoot(page: Page, libraryRoot: string): Promise<void> {
-  const result = await page.evaluate(async (root) => {
-    const response = await fetch('/library/settings?_data=routes%2Flibrary.settings', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ libraryRoot: root }),
+async function chooseLibraryRoot(
+  app: ElectronApplication,
+  page: Page,
+  libraryRoot: string,
+): Promise<void> {
+  await app.evaluate(({ dialog }, chosenRoot) => {
+    dialog.showOpenDialog = async () => ({
+      canceled: false,
+      filePaths: [chosenRoot],
     });
-    return { ok: response.ok, body: (await response.json()) as { libraryRoot?: string } };
   }, libraryRoot);
-  expect(result.ok).toBe(true);
-  expect(result.body.libraryRoot).toBe(libraryRoot);
+  await page.getByRole('button', { name: 'Change...' }).click();
+  await expect(page.getByText(`Library folder: ${libraryRoot}`)).toBeVisible({
+    timeout: 15000,
+  });
 }
 
 test.describe.serial('Electron packaged flow: durable ~/.poster library', () => {
@@ -104,9 +108,8 @@ test.describe.serial('Electron packaged flow: durable ~/.poster library', () => 
       await expect.poll(() => fs.existsSync(path.join(defaultRoot, 'poster.sqlite'))).toBe(true);
       fs.writeFileSync(sentinel, 'leave this library untouched');
 
-      await setLibraryRoot(home, newRoot);
-      await home.reload({ waitUntil: 'domcontentloaded' });
-      await expect(home.getByText(`Library folder: ${newRoot}`)).toBeVisible({ timeout: 15000 });
+      await chooseLibraryRoot(app, home, newRoot);
+      await expect(home.getByTestId('library-empty')).toBeVisible({ timeout: 15000 });
 
       // Old folder is left untouched: still exists, still holds its own deck data,
       // no JSON fallback introduced, operator file untouched.
@@ -121,11 +124,7 @@ test.describe.serial('Electron packaged flow: durable ~/.poster library', () => 
 
       // Re-pointing back to the default root still lists the old deck: data was
       // never moved or copied out of it.
-      await setLibraryRoot(home, defaultRoot);
-      await home.reload({ waitUntil: 'domcontentloaded' });
-      await expect(home.getByText(`Library folder: ${defaultRoot}`)).toBeVisible({
-        timeout: 15000,
-      });
+      await chooseLibraryRoot(app, home, defaultRoot);
       await expect(
         home.getByTestId('library-entry').filter({ hasText: 'Stay in default root' }),
       ).toBeVisible({ timeout: 15000 });

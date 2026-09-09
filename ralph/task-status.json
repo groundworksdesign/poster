@@ -95,10 +95,10 @@
       "id": 11,
       "title": "Guard Change... re-point path",
       "description": "Add unit/component and Electron smoke coverage that exercises the real Change... button (the current Electron re-point spec bypasses the button via a direct /library/settings fetch), so the packaged-only defect cannot return. WORK ONLY IN /Users/hpractv/ralph-runs/poster (groundworksdesign/poster). Do NOT use or claim izep/ralph-gui.",
-      "status": "backlog",
+      "status": "done",
       "devIterations": 1,
       "createdAt": "2026-09-07T05:38:27.899Z",
-      "updatedAt": "2026-09-07T13:28:20.294Z"
+      "updatedAt": "2026-09-09T14:48:12.572Z"
     },
     {
       "id": 12,
@@ -110,18 +110,18 @@
       "updatedAt": "2026-09-07T07:00:00.900Z"
     }
   ],
-  "currentTaskNum": 10,
-  "totalLLMCalls": 1,
+  "currentTaskNum": 11,
+  "totalLLMCalls": 3,
   "maxLLMCalls": 400,
   "nextTask": {
-    "taskId": 10,
-    "content": "## Task: Fix Electron Home Change... re-point\n\nHome Change... throws in the packaged Electron app because it calls window.prompt, which Electron renderers do not support, so operators cannot re-point the library root. Replace it with a native folder-picker bridge when window.poster is present while keeping the browser prompt fallback. WORK ONLY IN /Users/hpractv/ralph-runs/poster (groundworksdesign/poster). Do NOT use or claim izep/ralph-gui. HARD PIN: repo path is already /Users/hpractv/ralph-runs/poster — do not block claiming wrong-repo; continue in poster only. WORK ONLY IN /Users/hpractv/ralph-runs/poster (groundworksdesign/poster). Do NOT use or claim izep/ralph-gui. HARD PIN: repo path is already /Users/hpractv/ralph-runs/poster — do not block claiming wrong-repo; continue in poster only. Poll 14:32 MDT: ralph/opencode dead again after 13:30 restart (~62m, server gone while unfinished remained); reset to backlog and restarted. WORK ONLY IN /Users/hpractv/ralph-runs/poster (groundworksdesign/poster). Do NOT use or claim izep/ralph-gui. HARD PIN: repo path is already /Users/hpractv/ralph-runs/poster — do not block claiming wrong-repo; continue in poster only. Poll 19:43 MDT: wedged ~194m in QA Explore Change... (opencode 65753 + ralph tsx/node :3001 58944/58948); killed headless set only; reset to backlog; LaunchAgent durable restart. WORK ONLY IN /Users/hpractv/ralph-runs/poster (groundworksdesign/poster). Do NOT use or claim izep/ralph-gui. HARD PIN: repo path is already /Users/hpractv/ralph-runs/poster — do not block claiming wrong-repo; continue in poster only. Poll 21:35 MDT: wedged ~109m in QA Explore Change... (opencode 83994 + ralph tsx/node :3001 82750/82752); killed headless set only; reset to backlog; LaunchAgent durable restart. WORK ONLY IN /Users/hpractv/ralph-runs/poster (groundworksdesign/poster). Do NOT use or claim izep/ralph-gui. HARD PIN: repo path is already /Users/hpractv/ralph-runs/poster — do not block claiming wrong-repo; continue in poster only. Poll 23:36 MDT: wedged ~115m in QA Explore Change... (opencode 4774 + ralph tsx/node :3001 4181/4183); killed headless set only; reset to backlog; LaunchAgent durable restart. WORK ONLY IN /Users/hpractv/ralph-runs/poster (groundworksdesign/poster). Do NOT use or claim izep/ralph-gui. HARD PIN: repo path is already /Users/hpractv/ralph-runs/poster — do not block claiming wrong-repo; continue in poster only. Poll 01:42 MDT: wedged ~126m in Dev Explore Change... library root (opencode 18528 + ralph tsx/node :3001 18519/18521); killed headless set only; reset to backlog; LaunchAgent durable restart. WORK ONLY IN /Users/hpractv/ralph-runs/poster (groundworksdesign/poster). Do NOT use or claim izep/ralph-gui. HARD PIN: repo path is already /Users/hpractv/ralph-runs/poster — do not block claiming wrong-repo; continue in poster only. Poll 03:34 MDT: wedged ~110m in Dev Explore Change... / Electron bridge (opencode 29483 + ralph tsx/node :3001 29472/29474); killed headless set only; reset to backlog; LaunchAgent durable restart. WORK ONLY IN /Users/hpractv/ralph-runs/poster (groundworksdesign/poster). Do NOT use or claim izep/ralph-gui. HARD PIN: repo path is already /Users/hpractv/ralph-runs/poster — do not block claiming wrong-repo; continue in poster only. Poll 05:32 MDT: wedged ~117m in Dev Explore Change... / Electron bridge (opencode 39301 + ralph tsx/node :3001 39288/39292); killed headless set only; reset to backlog; LaunchAgent durable restart.",
-    "updatedAt": "2026-09-09T14:39:46.689Z"
+    "taskId": 11,
+    "content": "## Task: Guard Change... re-point path\n\nAdd unit/component and Electron smoke coverage that exercises the real Change... button (the current Electron re-point spec bypasses the button via a direct /library/settings fetch), so the packaged-only defect cannot return. WORK ONLY IN /Users/hpractv/ralph-runs/poster (groundworksdesign/poster). Do NOT use or claim izep/ralph-gui.",
+    "updatedAt": "2026-09-09T14:41:04.802Z"
   },
   "feedback": {
-    "taskId": 10,
-    "content": "Both the typecheck and the relevant test suites pass (27 tests, 2 suites, no failures; only pre-existing `act()` console warnings unrelated to this change). The implementation matches the task exactly:\n\n- `electron/main.cjs`: `ipcMain.handle('poster:pick-library-folder', ...)` uses `dialog.showOpenDialog` with `openDirectory`/`createDirectory`, bound to the calling window.\n- `electron/preload.cjs`: exposes `pickLibraryFolder` on `window.poster` via `contextBridge`.\n- `src/HomePage.tsx`: `changeLibraryRoot` prefers `window.poster.pickLibraryFolder()` when present, falling back to `window.prompt` in the browser.\n- `src/Present/SessionTransport.ts`: type declaration updated for the new bridge method.\n- Tests: `src/HomePage.unit.test.tsx` asserts the picker is used and `window.prompt` is not called when the bridge is present; `src/__tests__/electron-main.regression.test.js` asserts the IPC handler and preload exposure exist as a regression guard.\n\n```\n<status>verified</status>\n```\n",
-    "updatedAt": "2026-09-09T14:41:04.566Z"
+    "taskId": 11,
+    "content": "<status>verified</status>That backgrounded CRA build finished successfully — it was part of my verification steps (already accounted for above) and produced `build/` output. No follow-up needed since I already rebuilt Remix afterward to restore the correct `build/index.js` server bundle and confirmed all tests pass with `<status>verified</status>`.\n",
+    "updatedAt": "2026-09-09T14:48:12.563Z"
   },
-  "lastUpdated": "2026-09-09T14:41:04.582Z"
+  "lastUpdated": "2026-09-09T14:48:12.572Z"
 }

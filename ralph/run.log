@@ -22692,3 +22692,34 @@ To resolve this, try the following:
 2026-09-09T14:41:03.235Z [qa/cursor-agent] ```
 2026-09-09T14:41:04.565Z [qa] QA agent finished in 1m 18s
 2026-09-09T14:41:04.582Z Task #10 verified!
+2026-09-09T14:41:04.796Z [ralph] Committed: Task #10 - Fix Electron Home Change... re-point
+2026-09-09T14:41:04.796Z Total LLM calls: 1/400
+2026-09-09T14:41:04.797Z [ralph] Skipping plan phase (1 backlog tasks, plan every 50 tasks)
+2026-09-09T14:41:04.806Z [ralph] Dev iteration #1 for task #11: Guard Change... re-point path
+2026-09-09T14:41:04.807Z [dev] Running dev agent...
+2026-09-09T14:42:55.770Z [dev/cursor-agent] # Guard Change... re-point path
+2026-09-09T14:42:55.770Z [dev/cursor-agent] ## Summary
+2026-09-09T14:42:55.771Z [dev/cursor-agent] - Added coverage so the Home `Change...` flow is exercised through the real button path in both component tests and packaged Electron smoke.
+2026-09-09T14:42:55.771Z [dev/cursor-agent] - Replaced the Electron test's direct `/library/settings` bypass with a button-driven native picker flow, so the packaged-only regression is now guarded.
+2026-09-09T14:42:55.771Z [dev/cursor-agent] ## Changes Made
+2026-09-09T14:42:55.772Z [dev/cursor-agent] - Updated `src/HomePage.unit.test.tsx` with a stronger `Change...` test that:
+2026-09-09T14:42:55.773Z [dev/cursor-agent]   - uses the real button click,
+2026-09-09T14:42:55.773Z [dev/cursor-agent]   - verifies the native picker branch is used instead of `window.prompt`,
+2026-09-09T14:42:55.773Z [dev/cursor-agent]   - asserts the POST body sent to `/library/settings`,
+2026-09-09T14:42:55.774Z [dev/cursor-agent]   - confirms the Home library list refreshes in place after the root changes.
+2026-09-09T14:42:55.774Z [dev/cursor-agent] - Updated `e2e/electron-library.spec.ts` so the re-point smoke test:
+2026-09-09T14:42:55.775Z [dev/cursor-agent]   - clicks the real `Change...` button,
+2026-09-09T14:42:55.775Z [dev/cursor-agent]   - stubs Electron's native `dialog.showOpenDialog` result in the main process,
+2026-09-09T14:42:55.775Z [dev/cursor-agent]   - verifies the library root changes without a page reload,
+2026-09-09T14:42:55.775Z [dev/cursor-agent]   - still confirms the old `~/.poster` data stays untouched and the old deck reappears when re-pointed back.
+2026-09-09T14:42:55.776Z [dev/cursor-agent] ## Validation
+2026-09-09T14:42:55.776Z [dev/cursor-agent] - `CI=true pnpm exec react-scripts test --watchAll=false --runInBand src/HomePage.unit.test.tsx` - passed
+2026-09-09T14:42:55.776Z [dev/cursor-agent] - `pnpm exec playwright test e2e/electron-library.spec.ts --config=playwright.electron.config.ts` - passed
+2026-09-09T14:42:55.777Z [dev/cursor-agent] - `pnpm exec tsc --noEmit --pretty false` - passed
+2026-09-09T14:42:55.777Z [dev/cursor-agent] <status>done</status>
+2026-09-09T14:42:57.031Z [dev] Dev agent finished in 1m 52s
+2026-09-09T14:42:57.031Z [dev] # Guard Change... re-point path ## Summary - Added coverage so the Home `Change...` flow is exercised through the real button path in both component tests and packaged Electron smoke. - Replaced the E...
+2026-09-09T14:42:57.039Z [qa] Running QA agent...
+2026-09-09T14:48:12.307Z [qa/cursor-agent] <status>verified</status>That backgrounded CRA build finished successfully — it was part of my verification steps (already accounted for above) and produced `build/` output. No follow-up needed since I already rebuilt Remix afterward to restore the correct `build/index.js` server bundle and confirmed all tests pass with `<status>verified</status>`.
+2026-09-09T14:48:12.559Z [qa] QA agent finished in 5m 16s
+2026-09-09T14:48:12.573Z Task #11 verified!

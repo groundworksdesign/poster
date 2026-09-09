@@ -180,6 +180,79 @@ describe('Home Change... library root', () => {
     promptSpy.mockRestore();
   });
 
+  test('native Change... posts the chosen root and refreshes the Home library in place', async () => {
+    const pickLibraryFolder = jest.fn().mockResolvedValue('/picked/library');
+    const togglePoster = (window as {
+      poster?: { pickLibraryFolder: jest.Mock };
+    });
+    togglePoster.poster = { pickLibraryFolder };
+    const promptSpy = jest.spyOn(window, 'prompt').mockReturnValue(null);
+    let libraryFetchCount = 0;
+    const fetchMock = jest.fn((input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+      const url = String(input);
+      if (url.includes('/library/settings') && init?.method === 'POST') {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ libraryRoot: '/picked/library' }),
+        } as Response);
+      }
+      if (url.includes('/library/settings')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({ libraryRoot: '/default/library' }),
+        } as Response);
+      }
+      libraryFetchCount += 1;
+      return Promise.resolve({
+        ok: true,
+        json: async () =>
+          libraryFetchCount === 1
+            ? [
+                {
+                  id: 'old-library',
+                  title: 'Default library deck',
+                  date: '2026-01-01',
+                  location: 'Default Hall',
+                  created_at: '2026-01-01T00:00:00Z',
+                },
+              ]
+            : [
+                {
+                  id: 'new-library',
+                  title: 'Re-pointed library deck',
+                  date: '2026-01-02',
+                  location: 'New Hall',
+                  created_at: '2026-01-02T00:00:00Z',
+                },
+              ],
+      } as Response);
+    });
+    jest.spyOn(global, 'fetch').mockImplementation(fetchMock);
+
+    render(<HomePage />);
+    await waitFor(() => expect(screen.getByText(/Library folder: \/default\/library/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('Default library deck')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: /change/i }));
+
+    await waitFor(() => expect(pickLibraryFolder).toHaveBeenCalledTimes(1));
+    expect(promptSpy).not.toHaveBeenCalled();
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        expect.stringContaining('/library/settings?_data=routes%2Flibrary.settings'),
+        expect.objectContaining({
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ libraryRoot: '/picked/library' }),
+        }),
+      ),
+    );
+    await waitFor(() => expect(screen.getByText(/Library folder: \/picked\/library/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('Re-pointed library deck')).toBeInTheDocument());
+    expect(screen.queryByText('Default library deck')).not.toBeInTheDocument();
+    promptSpy.mockRestore();
+  });
+
   test('falls back to window.prompt when window.poster is absent (browser)', async () => {
     const promptSpy = jest
       .spyOn(window, 'prompt')
