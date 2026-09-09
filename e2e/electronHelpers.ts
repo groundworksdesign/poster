@@ -39,9 +39,14 @@ export async function launchPosterApp(opts: LaunchPosterOptions): Promise<Electr
   if (opts.posterHome) {
     env.POSTER_HOME = opts.posterHome;
   }
+  // CI runners cannot configure chrome-sandbox setuid; Electron aborts without this.
+  const args = [`--user-data-dir=${opts.userDataDir}`, root];
+  if (process.env.CI || process.env.ELECTRON_DISABLE_SANDBOX) {
+    args.unshift('--no-sandbox');
+  }
   return electron.launch({
     executablePath: electronPath,
-    args: [`--user-data-dir=${opts.userDataDir}`, root],
+    args,
     env,
   });
 }

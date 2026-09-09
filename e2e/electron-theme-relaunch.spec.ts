@@ -14,7 +14,11 @@ test.describe('Electron durable theme persistence', () => {
     const launch = async (userDataDir: string) =>
       electron.launch({
         executablePath: electronPath,
-        args: [`--user-data-dir=${userDataDir}`, root],
+        args: [
+          ...(process.env.CI || process.env.ELECTRON_DISABLE_SANDBOX ? ['--no-sandbox'] : []),
+          `--user-data-dir=${userDataDir}`,
+          root,
+        ],
         env: { ...process.env, HOME: posterHome, POSTER_HOME: path.join(posterHome, '.poster') },
       });
 
