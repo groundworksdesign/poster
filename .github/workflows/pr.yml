@@ -125,10 +125,11 @@ jobs:
           key: electron-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
       # pnpm 10 ignores dependency install scripts by default ("Ignored build scripts:
-      # electron@…"), so the Electron binary never lands and Playwright fails with
-      # "Electron failed to install correctly". Mirror the better-sqlite3 rebuild step.
+      # electron@…"), so Electron's postinstall never downloads the binary and
+      # Playwright fails with "Electron failed to install correctly".
+      # `pnpm rebuild electron` does not download either — run install.js directly.
       - name: Install Electron binary
-        run: pnpm rebuild electron
+        run: node node_modules/electron/install.js
 
       - name: Verify Electron binary
         run: pnpm exec electron --version
