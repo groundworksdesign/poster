@@ -47,3 +47,5 @@ poster.library.json
 
 # Portable zip build output
 /dist/
+# Ralph runtime log
+/ralph/run.log

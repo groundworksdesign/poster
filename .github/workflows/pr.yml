@@ -12,6 +12,41 @@ permissions:
 
 jobs:
   # ---------------------------------------------------------------------------
+  # Jest unit and integration coverage
+  # ---------------------------------------------------------------------------
+  unit-integration:
+    name: Unit and integration tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Rebuild better-sqlite3 for runner OS
+        run: pnpm rebuild better-sqlite3
+
+      - name: Type-check
+        run: pnpm exec tsc --noEmit
+
+      - name: Run unit and integration tests
+        run: pnpm exec react-scripts test --watchAll=false --runInBand
+
+  # ---------------------------------------------------------------------------
   # Remix Playwright E2E (Chromium; remix dev webServer)
   # ---------------------------------------------------------------------------
   remix-e2e:
@@ -40,11 +75,96 @@ jobs:
       - name: Rebuild better-sqlite3 for runner OS
         run: pnpm rebuild better-sqlite3
 
+      - name: Build Remix app for process relaunch smoke
+        run: pnpm run build:remix
+
       - name: Install Playwright Chromium (+ system deps)
-        run: pnpm exec playwright install --with-deps chromium
+        run: |
+          set -euo pipefail
+          # GHA ubuntu images often include a google-chrome apt source that
+          # intermittently Hash-Sum-mismatches and breaks `apt-get update` inside
+          # `playwright install --with-deps`. Scrub any such sources first.
+          sudo find /etc/apt -type f -print0 2>/dev/null \
+            | xargs -0 grep -l 'dl.google.com/linux/chrome' 2>/dev/null \
+            | xargs -r sudo rm -f || true
+          sudo rm -f /etc/apt/sources.list.d/google-chrome*.list /etc/apt/sources.list.d/google*.list || true
+          sudo rm -rf /var/lib/apt/lists/* || true
+          for attempt in 1 2 3; do
+            if pnpm exec playwright install --with-deps chromium; then
+              exit 0
+            fi
+            echo "playwright install --with-deps attempt ${attempt} failed; retrying..."
+            sleep $((attempt * 8))
+          done
+          echo "Falling back to browser-only install (no apt --with-deps)"
+          pnpm exec playwright install chromium
 
       - name: Run Remix E2E
         run: pnpm run test:e2e:remix
+
+  # ---------------------------------------------------------------------------
+  # Electron smoke (full process relaunch and durable theme preferences)
+  # ---------------------------------------------------------------------------
+  electron-smoke:
+    name: Electron durable theme smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      # GitHub-hosted runners cannot configure chrome-sandbox setuid; without this,
+      # Electron aborts immediately with FATAL setuid_sandbox_host.
+      ELECTRON_DISABLE_SANDBOX: "1"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Rebuild better-sqlite3 for runner OS
+        run: pnpm rebuild better-sqlite3
+
+      - name: Build Remix app
+        run: pnpm run build:remix
+
+      - name: Cache Electron binary
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/electron
+            ~/.cache/electron-builder
+          key: electron-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+
+      # pnpm 10 ignores dependency install scripts by default ("Ignored build scripts:
+      # electron@…"), so Electron's postinstall never downloads the binary and
+      # Playwright fails with "Electron failed to install correctly".
+      # `pnpm rebuild electron` does not download either — run install.js directly.
+      - name: Install Electron binary
+        run: node node_modules/electron/install.js
+
+      - name: Verify Electron binary
+        run: |
+          test -s node_modules/electron/path.txt
+          test -x "$(node -p "require('electron')")"
+          xvfb-run -a pnpm exec electron --version
+
+      # Electron smoke launches Electron via Playwright's _electron API; it does not
+      # need a Chromium browser download. Skipping `playwright install --with-deps`
+      # avoids flaky google-chrome apt hash mismatches on GHA ubuntu images.
+
+      - name: Run Electron relaunch smoke
+        run: xvfb-run -a pnpm run test:e2e:electron
 
   # ---------------------------------------------------------------------------
   # Resolve PR pre-release tag (vX.Y.Z-pr.<PR_NUMBER>) and ensure GitHub Release

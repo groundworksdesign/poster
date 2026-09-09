@@ -6,6 +6,11 @@ const mainSource = fs.readFileSync(
   'utf8',
 );
 
+const preloadSource = fs.readFileSync(
+  path.join(__dirname, '../../electron/preload.cjs'),
+  'utf8',
+);
+
 const portableSource = fs.readFileSync(
   path.join(__dirname, '../../scripts/package-portable.mjs'),
   'utf8',
@@ -79,6 +84,16 @@ describe('electron/main.cjs launch safety (all Electron installers)', () => {
 
   it('fails fast if the server child exits before ready', () => {
     expect(mainSource).toMatch(/Server exited before becoming ready/);
+  });
+
+  it('exposes a native folder picker IPC for Home Change... (no window.prompt)', () => {
+    expect(mainSource).toMatch(
+      /ipcMain\.handle\(['"]poster:pick-library-folder['"]/,
+    );
+    expect(mainSource).toMatch(/dialog\.showOpenDialog/);
+    expect(mainSource).toMatch(/\[['"]openDirectory['"], ['"]createDirectory['"]\]/);
+    expect(preloadSource).toMatch(/pickLibraryFolder:/);
+    expect(preloadSource).toMatch(/['"]poster:pick-library-folder['"]/);
   });
 });
 

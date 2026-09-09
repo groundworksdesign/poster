@@ -35,6 +35,7 @@ declare global {
       presentEvent: (event: PresentEvent) => void;
       onDeckEvent: (handler: (payload: DeckEvent) => void) => () => void;
       onPresentPush: (handler: (payload: unknown) => void) => () => void;
+      pickLibraryFolder: () => Promise<string | null>;
     };
   }
 }
@@ -284,7 +285,30 @@ export async function createPresentSession(
       });
     },
     dispose: () => {
-      postJson('/api/poster/present-event', { peerId, event: { type: 'closed' } });
+      const body = JSON.stringify({ peerId, event: { type: 'closed' } });
+      // A normal fetch can be cancelled while a browser window is closing.
+      // Keep the close notification alive so the deck cannot retain a stale child.
+      if (typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {
+        const accepted = navigator.sendBeacon(
+          '/api/poster/present-event',
+          new Blob([body], { type: 'application/json' }),
+        );
+        if (!accepted) {
+          void fetch('/api/poster/present-event', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body,
+            keepalive: true,
+          });
+        }
+      } else {
+        void fetch('/api/poster/present-event', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body,
+          keepalive: true,
+        });
+      }
       unsub?.();
     },
   };

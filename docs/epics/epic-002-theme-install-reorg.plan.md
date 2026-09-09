@@ -6,7 +6,7 @@ canonical_plan: true
 session_note: "Packaging, CI, and release operator docs live in README.md (Portable zip, Electron installers, CI artifacts, Releases)."
 todos:
   - id: themes
-    content: "CSS variables + [data-theme] palettes (Dracula, Tokyo Night, dark blue, GitHub dark); HomePage picker + localStorage (+ optional root FOUC script)"
+    content: "CSS variables + [data-theme] palettes (Dracula, Tokyo Night, dark blue, GitHub dark); HomePage picker persists a durable theme in ~/.poster/theme.json via Electron IPC, with a browser localStorage fallback and optional root FOUC script"
     status: done
   - id: home-library
     content: "Mount LibraryPanel on HomePage; DeckBuilder ?open= + ?focusImport=; trim duplicate deck library toggle; update unit/e2e tests"
@@ -39,7 +39,7 @@ Surface slide **library** actions (list, open, export, delete, backup, restore) 
 - **Home**: `src/HomePage.tsx` — themes + `LibraryPanel`; links and CTAs to `/deck` (including `?open=` / `?focusImport=`) and `/presentation`.
 - **Library UI**: `src/Deck/LibraryPanel.tsx` — also used from home; deck route trims duplicate full-panel UX per epic.
 - **Import**: file input + Load in `DeckBuilder` (JSON/XML; logic stays deck-side).
-- **Theming**: `src/themes.css` / `[data-theme]` palettes; home picker persists `poster-theme` in `localStorage`.
+- **Theming**: `src/themes.css` / `[data-theme]` palettes; home picker persists a valid theme in durable user prefs at `~/.poster/theme.json` via Electron IPC, and the app falls back to browser `localStorage` for live runtime / non-Electron contexts.
 - **Server**: `server/index.js` + Remix `build/`; `pnpm run build:remix` then `pnpm start` (`package.json`).
 - **CI**: `.github/workflows/pr.yml` (portable zip + Electron installers per OS, `upload-artifact`); `.github/workflows/release.yml` (tag `v*.*.*`, attach same artifact types to GitHub Release).
 - **Native module**: `better-sqlite3` requires **OS-matched** binaries. Portable zips and Electron bundles must be built per platform (CI matrix), not one “universal” zip.
@@ -81,9 +81,9 @@ flowchart LR
 **Approach**
 
 - CSS **custom properties** on `html` / `body`: bg, fg, muted, border, accent, link colors.
-- Home: theme picker setting `document.documentElement.dataset.theme` to `dracula` | `tokyo-night` | `dark-blue` | `github-dark`, persisted in `localStorage` (e.g. `poster-theme`).
+- Home: theme picker setting `document.documentElement.dataset.theme` to `dracula` | `tokyo-night` | `dark-blue` | `github-dark`; Electron persists the validated value to `~/.poster/theme.json` (or the `POSTER_HOME` override), while the browser runtime keeps a `localStorage` fallback for non-Electron use and same-origin reopen.
 - `src/App.css` and/or `src/themes.css`: `[data-theme="…"]` overrides; migrate `.home-page*` hardcoded colors to `var(--…)`.
-- Optional: tiny inline script in `app/root.tsx` to read `localStorage` before paint and reduce FOUC.
+- Optional: tiny inline script in `app/root.tsx` to read the Electron bridge / `localStorage` before paint and reduce FOUC.
 
 ---
 

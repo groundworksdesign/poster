@@ -9,6 +9,7 @@ export const REMIX_ROUTE_ID = {
   libraryDelete: 'routes/library.delete.$id',
   librarySave: 'routes/library.save',
   libraryRestore: 'routes/library.restore',
+  librarySettings: 'routes/library.settings',
 } as const;
 
 export function remixDataUrl(path: string, routeId: string): string {

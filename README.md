@@ -58,15 +58,23 @@ Library and other `POST` routes will not be available in CRA-only mode; use the 
 2. **Presentation** (`/presentation`): Open this on your projector or second monitor—fullscreen it there. It shows whatever the builder last sent.
 3. Keep both views open in the **same browser** so the live channel works. Use the on-screen controls or keyboard shortcuts in the builder to move through slides or song lyrics.
 
-The in-app home page (`/`) includes the same overview and links to open the deck builder (new tab) and presentation (new window).
+Live Present behavior:
+
+- **Start / Previous / Next / Go** move the program and update the deck's **on-program thumbnail** (a preview of the exact program output, shown with the Presentation controls).
+- **End** blanks the program output (no title/body on Present) and clears the thumbnail; **Start** after End resumes at the first slide.
+- Closing a **Present** window removes it from the deck's Present window list, so stale windows are never sent to and closing one of several Present windows leaves the others intact.
+
+The in-app home page (`/`) includes the same overview and links to open the deck builder (new tab) and presentation (new window). Present windows open from the deck — Home has no bare "Open Present" action.
 
 ### SQLite library storage
 
-The app stores the local library in **`poster.sqlite`** next to the process working directory (override with **`POSTER_DB_PATH`**).
+The app stores its durable data under **`~/.poster`** by default (override the durable home with **`POSTER_HOME`**, the active library root with **`POSTER_LIBRARY_PATH`**, or an individual store file with **`POSTER_DB_PATH`** / `POSTER_LIBRARY_JSON_PATH`). The Home page's **Change...** control re-points the library to another folder (persisted in `library-settings.json`) and leaves the previous folder untouched. In the packaged Electron app the control uses a native folder picker; in a plain browser it prompts for the path. A legacy `poster.sqlite` or `poster.library.json` in the process working directory is copied to the durable library once when the durable library is first initialized (a marker under the home prevents re-runs); the source is never deleted.
+
+The selected **theme** also persists in the same durable home at **`~/.poster/theme.json`** and is restored for Home, deck, and Present windows across a full quit and relaunch.
 
 1. **`better-sqlite3`** is used when the native addon loads (typical on Node LTS with a successful `pnpm rebuild better-sqlite3`).
 2. If that fails (for example Node 24+ before a matching prebuild), the server automatically uses Node’s built-in **`node:sqlite`** (`DatabaseSync`) so the same `poster.sqlite` file still works—no extra install (startup stays quiet; set **`POSTER_SQLITE_LOG_BACKEND=1`** to log which driver was chosen).
-3. If both fail, the app falls back to **`poster.library.json`**.
+3. If both fail, the app falls back to **`poster.library.json`** in the active library folder.
 
 To prefer rebuilding the native module on supported Node versions:
 
@@ -80,7 +88,8 @@ pnpm run rebuild:sqlite
 | --- | --- |
 | `pnpm test` | Jest tests (interactive watch by default) |
 | `pnpm run test:e2e` | Playwright end-to-end tests (see `playwright.config.ts`) |
-| `pnpm run test:e2e:remix` | Playwright against Remix dev (`playwright.remix.config.ts`) |
+| `pnpm run test:e2e:remix` | Playwright against Remix dev (`playwright.remix.config.ts`) — unit/smoke for Present, theme, thumbnail, library |
+| `pnpm run test:e2e:electron` | Playwright Electron smoke (`playwright.electron.config.ts`) — packaged app at the real `electron/main.cjs`: End blank, Present close-list cleanup, library default `~/.poster` + re-point leave-old, Home guard, theme relaunch |
 | `pnpm run build` | CRA production build to `build/` |
 | `pnpm run build:remix` | Remix production build |
 | `pnpm run package:portable` | Zip a **portable** server bundle to `dist/` (requires `build/`; see below) |

@@ -1,11 +1,15 @@
-import type { Slide, SongData } from './PresentTypes';
+import type { Slide, SlideCSS, SongData } from './PresentTypes';
 import { SlideType } from './PresentTypes';
 
 /** Compact program snapshot for deck thumbnail (not a full PresentData dump). */
 export type ProgramThumbnailState = {
   slideType?: string;
+  slideStyle?: SlideCSS;
+  slideFile?: string;
   title?: string;
   subTitle?: string;
+  titleFontSize?: string;
+  subTitleFontSize?: string;
   message?: string | null;
   backgroundColor?: string;
   color?: string;
@@ -38,8 +42,12 @@ export function buildProgramThumbnail(input: {
 
   if (slide) {
     state.slideType = slide.type;
+    state.slideStyle = slide.style;
+    state.slideFile = slide.file;
     state.title = slide.title;
     state.subTitle = slide.subTitle;
+    state.titleFontSize = slide.titleFontSize;
+    state.subTitleFontSize = slide.subTitleFontSize;
     state.backgroundColor = useGreenScreen ? 'transparent' : slide.style?.backgroundColor;
     state.color = slide.style?.color;
 

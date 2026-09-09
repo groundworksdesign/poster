@@ -27,19 +27,46 @@ test.describe('single Home / Open Presentation', () => {
     await expect(page.getByText(/library of saved presentations/i)).toBeVisible();
   });
 
-  test('Home has no bare /presentation link', async ({ page, baseURL }) => {
+  test('Home exposes no bare Open Present action or presenter route', async ({ page, baseURL }) => {
     const base = baseURL || 'http://127.0.0.1:3000';
     await page.goto(`${base}/`, { waitUntil: 'domcontentloaded' });
 
+    await expect(page.getByRole('link', { name: /^Open Present$/i })).toHaveCount(0);
     const hrefs = await page.locator('a[href]').evaluateAll((anchors) =>
       anchors.map((a) => (a as HTMLAnchorElement).getAttribute('href') || ''),
     );
-    const barePresent = hrefs.filter(
-      (h) =>
-        h === '/presentation' ||
-        (h.startsWith('/presentation') && !h.includes('sessionId=')),
-    );
-    expect(barePresent).toEqual([]);
+    expect(hrefs.filter((href) => href.startsWith('/deck') || href.startsWith('/presentation'))).toEqual([
+      '/deck',
+      '/deck',
+      '/deck?focusImport=1',
+    ]);
+  });
+
+  test('Present window is created by deck Open Present, not Home', async ({
+    context,
+    page,
+    baseURL,
+  }) => {
+    const base = baseURL || 'http://127.0.0.1:3000';
+    await page.goto(`${base}/`, { waitUntil: 'domcontentloaded' });
+
+    const [deckPage] = await Promise.all([
+      context.waitForEvent('page'),
+      page.getByTestId('open-presentation').click(),
+    ]);
+    await deckPage.waitForLoadState('domcontentloaded');
+    await expect(deckPage.getByTestId('open-present')).toBeEnabled({ timeout: 15000 });
+
+    const [presentPage] = await Promise.all([
+      context.waitForEvent('page'),
+      deckPage.getByTestId('open-present').click(),
+    ]);
+    await presentPage.waitForURL(/\/presentation\?sessionId=[^&]+&presentId=[^&]+/, {
+      timeout: 15000,
+    });
+
+    await presentPage.close();
+    await deckPage.close();
   });
 
   test('bare /presentation shows connect guidance (not a Home-spawned program feed)', async ({

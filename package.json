@@ -58,12 +58,14 @@
     "vendor:prepare": "echo \"Vendorization placeholder: add vendor/ dir or prebuilt /build artifacts\"",
     "test:e2e": "playwright test",
     "test:e2e:remix": "playwright test --config=playwright.remix.config.ts",
+    "test:e2e:electron": "playwright test --config=playwright.electron.config.ts",
     "rebuild:sqlite": "pnpm rebuild better-sqlite3",
     "package:portable": "node scripts/package-portable.mjs",
     "electron": "electron .",
     "prepare:electron": "node scripts/prepare-electron-pack.cjs",
     "build:electron": "node scripts/prepare-electron-pack.cjs && node scripts/run-electron-builder.cjs build --publish never",
-    "build:electron:dir": "node scripts/prepare-electron-pack.cjs && node scripts/run-electron-builder.cjs build --dir --publish never"
+    "build:electron:dir": "node scripts/prepare-electron-pack.cjs && node scripts/run-electron-builder.cjs build --dir --publish never",
+    "install:electron": "node node_modules/electron/install.js"
   },
   "jest": {
     "collectCoverageFrom": [

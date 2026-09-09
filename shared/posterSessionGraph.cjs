@@ -53,10 +53,18 @@ class PosterSessionGraph {
         this.sessions.delete(peer.sessionId);
       }
     } else if (peer.role === 'present' && session && peer.presentId) {
-      // Soft-unbind only if this peer still owns the presentId (avoid Strict Mode race
-      // where a late closed from mount-1 clears mount-2's binding).
+      // Remove the child definitively when a Present window closes. The deck must
+      // stop tracking it immediately and directed sends must ignore it.
       if (session.presents.get(peer.presentId) === peerId) {
-        session.presents.set(peer.presentId, null);
+        session.presents.delete(peer.presentId);
+        this.lastPayloadByPresent.delete(peer.presentId);
+        const deckPeer = this.peers.get(session.deckPeerId);
+        if (deckPeer) {
+          deckPeer.deliver('poster:deck-event', {
+            type: 'child-closed',
+            presentId: peer.presentId,
+          });
+        }
       }
     }
 

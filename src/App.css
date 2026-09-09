@@ -621,3 +621,31 @@ ul {
   min-width: 3rem;
   text-align: center;
 }
+
+.deck-program-thumbnail {
+  margin-top: 12px;
+  padding: 8px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-surface);
+}
+
+.deck-program-thumbnail-preview {
+  aspect-ratio: 16 / 9;
+  max-width: 32rem;
+  min-height: 8rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 0.75rem;
+  box-sizing: border-box;
+  overflow: hidden;
+  background-repeat: no-repeat;
+  line-height: 1.15;
+  text-align: center;
+}
+
+.deck-program-thumbnail-lines {
+  white-space: pre-wrap;
+}

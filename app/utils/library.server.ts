@@ -7,9 +7,9 @@ type SaveBody = Deck & { id?: string };
 /** `better-sqlite3` or Node `node:sqlite` DatabaseSync — same prepare/run/get API. */
 type SqliteDb = {
   prepare: (sql: string) => {
-    run: (...params: unknown[]) => unknown;
-    get: (...params: unknown[]) => unknown;
-    all: (...params: unknown[]) => unknown;
+    run: (...params: any[]) => any;
+    get: (...params: any[]) => any;
+    all: (...params: any[]) => any;
   };
 };
 

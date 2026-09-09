@@ -112,6 +112,42 @@ describe('PosterSessionGraph', () => {
     expect(payloadsFor('present-a1')).not.toContain(payload);
   });
 
+  test('blank payload is directed only to the selected Present child', () => {
+    const { presentIds } = registerDeckWithPresents('deck-a', ['present-a1', 'present-a2']);
+    const blank = { slide: null, message: null, useGreenScreen: false };
+
+    const result = graph.handleDeckCommand('deck-a', {
+      type: 'send',
+      payload: blank,
+      target: presentIds[0],
+    });
+
+    expect(result).toEqual({ ok: true, delivered: 1 });
+    expect(payloadsFor('present-a1')).toContain(blank);
+    expect(payloadsFor('present-a2')).not.toContain(blank);
+  });
+
+  test('blank payload is replayed when its Present child becomes ready', () => {
+    const deckPeer = 'deck-a';
+    const presentPeer = 'present-a1';
+    const reg = graph.registerDeck(deckPeer, makeDeliver(deckPeer));
+    const spawn = graph.handleDeckCommand(deckPeer, { type: 'spawn' });
+    const blank = { slide: null, message: null, useGreenScreen: false };
+
+    graph.handleDeckCommand(deckPeer, {
+      type: 'send',
+      payload: blank,
+      target: spawn.presentId,
+    });
+    graph.handlePresentEvent(
+      presentPeer,
+      { type: 'ready', sessionId: reg.sessionId, presentId: spawn.presentId },
+      makeDeliver(presentPeer),
+    );
+
+    expect(payloadsFor(presentPeer)).toContain(blank);
+  });
+
   test('closing a Present drops it; reopen gets a new presentId', () => {
     const deckPeer = 'deck-a';
     const reg = graph.registerDeck(deckPeer, makeDeliver(deckPeer));
@@ -126,6 +162,94 @@ describe('PosterSessionGraph', () => {
     expect(listed.presents).not.toContain(spawn1.presentId);
     const spawn2 = graph.handleDeckCommand(deckPeer, { type: 'spawn' });
     expect(spawn2.presentId).not.toBe(spawn1.presentId);
+  });
+
+  test('window-close unregister removes the child and notifies the deck once', () => {
+    const deckPeer = 'deck-a';
+    const reg = graph.registerDeck(deckPeer, makeDeliver(deckPeer));
+    const spawn = graph.handleDeckCommand(deckPeer, { type: 'spawn' });
+    graph.handlePresentEvent(
+      'present-a1',
+      { type: 'ready', sessionId: reg.sessionId, presentId: spawn.presentId },
+      makeDeliver('present-a1'),
+    );
+
+    graph.handlePresentEvent('present-a1', { type: 'closed' }, makeDeliver('present-a1'));
+
+    const listed = graph.handleDeckCommand(deckPeer, { type: 'list' });
+    expect(listed.presents).not.toContain(spawn.presentId);
+    expect(
+      (deliveries.get(deckPeer) || []).filter(
+        (m) => m.channel === 'poster:deck-event' && m.payload.type === 'child-closed',
+      ),
+    ).toHaveLength(1);
+
+    const payload = { slide: { title: 'no stale sends' } };
+    graph.handleDeckCommand(deckPeer, { type: 'send', payload, target: 'all' });
+    expect(payloadsFor('present-a1')).not.toContain(payload);
+  });
+
+  test('repeated window-close events are idempotent and preserve other children', () => {
+    const deckPeer = 'deck-a';
+    const reg = graph.registerDeck(deckPeer, makeDeliver(deckPeer));
+    const first = graph.handleDeckCommand(deckPeer, { type: 'spawn' });
+    const second = graph.handleDeckCommand(deckPeer, { type: 'spawn' });
+    graph.handlePresentEvent(
+      'present-a1',
+      { type: 'ready', sessionId: reg.sessionId, presentId: first.presentId },
+      makeDeliver('present-a1'),
+    );
+    graph.handlePresentEvent(
+      'present-a2',
+      { type: 'ready', sessionId: reg.sessionId, presentId: second.presentId },
+      makeDeliver('present-a2'),
+    );
+
+    graph.handlePresentEvent('present-a1', { type: 'closed' }, makeDeliver('present-a1'));
+    graph.handlePresentEvent('present-a1', { type: 'closed' }, makeDeliver('present-a1'));
+
+    expect(graph.handleDeckCommand(deckPeer, { type: 'list' }).presents).toEqual([second.presentId]);
+    expect(
+      (deliveries.get(deckPeer) || []).filter(
+        (m) => m.channel === 'poster:deck-event' && m.payload.type === 'child-closed',
+      ),
+    ).toHaveLength(1);
+
+    const payload = { slide: { title: 'remaining child' } };
+    graph.handleDeckCommand(deckPeer, { type: 'send', payload, target: 'all' });
+    expect(payloadsFor('present-a1')).not.toContain(payload);
+    expect(payloadsFor('present-a2')).toContain(payload);
+  });
+
+  test('explicit close is idempotent and never sends to the closed child', () => {
+    const deckPeer = 'deck-a';
+    const reg = graph.registerDeck(deckPeer, makeDeliver(deckPeer));
+    const spawned = graph.handleDeckCommand(deckPeer, { type: 'spawn' });
+    graph.handlePresentEvent(
+      'present-a1',
+      { type: 'ready', sessionId: reg.sessionId, presentId: spawned.presentId },
+      makeDeliver('present-a1'),
+    );
+
+    expect(graph.handleDeckCommand(deckPeer, { type: 'close', presentId: spawned.presentId })).toEqual({
+      ok: true,
+    });
+    expect(graph.handleDeckCommand(deckPeer, { type: 'close', presentId: spawned.presentId })).toEqual({
+      ok: false,
+      error: 'missing-target',
+    });
+    graph.handleDeckCommand(deckPeer, {
+      type: 'send',
+      target: spawned.presentId,
+      payload: { slide: { title: 'must not deliver' } },
+    });
+
+    expect(payloadsFor('present-a1')).toHaveLength(0);
+    expect(
+      (deliveries.get(deckPeer) || []).filter(
+        (m) => m.channel === 'poster:deck-event' && m.payload.type === 'child-closed',
+      ),
+    ).toHaveLength(1);
   });
 
   test('program-state present-event forwards thumbnail only to owning deck', () => {

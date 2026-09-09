@@ -52,7 +52,16 @@ export default function Presentation() {
     }
 
     let disposed = false;
+    let closed = false;
     let presentSession: Awaited<ReturnType<typeof createPresentSession>> | null = null;
+    const closeSession = () => {
+      if (closed) return;
+      closed = true;
+      disposed = true;
+      presentSessionRef.current = null;
+      presentSession?.dispose();
+    };
+    window.addEventListener('pagehide', closeSession);
 
     createPresentSession(sessionId, presentId)
       .then((session) => {
@@ -81,9 +90,8 @@ export default function Presentation() {
       });
 
     return () => {
-      disposed = true;
-      presentSessionRef.current = null;
-      presentSession?.dispose();
+      window.removeEventListener('pagehide', closeSession);
+      closeSession();
     };
   }, []);
 
@@ -249,6 +257,7 @@ export default function Presentation() {
       maxWidth: '100%',
       fontFamily: slide?.style?.fontFamily,
       fontSize: slide?.style?.fontSize,
+      fontWeight: slide?.style?.fontWeight,
       padding: 0,
       margin: 0,
       backgroundImage: backgroundImage ? `url(${backgroundImage})` : undefined,
