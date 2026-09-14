@@ -3,7 +3,7 @@
   "branch": "cursor/clean-architecture-restructure-018c",
   "status": "in_progress",
   "loop": 10,
-  "persona": "planning",
+  "persona": "dev",
   "completeEpic": false,
   "requirements": [
     {
@@ -77,7 +77,7 @@
       "todoIds": [
         "fix-library-open-present-hydrate"
       ],
-      "status": "pending"
+      "status": "in_progress"
     }
   ],
   "todos": [
@@ -184,9 +184,10 @@
       "id": "fix-library-open-present-hydrate",
       "content": "Fix packaged Electron/AppImage Present first-open hydrate after Library Open into Deck. Jack tip 497d454: blank-deck Open Present+send 3/3 PASS; Library Open \u2192 Present FAIL (SSR Loading \u226530s, does not hydrate). Distinct from blank-deck / main-owned present-session path (REQ-006).",
       "requirementId": "REQ-008",
-      "status": "pending",
+      "status": "in_progress",
       "passes": false,
-      "notes": "Planning loop 10 selected. Hypothesis: Library Deck open (noopener/named posterDeck/assign fallback) may drop window.poster so Open Present falls back to about:blank/present-blank instead of main-owned present-session; or wrong URL/session vs blank-deck. Electron e2e does not cover Library\u2192Present."
+      "notes": "DEV: Root cause \u2014 Library Open used noopener/noreferrer so Electron skipped did-create-window; Library Deck lacked window-open policy and Present fell off main-owned present-session. Fixed HomePage handleOpenFromLibrary to match blank-deck (_blank + POPUP_FEATURES). Added HomePage unit + electron-library-present-hydrate e2e. passes left false for QA.",
+      "devCompletedAt": "2026-09-14T23:50:11.000Z"
     }
   ],
   "acceptanceCriteria": [
@@ -205,7 +206,7 @@
   ],
   "selected": {
     "id": "fix-library-open-present-hydrate",
-    "reason": "Loop 10 @ tip 497d454: Jack AppImage NOT READY solely on Library Open \u2192 Present (SSR Loading \u226530s). Blank-deck Open Present+send 3/3 PASS so REQ-006 main-owned present-session is insufficient for this entry path. Highest product risk; unblocks packaged sign-off."
+    "reason": "DEV implemented; awaiting QA verification of Library Open \u2192 Present hydrate."
   },
   "planningNotes": "Planning loop 10 @ 2026-09-14T23:32:00.000Z: reopened epic (completeEpic false) after Jack tip 497d454. Added REQ-008 + todo fix-library-open-present-hydrate; selected that task. No product code. Draft PR #21 only.",
   "planningBrief": {
@@ -238,7 +239,7 @@
         "Blank-deck Open Present remains reliable (no REQ-006 regression)",
         "Automated Electron coverage prefers library-open \u2192 Present hydrate"
       ],
-      "hypothesis": "After Library Open, Present may still use popup/about:blank (present-blank allow) or wrong URL/session vs blank-deck Open Present — e.g. Library Deck shell lacks window.poster so planPresentOpen falls back to browser-gesture-blank."
+      "hypothesis": "After Library Open, Present may still use popup/about:blank (present-blank allow) or wrong URL/session vs blank-deck Open Present \u2014 e.g. Library Deck shell lacks window.poster so planPresentOpen falls back to browser-gesture-blank."
     }
   },
   "jackAppImageBaseline": {
@@ -261,6 +262,6 @@
     "libraryRoot": "pass",
     "home": "pass"
   },
-  "lastUpdated": "2026-09-14T23:32:00.000Z",
+  "lastUpdated": "2026-09-14T23:50:11.000Z",
   "epicCompleteNotes": "Previously marked complete @ 2026-09-14T16:11:31.000Z tip 134d494; reopened in planning loop 10 after Jack tip 497d454 Library Open \u2192 Present FAIL. Draft PR #21 remains draft \u2014 do not mark ready or merge."
 }

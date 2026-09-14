@@ -83,10 +83,15 @@ export default function HomePage() {
   };
 
   const handleOpenFromLibrary = (id: string) => {
+    // Same window.open shape as blank-deck Open Presentation (POPUP_FEATURES, no noopener).
+    // noopener makes Electron skip did-create-window, so the Library Deck never gets
+    // attachWindowOpenPolicy — Open Present then misses main-owned present-session and
+    // can stick on SSR Loading (Jack tip 497d454 / REQ-008).
     const url = `${window.location.origin}/deck?open=${encodeURIComponent(id)}`;
-    const tab = window.open(url, 'posterDeck', 'noopener,noreferrer,width=1280,height=720');
+    const tab = window.open(url, '_blank', POPUP_FEATURES);
     if (tab) {
       tab.opener = null;
+      tab.focus();
     } else {
       window.location.assign(url);
     }

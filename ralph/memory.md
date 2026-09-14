@@ -197,3 +197,10 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - Reopened epic (`completeEpic` false / `status` in_progress). Added REQ-008 + todo `fix-library-open-present-hydrate`; selected that task (numeric task-status id 9).
 - Hypothesis for DEV: after Library Open, Present may still use popup/`about:blank` (`present-blank`) or wrong URL/session vs blank-deck — Library Deck open uses `noopener`/named `posterDeck`/assign fallback; may lack `window.poster` so `planPresentOpen` falls back to `browser-gesture-blank`. Main-owned `present-session` (REQ-006) covers blank-deck path; Electron e2e does not cover Library→Present.
 - Draft PR #21 only; no product code this persona.
+
+## Epic-006 DEV (fix-library-open-present-hydrate)
+
+- Root cause: HomePage Library Open used `noopener,noreferrer`, so Electron skipped `did-create-window` and the Library Deck never received `attachWindowOpenPolicy`. Open Present then missed main-owned `present-session` and could stick on SSR Loading (Jack tip 497d454).
+- Fix: `handleOpenFromLibrary` now matches blank-deck Open Presentation (`_blank` + `POPUP_FEATURES`, no noopener).
+- Tests: HomePage unit REQ-008; `tests/e2e/electron-library-present-hydrate.spec.ts` + `openDeckFromLibrary` helper.
+- passes left false for QA; completeEpic false; draft PR #21 only.

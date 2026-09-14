@@ -68,6 +68,50 @@ test('Open Presentation opens a deck window and leaves Home put', () => {
   expect(screen.getByText(/library of saved presentations/i)).toBeInTheDocument();
 });
 
+
+test('REQ-008: Library Open uses POPUP_FEATURES without noopener (Electron did-create-window)', async () => {
+  const openSpy = jest.spyOn(window, 'open').mockReturnValue({
+    opener: null,
+    focus: jest.fn(),
+  } as unknown as Window);
+
+  jest.spyOn(global, 'fetch').mockImplementation((input: RequestInfo | URL) => {
+    const url = String(input);
+    if (url.includes('/library/settings')) {
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({ libraryRoot: '/tmp/poster' }),
+      } as Response);
+    }
+    return Promise.resolve({
+      ok: true,
+      json: async () => [
+        {
+          id: 'lib-deck-1',
+          title: 'Library hydrate deck',
+          date: '2026-01-01',
+          location: 'Hall',
+          created_at: '2026-01-01T00:00:00Z',
+        },
+      ],
+    } as Response);
+  });
+
+  render(<HomePage />);
+  await waitFor(() => expect(screen.getByTestId('library-open-btn')).toBeInTheDocument());
+  fireEvent.click(screen.getByTestId('library-open-btn'));
+
+  expect(openSpy).toHaveBeenCalled();
+  const [url, target, features] = openSpy.mock.calls[0];
+  expect(String(url)).toContain('/deck?open=lib-deck-1');
+  expect(target).toBe('_blank');
+  expect(String(features)).toContain('width=1280');
+  expect(String(features)).not.toMatch(/noopener/);
+  expect(String(features)).not.toMatch(/noreferrer/);
+  expect(screen.getByRole('heading', { level: 1, name: 'Poster' })).toBeInTheDocument();
+});
+
+
 test('REQ-007: library save notification refreshes Home list in place without reload', async () => {
   let libraryFetchCount = 0;
   const fetchMock = jest.fn((input: RequestInfo | URL): Promise<Response> => {

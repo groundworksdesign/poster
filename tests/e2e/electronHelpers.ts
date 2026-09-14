@@ -109,6 +109,25 @@ export async function openPresentWindow(
   return { present, presentId };
 }
 
+
+/**
+ * Open a deck via Home Library Open (REQ-008 path — must hydrate Present like blank-deck).
+ */
+export async function openDeckFromLibrary(
+  app: ElectronApplication,
+  home: Page,
+  entryTitle?: string,
+): Promise<Page> {
+  const deckPromise = app.waitForEvent('window');
+  const entry = entryTitle
+    ? home.getByTestId('library-entry').filter({ hasText: entryTitle })
+    : home.getByTestId('library-entry').first();
+  await entry.getByTestId('library-open-btn').click();
+  const deck = await deckPromise;
+  await deck.waitForLoadState('domcontentloaded');
+  return deck;
+}
+
 export async function closeApp(app: ElectronApplication | undefined): Promise<void> {
   if (!app) return;
   try {

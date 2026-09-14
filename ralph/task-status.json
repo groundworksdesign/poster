@@ -78,11 +78,12 @@
     {
       "id": 9,
       "title": "Fix Library Open Present hydrate",
-      "description": "Fix packaged Electron/AppImage Present first-open hydrate when Present is opened after Library Open into Deck. Jack tip 497d454: blank-deck Open Present+send 3/3 PASS, but Library Open → Present FAIL (SSR Loading ≥30s, does not hydrate). Distinct from blank-deck path covered by REQ-006 / main-owned present-session.",
+      "description": "Fix packaged Electron/AppImage Present first-open hydrate when Present is opened after Library Open into Deck. Jack tip 497d454: blank-deck Open Present+send 3/3 PASS, but Library Open \u2192 Present FAIL (SSR Loading \u226530s, does not hydrate). Distinct from blank-deck path covered by REQ-006 / main-owned present-session.",
       "status": "in_progress",
-      "devIterations": 0,
+      "devIterations": 1,
       "createdAt": "2026-09-14T23:32:00.000Z",
-      "updatedAt": "2026-09-14T23:32:00.000Z"
+      "updatedAt": "2026-09-14T23:50:11.000Z",
+      "notes": "DEV: Library Open used noopener so Electron skipped did-create-window and Library Deck never got attachWindowOpenPolicy; Open Present missed main-owned present-session. Aligned handleOpenFromLibrary with blank-deck POPUP_FEATURES/_blank. Unit + electron e2e coverage added. passesQA left false."
     }
   ],
   "currentTaskNum": 9,
@@ -91,12 +92,12 @@
   "nextTask": {
     "taskId": 9,
     "content": "fix-library-open-present-hydrate",
-    "updatedAt": "2026-09-14T23:32:00.000Z"
+    "updatedAt": "2026-09-14T23:50:11.000Z"
   },
   "feedback": {
-    "taskId": 6,
-    "content": "QA pass: AppImage residual doc + Jack checklist complete. Epic reopened after Jack tip 497d454: Library Open → Present hydrate FAIL.",
-    "updatedAt": "2026-09-14T23:32:00.000Z"
+    "taskId": 9,
+    "content": "DEV complete for fix-library-open-present-hydrate; awaiting QA. passesQA false; completeEpic false.",
+    "updatedAt": "2026-09-14T23:50:11.000Z"
   },
-  "lastUpdated": "2026-09-14T23:32:00.000Z"
+  "lastUpdated": "2026-09-14T23:50:11.000Z"
 }
