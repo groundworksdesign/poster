@@ -1,3 +1,37 @@
+# QA report — verify-on-program-after-present-hydrate (task 8)
+
+**Result:** PASS  
+**Branch tip:** `b6660fd` (+ this QA commit)  
+**Verified at:** 2026-09-14T15:25:24.000Z
+
+## Acceptance checks
+
+| Criterion | Evidence | Result |
+| --- | --- | --- |
+| After present-ready, Start updates On Program | `electron-program-thumbnail.spec.ts` waits `present-ready`, Start, asserts Present text + `program-thumbnail-title`/`subtitle` | PASS |
+| End clears thumbnail | Same spec: End → Present text gone + `program-thumbnail-empty` | PASS |
+| Automated coverage | Electron e2e + `programThumbnail` unit/integration (14 tests) | PASS |
+| Cold hydrate gate | `openPresentWindow` requires `present-ready` / zero `present-loading` before Send path | PASS |
+| Home/library/theme | No product changes in this task (test-only) | PASS |
+
+## Commands run
+
+```bash
+pnpm run build:remix
+CI=true ELECTRON_DISABLE_SANDBOX=1 xvfb-run -a pnpm exec playwright test \
+  --config=tests/e2e/playwright.electron.config.ts electron-program-thumbnail.spec.ts
+# -> 1 passed
+CI=true pnpm exec react-scripts test --watchAll=false --runInBand \
+  --testPathPattern='programThumbnail|ProgramThumbnail'
+# -> 2 suites / 14 tests passed
+```
+
+## Residual
+
+- Packaged AppImage installer cold path not re-run in this QA env; track under `document-appimage-residual-risk` / Jack retest.
+
+---
+
 # QA report — fix-present-first-open-hydrate (task 7)
 
 **Result:** PASS  

@@ -73,7 +73,7 @@
       "status": "done",
       "devIterations": 1,
       "createdAt": "2026-09-14T15:06:00.000Z",
-      "updatedAt": "2026-09-14T15:24:12.000Z"
+      "updatedAt": "2026-09-14T15:25:24.000Z"
     }
   ],
   "currentTaskNum": 8,
@@ -85,9 +85,9 @@
     "updatedAt": "2026-09-14T15:19:38.000Z"
   },
   "feedback": {
-    "taskId": 7,
-    "content": "QA pass: main-owned present-session loadURL + PR #18 path intact; focused regression green. Jack AppImage retest still needed for packaged sign-off.",
-    "updatedAt": "2026-09-14T15:18:30.000Z"
+    "taskId": 8,
+    "content": "QA pass: Electron On Program e2e after cold present-ready; unit/integration green.",
+    "updatedAt": "2026-09-14T15:25:24.000Z"
   },
-  "lastUpdated": "2026-09-14T15:24:12.000Z"
+  "lastUpdated": "2026-09-14T15:25:24.000Z"
 }

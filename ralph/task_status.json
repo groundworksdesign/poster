@@ -3,7 +3,7 @@
   "branch": "cursor/clean-architecture-restructure-018c",
   "status": "in_progress",
   "loop": 3,
-  "persona": "dev",
+  "persona": "qa",
   "completeEpic": false,
   "requirements": [
     {
@@ -68,7 +68,7 @@
       "todoIds": [
         "verify-on-program-after-present-hydrate"
       ],
-      "status": "pending"
+      "status": "done"
     }
   ],
   "todos": [
@@ -97,8 +97,10 @@
       "content": "After Present first-open hydrate is reliable on packaged Electron, verify On Program thumbnail/state works end-to-end (blocked while Present stays on Loading).",
       "requirementId": "REQ-007",
       "status": "done",
-      "passes": false,
-      "notes": "Dev: added tests/e2e/electron-program-thumbnail.spec.ts \u2014 cold Open Present (present-ready) then Start; Deck program-thumbnail title/subtitle match Present; End clears thumbnail. openPresentWindow comment notes On Program depends on hydrate. Ran: xvfb electron e2e (pass after remix build); programThumbnail unit+integration pass. Packaged AppImage binary not re-run here \u2014 residual for Jack/REQ-005. passes left false for QA."
+      "passes": true,
+      "notes": "QA verified: electron-program-thumbnail.spec.ts asserts cold present-ready then Start makes Deck program-thumbnail-title/subtitle match Present and End clears thumbnail; openPresentWindow gates on present-ready. Re-ran xvfb electron e2e (1 passed) and programThumbnail unit+integration (14 passed). Packaged AppImage binary not re-run \u2014 residual for Jack/REQ-005.",
+      "qaVerifiedAt": "2026-09-14T15:25:24.000Z",
+      "qaReport": "ralph/qa-report.md"
     },
     {
       "id": "audit-layer-import-rule",
@@ -192,5 +194,5 @@
     "cleanArchLayout": "pass",
     "ciOnThatTip": "unit_green_remix_e2e_and_electron_smoke_red_helpers_under_tests"
   },
-  "lastUpdated": "2026-09-14T15:24:12.000Z"
+  "lastUpdated": "2026-09-14T15:25:24.000Z"
 }

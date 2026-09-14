@@ -75,3 +75,8 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - Added Electron e2e `electron-program-thumbnail.spec.ts`: cold present-ready → Start → Deck On Program matches Present; End clears.
 - No product UI change required; directed thumbnail path already worked once Present hydrates.
 - AppImage installer retest still Jack/REQ-005. passes=false for QA.
+
+
+## Epic-006 QA (verify-on-program-after-present-hydrate)
+
+- PASS (2026-09-14T15:25:24.000Z): Electron On Program e2e green after cold present-ready; programThumbnail unit/integration green. AppImage installer retest still Jack/REQ-005.
