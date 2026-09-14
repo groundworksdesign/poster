@@ -1,7 +1,7 @@
 {
-  "updatedAt": "2026-09-14T16:11:31.000Z",
-  "lastLog": "[ralph] QA pass document-appimage-residual-risk; completeEpic true; PR #21 stays draft",
-  "loopStatus": "idle",
+  "updatedAt": "2026-09-14T23:32:00.000Z",
+  "lastLog": "[ralph] planning loop 10: reopen epic; selected fix-library-open-present-hydrate (REQ-008); PR #21 stays draft",
+  "loopStatus": "planning",
   "tag": "ralph",
   "elapsed": null,
   "idle": null,

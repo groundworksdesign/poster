@@ -189,3 +189,11 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 
 - PASS (2026-09-14T16:11:31.000Z): docs/appimage-residual-risk.md complete vs Jack checklist; passes true.
 - completeEpic true. Draft PR #21 stays draft (no ready/merge).
+
+
+## Epic-006 planning (loop 10) — Jack tip 497d454 Library→Present
+
+- Tip `497d454` AppImage/packaged: NOT READY. Blank-deck Open Present+send 3/3 PASS; Library Open → Present FAIL (SSR Loading ≥30s, no hydrate). Message-only, On Program, theme, library root, Home PASS.
+- Reopened epic (`completeEpic` false / `status` in_progress). Added REQ-008 + todo `fix-library-open-present-hydrate`; selected that task (numeric task-status id 9).
+- Hypothesis for DEV: after Library Open, Present may still use popup/`about:blank` (`present-blank`) or wrong URL/session vs blank-deck — Library Deck open uses `noopener`/named `posterDeck`/assign fallback; may lack `window.poster` so `planPresentOpen` falls back to `browser-gesture-blank`. Main-owned `present-session` (REQ-006) covers blank-deck path; Electron e2e does not cover Library→Present.
+- Draft PR #21 only; no product code this persona.

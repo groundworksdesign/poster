@@ -1,7 +1,7 @@
 {
   "branchName": "cursor/clean-architecture-restructure-018c",
-  "status": "complete",
-  "completeEpic": true,
+  "status": "in_progress",
+  "completeEpic": false,
   "tasks": [
     {
       "id": 1,
@@ -74,20 +74,29 @@
       "devIterations": 1,
       "createdAt": "2026-09-14T15:06:00.000Z",
       "updatedAt": "2026-09-14T15:26:32.000Z"
+    },
+    {
+      "id": 9,
+      "title": "Fix Library Open Present hydrate",
+      "description": "Fix packaged Electron/AppImage Present first-open hydrate when Present is opened after Library Open into Deck. Jack tip 497d454: blank-deck Open Present+send 3/3 PASS, but Library Open → Present FAIL (SSR Loading ≥30s, does not hydrate). Distinct from blank-deck path covered by REQ-006 / main-owned present-session.",
+      "status": "in_progress",
+      "devIterations": 0,
+      "createdAt": "2026-09-14T23:32:00.000Z",
+      "updatedAt": "2026-09-14T23:32:00.000Z"
     }
   ],
-  "currentTaskNum": 6,
-  "totalLLMCalls": 14,
+  "currentTaskNum": 9,
+  "totalLLMCalls": 15,
   "maxLLMCalls": 400,
   "nextTask": {
-    "taskId": 6,
-    "content": "document-appimage-residual-risk",
-    "updatedAt": "2026-09-14T16:07:16.000Z"
+    "taskId": 9,
+    "content": "fix-library-open-present-hydrate",
+    "updatedAt": "2026-09-14T23:32:00.000Z"
   },
   "feedback": {
     "taskId": 6,
-    "content": "QA pass: AppImage residual doc + Jack checklist complete. Epic complete; PR #21 stays draft.",
-    "updatedAt": "2026-09-14T16:11:31.000Z"
+    "content": "QA pass: AppImage residual doc + Jack checklist complete. Epic reopened after Jack tip 497d454: Library Open → Present hydrate FAIL.",
+    "updatedAt": "2026-09-14T23:32:00.000Z"
   },
-  "lastUpdated": "2026-09-14T16:11:31.000Z"
+  "lastUpdated": "2026-09-14T23:32:00.000Z"
 }

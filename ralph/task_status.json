@@ -1,10 +1,10 @@
 {
   "epic": "epic-006-clean-architecture-harden",
   "branch": "cursor/clean-architecture-restructure-018c",
-  "status": "complete",
-  "loop": 9,
-  "persona": "qa",
-  "completeEpic": true,
+  "status": "in_progress",
+  "loop": 10,
+  "persona": "planning",
+  "completeEpic": false,
   "requirements": [
     {
       "id": "REQ-001",
@@ -46,7 +46,7 @@
     {
       "id": "REQ-005",
       "title": "AppImage residual risk",
-      "description": "Document residual risk and a short manual AppImage regression checklist for Jack, including the 9f124e1 baseline; draft PR #21 stays draft/unmerged.",
+      "description": "Document residual risk and a short manual AppImage regression checklist for Jack, including the 9f124e1 baseline; draft PR #21 stays draft/unmerged. Update when new Jack findings land (e.g. tip 497d454 Library Open \u2192 Present).",
       "todoIds": [
         "document-appimage-residual-risk"
       ],
@@ -55,7 +55,7 @@
     {
       "id": "REQ-006",
       "title": "Present first-open hydrate (packaged)",
-      "description": "Cold Open Present on packaged Electron/AppImage reliably leaves SSR Loading and reaches client present-ready. Restore PR #18 first-open behavior if regressed by the clean-arch layout move.",
+      "description": "Cold Open Present on packaged Electron/AppImage reliably leaves SSR Loading and reaches client present-ready. Restore PR #18 first-open behavior if regressed by the clean-arch layout move. Covers blank-deck Open Present path (Jack tip 497d454: 3/3 PASS).",
       "todoIds": [
         "fix-present-first-open-hydrate"
       ],
@@ -69,6 +69,15 @@
         "verify-on-program-after-present-hydrate"
       ],
       "status": "done"
+    },
+    {
+      "id": "REQ-008",
+      "title": "Library Open \u2192 Present first-open hydrate (packaged)",
+      "description": "After Library Open into Deck on packaged Electron/AppImage, first Open Present must leave SSR Loading and reach present-ready (not stuck \u226530s). Distinct from blank-deck Open Present (REQ-006); Jack tip 497d454 FAIL on this path only.",
+      "todoIds": [
+        "fix-library-open-present-hydrate"
+      ],
+      "status": "pending"
     }
   ],
   "todos": [
@@ -88,7 +97,7 @@
       "requirementId": "REQ-006",
       "status": "done",
       "passes": true,
-      "notes": "QA verified: main-owned present-session (openPresentSessionWindow + loadURL + deny); PR #18 electron-direct skip-about:blank + absolute URL intact; browser about:blank gesture intact; 51 focused unit/regression tests pass; electronHelpers waits present-ready. Live AppImage cold-open not re-run here \u2014 Jack retest remains for final AppImage sign-off (REQ-005).",
+      "notes": "QA verified: main-owned present-session (openPresentSessionWindow + loadURL + deny); PR #18 electron-direct skip-about:blank + absolute URL intact; browser about:blank gesture intact; 51 focused unit/regression tests pass; electronHelpers waits present-ready. Live AppImage cold-open not re-run here \u2014 Jack retest remains for final AppImage sign-off (REQ-005). Tip 497d454: blank-deck Open Present+send 3/3 PASS; Library Open \u2192 Present still FAIL (REQ-008).",
       "qaVerifiedAt": "2026-09-14T15:18:30.000Z",
       "qaReport": "ralph/qa-report.md"
     },
@@ -166,10 +175,18 @@
       "requirementId": "REQ-005",
       "status": "done",
       "passes": true,
-      "notes": "QA verified: docs/appimage-residual-risk.md has Home, library, cold Present x3, directed-send, message-only, On Program, theme; includes 9f124e1 NOT READY baseline; does not claim AppImage fully proven; linked from README + epic; draft PR #21 remains draft.",
+      "notes": "QA verified: docs/appimage-residual-risk.md has Home, library, cold Present x3, directed-send, message-only, On Program, theme; includes 9f124e1 NOT READY baseline; does not claim AppImage fully proven; linked from README + epic; draft PR #21 remains draft. Jack tip 497d454 later found Library Open \u2192 Present FAIL \u2014 tracked as REQ-008.",
       "devCompletedAt": "2026-09-14T16:09:24.000Z",
       "qaVerifiedAt": "2026-09-14T16:11:31.000Z",
       "qaReport": "ralph/qa-report.md"
+    },
+    {
+      "id": "fix-library-open-present-hydrate",
+      "content": "Fix packaged Electron/AppImage Present first-open hydrate after Library Open into Deck. Jack tip 497d454: blank-deck Open Present+send 3/3 PASS; Library Open \u2192 Present FAIL (SSR Loading \u226530s, does not hydrate). Distinct from blank-deck / main-owned present-session path (REQ-006).",
+      "requirementId": "REQ-008",
+      "status": "pending",
+      "passes": false,
+      "notes": "Planning loop 10 selected. Hypothesis: Library Deck open (noopener/named posterDeck/assign fallback) may drop window.poster so Open Present falls back to about:blank/present-blank instead of main-owned present-session; or wrong URL/session vs blank-deck. Electron e2e does not cover Library\u2192Present."
     }
   ],
   "acceptanceCriteria": [
@@ -180,41 +197,48 @@
     "electron-builder and portable packaging copy/include the new adapter/domain paths.",
     "tsc --noEmit and Jest unit/integration pass (or out-of-scope failures documented with evidence).",
     "pnpm run test:e2e:remix and pnpm run test:e2e:electron pass on current tip after path fixes (or documented pre-existing failures).",
-    "Packaged/AppImage cold Present first-open hydrate is reliable (not flaky stuck on SSR Loading).",
+    "Packaged/AppImage cold Present first-open hydrate is reliable on blank-deck Open Present (not flaky stuck on SSR Loading).",
+    "Library Open \u2192 Deck \u2192 Open Present on packaged Electron/AppImage reaches present-ready (not stuck SSR Loading \u226530s).",
     "On Program works on packaged Electron after Present hydrate is reliable.",
-    "Residual AppImage risk + Jack checklist documented (include 9f124e1 baseline); draft PR #21 not marked ready or merged.",
+    "Residual AppImage risk + Jack checklist documented (include 9f124e1 and 497d454 baselines); draft PR #21 not marked ready or merged.",
     "No .ralph/ directory; ralph/ is only this loop harness."
   ],
   "selected": {
-    "id": "document-appimage-residual-risk",
-    "reason": "Loop 9 @ tip 03224fc: REQ-001..004/006/007 done+passes; only pending todo is document-appimage-residual-risk (REQ-005). No dedicated residual-risk/checklist doc yet (only epic/Jack baseline notes). Closes epic documentation DoD; draft PR #21 stays draft."
+    "id": "fix-library-open-present-hydrate",
+    "reason": "Loop 10 @ tip 497d454: Jack AppImage NOT READY solely on Library Open \u2192 Present (SSR Loading \u226530s). Blank-deck Open Present+send 3/3 PASS so REQ-006 main-owned present-session is insufficient for this entry path. Highest product risk; unblocks packaged sign-off."
   },
-  "planningNotes": "Planning loop 9 @ 2026-09-14T16:07:16.000Z: selected document-appimage-residual-risk (last unfinished). No remaining pending todos after this. Draft PR #21 only; no product code this persona.",
+  "planningNotes": "Planning loop 10 @ 2026-09-14T23:32:00.000Z: reopened epic (completeEpic false) after Jack tip 497d454. Added REQ-008 + todo fix-library-open-present-hydrate; selected that task. No product code. Draft PR #21 only.",
   "planningBrief": {
-    "document-appimage-residual-risk": {
+    "fix-library-open-present-hydrate": {
       "alreadyPresent": [
-        "Jack AppImage baseline table in ralph/epic.md for tip 9f124e1 (NOT READY)",
-        "Engineering fixes QA-passed for Present hydrate + On Program (Electron e2e); AppImage installer retest still open",
-        "Suites green on tip (unit/integration + remix/electron e2e)",
-        "Draft PR #21 still draft"
+        "REQ-006 blank-deck Open Present main-owned present-session + PR #18 electron-direct (Jack 497d454: 3/3 PASS + send)",
+        "Shared Deck handleOpenPresent \u2192 openPresentForRuntime for both blank and library decks",
+        "On Program / message-only / theme / library root / Home PASS on tip 497d454",
+        "docs/appimage-residual-risk.md checklist exists (needs 497d454 note in a later doc touch if desired)"
       ],
       "stillNeeded": [
-        "Write residual-risk note + short Jack AppImage manual checklist (include 9f124e1 baseline)",
-        "Place in docs/ or README section or ralph note linked from epic",
-        "Do not claim packaged AppImage was fully re-proven unless evidence exists",
-        "Keep PR #21 draft/unmerged"
+        "Prove why Library Open \u2192 Present sticks on SSR Loading while blank-deck does not",
+        "Check Library Deck open features (noopener, named posterDeck, location.assign) vs window.poster / preload",
+        "Confirm setWindowOpenHandler kind on failing open: present-session vs present-blank",
+        "Fix path so Library\u2192Present uses reliable hydrate (main-owned loadURL / electron-direct)",
+        "Add Electron e2e coverage for library-open \u2192 Present present-ready",
+        "Keep blank-deck Open Present green; draft PR #21 stays draft"
       ],
       "primaryFiles": [
-        "docs/ (new residual risk note preferred)",
-        "README.md (optional short link)",
-        "ralph/epic.md",
-        "ralph/specs/REQ-005.md"
+        "src/presentation/HomePage.tsx",
+        "src/presentation/Deck/openPresentWindow.ts",
+        "src/presentation/Deck/DeckBuilder.tsx",
+        "src/adapters/electron/main.cjs",
+        "src/adapters/electron/homeWindowPolicy.cjs",
+        "tests/e2e/electronHelpers.ts",
+        "ralph/specs/REQ-008.md"
       ],
       "acceptanceCriteria": [
-        "Residual AppImage risk + Jack checklist documented (include 9f124e1 baseline)",
-        "Draft PR #21 remains draft/unmerged",
-        "No false claim of full packaged AppImage proof without evidence"
-      ]
+        "Library Open \u2192 Open Present reaches present-ready on packaged Electron/AppImage",
+        "Blank-deck Open Present remains reliable (no REQ-006 regression)",
+        "Automated Electron coverage prefers library-open \u2192 Present hydrate"
+      ],
+      "hypothesis": "After Library Open, Present may still use popup/about:blank (present-blank allow) or wrong URL/session vs blank-deck Open Present — e.g. Library Deck shell lacks window.poster so planPresentOpen falls back to browser-gesture-blank."
     }
   },
   "jackAppImageBaseline": {
@@ -226,6 +250,17 @@
     "cleanArchLayout": "pass",
     "ciOnThatTip": "unit_green_remix_e2e_and_electron_smoke_red_helpers_under_tests"
   },
-  "lastUpdated": "2026-09-14T16:11:31.000Z",
-  "epicCompleteNotes": "Epic complete @ 2026-09-14T16:11:31.000Z tip 134d494: all todos passes true. Draft PR #21 remains draft \u2014 do not mark ready or merge in this loop."
+  "jackAppImageBaseline497d454": {
+    "tip": "497d454",
+    "verdict": "NOT_READY",
+    "blankDeckOpenPresentSend": "3_of_3_pass",
+    "libraryOpenPresent": "fail_ssr_loading_ge_30s_no_hydrate",
+    "messageOnly": "pass",
+    "onProgram": "pass",
+    "theme": "pass",
+    "libraryRoot": "pass",
+    "home": "pass"
+  },
+  "lastUpdated": "2026-09-14T23:32:00.000Z",
+  "epicCompleteNotes": "Previously marked complete @ 2026-09-14T16:11:31.000Z tip 134d494; reopened in planning loop 10 after Jack tip 497d454 Library Open \u2192 Present FAIL. Draft PR #21 remains draft \u2014 do not mark ready or merge."
 }
