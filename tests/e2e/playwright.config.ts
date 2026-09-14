@@ -1,8 +1,10 @@
+import path from 'node:path';
 import { defineConfig, devices } from '@playwright/test';
 
 /** Dedicated port so Playwright does not fight `npm start` / server on :3000 */
 const E2E_PORT = Number(process.env.E2E_PORT || 3001);
 const e2eOrigin = `http://127.0.0.1:${E2E_PORT}`;
+const repoRoot = path.resolve(__dirname, '..', '..');
 
 export default defineConfig({
   testDir: '.',
@@ -19,8 +21,10 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
   // CRA dev (`start:cra`) copies `public/cra-index.html` → `public/index.html` then webpack injects bundles.
+  // cwd must be the repo root: Playwright defaults webServer cwd to the config dir (tests/e2e).
   webServer: {
     command: `PORT=${E2E_PORT} npm run start:cra`,
+    cwd: repoRoot,
     url: `${e2eOrigin}/deck`,
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,

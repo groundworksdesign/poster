@@ -7,10 +7,10 @@
       "id": 1,
       "title": "Fix e2e repo root paths",
       "description": "Fix tests/e2e helpers and specs that still resolve repo root as tests/ (one level up) instead of the real repository root after the e2e/ to tests/e2e move. Update electronHelpers, electron-theme-relaunch, and sample-deck public paths to use ../.. .",
-      "status": "backlog",
-      "devIterations": 0,
+      "status": "done",
+      "devIterations": 1,
       "createdAt": "2026-09-14T14:53:39.000Z",
-      "updatedAt": "2026-09-14T14:53:39.000Z"
+      "updatedAt": "2026-09-14T15:02:00.000Z"
     },
     {
       "id": 2,

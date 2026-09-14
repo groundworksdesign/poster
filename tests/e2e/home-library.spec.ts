@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import path from 'path';
 import fs from 'fs';
+import { REPO_ROOT } from './repoRoot';
 
 /**
  * E2E tests for the home-page LibraryPanel integration added in epic-002.
@@ -20,7 +21,7 @@ import fs from 'fs';
  *   trim duplicate deck library toggle; update unit/e2e tests.
  */
 
-const SAMPLE_DECK_PATH = path.join(__dirname, '..', '..', 'public', 'sample-slide-deck.json');
+const SAMPLE_DECK_PATH = path.join(REPO_ROOT, 'public', 'sample-slide-deck.json');
 const SAMPLE_DECK = JSON.parse(fs.readFileSync(SAMPLE_DECK_PATH, 'utf-8'));
 
 const MOCK_ENTRY = {

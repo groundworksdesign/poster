@@ -5,6 +5,7 @@ import net from 'node:net';
 import os from 'node:os';
 import path from 'node:path';
 import { hasLibraryStore, listLibraryRootFiles } from './libraryStoreHelpers';
+import { REPO_ROOT } from './repoRoot';
 
 async function freePort(): Promise<number> {
   const server = net.createServer();
@@ -28,8 +29,8 @@ function startServer(port: number, home: string): ChildProcess {
   delete env.POSTER_LIBRARY_PATH;
   delete env.POSTER_DB_PATH;
   delete env.POSTER_LIBRARY_JSON_PATH;
-  return spawn(process.execPath, [path.join(process.cwd(), 'src', 'adapters', 'persistence', 'server.js')], {
-    cwd: process.cwd(),
+  return spawn(process.execPath, [path.join(REPO_ROOT, 'src', 'adapters', 'persistence', 'server.js')], {
+    cwd: REPO_ROOT,
     env,
     stdio: ['ignore', 'pipe', 'pipe'],
   });

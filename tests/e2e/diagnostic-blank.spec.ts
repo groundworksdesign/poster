@@ -2,7 +2,7 @@ import { test } from '@playwright/test';
 
 /**
  * Diagnostic: why the window shows no controls.
- * Run: npx playwright test e2e/diagnostic-blank.spec.ts
+ * Run: npx playwright test tests/e2e/diagnostic-blank.spec.ts
  */
 
 test.describe('blank window diagnostic', () => {

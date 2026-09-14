@@ -3,7 +3,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 const REMIX_PORT = Number(process.env.REMIX_PORT || process.env.PORT || 3000);
 const origin = `http://127.0.0.1:${REMIX_PORT}`;
-const repoRoot = path.join(__dirname, '..', '..');
+const repoRoot = path.resolve(__dirname, '..', '..');
 const ensureRemixPublicIndex = path.join(repoRoot, 'scripts', 'ensure-remix-public-index.cjs');
 
 /**

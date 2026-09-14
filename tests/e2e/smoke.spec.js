@@ -1,5 +1,6 @@
 const { test, expect } = require('@playwright/test');
 const path = require('path');
+const { REPO_ROOT } = require('./repoRoot.cjs');
 
 test('deck -> presentation updates', async ({ browser }) => {
   const context1 = await browser.newContext();
@@ -10,7 +11,7 @@ test('deck -> presentation updates', async ({ browser }) => {
   const presentPage = await context2.newPage();
   await presentPage.goto('http://localhost:3000/presentation');
 
-  const filePath = path.join(process.cwd(), 'src/test-data/quick-demo-deck.json');
+  const filePath = path.join(REPO_ROOT, 'src/test-data/quick-demo-deck.json');
   const input = deckPage.locator('input#file');
   await input.setInputFiles(filePath);
   await deckPage.click('button#load');

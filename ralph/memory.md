@@ -33,3 +33,10 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - Structural restructure already on branch / draft PR #21.
 - Selected first task: fix-e2e-repo-root-paths (highest runtime risk for Electron smoke + sample-deck e2e).
 - Concurrent commit `cc2233f` already applied the `../..` root fixes (and library relaunch/repoint server entry). Task stays selected for confirm + QA `passes`; do not set `passes` in planning/dev.
+
+## Epic-006 dev (fix-e2e-repo-root-paths)
+
+- Added `tests/e2e/repoRoot.ts` + `.cjs` (+ `repoRoot.selfcheck.cjs`).
+- Wired electronHelpers, theme relaunch, home-library, library, remix library relaunch/repoint, smoke, import-validation to REPO_ROOT.
+- Playwright CRA configs set `webServer.cwd` to repo root (Playwright default is the config dir = `tests/e2e`).
+- Do not set `passes: true` here; QA owns that.

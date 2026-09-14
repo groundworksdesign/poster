@@ -1,4 +1,7 @@
+const path = require('node:path');
 const { defineConfig, devices } = require('@playwright/test');
+
+const repoRoot = path.resolve(__dirname, '..', '..');
 
 module.exports = defineConfig({
   testDir: '.',
@@ -12,6 +15,7 @@ module.exports = defineConfig({
   },
   webServer: {
     command: 'npm start',
+    cwd: repoRoot,
     port: 3000,
     reuseExistingServer: true,
     timeout: 120000,

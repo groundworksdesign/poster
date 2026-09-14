@@ -47,8 +47,9 @@
       "id": "fix-e2e-repo-root-paths",
       "content": "Fix tests/e2e helpers and specs that still resolve repo root as tests/ (one level up) instead of the real repository root after the e2e/ → tests/e2e move.",
       "requirementId": "REQ-001",
-      "status": "pending",
-      "passes": false
+      "status": "done",
+      "passes": false,
+      "notes": "Dev: shared tests/e2e/repoRoot helper; electronHelpers/theme/sample-deck/library spawn paths and Playwright webServer cwd pinned to repo root (not tests/). Selfcheck: node tests/e2e/repoRoot.selfcheck.cjs. passes left false for QA."
     },
     {
       "id": "audit-layer-import-rule",
@@ -130,5 +131,5 @@
       ]
     }
   },
-  "lastUpdated": "2026-09-14T14:56:00.000Z"
+  "lastUpdated": "2026-09-14T15:02:00.000Z"
 }

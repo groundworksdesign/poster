@@ -6,7 +6,7 @@ import { openPresenterSession, sessionSend } from './posterSessionE2E';
  *
  * Slide delivery uses the poster session relay (not BroadcastChannel).
  *
- * Baselines are committed to e2e/remix-visual-regression.spec.ts-snapshots/.
+ * Baselines are committed to tests/e2e/remix-visual-regression.spec.ts-snapshots/.
  * To regenerate all baselines after an intentional layout change, run:
  *   pnpm test:e2e:remix --update-snapshots
  *

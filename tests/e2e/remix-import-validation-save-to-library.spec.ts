@@ -3,7 +3,8 @@ import fs from 'fs';
 import path from 'path';
 
 // Uses the on-disk JSON library when SQLite isn't available. Ensure a clean state.
-const libPath = process.env.POSTER_LIBRARY_JSON_PATH ?? path.join(process.cwd(), 'poster.library.json');
+const libPath =
+  process.env.POSTER_LIBRARY_JSON_PATH ?? path.join(path.resolve(__dirname, '..', '..'), 'poster.library.json');
 
 // ---------------------------------------------------------------------------
 // Fixtures / test data

@@ -2,8 +2,9 @@ import { _electron as electron, expect, type ElectronApplication, type Page } fr
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { assertRepoRoot, REPO_ROOT } from './repoRoot';
 
-const root = path.resolve(__dirname, '..', '..');
+const root = assertRepoRoot(REPO_ROOT);
 const electronPath = require('electron') as string;
 
 export type LaunchPosterOptions = {
