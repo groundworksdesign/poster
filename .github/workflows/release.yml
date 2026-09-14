@@ -1,8 +1,19 @@
 name: Release
 
+# On main pushes, skip Release (version bump + portable zip + Electron
+# installers + publish) when the commit only touches docs/license/markdown.
+# Real code / package.json / workflow changes still run. Path filters are not
+# evaluated for tag pushes, so final v*.*.* releases are unaffected.
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - "**/*.md"
+      - "LICENSE"
+      - "LICENSE.*"
+      - "docs/**"
+      - ".ralph/**"
+      - "ralph/**"
     tags:
       - "v*.*.*"
 
