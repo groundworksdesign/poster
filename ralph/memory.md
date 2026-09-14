@@ -136,3 +136,10 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - Selected verify-unit-integration-green (REQ-004) after harden-config-ci-script-paths QA pass.
 - Tip c5dc68f; draft PR #21 only. No product code.
 - Remaining after this: verify-remix-electron-e2e-green, document-appimage-residual-risk.
+
+
+## Epic-006 dev (verify-unit-integration-green)
+
+- Ran CI-equivalent: tsc --noEmit exit 0; Jest --watchAll=false --runInBand 41 suites / 254 tests passed.
+- No restructure-induced failures; no product code changes.
+- passes left false for QA.

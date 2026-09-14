@@ -35,9 +35,9 @@
       "title": "Verify unit integration green",
       "description": "Run and fix unit and integration suites broken by the restructure so CI unit-integration stays green.",
       "status": "backlog",
-      "devIterations": 0,
+      "devIterations": 1,
       "createdAt": "2026-09-14T14:53:39.000Z",
-      "updatedAt": "2026-09-14T15:49:41.000Z"
+      "updatedAt": "2026-09-14T15:51:03.000Z"
     },
     {
       "id": 5,
@@ -77,7 +77,7 @@
     }
   ],
   "currentTaskNum": 4,
-  "totalLLMCalls": 9,
+  "totalLLMCalls": 10,
   "maxLLMCalls": 400,
   "nextTask": {
     "taskId": 4,
@@ -85,9 +85,9 @@
     "updatedAt": "2026-09-14T15:49:41.000Z"
   },
   "feedback": {
-    "taskId": 3,
-    "content": "QA pass: operator docs + config-path-alignment guard green (REQ-003).",
-    "updatedAt": "2026-09-14T15:47:15.000Z"
+    "taskId": 4,
+    "content": "Dev: tsc clean; Jest 41/41 suites (254 tests) green. Awaiting QA.",
+    "updatedAt": "2026-09-14T15:51:03.000Z"
   },
-  "lastUpdated": "2026-09-14T15:49:41.000Z"
+  "lastUpdated": "2026-09-14T15:51:03.000Z"
 }
