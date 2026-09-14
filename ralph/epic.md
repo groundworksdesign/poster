@@ -15,7 +15,7 @@ todos:
     status: done
   - id: verify-unit-integration-green
     content: Run and fix unit + integration suites broken by the restructure so CI unit-integration stays green.
-    status: pending
+    status: done
   - id: verify-remix-electron-e2e-green
     content: Run Remix and Electron Playwright suites after path fixes; repair any remaining move-induced failures that should pass. Confirm CI red helpers-under-tests/ on tip 9f124e1 is resolved on current tip after e2e root work.
     status: done
@@ -68,7 +68,7 @@ Confirmed on tip `c5dc68f` / planning sync (this commit):
 
 - Rings present; no root `app/`; no `.ralph/`
 - `fix-e2e-repo-root-paths`, `fix-present-first-open-hydrate`, `verify-on-program-after-present-hydrate`, `audit-layer-import-rule`, `harden-config-ci-script-paths` **done / passes true**
-- Full unit/integration suite not yet re-proven on current tip — `verify-unit-integration-green` selected (REQ-004)
+- `verify-unit-integration-green` **done / passes true** (tsc + Jest 41/254 on tip)
 - Remix/Electron e2e suite green + AppImage residual doc remain
 
 ## Implementation Plan (planning guidance; do not code in planning)
@@ -78,7 +78,7 @@ Confirmed on tip `c5dc68f` / planning sync (this commit):
 3. **verify-on-program-after-present-hydrate** — DONE (Electron e2e QA-passed; AppImage retest remains).
 4. **audit-layer-import-rule** — DONE (QA passed).
 5. **harden-config-ci-script-paths** — DONE (QA passed).
-6. **verify-unit-integration-green** — NEXT (loop 7): `tsc --noEmit` + Jest unit/integration on current tip.
+6. **verify-unit-integration-green** — DONE (QA passed).
 7. **verify-remix-electron-e2e-green** — Playwright Remix + Electron on current tip (confirm helpers-path CI red is gone).
 8. **document-appimage-residual-risk** — Residual-risk note + Jack checklist including 9f124e1 baseline; draft PR stays draft.
 

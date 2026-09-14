@@ -34,10 +34,10 @@
       "id": 4,
       "title": "Verify unit integration green",
       "description": "Run and fix unit and integration suites broken by the restructure so CI unit-integration stays green.",
-      "status": "backlog",
+      "status": "done",
       "devIterations": 1,
       "createdAt": "2026-09-14T14:53:39.000Z",
-      "updatedAt": "2026-09-14T15:51:03.000Z"
+      "updatedAt": "2026-09-14T15:52:35.000Z"
     },
     {
       "id": 5,
@@ -76,18 +76,18 @@
       "updatedAt": "2026-09-14T15:26:32.000Z"
     }
   ],
-  "currentTaskNum": 4,
+  "currentTaskNum": 5,
   "totalLLMCalls": 10,
   "maxLLMCalls": 400,
   "nextTask": {
-    "taskId": 4,
-    "content": "verify-unit-integration-green",
-    "updatedAt": "2026-09-14T15:49:41.000Z"
+    "taskId": 5,
+    "content": "verify-remix-electron-e2e-green",
+    "updatedAt": "2026-09-14T15:52:35.000Z"
   },
   "feedback": {
     "taskId": 4,
-    "content": "Dev: tsc clean; Jest 41/41 suites (254 tests) green. Awaiting QA.",
-    "updatedAt": "2026-09-14T15:51:03.000Z"
+    "content": "QA pass: tsc clean; Jest 41/41 suites (254 tests) green.",
+    "updatedAt": "2026-09-14T15:52:35.000Z"
   },
-  "lastUpdated": "2026-09-14T15:51:03.000Z"
+  "lastUpdated": "2026-09-14T15:52:35.000Z"
 }

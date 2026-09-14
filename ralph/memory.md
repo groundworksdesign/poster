@@ -143,3 +143,8 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - Ran CI-equivalent: tsc --noEmit exit 0; Jest --watchAll=false --runInBand 41 suites / 254 tests passed.
 - No restructure-induced failures; no product code changes.
 - passes left false for QA.
+
+
+## Epic-006 QA (verify-unit-integration-green)
+
+- PASS (2026-09-14T15:52:35.000Z): independent tsc exit 0; Jest 41/254 green; passes true. REQ-004 still pending e2e todo.

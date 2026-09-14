@@ -1,3 +1,24 @@
+# QA report — verify-unit-integration-green (REQ-004 partial)
+
+**Result:** PASS  
+**Branch tip:** `2b563c2` (+ this QA commit)  
+**Verified at:** 2026-09-14T15:52:35.000Z
+
+## Acceptance checks
+
+| Criterion | Evidence | Result |
+| --- | --- | --- |
+| tsc --noEmit | Independently ran pnpm exec tsc --noEmit -> exit 0 | PASS |
+| Jest unit/integration | Independently ran CI=true pnpm exec react-scripts test --watchAll=false --runInBand -> 41 suites / 254 tests passed; no FAIL lines | PASS |
+| Matches CI unit-integration | .github/workflows/pr.yml uses the same two commands | PASS |
+
+## Residual
+
+- REQ-004 e2e half remains: verify-remix-electron-e2e-green.
+- Console warnings (jsdom navigation / ReactDOMTestUtils.act deprecation) present but non-failing.
+
+---
+
 # QA report — harden-config-ci-script-paths (REQ-003)
 
 **Result:** PASS  

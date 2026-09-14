@@ -3,7 +3,7 @@
   "branch": "cursor/clean-architecture-restructure-018c",
   "status": "in_progress",
   "loop": 7,
-  "persona": "dev",
+  "persona": "qa",
   "completeEpic": false,
   "requirements": [
     {
@@ -128,9 +128,9 @@
       "id": "verify-unit-integration-green",
       "content": "Run and fix unit + integration suites broken by the restructure so CI unit-integration stays green.",
       "requirementId": "REQ-004",
-      "status": "pending",
-      "passes": false,
-      "notes": "Dev: on tip e6bada9+ (this commit), ran CI-equivalent unit-integration: pnpm exec tsc --noEmit (exit 0); CI=true pnpm exec react-scripts test --watchAll=false --runInBand (41 suites / 254 tests passed). No restructure-induced failures to fix. passes remains false for QA.",
+      "status": "done",
+      "passes": true,
+      "notes": "QA verified independently: pnpm exec tsc --noEmit exit 0; CI=true pnpm exec react-scripts test --watchAll=false --runInBand -> 41 suites / 254 tests passed (matches .github/workflows/pr.yml unit-integration).",
       "devCompletedAt": "2026-09-14T15:51:03.000Z",
       "devEvidence": {
         "tsc": "exit 0",
@@ -139,7 +139,9 @@
           "pnpm exec tsc --noEmit",
           "CI=true pnpm exec react-scripts test --watchAll=false --runInBand"
         ]
-      }
+      },
+      "qaVerifiedAt": "2026-09-14T15:52:35.000Z",
+      "qaReport": "ralph/qa-report.md"
     },
     {
       "id": "verify-remix-electron-e2e-green",
@@ -210,5 +212,5 @@
     "cleanArchLayout": "pass",
     "ciOnThatTip": "unit_green_remix_e2e_and_electron_smoke_red_helpers_under_tests"
   },
-  "lastUpdated": "2026-09-14T15:51:03.000Z"
+  "lastUpdated": "2026-09-14T15:52:35.000Z"
 }
