@@ -28,7 +28,7 @@
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-09-14T14:53:39.000Z",
-      "updatedAt": "2026-09-14T14:53:39.000Z"
+      "updatedAt": "2026-09-14T15:37:19.000Z"
     },
     {
       "id": 4,
@@ -77,17 +77,17 @@
     }
   ],
   "currentTaskNum": 3,
-  "totalLLMCalls": 6,
+  "totalLLMCalls": 7,
   "maxLLMCalls": 400,
   "nextTask": {
     "taskId": 3,
     "content": "harden-config-ci-script-paths",
-    "updatedAt": "2026-09-14T15:33:30.000Z"
+    "updatedAt": "2026-09-14T15:37:19.000Z"
   },
   "feedback": {
     "taskId": 2,
     "content": "QA pass: layer import rule clean + Jest guard green (REQ-002).",
     "updatedAt": "2026-09-14T15:33:30.000Z"
   },
-  "lastUpdated": "2026-09-14T15:33:30.000Z"
+  "lastUpdated": "2026-09-14T15:37:19.000Z"
 }

@@ -62,14 +62,13 @@ Recorded for planning; do not treat as a green AppImage sign-off:
 | Clean-arch layout | PASS |
 | CI on that tip | Unit green; Remix E2E + Electron smoke **red** due to helpers path under `tests/` — addressed by `fix-e2e-repo-root-paths` (passes true); re-verify on current tip in `verify-remix-electron-e2e-green` |
 
-## Current Baseline (planning loop 5)
+## Current Baseline (planning loop 6)
 
-Confirmed on tip `c361bae` / planning sync (this commit):
+Confirmed on tip `c334da2` / planning sync (this commit):
 
 - Rings present; no root `app/`; no `.ralph/`
-- `fix-e2e-repo-root-paths`, `fix-present-first-open-hydrate`, `verify-on-program-after-present-hydrate` **done / passes true**
-- `audit-layer-import-rule` **done / passes true** (Jest guard `src/__tests__/layer-import-rule.test.js`; independent audit clean)
-- README still mentions stale `electron/main.cjs` / `server/index.js` operator paths — `harden-config-ci-script-paths` next after audit
+- `fix-e2e-repo-root-paths`, `fix-present-first-open-hydrate`, `verify-on-program-after-present-hydrate`, `audit-layer-import-rule` **done / passes true**
+- Runtime paths already on adapters (`package.json` main, `start:remix`, `remix.config.js` appDirectory); **operator docs still stale** (`README.md` cites `electron/main.cjs` / `server/index.js`) — `harden-config-ci-script-paths` selected
 - Suite greens + AppImage residual doc remain
 
 ## Implementation Plan (planning guidance; do not code in planning)
@@ -78,7 +77,7 @@ Confirmed on tip `c361bae` / planning sync (this commit):
 2. **fix-present-first-open-hydrate** — DONE (QA passed; Jack AppImage retest remains).
 3. **verify-on-program-after-present-hydrate** — DONE (Electron e2e QA-passed; AppImage retest remains).
 4. **audit-layer-import-rule** — DONE (QA passed).
-5. **harden-config-ci-script-paths** — Finish stale path sweep in scripts/README/CI comments.
+5. **harden-config-ci-script-paths** — NEXT (loop 6): finish stale path sweep in scripts/README/CI comments / operator docs.
 6. **verify-unit-integration-green** — `tsc` + Jest unit/integration.
 7. **verify-remix-electron-e2e-green** — Playwright Remix + Electron on current tip (confirm helpers-path CI red is gone).
 8. **document-appimage-residual-risk** — Residual-risk note + Jack checklist including 9f124e1 baseline; draft PR stays draft.

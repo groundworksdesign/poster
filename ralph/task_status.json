@@ -2,8 +2,8 @@
   "epic": "epic-006-clean-architecture-harden",
   "branch": "cursor/clean-architecture-restructure-018c",
   "status": "in_progress",
-  "loop": 5,
-  "persona": "qa",
+  "loop": 6,
+  "persona": "planning",
   "completeEpic": false,
   "requirements": [
     {
@@ -156,33 +156,37 @@
     "No .ralph/ directory; ralph/ is only this loop harness."
   ],
   "selected": {
-    "id": "audit-layer-import-rule",
-    "reason": "New loop 5: REQ-001/006/007 still passes true; audit-layer-import-rule is preferred unfinished task (REQ-002). Prior planning selected it but no audit evidence/guard landed yet \u2014 re-select. harden-config-ci-script-paths remains next (stale README electron/main.cjs + server/index.js). Then suite greens, then residual-risk doc."
+    "id": "harden-config-ci-script-paths",
+    "reason": "Loop 6 @ tip c334da2: REQ-001/002/006/007 done+passes. Prefer harden-config-ci-script-paths (REQ-003). Runtime already points at adapters (package.json main=src/adapters/electron/main.cjs, start:remix\u2192src/adapters/persistence/server.js, remix appDirectory=src/adapters/remix), but operator docs still cite stale electron/main.cjs and server/index.js (README; also requirements.md / historical docs). Unblocks accurate local/packaging guidance before suite greens and residual-risk doc."
   },
-  "planningNotes": "Planning loop 5 @ 2026-09-14T15:27:25.000Z: re-selected audit-layer-import-rule (still pending). Remaining pending: harden-config-ci-script-paths, verify-unit-integration-green, verify-remix-electron-e2e-green, document-appimage-residual-risk. Draft PR #21 only; no product code this persona.",
+  "planningNotes": "Planning loop 6 @ 2026-09-14T15:37:19.000Z: selected harden-config-ci-script-paths. Remaining pending after this: verify-unit-integration-green, verify-remix-electron-e2e-green, document-appimage-residual-risk. Draft PR #21 only; no product code this persona.",
   "planningBrief": {
-    "audit-layer-import-rule": {
+    "harden-config-ci-script-paths": {
       "alreadyPresent": [
-        "src/domain and src/application rings exist",
-        "Quick rg (loop 5): no @remix-run / electron / @playwright imports in non-test domain/application; only layer-rule comments in src/application/index.ts",
-        "SessionTransport / programThumbnail stay framework-free by design"
+        "package.json main = src/adapters/electron/main.cjs",
+        "package.json start:remix = node ./src/adapters/persistence/server.js",
+        "remix.config.js appDirectory = src/adapters/remix",
+        "electron-builder.yml comments already reference src/adapters/electron/main.cjs"
       ],
       "stillNeeded": [
-        "Full import/require audit of src/domain and src/application (include .cjs / relative adapter leaks)",
-        "Record evidence in ralph/memory.md or a short audit note",
-        "Move any accidental coupling into adapters/presentation",
-        "Optional: lightweight regression test or script that fails on forbidden imports"
+        "Fix operator-facing README paths (electron/main.cjs \u2192 src/adapters/electron/main.cjs; server/index.js \u2192 portable/adapters server entry)",
+        "Sweep scripts/, CI comments, PORTABLE.md / requirements.md operator paths that still mislead packaging or local runs",
+        "Prefer runtime/operator paths over rewriting historical docs/epics/*",
+        "Do not change product behavior; path/doc/config alignment only"
       ],
       "primaryFiles": [
-        "src/domain/**",
-        "src/application/**",
-        "ralph/specs/REQ-002.md",
-        "ralph/memory.md"
+        "README.md",
+        "package.json",
+        "remix.config.js",
+        "electron-builder.yml",
+        "scripts/**",
+        ".github/workflows/**",
+        "ralph/specs/REQ-003.md"
       ],
       "acceptanceCriteria": [
-        "No Remix, Electron, or Playwright imports/requires under src/domain or src/application",
-        "Audit evidence recorded (memory or qa-report note)",
-        "Any leak fixed by moving coupling to adapters/presentation without behavior change"
+        "remix.config.js appDirectory is src/adapters/remix; package.json main and start scripts match adapters",
+        "electron-builder and portable packaging copy/include the new adapter/domain paths",
+        "Operator-facing README (and similar) no longer point operators at stale root electron/ or server/index.js paths for this layout"
       ]
     }
   },
@@ -195,5 +199,5 @@
     "cleanArchLayout": "pass",
     "ciOnThatTip": "unit_green_remix_e2e_and_electron_smoke_red_helpers_under_tests"
   },
-  "lastUpdated": "2026-09-14T15:33:30.000Z"
+  "lastUpdated": "2026-09-14T15:37:19.000Z"
 }

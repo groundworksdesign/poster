@@ -108,3 +108,11 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 ## Epic-006 QA (audit-layer-import-rule)
 
 - PASS (2026-09-14T15:33:30.000Z): independent domain/application import audit clean (20 files, 0 leaks); `layer-import-rule.test.js` 3/3 green; passes true.
+
+
+## Epic-006 planning (loop 6)
+
+- Selected harden-config-ci-script-paths (REQ-003) after audit-layer-import-rule QA pass.
+- Runtime/adapters already aligned; README (+ similar) still cite stale electron/main.cjs and server/index.js.
+- Remaining after this: verify-unit-integration-green, verify-remix-electron-e2e-green, document-appimage-residual-risk.
+- Draft PR #21 only; no product code.
