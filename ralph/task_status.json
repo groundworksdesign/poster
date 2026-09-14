@@ -2,8 +2,8 @@
   "epic": "epic-006-clean-architecture-harden",
   "branch": "cursor/clean-architecture-restructure-018c",
   "status": "in_progress",
-  "loop": 7,
-  "persona": "qa",
+  "loop": 8,
+  "persona": "planning",
   "completeEpic": false,
   "requirements": [
     {
@@ -172,34 +172,34 @@
     "No .ralph/ directory; ralph/ is only this loop harness."
   ],
   "selected": {
-    "id": "verify-unit-integration-green",
-    "reason": "Loop 7 @ tip c5dc68f: REQ-001/002/003/006/007 done+passes. Prefer verify-unit-integration-green (REQ-004). No full-suite QA evidence on current tip yet (only focused guards/hydrate tests). CI unit-integration runs tsc --noEmit + react-scripts test --watchAll=false --runInBand; this unblocks e2e suite verification and residual-risk doc."
+    "id": "verify-remix-electron-e2e-green",
+    "reason": "Loop 8 @ tip f1f2a9d: unit-integration passes true; prefer verify-remix-electron-e2e-green (remaining REQ-004 half). Jack tip 9f124e1 Remix/Electron CI was red from helpers-under-tests/; e2e root fix already QA-passed but full suites not re-proven on current tip. Unblocks REQ-004 done + residual-risk doc."
   },
-  "planningNotes": "Planning loop 7 @ 2026-09-14T15:49:41.000Z: selected verify-unit-integration-green. Remaining pending after this: verify-remix-electron-e2e-green, document-appimage-residual-risk. Draft PR #21 only; no product code this persona.",
+  "planningNotes": "Planning loop 8 @ 2026-09-14T15:53:40.000Z: selected verify-remix-electron-e2e-green. Remaining pending after this: document-appimage-residual-risk. Draft PR #21 only; no product code this persona.",
   "planningBrief": {
-    "verify-unit-integration-green": {
+    "verify-remix-electron-e2e-green": {
       "alreadyPresent": [
-        "CI job unit-integration in .github/workflows/pr.yml (tsc --noEmit + Jest runInBand)",
-        "Unit/integration trees under src/**, src/__tests__, src/integration",
-        "Recent focused greens: layer-import-rule, config-path-alignment, electron-main.regression, hydrate/On Program focused suites"
+        "package.json test:e2e:remix -> tests/e2e/playwright.remix.config.ts",
+        "package.json test:e2e:electron -> tests/e2e/playwright.electron.config.ts",
+        "fix-e2e-repo-root-paths passes true (repoRoot ../..; electronHelpers assertRepoRoot)",
+        "Focused Electron On Program e2e previously green; unit/integration green on tip"
       ],
       "stillNeeded": [
-        "Run tsc --noEmit on current tip",
-        "Run full Jest unit/integration: CI=true pnpm exec react-scripts test --watchAll=false --runInBand",
-        "Fix only move-induced breakages (or document pre-existing out-of-scope failures with evidence)",
-        "Do not claim e2e green here \u2014 that is verify-remix-electron-e2e-green"
+        "Run pnpm run test:e2e:remix on current tip (CI-equivalent)",
+        "Run pnpm run test:e2e:electron on current tip (likely xvfb + ELECTRON_DISABLE_SANDBOX)",
+        "Confirm helpers-under-tests/ failure from tip 9f124e1 is gone",
+        "Fix only move-induced breakages; document any pre-existing out-of-scope failures with evidence"
       ],
       "primaryFiles": [
-        "src/**",
-        "src/__tests__/**",
-        "src/integration/**",
-        "tsconfig.json",
+        "tests/e2e/**",
+        "package.json",
         ".github/workflows/pr.yml",
         "ralph/specs/REQ-004.md"
       ],
       "acceptanceCriteria": [
-        "tsc --noEmit passes (or failures documented with evidence)",
-        "Jest unit/integration pass under CI-equivalent command (or out-of-scope failures documented)"
+        "pnpm run test:e2e:remix passes (or pre-existing failures documented)",
+        "pnpm run test:e2e:electron passes (or pre-existing failures documented)",
+        "No helpers resolving repo root as tests/ (confirm Jack CI red root cause gone)"
       ]
     }
   },
@@ -212,5 +212,5 @@
     "cleanArchLayout": "pass",
     "ciOnThatTip": "unit_green_remix_e2e_and_electron_smoke_red_helpers_under_tests"
   },
-  "lastUpdated": "2026-09-14T15:52:35.000Z"
+  "lastUpdated": "2026-09-14T15:53:40.000Z"
 }

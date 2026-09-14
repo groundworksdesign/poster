@@ -18,7 +18,7 @@ todos:
     status: done
   - id: verify-remix-electron-e2e-green
     content: Run Remix and Electron Playwright suites after path fixes; repair any remaining move-induced failures that should pass. Confirm CI red helpers-under-tests/ on tip 9f124e1 is resolved on current tip after e2e root work.
-    status: done
+    status: pending
   - id: fix-present-first-open-hydrate
     content: Restore reliable Present first-open hydrate on packaged Electron/AppImage after the clean-arch move (Jack cold open 1/3 PASS, 2/3 stuck SSR Loading; possible regression of PR #18 first-open fix under new layout).
     status: done
@@ -62,14 +62,14 @@ Recorded for planning; do not treat as a green AppImage sign-off:
 | Clean-arch layout | PASS |
 | CI on that tip | Unit green; Remix E2E + Electron smoke **red** due to helpers path under `tests/` — addressed by `fix-e2e-repo-root-paths` (passes true); re-verify on current tip in `verify-remix-electron-e2e-green` |
 
-## Current Baseline (planning loop 7)
+## Current Baseline (planning loop 8)
 
-Confirmed on tip `c5dc68f` / planning sync (this commit):
+Confirmed on tip `f1f2a9d` / planning sync (this commit):
 
 - Rings present; no root `app/`; no `.ralph/`
-- `fix-e2e-repo-root-paths`, `fix-present-first-open-hydrate`, `verify-on-program-after-present-hydrate`, `audit-layer-import-rule`, `harden-config-ci-script-paths` **done / passes true**
-- `verify-unit-integration-green` **done / passes true** (tsc + Jest 41/254 on tip)
-- Remix/Electron e2e suite green + AppImage residual doc remain
+- Prior todos through `verify-unit-integration-green` **done / passes true**
+- REQ-004 still open: full Remix + Electron Playwright suites not yet re-proven on current tip — `verify-remix-electron-e2e-green` selected
+- AppImage residual doc remains last
 
 ## Implementation Plan (planning guidance; do not code in planning)
 
@@ -79,7 +79,7 @@ Confirmed on tip `c5dc68f` / planning sync (this commit):
 4. **audit-layer-import-rule** — DONE (QA passed).
 5. **harden-config-ci-script-paths** — DONE (QA passed).
 6. **verify-unit-integration-green** — DONE (QA passed).
-7. **verify-remix-electron-e2e-green** — Playwright Remix + Electron on current tip (confirm helpers-path CI red is gone).
+7. **verify-remix-electron-e2e-green** — NEXT (loop 8): Playwright Remix + Electron on current tip (confirm helpers-path CI red is gone).
 8. **document-appimage-residual-risk** — Residual-risk note + Jack checklist including 9f124e1 baseline; draft PR stays draft.
 
 

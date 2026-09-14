@@ -148,3 +148,10 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 ## Epic-006 QA (verify-unit-integration-green)
 
 - PASS (2026-09-14T15:52:35.000Z): independent tsc exit 0; Jest 41/254 green; passes true. REQ-004 still pending e2e todo.
+
+
+## Epic-006 planning (loop 8)
+
+- Selected verify-remix-electron-e2e-green (REQ-004 remaining half) after unit-integration QA pass.
+- Tip f1f2a9d; draft PR #21 only. No product code.
+- Remaining after this: document-appimage-residual-risk.
