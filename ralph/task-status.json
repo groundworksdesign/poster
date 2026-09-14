@@ -73,21 +73,21 @@
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-09-14T15:06:00.000Z",
-      "updatedAt": "2026-09-14T15:06:00.000Z"
+      "updatedAt": "2026-09-14T15:19:38.000Z"
     }
   ],
-  "currentTaskNum": 7,
-  "totalLLMCalls": 3,
+  "currentTaskNum": 8,
+  "totalLLMCalls": 4,
   "maxLLMCalls": 400,
   "nextTask": {
-    "taskId": 7,
-    "content": "fix-present-first-open-hydrate",
-    "updatedAt": "2026-09-14T15:06:00.000Z"
+    "taskId": 8,
+    "content": "verify-on-program-after-present-hydrate",
+    "updatedAt": "2026-09-14T15:19:38.000Z"
   },
   "feedback": {
     "taskId": 7,
     "content": "QA pass: main-owned present-session loadURL + PR #18 path intact; focused regression green. Jack AppImage retest still needed for packaged sign-off.",
     "updatedAt": "2026-09-14T15:18:30.000Z"
   },
-  "lastUpdated": "2026-09-14T15:18:30.000Z"
+  "lastUpdated": "2026-09-14T15:19:38.000Z"
 }

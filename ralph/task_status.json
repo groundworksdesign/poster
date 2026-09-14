@@ -2,8 +2,8 @@
   "epic": "epic-006-clean-architecture-harden",
   "branch": "cursor/clean-architecture-restructure-018c",
   "status": "in_progress",
-  "loop": 2,
-  "persona": "qa",
+  "loop": 3,
+  "persona": "planning",
   "completeEpic": false,
   "requirements": [
     {
@@ -149,36 +149,35 @@
     "No .ralph/ directory; ralph/ is only this loop harness."
   ],
   "selected": {
-    "id": "fix-present-first-open-hydrate",
-    "reason": "Jack AppImage baseline on tip 9f124e1 is NOT READY: cold Present first-open hydrate is flaky (1/3 PASS, 2/3 stuck SSR Loading), likely PR #18 first-open regression under the new adapter layout. This is the highest remaining product risk, blocks On Program, and blocks AppImage sign-off. fix-e2e-repo-root-paths already passes true (should address CI helpers-under-tests/ red; confirm later). Layer import audit can wait \u2014 quick scan already shows no framework imports in domain/application."
+    "id": "verify-on-program-after-present-hydrate",
+    "reason": "REQ-006 / fix-present-first-open-hydrate now passes true (main-owned present-session + PR #18 path). Jack tip 9f124e1 On Program was blocked solely by Present stuck on Loading \u2014 next highest-risk unfinished task is verify-on-program-after-present-hydrate (REQ-007). Existing domain/unit/remix coverage exists; dev/QA must confirm Electron/packaged path after cold hydrate. Layer audit and suite greens remain backlog."
   },
-  "planningNotes": "Planning loop 2: incorporated Jack AppImage baseline (9f124e1 NOT READY). Kept all prior todos; added REQ-006/007 + todos fix-present-first-open-hydrate and verify-on-program-after-present-hydrate. Selected Present hydrate over audit-layer-import-rule because packaged cold-open failure is user-facing and blocks On Program. Pointers: Present.tsx Loading/present-ready, electron main + homeWindowPolicy AppImage comments, electronHelpers present-ready wait. Home/library/theme/layout PASS per Jack \u2014 do not re-litigate those unless hydrate fix regresses them.",
+  "planningNotes": "Planning loop 3 @ ce7ccc2: hydrate task QA-passed. Selected verify-on-program-after-present-hydrate. Codebase already has ProgramThumbnailPanel, programThumbnail domain, remix-program-thumbnail e2e, and Present integration tests \u2014 task is verification after hydrate unblock, not greenfield feature. Jack AppImage still needs retest for packaged sign-off (document-appimage-residual-risk).",
   "planningBrief": {
-    "fix-present-first-open-hydrate": {
+    "verify-on-program-after-present-hydrate": {
       "alreadyPresent": [
-        "PR #18-era packaged path: Deck skips about:blank and opens /presentation?... directly (homeWindowPolicy comments)",
-        "Present.tsx shows Loading... until createPresentSession resolves then present-ready",
-        "tests/e2e/electronHelpers waits for present-ready (not URL-only)",
-        "Clean-arch layout PASS per Jack; Home/library/theme PASS"
+        "src/presentation/Deck/ProgramThumbnailPanel.tsx + DeckBuilder program-thumbnail listener",
+        "src/domain/programThumbnail.ts + unit tests",
+        "src/presentation/Present/programThumbnail.integration.test.tsx",
+        "tests/e2e/remix-program-thumbnail.spec.ts",
+        "Present first-open hydrate engineering fix passes (REQ-006)"
       ],
       "stillNeeded": [
-        "Reproduce packaged/AppImage cold Open Present stuck on SSR Loading under current tip",
-        "Find layout-move breakage (preload path, session bootstrap, window open URL, SSR/client bundle path under src/adapters)",
-        "Fix root cause so first-open hydrate is reliable (target: no flaky Loading stick)",
-        "Add or extend automated coverage that fails if Present stays on Loading after Open Present",
-        "Do not claim AppImage green until Jack retests; document residual risk"
+        "Confirm On Program updates after cold Open Present + Send on Electron (and document AppImage residual if only unpackaged verified)",
+        "Run or extend automated coverage that fails if thumbnail stays empty while Present shows a slide",
+        "Do not rework thumbnail UI unless verification finds a real post-move breakage"
       ],
       "primaryFiles": [
-        "src/presentation/Present/Present.tsx",
-        "src/adapters/electron/main.cjs",
-        "src/adapters/electron/homeWindowPolicy.cjs",
-        "src/adapters/electron/preload.cjs",
-        "tests/e2e/electronHelpers.ts",
-        "tests/e2e/electron-*.spec.ts"
+        "src/presentation/Deck/ProgramThumbnailPanel.tsx",
+        "src/presentation/Deck/DeckBuilder.tsx",
+        "src/domain/programThumbnail.ts",
+        "src/presentation/Present/programThumbnail.integration.test.tsx",
+        "tests/e2e/remix-program-thumbnail.spec.ts",
+        "tests/e2e/electronHelpers.ts"
       ],
       "acceptanceCriteria": [
-        "Cold Open Present on packaged Electron reaches present-ready and clears Loading without flake comparable to Jack 2/3 failure",
-        "Automated Electron/e2e (or documented packaged repro script) fails if Present remains on Loading after open",
+        "After Present reaches present-ready, Send/Start updates Deck On Program thumbnail (title/body or empty after End)",
+        "Automated unit/integration and/or Electron/Remix e2e evidence exists for the directed program-thumbnail path",
         "No regression to Home/library/theme paths Jack already marked PASS"
       ]
     }
@@ -192,5 +191,5 @@
     "cleanArchLayout": "pass",
     "ciOnThatTip": "unit_green_remix_e2e_and_electron_smoke_red_helpers_under_tests"
   },
-  "lastUpdated": "2026-09-14T15:18:30.000Z"
+  "lastUpdated": "2026-09-14T15:19:38.000Z"
 }

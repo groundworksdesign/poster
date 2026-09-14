@@ -62,3 +62,9 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 ## Epic-006 QA (fix-present-first-open-hydrate)
 
 - PASS (2026-09-14T15:18:30.000Z): main-owned present-session loadURL + PR #18 Deck path intact; 51 focused tests green. Jack AppImage retest still required for packaged sign-off.
+
+## Epic-006 planning (loop 3)
+
+- Selected verify-on-program-after-present-hydrate (REQ-007) now that hydrate passes.
+- On Program UI/domain/remix e2e already exist; task is post-hydrate verification (Electron path priority).
+- Remaining backlog: audit-layer-import-rule, harden-config-ci-script-paths, verify-unit-integration-green, verify-remix-electron-e2e-green, document-appimage-residual-risk.
