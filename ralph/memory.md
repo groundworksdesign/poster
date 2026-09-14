@@ -129,3 +129,10 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 ## Epic-006 QA (harden-config-ci-script-paths)
 
 - PASS (2026-09-14T15:47:15.000Z): independent config/docs audit clean; config-path-alignment.test.js 5/5; passes true.
+
+
+## Epic-006 planning (loop 7)
+
+- Selected verify-unit-integration-green (REQ-004) after harden-config-ci-script-paths QA pass.
+- Tip c5dc68f; draft PR #21 only. No product code.
+- Remaining after this: verify-remix-electron-e2e-green, document-appimage-residual-risk.

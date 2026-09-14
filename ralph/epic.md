@@ -62,14 +62,14 @@ Recorded for planning; do not treat as a green AppImage sign-off:
 | Clean-arch layout | PASS |
 | CI on that tip | Unit green; Remix E2E + Electron smoke **red** due to helpers path under `tests/` — addressed by `fix-e2e-repo-root-paths` (passes true); re-verify on current tip in `verify-remix-electron-e2e-green` |
 
-## Current Baseline (planning loop 6)
+## Current Baseline (planning loop 7)
 
-Confirmed on tip `c334da2` / planning sync (this commit):
+Confirmed on tip `c5dc68f` / planning sync (this commit):
 
 - Rings present; no root `app/`; no `.ralph/`
-- `fix-e2e-repo-root-paths`, `fix-present-first-open-hydrate`, `verify-on-program-after-present-hydrate`, `audit-layer-import-rule` **done / passes true**
-- Runtime paths already on adapters (`package.json` main, `start:remix`, `remix.config.js` appDirectory); `harden-config-ci-script-paths` **done / passes true** (operator docs + config-path-alignment guard)
-- Suite greens + AppImage residual doc remain
+- `fix-e2e-repo-root-paths`, `fix-present-first-open-hydrate`, `verify-on-program-after-present-hydrate`, `audit-layer-import-rule`, `harden-config-ci-script-paths` **done / passes true**
+- Full unit/integration suite not yet re-proven on current tip — `verify-unit-integration-green` selected (REQ-004)
+- Remix/Electron e2e suite green + AppImage residual doc remain
 
 ## Implementation Plan (planning guidance; do not code in planning)
 
@@ -78,9 +78,10 @@ Confirmed on tip `c334da2` / planning sync (this commit):
 3. **verify-on-program-after-present-hydrate** — DONE (Electron e2e QA-passed; AppImage retest remains).
 4. **audit-layer-import-rule** — DONE (QA passed).
 5. **harden-config-ci-script-paths** — DONE (QA passed).
-6. **verify-unit-integration-green** — `tsc` + Jest unit/integration.
+6. **verify-unit-integration-green** — NEXT (loop 7): `tsc --noEmit` + Jest unit/integration on current tip.
 7. **verify-remix-electron-e2e-green** — Playwright Remix + Electron on current tip (confirm helpers-path CI red is gone).
 8. **document-appimage-residual-risk** — Residual-risk note + Jack checklist including 9f124e1 baseline; draft PR stays draft.
+
 
 ### Functional requirements
 

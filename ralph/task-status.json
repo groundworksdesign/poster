@@ -37,7 +37,7 @@
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-09-14T14:53:39.000Z",
-      "updatedAt": "2026-09-14T14:53:39.000Z"
+      "updatedAt": "2026-09-14T15:49:41.000Z"
     },
     {
       "id": 5,
@@ -77,17 +77,17 @@
     }
   ],
   "currentTaskNum": 4,
-  "totalLLMCalls": 8,
+  "totalLLMCalls": 9,
   "maxLLMCalls": 400,
   "nextTask": {
     "taskId": 4,
     "content": "verify-unit-integration-green",
-    "updatedAt": "2026-09-14T15:47:15.000Z"
+    "updatedAt": "2026-09-14T15:49:41.000Z"
   },
   "feedback": {
     "taskId": 3,
     "content": "QA pass: operator docs + config-path-alignment guard green (REQ-003).",
     "updatedAt": "2026-09-14T15:47:15.000Z"
   },
-  "lastUpdated": "2026-09-14T15:47:15.000Z"
+  "lastUpdated": "2026-09-14T15:49:41.000Z"
 }

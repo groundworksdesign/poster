@@ -2,8 +2,8 @@
   "epic": "epic-006-clean-architecture-harden",
   "branch": "cursor/clean-architecture-restructure-018c",
   "status": "in_progress",
-  "loop": 6,
-  "persona": "qa",
+  "loop": 7,
+  "persona": "planning",
   "completeEpic": false,
   "requirements": [
     {
@@ -160,37 +160,34 @@
     "No .ralph/ directory; ralph/ is only this loop harness."
   ],
   "selected": {
-    "id": "harden-config-ci-script-paths",
-    "reason": "Loop 6 @ tip c334da2: REQ-001/002/006/007 done+passes. Prefer harden-config-ci-script-paths (REQ-003). Runtime already points at adapters (package.json main=src/adapters/electron/main.cjs, start:remix\u2192src/adapters/persistence/server.js, remix appDirectory=src/adapters/remix), but operator docs still cite stale electron/main.cjs and server/index.js (README; also requirements.md / historical docs). Unblocks accurate local/packaging guidance before suite greens and residual-risk doc."
+    "id": "verify-unit-integration-green",
+    "reason": "Loop 7 @ tip c5dc68f: REQ-001/002/003/006/007 done+passes. Prefer verify-unit-integration-green (REQ-004). No full-suite QA evidence on current tip yet (only focused guards/hydrate tests). CI unit-integration runs tsc --noEmit + react-scripts test --watchAll=false --runInBand; this unblocks e2e suite verification and residual-risk doc."
   },
-  "planningNotes": "Planning loop 6 @ 2026-09-14T15:37:19.000Z: selected harden-config-ci-script-paths. Remaining pending after this: verify-unit-integration-green, verify-remix-electron-e2e-green, document-appimage-residual-risk. Draft PR #21 only; no product code this persona.",
+  "planningNotes": "Planning loop 7 @ 2026-09-14T15:49:41.000Z: selected verify-unit-integration-green. Remaining pending after this: verify-remix-electron-e2e-green, document-appimage-residual-risk. Draft PR #21 only; no product code this persona.",
   "planningBrief": {
-    "harden-config-ci-script-paths": {
+    "verify-unit-integration-green": {
       "alreadyPresent": [
-        "package.json main = src/adapters/electron/main.cjs",
-        "package.json start:remix = node ./src/adapters/persistence/server.js",
-        "remix.config.js appDirectory = src/adapters/remix",
-        "electron-builder.yml comments already reference src/adapters/electron/main.cjs"
+        "CI job unit-integration in .github/workflows/pr.yml (tsc --noEmit + Jest runInBand)",
+        "Unit/integration trees under src/**, src/__tests__, src/integration",
+        "Recent focused greens: layer-import-rule, config-path-alignment, electron-main.regression, hydrate/On Program focused suites"
       ],
       "stillNeeded": [
-        "Fix operator-facing README paths (electron/main.cjs \u2192 src/adapters/electron/main.cjs; server/index.js \u2192 portable/adapters server entry)",
-        "Sweep scripts/, CI comments, PORTABLE.md / requirements.md operator paths that still mislead packaging or local runs",
-        "Prefer runtime/operator paths over rewriting historical docs/epics/*",
-        "Do not change product behavior; path/doc/config alignment only"
+        "Run tsc --noEmit on current tip",
+        "Run full Jest unit/integration: CI=true pnpm exec react-scripts test --watchAll=false --runInBand",
+        "Fix only move-induced breakages (or document pre-existing out-of-scope failures with evidence)",
+        "Do not claim e2e green here \u2014 that is verify-remix-electron-e2e-green"
       ],
       "primaryFiles": [
-        "README.md",
-        "package.json",
-        "remix.config.js",
-        "electron-builder.yml",
-        "scripts/**",
-        ".github/workflows/**",
-        "ralph/specs/REQ-003.md"
+        "src/**",
+        "src/__tests__/**",
+        "src/integration/**",
+        "tsconfig.json",
+        ".github/workflows/pr.yml",
+        "ralph/specs/REQ-004.md"
       ],
       "acceptanceCriteria": [
-        "remix.config.js appDirectory is src/adapters/remix; package.json main and start scripts match adapters",
-        "electron-builder and portable packaging copy/include the new adapter/domain paths",
-        "Operator-facing README (and similar) no longer point operators at stale root electron/ or server/index.js paths for this layout"
+        "tsc --noEmit passes (or failures documented with evidence)",
+        "Jest unit/integration pass under CI-equivalent command (or out-of-scope failures documented)"
       ]
     }
   },
@@ -203,5 +200,5 @@
     "cleanArchLayout": "pass",
     "ciOnThatTip": "unit_green_remix_e2e_and_electron_smoke_red_helpers_under_tests"
   },
-  "lastUpdated": "2026-09-14T15:47:15.000Z"
+  "lastUpdated": "2026-09-14T15:49:41.000Z"
 }
