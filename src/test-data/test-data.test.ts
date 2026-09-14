@@ -1,4 +1,4 @@
-import { Deck } from '../Present/PresentTypes';
+import { Deck } from '../domain/PresentTypes';
 
 // Test data imports
 import sampleDeck from './sample-slide-deck.json';

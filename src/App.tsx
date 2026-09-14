@@ -1,8 +1,8 @@
 import React from 'react';
 import './App.css';
-import DeckBuilder from './Deck/DeckBuilder';
-import HomePage from './HomePage';
-import Presentation from './Present/Present';
+import DeckBuilder from './presentation/Deck/DeckBuilder';
+import HomePage from './presentation/HomePage';
+import Presentation from './presentation/Present/Present';
 
 import { Routes, Route, Outlet, Link } from 'react-router-dom';
 

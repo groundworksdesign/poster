@@ -2,12 +2,12 @@ const fs = require('fs');
 const path = require('path');
 
 const mainSource = fs.readFileSync(
-  path.join(__dirname, '../../electron/main.cjs'),
+  path.join(__dirname, '../adapters/electron/main.cjs'),
   'utf8',
 );
 
 const preloadSource = fs.readFileSync(
-  path.join(__dirname, '../../electron/preload.cjs'),
+  path.join(__dirname, '../adapters/electron/preload.cjs'),
   'utf8',
 );
 
@@ -169,6 +169,6 @@ describe('portable zip launch path (all OS portable targets)', () => {
   });
 
   it('documents system Node startup instead of Electron self-spawn', () => {
-    expect(portableSource).toMatch(/node server\/index\.js/);
+    expect(portableSource).toMatch(/node src\/adapters\/persistence\/server\.js/);
   });
 });

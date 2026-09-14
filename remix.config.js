@@ -4,7 +4,7 @@
  */
 /** @type {import('@remix-run/dev').AppConfig} */
 module.exports = {
-  appDirectory: "app",
+  appDirectory: "src/adapters/remix",
   ignoredRouteFiles: ["**/.*"],
   // Replace the removed `serverBuildTarget: "node-cjs"` with explicit options.
   serverModuleFormat: "cjs",

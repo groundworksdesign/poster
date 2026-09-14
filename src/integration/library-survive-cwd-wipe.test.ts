@@ -56,9 +56,9 @@ describeSqlite('durable SQLite library', () => {
     try {
       // Load the same singleton-backed modules used by the library routes.
       // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const dbModule = require('../../app/utils/db.server') as typeof import('../../app/utils/db.server');
+      const dbModule = require('../adapters/persistence/db.server') as typeof import('../adapters/persistence/db.server');
       // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const libraryModule = require('../../app/utils/library.server') as typeof import('../../app/utils/library.server');
+      const libraryModule = require('../adapters/persistence/library.server') as typeof import('../adapters/persistence/library.server');
       const id = libraryModule.upsertPresentation({
         title: 'Durable presentation',
         date: '2026-09-06',
@@ -77,7 +77,7 @@ describeSqlite('durable SQLite library', () => {
       jest.resetModules();
 
       // Reopen through production initialization, not a direct SQLite handle.
-      const reopenedDb = require('../../app/utils/db.server') as typeof import('../../app/utils/db.server');
+      const reopenedDb = require('../adapters/persistence/db.server') as typeof import('../adapters/persistence/db.server');
       const reopened = reopenedDb.tryGetSqliteDb();
       expect(reopened).not.toBeNull();
       const row = reopened!

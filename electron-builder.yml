@@ -2,15 +2,15 @@ appId: com.groundworksdesign.poster
 productName: Poster
 
 # Disable the auto-detected react-cra preset: this project uses a custom
-# electron/main.cjs entry (not the CRA public/electron.js convention).
+# src/adapters/electron/main.cjs entry (not the CRA public/electron.js convention).
 extends: null
 
 # Electron major in package.json is chosen so better-sqlite3 has prebuilds (or
 # compiles cleanly) for that line; bump Electron and sqlite together when newer
 # ABI support ships upstream.
 
-# Packaging note: electron/main.cjs spawns a child Node.js process to run
-# server/index.js via process.execPath with ELECTRON_RUN_AS_NODE=1.
+# Packaging note: src/adapters/electron/main.cjs spawns a child Node.js process to run
+# src/adapters/persistence/server.js via process.execPath with ELECTRON_RUN_AS_NODE=1.
 # Production node_modules are prepared by scripts/prepare-electron-pack.cjs
 # (flat pnpm --shamefully-hoist tree) and mapped in below — electron-builder
 # does not pack pnpm's isolated node_modules on its own, and beforeBuild
@@ -33,16 +33,23 @@ artifactName: "${productName}-${version}-${os}-${arch}.${ext}"
 # Files to include in the packaged app. Production deps come from the
 # prepare-electron-pack output (not the workspace pnpm store layout).
 files:
-  - electron/**
-  - shared/**
-  - server/**
+  - src/adapters/electron/**
+  - src/adapters/persistence/server.js
+  - src/adapters/realtime/**
+  - src/domain/posterSessionGraph.cjs
   - build/**
   - public/**
   - package.json
   - from: dist/electron-prod-modules/node_modules
     to: node_modules
-  - "!src/**"
-  - "!e2e/**"
+  - "!src/presentation/**"
+  - "!src/application/**"
+  - "!src/adapters/remix/**"
+  - "!src/adapters/persistence/**/*.ts"
+  - "!src/adapters/persistence/**/*.tsx"
+  - "!src/**/*.test.*"
+  - "!src/**/*.spec.*"
+  - "!tests/**"
   - "!scripts/**"
   - "!docs/**"
   - "!*.spec.*"

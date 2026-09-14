@@ -47,5 +47,6 @@ poster.library.json
 
 # Portable zip build output
 /dist/
-# Ralph runtime log
-/ralph/run.log
+# Ralph agent trees (removed from repo; keep ignored if recreated locally)
+/ralph/
+/.ralph/

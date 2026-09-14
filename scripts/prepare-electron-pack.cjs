@@ -2,7 +2,7 @@
 /**
  * Prepare a flat production node_modules tree for electron-builder.
  *
- * The packaged Electron app spawns server/index.js via ELECTRON_RUN_AS_NODE.
+ * The packaged Electron app spawns src/adapters/persistence/server.js via ELECTRON_RUN_AS_NODE.
  * That child needs express / Remix / better-sqlite3 on disk. electron-builder's
  * default dependency crawl does not pack pnpm's isolated node_modules, and the
  * beforeBuild hook intentionally skips install — so v0.1.4-pr.1 shipped with
@@ -28,7 +28,7 @@ const { join } = require('path');
 const ROOT = join(__dirname, '..');
 const OUT = join(ROOT, 'dist', 'electron-prod-modules');
 
-/** Runtime packages required by server/index.js + Remix SSR. */
+/** Runtime packages required by src/adapters/persistence/server.js + Remix SSR. */
 const RUNTIME_DEP_NAMES = [
   '@remix-run/express',
   '@remix-run/node',

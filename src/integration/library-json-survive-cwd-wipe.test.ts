@@ -1,7 +1,7 @@
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import type { Deck } from '../../src/Present/PresentTypes';
+import type { Deck } from '../domain/PresentTypes';
 
 describe('JSON library durability fallback', () => {
   const loadFresh = <T>(modulePath: string): T => {
@@ -32,7 +32,7 @@ describe('JSON library durability fallback', () => {
     jest.resetModules();
 
     try {
-      const rootModule = loadFresh<typeof import('../../app/utils/library-root.server')>('../../app/utils/library-root.server');
+      const rootModule = loadFresh<typeof import('../adapters/persistence/library-root.server')>('../adapters/persistence/library-root.server');
       const explicitEnv: Record<string, string | undefined> = {
         HOME: home,
         USERPROFILE: home,
@@ -45,7 +45,7 @@ describe('JSON library durability fallback', () => {
       expect(rootModule.resolveLibraryRoot(explicitEnv, home)).toBe(defaultRoot);
       rootModule.writeLibraryRoot(defaultRoot);
 
-      const jsonLibrary = loadFresh<typeof import('../../app/utils/library-json.server')>('../../app/utils/library-json.server');
+      const jsonLibrary = loadFresh<typeof import('../adapters/persistence/library-json.server')>('../adapters/persistence/library-json.server');
       jsonLibrary.setLibraryJsonPath(defaultRoot);
       const deck: Deck = {
         title: 'JSON durable presentation',
@@ -67,7 +67,7 @@ describe('JSON library durability fallback', () => {
       fs.rmSync(cwd, { recursive: true, force: true });
       jest.resetModules();
 
-      const reloadedJson = loadFresh<typeof import('../../app/utils/library-json.server')>('../../app/utils/library-json.server');
+      const reloadedJson = loadFresh<typeof import('../adapters/persistence/library-json.server')>('../adapters/persistence/library-json.server');
       reloadedJson.setLibraryJsonPath(defaultRoot);
       expect(reloadedJson.jsonLibraryGetDeckJson(id)).toContain(deck.title);
       expect(reloadedJson.jsonLibraryList()).toEqual([

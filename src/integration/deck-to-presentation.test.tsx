@@ -1,13 +1,13 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { act } from 'react';
-import Presentation from '../Present/Present';
+import Presentation from '../presentation/Present/Present';
 import {
   ensureTestSessionBackend,
   resetTestSessionHub,
   setPresentationSearch,
   setupDeckPresentPair,
-} from '../Present/testSessionHelpers';
+} from '../presentation/Present/testSessionHelpers';
 
 beforeEach(() => {
   ensureTestSessionBackend();

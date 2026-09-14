@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # package-portable.sh
-# Creates a portable zip containing build/, server/, public/, package.json, pnpm-lock.yaml,
+# Creates a portable zip containing build/, runtime adapters, public/, package.json, pnpm-lock.yaml,
 # and production node_modules rebuilt for the current runner OS. Produces:
 #   poster-portable-<os>-<sha>.zip
 
@@ -50,7 +50,7 @@ trap 'rm -rf "$TMPDIR"' EXIT
 info "Creating portable package in $TMPDIR"
 
 # Ensure required dirs/files exist (build may be missing for dev)
-for p in build server public package.json pnpm-lock.yaml; do
+for p in build public package.json pnpm-lock.yaml src/adapters/persistence/server.js src/adapters/realtime/posterSessionRelay.js src/domain/posterSessionGraph.cjs; do
   if [ ! -e "$p" ]; then
     echo "WARNING: $p not found in repo root; continuing but archive may be incomplete"
   fi
@@ -60,7 +60,10 @@ done
 info "Copying files"
 mkdir -p "$TMPDIR/artifact"
 cp -a build "$TMPDIR/artifact/" 2>/dev/null || true
-cp -a server "$TMPDIR/artifact/" 2>/dev/null || true
+mkdir -p "$TMPDIR/artifact/src/adapters/persistence" "$TMPDIR/artifact/src/adapters/realtime" "$TMPDIR/artifact/src/domain"
+cp -a src/adapters/persistence/server.js "$TMPDIR/artifact/src/adapters/persistence/" 2>/dev/null || true
+cp -a src/adapters/realtime/posterSessionRelay.js "$TMPDIR/artifact/src/adapters/realtime/" 2>/dev/null || true
+cp -a src/domain/posterSessionGraph.cjs "$TMPDIR/artifact/src/domain/" 2>/dev/null || true
 cp -a public "$TMPDIR/artifact/" 2>/dev/null || true
 if [ -f package.json ]; then cp package.json "$TMPDIR/artifact/"; fi
 if [ -f pnpm-lock.yaml ]; then cp pnpm-lock.yaml "$TMPDIR/artifact/"; fi
@@ -96,14 +99,14 @@ Portable Poster
 
 To run the portable server:
 
-  PORT=3000 node server/index.js
+  PORT=3000 node src/adapters/persistence/server.js
 
 Or using pnpm (if installed):
 
   PORT=3000 pnpm start
 
 Notes:
-- This archive contains the Remix build, server, public assets, package.json, lockfile, and production node_modules built on the runner OS.
+- This archive contains the Remix build, persistence/realtime adapters, public assets, package.json, lockfile, and production node_modules built on the runner OS.
 - Native modules (e.g. better-sqlite3) are platform-specific. Use the archive on the same OS family it was built on.
 EOF
 
