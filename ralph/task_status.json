@@ -2,7 +2,7 @@
   "epic": "epic-006-clean-architecture-harden",
   "branch": "cursor/clean-architecture-restructure-018c",
   "status": "in_progress",
-  "loop": 4,
+  "loop": 5,
   "persona": "planning",
   "completeEpic": false,
   "requirements": [
@@ -153,14 +153,14 @@
   ],
   "selected": {
     "id": "audit-layer-import-rule",
-    "reason": "REQ-001/006/007 pass. Prefer architecture DoD next: audit-layer-import-rule (REQ-002). Quick scan found no Remix/Electron/Playwright imports in domain/application source, but the epic still requires an explicit audit (+ fix if any leak). Unblocks harden-config and suite greens with a clean dependency story. Stale README paths are real but lower risk than layer rule."
+    "reason": "New loop 5: REQ-001/006/007 still passes true; audit-layer-import-rule is preferred unfinished task (REQ-002). Prior planning selected it but no audit evidence/guard landed yet — re-select. harden-config-ci-script-paths remains next (stale README electron/main.cjs + server/index.js). Then suite greens, then residual-risk doc."
   },
-  "planningNotes": "Planning loop 4 @ 2026-09-14T15:26:32.000Z: selected audit-layer-import-rule. harden-config-ci-script-paths next candidate (README electron/main.cjs + server/index.js). Then verify-unit-integration-green, verify-remix-electron-e2e-green, document-appimage-residual-risk.",
+  "planningNotes": "Planning loop 5 @ 2026-09-14T15:27:25.000Z: re-selected audit-layer-import-rule (still pending). Remaining pending: harden-config-ci-script-paths, verify-unit-integration-green, verify-remix-electron-e2e-green, document-appimage-residual-risk. Draft PR #21 only; no product code this persona.",
   "planningBrief": {
     "audit-layer-import-rule": {
       "alreadyPresent": [
         "src/domain and src/application rings exist",
-        "Quick rg: no @remix-run / electron / @playwright imports in non-test domain/application",
+        "Quick rg (loop 5): no @remix-run / electron / @playwright imports in non-test domain/application; only layer-rule comments in src/application/index.ts",
         "SessionTransport / programThumbnail stay framework-free by design"
       ],
       "stillNeeded": [
@@ -191,5 +191,5 @@
     "cleanArchLayout": "pass",
     "ciOnThatTip": "unit_green_remix_e2e_and_electron_smoke_red_helpers_under_tests"
   },
-  "lastUpdated": "2026-09-14T15:26:32.000Z"
+  "lastUpdated": "2026-09-14T15:27:25.000Z"
 }

@@ -62,14 +62,14 @@ Recorded for planning; do not treat as a green AppImage sign-off:
 | Clean-arch layout | PASS |
 | CI on that tip | Unit green; Remix E2E + Electron smoke **red** due to helpers path under `tests/` — addressed by `fix-e2e-repo-root-paths` (passes true); re-verify on current tip in `verify-remix-electron-e2e-green` |
 
-## Current Baseline (planning loop 4)
+## Current Baseline (planning loop 5)
 
-Confirmed on tip `fac94ef` / planning sync (this commit):
+Confirmed on tip `c361bae` / planning sync (this commit):
 
 - Rings present; no root `app/`; no `.ralph/`
 - `fix-e2e-repo-root-paths`, `fix-present-first-open-hydrate`, `verify-on-program-after-present-hydrate` **done / passes true**
-- Quick scan: no Remix/Electron/Playwright imports under `src/domain` or `src/application` (non-test); still needs explicit `audit-layer-import-rule` evidence
-- README still mentions stale `electron/main.cjs` / `server/index.js` operator paths — `harden-config-ci-script-paths` backlog
+- Quick scan still clean (only layer-rule comments in `src/application/index.ts`); **no** audit evidence / optional guard yet — `audit-layer-import-rule` remains unfinished
+- README still mentions stale `electron/main.cjs` / `server/index.js` operator paths — `harden-config-ci-script-paths` next after audit
 - Suite greens + AppImage residual doc remain
 
 ## Implementation Plan (planning guidance; do not code in planning)
@@ -77,7 +77,7 @@ Confirmed on tip `fac94ef` / planning sync (this commit):
 1. **fix-e2e-repo-root-paths** — DONE (QA passed).
 2. **fix-present-first-open-hydrate** — DONE (QA passed; Jack AppImage retest remains).
 3. **verify-on-program-after-present-hydrate** — DONE (Electron e2e QA-passed; AppImage retest remains).
-4. **audit-layer-import-rule** — NEXT: explicit domain/application import audit + fix any leaks.
+4. **audit-layer-import-rule** — NEXT (re-selected loop 5): explicit domain/application import audit + evidence + fix any leaks.
 5. **harden-config-ci-script-paths** — Finish stale path sweep in scripts/README/CI comments.
 6. **verify-unit-integration-green** — `tsc` + Jest unit/integration.
 7. **verify-remix-electron-e2e-green** — Playwright Remix + Electron on current tip (confirm helpers-path CI red is gone).

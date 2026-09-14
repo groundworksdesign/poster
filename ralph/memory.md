@@ -87,3 +87,10 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - Selected audit-layer-import-rule (REQ-002) after On Program QA pass.
 - Quick scan already clean; task still needs explicit audit evidence (+ optional guard).
 - Next after that: harden-config-ci-script-paths (stale README paths), then suite greens, then AppImage residual doc.
+
+
+## Epic-006 planning (loop 5)
+
+- Re-selected audit-layer-import-rule (still pending; no audit evidence landed after loop 4 select).
+- Tip c361bae; draft PR #21 only. No product code.
+- Remaining pending after audit: harden-config-ci-script-paths, verify-unit-integration-green, verify-remix-electron-e2e-green, document-appimage-residual-risk.

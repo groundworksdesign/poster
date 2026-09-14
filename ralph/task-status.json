@@ -19,7 +19,7 @@
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-09-14T14:53:39.000Z",
-      "updatedAt": "2026-09-14T15:26:32.000Z"
+      "updatedAt": "2026-09-14T15:27:25.000Z"
     },
     {
       "id": 3,
@@ -82,12 +82,12 @@
   "nextTask": {
     "taskId": 2,
     "content": "audit-layer-import-rule",
-    "updatedAt": "2026-09-14T15:26:32.000Z"
+    "updatedAt": "2026-09-14T15:27:25.000Z"
   },
   "feedback": {
     "taskId": 8,
     "content": "QA pass: Electron On Program e2e after cold present-ready; unit/integration green.",
     "updatedAt": "2026-09-14T15:25:24.000Z"
   },
-  "lastUpdated": "2026-09-14T15:26:32.000Z"
+  "lastUpdated": "2026-09-14T15:27:25.000Z"
 }
