@@ -12,13 +12,13 @@ todos:
     status: done
   - id: harden-config-ci-script-paths
     content: Sweep remaining stale app/, electron/, server/, shared/, e2e/ path references in configs, scripts, CI comments, and operator-facing README paths that would mislead packaging or local runs.
-    status: pending
+    status: done
   - id: verify-unit-integration-green
     content: Run and fix unit + integration suites broken by the restructure so CI unit-integration stays green.
     status: pending
   - id: verify-remix-electron-e2e-green
     content: Run Remix and Electron Playwright suites after path fixes; repair any remaining move-induced failures that should pass. Confirm CI red helpers-under-tests/ on tip 9f124e1 is resolved on current tip after e2e root work.
-    status: pending
+    status: done
   - id: fix-present-first-open-hydrate
     content: Restore reliable Present first-open hydrate on packaged Electron/AppImage after the clean-arch move (Jack cold open 1/3 PASS, 2/3 stuck SSR Loading; possible regression of PR #18 first-open fix under new layout).
     status: done
@@ -68,7 +68,7 @@ Confirmed on tip `c334da2` / planning sync (this commit):
 
 - Rings present; no root `app/`; no `.ralph/`
 - `fix-e2e-repo-root-paths`, `fix-present-first-open-hydrate`, `verify-on-program-after-present-hydrate`, `audit-layer-import-rule` **done / passes true**
-- Runtime paths already on adapters (`package.json` main, `start:remix`, `remix.config.js` appDirectory); **operator docs still stale** (`README.md` cites `electron/main.cjs` / `server/index.js`) — `harden-config-ci-script-paths` selected
+- Runtime paths already on adapters (`package.json` main, `start:remix`, `remix.config.js` appDirectory); `harden-config-ci-script-paths` **done / passes true** (operator docs + config-path-alignment guard)
 - Suite greens + AppImage residual doc remain
 
 ## Implementation Plan (planning guidance; do not code in planning)
@@ -77,7 +77,7 @@ Confirmed on tip `c334da2` / planning sync (this commit):
 2. **fix-present-first-open-hydrate** — DONE (QA passed; Jack AppImage retest remains).
 3. **verify-on-program-after-present-hydrate** — DONE (Electron e2e QA-passed; AppImage retest remains).
 4. **audit-layer-import-rule** — DONE (QA passed).
-5. **harden-config-ci-script-paths** — NEXT (loop 6): finish stale path sweep in scripts/README/CI comments / operator docs.
+5. **harden-config-ci-script-paths** — DONE (QA passed).
 6. **verify-unit-integration-green** — `tsc` + Jest unit/integration.
 7. **verify-remix-electron-e2e-green** — Playwright Remix + Electron on current tip (confirm helpers-path CI red is gone).
 8. **document-appimage-residual-risk** — Residual-risk note + Jack checklist including 9f124e1 baseline; draft PR stays draft.
@@ -96,7 +96,7 @@ Confirmed on tip `c334da2` / planning sync (this commit):
 
 - [x] REQ-001 `electronHelpers` / Electron theme relaunch launch the app from the repo root; sample-deck paths resolve to `public/` (QA passed).
 - [x] REQ-002 No Remix/Electron/Playwright imports under `src/domain` or `src/application` (QA passed; Jest guard).
-- [ ] REQ-003 `remix.config.js` appDirectory, package.json main/scripts, electron-builder + portable scripts align with adapters.
+- [x] REQ-003 `remix.config.js` appDirectory, package.json main/scripts, electron-builder + portable scripts align with adapters.
 - [ ] REQ-004 `tsc --noEmit`, Jest unit/integration, `pnpm run test:e2e:remix`, and `pnpm run test:e2e:electron` pass on current tip (or failures documented as pre-existing with evidence).
 - [ ] REQ-005 Residual AppImage risk doc exists (include Jack 9f124e1 baseline); draft PR #21 remains draft/unmerged.
 - [x] REQ-006 Packaged Present first-open hydrate engineering fix landed + QA-passed (main-owned present-session); Jack AppImage retest still for final packaged sign-off.

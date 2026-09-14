@@ -1,3 +1,26 @@
+# QA report — harden-config-ci-script-paths (REQ-003)
+
+**Result:** PASS  
+**Branch tip:** `668a5ed` (+ this QA commit)  
+**Verified at:** 2026-09-14T15:47:15.000Z
+
+## Acceptance checks
+
+| Criterion | Evidence | Result |
+| --- | --- | --- |
+| remix appDirectory = src/adapters/remix | remix.config.js | PASS |
+| package.json main/start on adapters | main=src/adapters/electron/main.cjs; start/start:remix use persistence server | PASS |
+| electron-builder + portable pack adapter paths | files include adapters; package-portable.mjs copies + documents adapter server; no server/index.js | PASS |
+| Operator README/requirements paths | No stale electron/main.cjs or server/index.js; tests/e2e Playwright paths | PASS |
+| Durable guard green | CI=true pnpm exec react-scripts test --watchAll=false --testPathPattern=config-path-alignment -> 5/5 | PASS |
+
+## Residual
+
+- Historical docs/epics may still mention old paths (out of scope for this task).
+- Next backlog: verify-unit-integration-green.
+
+---
+
 # QA report — audit-layer-import-rule (REQ-002)
 
 **Result:** PASS  

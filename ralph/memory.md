@@ -121,6 +121,11 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 ## Epic-006 dev (harden-config-ci-script-paths)
 
 - Runtime already correct (package.json main/start, remix appDirectory, electron-builder files, package-portable.mjs).
-- Fixed operator README + requirements.md stale  / ; qualified  Playwright config paths.
-- Added  (5 tests green). Left historical docs/epics untouched.
--  left false for QA (2026-09-14T15:44:04.000Z).
+- Fixed operator README + requirements.md stale electron/main.cjs and server/index.js; qualified tests/e2e Playwright config paths.
+- Added src/__tests__/config-path-alignment.test.js (5 tests green). Left historical docs/epics untouched.
+- passes left false for QA (2026-09-14T15:44:04.000Z).
+
+
+## Epic-006 QA (harden-config-ci-script-paths)
+
+- PASS (2026-09-14T15:47:15.000Z): independent config/docs audit clean; config-path-alignment.test.js 5/5; passes true.
