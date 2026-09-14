@@ -176,3 +176,10 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - Selected document-appimage-residual-risk (REQ-005) — last unfinished after e2e QA pass.
 - Tip 03224fc; draft PR #21 only. No product code.
 - After this: epic documentation DoD; completeEpic still false until QA passes.
+
+
+## Epic-006 dev (document-appimage-residual-risk)
+
+- Added docs/appimage-residual-risk.md with 9f124e1 baseline, residual risks, and Jack checklist (Home, library, cold Present x3, directed-send, message-only, On Program, theme).
+- Linked from README + epic. No AppImage binary claimed proven.
+- passes left false for QA.

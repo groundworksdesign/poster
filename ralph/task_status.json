@@ -3,7 +3,7 @@
   "branch": "cursor/clean-architecture-restructure-018c",
   "status": "in_progress",
   "loop": 9,
-  "persona": "planning",
+  "persona": "dev",
   "completeEpic": false,
   "requirements": [
     {
@@ -165,7 +165,9 @@
       "content": "Document residual risk and a short manual AppImage regression checklist for Jack, including tip 9f124e1 baseline (Present hydrate flaky, On Program blocked, Home/library/theme/layout PASS); do not claim packaged installers were fully re-proven in this loop unless evidence exists.",
       "requirementId": "REQ-005",
       "status": "pending",
-      "passes": false
+      "passes": false,
+      "notes": "Dev: wrote docs/appimage-residual-risk.md (9f124e1 baseline, residual risks, Jack checklist: Home, library, cold Present x3, directed-send, message-only, On Program, theme). Linked from README + ralph/epic.md. Explicitly does not claim AppImage fully proven. passes remains false for QA.",
+      "devCompletedAt": "2026-09-14T16:09:24.000Z"
     }
   ],
   "acceptanceCriteria": [
@@ -222,5 +224,5 @@
     "cleanArchLayout": "pass",
     "ciOnThatTip": "unit_green_remix_e2e_and_electron_smoke_red_helpers_under_tests"
   },
-  "lastUpdated": "2026-09-14T16:07:16.000Z"
+  "lastUpdated": "2026-09-14T16:09:24.000Z"
 }

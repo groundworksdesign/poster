@@ -140,6 +140,8 @@ Installer files land under **`dist/electron/`** (for example `.dmg`, `.exe`, `.d
 
 Local builds and CI use `CSC_IDENTITY_AUTO_DISCOVERY=false`, so macOS and Windows artifacts are **unsigned** unless you configure signing separately.
 
+**Packaged AppImage residual risk / Jack checklist:** see [`docs/appimage-residual-risk.md`](docs/appimage-residual-risk.md). Automated Electron Playwright smoke is not a substitute for a manual AppImage cold-open pass.
+
 ## CI: PR workflow artifacts
 
 The **PR Build** workflow (`.github/workflows/pr.yml`) runs on pull requests that change application code, tests, package manifests, build config, or `.github/workflows/**`. Docs/license/markdown-only changes are ignored so they do not build portable zips or Electron installers.

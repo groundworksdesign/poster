@@ -53,9 +53,9 @@
       "title": "Document AppImage residual risk",
       "description": "Document residual risk and a short manual AppImage regression checklist for Jack, including tip 9f124e1 baseline (Present hydrate flaky, On Program blocked, Home/library/theme/layout PASS); do not claim packaged installers were fully re-proven unless evidence exists.",
       "status": "backlog",
-      "devIterations": 0,
+      "devIterations": 1,
       "createdAt": "2026-09-14T14:53:39.000Z",
-      "updatedAt": "2026-09-14T16:07:16.000Z"
+      "updatedAt": "2026-09-14T16:09:24.000Z"
     },
     {
       "id": 7,
@@ -77,7 +77,7 @@
     }
   ],
   "currentTaskNum": 6,
-  "totalLLMCalls": 13,
+  "totalLLMCalls": 14,
   "maxLLMCalls": 400,
   "nextTask": {
     "taskId": 6,
@@ -85,9 +85,9 @@
     "updatedAt": "2026-09-14T16:07:16.000Z"
   },
   "feedback": {
-    "taskId": 5,
-    "content": "QA pass: remix e2e 52 + electron e2e 9; globalSetup rebuild; repoRoot ok.",
-    "updatedAt": "2026-09-14T16:05:35.000Z"
+    "taskId": 6,
+    "content": "Dev: docs/appimage-residual-risk.md + README/epic links. Awaiting QA.",
+    "updatedAt": "2026-09-14T16:09:24.000Z"
   },
-  "lastUpdated": "2026-09-14T16:07:16.000Z"
+  "lastUpdated": "2026-09-14T16:09:24.000Z"
 }

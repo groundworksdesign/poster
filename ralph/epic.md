@@ -62,6 +62,8 @@ Recorded for planning; do not treat as a green AppImage sign-off:
 | Clean-arch layout | PASS |
 | CI on that tip | Unit green; Remix E2E + Electron smoke **red** due to helpers path under `tests/` — addressed by `fix-e2e-repo-root-paths` (passes true); re-verify on current tip in `verify-remix-electron-e2e-green` |
 
+**Operator doc (REQ-005):** residual risk + Jack manual checklist → [`docs/appimage-residual-risk.md`](../docs/appimage-residual-risk.md) (draft PR #21 stays draft until Jack records AppImage results).
+
 ## Current Baseline (planning loop 9)
 
 Confirmed on tip `03224fc` / planning sync (this commit):
