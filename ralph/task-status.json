@@ -19,7 +19,7 @@
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-09-14T14:53:39.000Z",
-      "updatedAt": "2026-09-14T14:53:39.000Z"
+      "updatedAt": "2026-09-14T15:26:32.000Z"
     },
     {
       "id": 3,
@@ -73,21 +73,21 @@
       "status": "done",
       "devIterations": 1,
       "createdAt": "2026-09-14T15:06:00.000Z",
-      "updatedAt": "2026-09-14T15:25:24.000Z"
+      "updatedAt": "2026-09-14T15:26:32.000Z"
     }
   ],
-  "currentTaskNum": 8,
-  "totalLLMCalls": 4,
+  "currentTaskNum": 2,
+  "totalLLMCalls": 5,
   "maxLLMCalls": 400,
   "nextTask": {
-    "taskId": 8,
-    "content": "verify-on-program-after-present-hydrate",
-    "updatedAt": "2026-09-14T15:19:38.000Z"
+    "taskId": 2,
+    "content": "audit-layer-import-rule",
+    "updatedAt": "2026-09-14T15:26:32.000Z"
   },
   "feedback": {
     "taskId": 8,
     "content": "QA pass: Electron On Program e2e after cold present-ready; unit/integration green.",
     "updatedAt": "2026-09-14T15:25:24.000Z"
   },
-  "lastUpdated": "2026-09-14T15:25:24.000Z"
+  "lastUpdated": "2026-09-14T15:26:32.000Z"
 }

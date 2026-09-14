@@ -24,7 +24,7 @@ todos:
     status: done
   - id: verify-on-program-after-present-hydrate
     content: After Present first-open hydrate is reliable on packaged Electron, verify On Program thumbnail/state works end-to-end (blocked while Present stays on Loading).
-    status: pending
+    status: done
   - id: document-appimage-residual-risk
     content: Document residual risk and a short manual AppImage regression checklist for Jack, including the 9f124e1 baseline (Present hydrate flaky, On Program blocked, Home/library/theme/layout PASS); do not claim packaged installers were fully re-proven in this loop unless evidence exists.
     status: pending
@@ -62,24 +62,22 @@ Recorded for planning; do not treat as a green AppImage sign-off:
 | Clean-arch layout | PASS |
 | CI on that tip | Unit green; Remix E2E + Electron smoke **red** due to helpers path under `tests/` — addressed by `fix-e2e-repo-root-paths` (passes true); re-verify on current tip in `verify-remix-electron-e2e-green` |
 
-## Current Baseline (planning loop 3)
+## Current Baseline (planning loop 4)
 
-Confirmed on tip `ce7ccc2` / planning sync `7f1a475`:
+Confirmed on tip `fac94ef` / planning sync (this commit):
 
 - Rings present; no root `app/`; no `.ralph/`
-- `remix.config.js` → `appDirectory: "src/adapters/remix"`
-- `package.json` `main` = `src/adapters/electron/main.cjs`
-- `fix-e2e-repo-root-paths` **done / passes true**
-- `fix-present-first-open-hydrate` **done / passes true** (main-owned present-session + PR #18 path; Jack AppImage retest still for packaged sign-off)
-- Next selected: `verify-on-program-after-present-hydrate` (On Program was blocked only by Present Loading on Jack baseline)
-- Domain/application quick scan: no Remix/Electron/Playwright imports; still needs explicit audit task
+- `fix-e2e-repo-root-paths`, `fix-present-first-open-hydrate`, `verify-on-program-after-present-hydrate` **done / passes true**
+- Quick scan: no Remix/Electron/Playwright imports under `src/domain` or `src/application` (non-test); still needs explicit `audit-layer-import-rule` evidence
+- README still mentions stale `electron/main.cjs` / `server/index.js` operator paths — `harden-config-ci-script-paths` backlog
+- Suite greens + AppImage residual doc remain
 
 ## Implementation Plan (planning guidance; do not code in planning)
 
 1. **fix-e2e-repo-root-paths** — DONE (QA passed).
 2. **fix-present-first-open-hydrate** — DONE (QA passed; Jack AppImage retest remains).
-3. **verify-on-program-after-present-hydrate** — NEXT: confirm On Program after Present is live.
-4. **audit-layer-import-rule** — Grep/enforce dependency direction; fix any leaks.
+3. **verify-on-program-after-present-hydrate** — DONE (Electron e2e QA-passed; AppImage retest remains).
+4. **audit-layer-import-rule** — NEXT: explicit domain/application import audit + fix any leaks.
 5. **harden-config-ci-script-paths** — Finish stale path sweep in scripts/README/CI comments.
 6. **verify-unit-integration-green** — `tsc` + Jest unit/integration.
 7. **verify-remix-electron-e2e-green** — Playwright Remix + Electron on current tip (confirm helpers-path CI red is gone).
@@ -103,7 +101,7 @@ Confirmed on tip `ce7ccc2` / planning sync `7f1a475`:
 - [ ] REQ-004 `tsc --noEmit`, Jest unit/integration, `pnpm run test:e2e:remix`, and `pnpm run test:e2e:electron` pass on current tip (or failures documented as pre-existing with evidence).
 - [ ] REQ-005 Residual AppImage risk doc exists (include Jack 9f124e1 baseline); draft PR #21 remains draft/unmerged.
 - [x] REQ-006 Packaged Present first-open hydrate engineering fix landed + QA-passed (main-owned present-session); Jack AppImage retest still for final packaged sign-off.
-- [ ] REQ-007 On Program verified after Present hydrate is reliable.
+- [x] REQ-007 On Program verified after Present hydrate is reliable (Electron e2e QA-passed; AppImage installer retest still Jack/REQ-005).
 - [ ] No `.ralph/`; `ralph/` is only the loop harness for this pass.
 
 ## Out of scope

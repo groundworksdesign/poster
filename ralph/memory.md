@@ -80,3 +80,10 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 ## Epic-006 QA (verify-on-program-after-present-hydrate)
 
 - PASS (2026-09-14T15:25:24.000Z): Electron On Program e2e green after cold present-ready; programThumbnail unit/integration green. AppImage installer retest still Jack/REQ-005.
+
+
+## Epic-006 planning (loop 4)
+
+- Selected audit-layer-import-rule (REQ-002) after On Program QA pass.
+- Quick scan already clean; task still needs explicit audit evidence (+ optional guard).
+- Next after that: harden-config-ci-script-paths (stale README paths), then suite greens, then AppImage residual doc.
