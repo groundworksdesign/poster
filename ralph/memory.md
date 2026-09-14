@@ -44,3 +44,10 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 ## Epic-006 QA (fix-e2e-repo-root-paths)
 
 - PASS: REPO_ROOT is repo root; Electron launch args and Playwright webServer cwd use it; sample deck + persistence server paths exist; selfcheck green. passes=true for task 1 only.
+
+## Epic-006 planning (loop 2) — Jack AppImage baseline
+
+- Tip `9f124e1` AppImage: NOT READY. Present cold hydrate flaky (1/3 PASS, 2/3 SSR Loading); On Program blocked; Home/library/theme + clean-arch layout PASS.
+- CI on that tip: unit green; Remix E2E + Electron smoke red (helpers under tests/) — should be fixed by e2e root work; confirm via verify-remix-electron-e2e-green.
+- Added REQ-006/007 and tasks fix-present-first-open-hydrate + verify-on-program-after-present-hydrate; did not drop prior backlog.
+- Selected next: fix-present-first-open-hydrate (highest product risk; unblocks On Program and AppImage sign-off). Layer import audit deferred (quick scan already clean).
