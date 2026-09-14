@@ -204,3 +204,8 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - Fix: `handleOpenFromLibrary` now matches blank-deck Open Presentation (`_blank` + `POPUP_FEATURES`, no noopener).
 - Tests: HomePage unit REQ-008; `tests/e2e/electron-library-present-hydrate.spec.ts` + `openDeckFromLibrary` helper.
 - passes left false for QA; completeEpic false; draft PR #21 only.
+
+## Epic-006 QA (fix-library-open-present-hydrate)
+
+- PASS (2026-09-14T23:52:47.000Z): tip a4a1a18 — Library Open aligned with blank-deck (no noopener); unit REQ-008 + Electron library-present-hydrate + blank-deck program-thumbnail PASS.
+- completeEpic true. Draft PR #21 stays draft (no ready/merge). Jack AppImage READY still residual.

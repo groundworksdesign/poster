@@ -1,10 +1,10 @@
 {
   "epic": "epic-006-clean-architecture-harden",
   "branch": "cursor/clean-architecture-restructure-018c",
-  "status": "in_progress",
+  "status": "complete",
   "loop": 10,
-  "persona": "dev",
-  "completeEpic": false,
+  "persona": "qa",
+  "completeEpic": true,
   "requirements": [
     {
       "id": "REQ-001",
@@ -77,7 +77,7 @@
       "todoIds": [
         "fix-library-open-present-hydrate"
       ],
-      "status": "in_progress"
+      "status": "done"
     }
   ],
   "todos": [
@@ -184,10 +184,12 @@
       "id": "fix-library-open-present-hydrate",
       "content": "Fix packaged Electron/AppImage Present first-open hydrate after Library Open into Deck. Jack tip 497d454: blank-deck Open Present+send 3/3 PASS; Library Open \u2192 Present FAIL (SSR Loading \u226530s, does not hydrate). Distinct from blank-deck / main-owned present-session path (REQ-006).",
       "requirementId": "REQ-008",
-      "status": "in_progress",
-      "passes": false,
-      "notes": "DEV: Root cause \u2014 Library Open used noopener/noreferrer so Electron skipped did-create-window; Library Deck lacked window-open policy and Present fell off main-owned present-session. Fixed HomePage handleOpenFromLibrary to match blank-deck (_blank + POPUP_FEATURES). Added HomePage unit + electron-library-present-hydrate e2e. passes left false for QA.",
-      "devCompletedAt": "2026-09-14T23:50:11.000Z"
+      "status": "done",
+      "passes": true,
+      "notes": "QA PASS @ tip a4a1a18 (2026-09-14T23:52:47.000Z): independent review \u2014 Library Open matches blank-deck POPUP_FEATURES/_blank (no noopener); main still owns present-session. Unit REQ-008 + Open Presentation PASS; Electron electron-library-present-hydrate + electron-program-thumbnail (blank-deck) PASS; openPresentWindow/DeckBuilder Electron Open Present unit PASS. Jack AppImage retest still residual for packaged sign-off. Draft PR #21 stays draft.",
+      "devCompletedAt": "2026-09-14T23:50:11.000Z",
+      "qaVerifiedAt": "2026-09-14T23:52:47.000Z",
+      "qaReport": "ralph/qa-report.md"
     }
   ],
   "acceptanceCriteria": [
@@ -206,7 +208,7 @@
   ],
   "selected": {
     "id": "fix-library-open-present-hydrate",
-    "reason": "DEV implemented; awaiting QA verification of Library Open \u2192 Present hydrate."
+    "reason": "QA verified PASS; last open task \u2014 epic complete (draft PR #21 stays draft)."
   },
   "planningNotes": "Planning loop 10 @ 2026-09-14T23:32:00.000Z: reopened epic (completeEpic false) after Jack tip 497d454. Added REQ-008 + todo fix-library-open-present-hydrate; selected that task. No product code. Draft PR #21 only.",
   "planningBrief": {
@@ -262,6 +264,11 @@
     "libraryRoot": "pass",
     "home": "pass"
   },
-  "lastUpdated": "2026-09-14T23:50:11.000Z",
-  "epicCompleteNotes": "Previously marked complete @ 2026-09-14T16:11:31.000Z tip 134d494; reopened in planning loop 10 after Jack tip 497d454 Library Open \u2192 Present FAIL. Draft PR #21 remains draft \u2014 do not mark ready or merge."
+  "lastUpdated": "2026-09-14T23:52:47.000Z",
+  "epicCompleteNotes": "Epic complete @ 2026-09-14T23:52:47.000Z tip a4a1a18: all todos passes true including REQ-008. Draft PR #21 remains draft \u2014 do not mark ready or merge. Jack AppImage READY still pending manual retest.",
+  "feedback": {
+    "taskId": "fix-library-open-present-hydrate",
+    "content": "QA pass REQ-008; completeEpic true; PR #21 stays draft.",
+    "updatedAt": "2026-09-14T23:52:47.000Z"
+  }
 }

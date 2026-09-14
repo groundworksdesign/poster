@@ -1,7 +1,7 @@
 ---
 name: QA and harden clean-architecture restructure
 epic: epic-006-clean-architecture-harden
-status: in_progress
+status: complete
 overview: "The structural move to src rings + tests/e2e is already on this branch. Harden it: confirm layout and dependency rules, fix path/config/CI breakages from the move, make unit/integration/e2e that should pass actually pass, restore packaged Electron Present first-open hydrate reliability (Jack AppImage NOT READY), unblock On Program once Present is live, keep the Ralph loop harness under ralph/ (not .ralph/), and document residual AppImage risk for Jack. Reopened after tip 497d454: Library Open → Present hydrate FAIL (blank-deck Open Present path PASS)."
 todos:
   - id: fix-e2e-repo-root-paths
@@ -30,7 +30,7 @@ todos:
     status: done
   - id: fix-library-open-present-hydrate
     content: Fix packaged Electron/AppImage Present first-open hydrate after Library Open into Deck (Jack tip 497d454 FAIL — SSR Loading ≥30s). Distinct from blank-deck Open Present (REQ-006 PASS on same tip).
-    status: pending
+    status: done
 isProject: false
 ---
 
@@ -81,13 +81,13 @@ Packaged/Electron tip after REQ-006 main-owned present-session + residual doc:
 
 **Operator doc (REQ-005):** residual risk + Jack manual checklist → [`docs/appimage-residual-risk.md`](../docs/appimage-residual-risk.md) (draft PR #21 stays draft until Jack records AppImage READY).
 
-## Current Baseline (planning loop 10)
+## Current Baseline (QA loop 10)
 
 Confirmed on tip `497d454` / planning sync (this commit):
 
 - Rings present; no root `app/`; no `.ralph/`
 - Prior harden/QA todos through `document-appimage-residual-risk` **done / passes true** (REQ-001..007)
-- Epic **reopened**: REQ-008 `fix-library-open-present-hydrate` **pending / selected**
+- Epic **complete**: REQ-008 `fix-library-open-present-hydrate` **done / passes true** @ tip `a4a1a18` (Electron e2e); Jack AppImage READY still pending
 - Draft PR #21 remains draft/unmerged
 
 ## Implementation Plan (planning guidance; do not code in planning)
@@ -100,7 +100,7 @@ Confirmed on tip `497d454` / planning sync (this commit):
 6. **verify-unit-integration-green** — DONE (QA passed).
 7. **verify-remix-electron-e2e-green** — DONE (QA passed).
 8. **document-appimage-residual-risk** — DONE (QA passed).
-9. **fix-library-open-present-hydrate** — **SELECTED** (REQ-008). Investigate Library Deck open vs blank-deck; fix Present hydrate after Library Open; prefer Electron e2e coverage.
+9. **fix-library-open-present-hydrate** — **DONE** (REQ-008 QA-passed @ a4a1a18). Library Open aligned with blank-deck; Electron e2e covers Library→Present hydrate. Jack AppImage READY still residual.
 
 
 ### Functional requirements
@@ -123,7 +123,7 @@ Confirmed on tip `497d454` / planning sync (this commit):
 - [x] REQ-005 Residual AppImage risk doc exists (include Jack 9f124e1 baseline); draft PR #21 remains draft/unmerged.
 - [x] REQ-006 Packaged Present first-open hydrate engineering fix landed + QA-passed (main-owned present-session); Jack tip 497d454 blank-deck Open Present+send 3/3 PASS.
 - [x] REQ-007 On Program verified after Present hydrate is reliable (Electron e2e QA-passed; Jack tip 497d454 On Program PASS).
-- [ ] REQ-008 Library Open → Present reaches `present-ready` on packaged Electron/AppImage (Jack tip 497d454 FAIL).
+- [x] REQ-008 Library Open → Present reaches `present-ready` (engineering + Electron e2e QA-passed @ a4a1a18; Jack AppImage retest still for packaged READY).
 - [ ] No `.ralph/`; `ralph/` is only the loop harness for this pass.
 
 ## Out of scope

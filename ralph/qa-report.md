@@ -211,3 +211,15 @@ rg process.cwd / path.resolve(__dirname) under tests/e2e
 
 - Full Playwright Electron/Remix suite not re-run in this QA loop; path-resolution acceptance for this task is satisfied by filesystem + static evidence + selfcheck.
 - `passes: true` set only for `fix-e2e-repo-root-paths` / task 1.
+
+## QA — fix-library-open-present-hydrate (REQ-008) PASS
+
+- Tip: `a4a1a18`
+- When: 2026-09-14T23:52:47.000Z
+- Verdict: **PASS** (engineering + automated Electron e2e). Packaged AppImage READY still Jack.
+- Evidence:
+  - HomePage `handleOpenFromLibrary` uses `_blank` + `POPUP_FEATURES` (no noopener) — same as blank-deck.
+  - Unit: REQ-008 + Open Presentation PASS.
+  - Electron: `electron-library-present-hydrate.spec.ts` PASS; `electron-program-thumbnail.spec.ts` PASS.
+  - openPresentWindow / DeckBuilder Electron Open Present units PASS.
+- completeEpic: true (all todos passes). Draft PR #21 stays draft.

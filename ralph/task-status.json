@@ -1,7 +1,7 @@
 {
   "branchName": "cursor/clean-architecture-restructure-018c",
-  "status": "in_progress",
-  "completeEpic": false,
+  "status": "complete",
+  "completeEpic": true,
   "tasks": [
     {
       "id": 1,
@@ -79,11 +79,12 @@
       "id": 9,
       "title": "Fix Library Open Present hydrate",
       "description": "Fix packaged Electron/AppImage Present first-open hydrate when Present is opened after Library Open into Deck. Jack tip 497d454: blank-deck Open Present+send 3/3 PASS, but Library Open \u2192 Present FAIL (SSR Loading \u226530s, does not hydrate). Distinct from blank-deck path covered by REQ-006 / main-owned present-session.",
-      "status": "in_progress",
+      "status": "done",
       "devIterations": 1,
       "createdAt": "2026-09-14T23:32:00.000Z",
-      "updatedAt": "2026-09-14T23:50:11.000Z",
-      "notes": "DEV: Library Open used noopener so Electron skipped did-create-window and Library Deck never got attachWindowOpenPolicy; Open Present missed main-owned present-session. Aligned handleOpenFromLibrary with blank-deck POPUP_FEATURES/_blank. Unit + electron e2e coverage added. passesQA left false."
+      "updatedAt": "2026-09-14T23:52:47.000Z",
+      "notes": "QA PASS @ tip a4a1a18 (2026-09-14T23:52:47.000Z): independent review \u2014 Library Open matches blank-deck POPUP_FEATURES/_blank (no noopener); main still owns present-session. Unit REQ-008 + Open Presentation PASS; Electron electron-library-present-hydrate + electron-program-thumbnail (blank-deck) PASS; openPresentWindow/DeckBuilder Electron Open Present unit PASS. Jack AppImage retest still residual for packaged sign-off. Draft PR #21 stays draft.",
+      "qaVerifiedAt": "2026-09-14T23:52:47.000Z"
     }
   ],
   "currentTaskNum": 9,
@@ -92,12 +93,12 @@
   "nextTask": {
     "taskId": 9,
     "content": "fix-library-open-present-hydrate",
-    "updatedAt": "2026-09-14T23:50:11.000Z"
+    "updatedAt": "2026-09-14T23:52:47.000Z"
   },
   "feedback": {
     "taskId": 9,
-    "content": "DEV complete for fix-library-open-present-hydrate; awaiting QA. passesQA false; completeEpic false.",
-    "updatedAt": "2026-09-14T23:50:11.000Z"
+    "content": "QA pass: fix-library-open-present-hydrate (REQ-008). All tasks pass; completeEpic true. PR #21 stays draft.",
+    "updatedAt": "2026-09-14T23:52:47.000Z"
   },
-  "lastUpdated": "2026-09-14T23:50:11.000Z"
+  "lastUpdated": "2026-09-14T23:52:47.000Z"
 }
