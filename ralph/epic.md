@@ -9,7 +9,7 @@ todos:
     status: done
   - id: audit-layer-import-rule
     content: Verify domain and application do not import Remix, Electron, or Playwright; fix any accidental coupling.
-    status: pending
+    status: done
   - id: harden-config-ci-script-paths
     content: Sweep remaining stale app/, electron/, server/, shared/, e2e/ path references in configs, scripts, CI comments, and operator-facing README paths that would mislead packaging or local runs.
     status: pending
@@ -68,7 +68,7 @@ Confirmed on tip `c361bae` / planning sync (this commit):
 
 - Rings present; no root `app/`; no `.ralph/`
 - `fix-e2e-repo-root-paths`, `fix-present-first-open-hydrate`, `verify-on-program-after-present-hydrate` **done / passes true**
-- Quick scan still clean (only layer-rule comments in `src/application/index.ts`); **no** audit evidence / optional guard yet — `audit-layer-import-rule` remains unfinished
+- `audit-layer-import-rule` **done / passes true** (Jest guard `src/__tests__/layer-import-rule.test.js`; independent audit clean)
 - README still mentions stale `electron/main.cjs` / `server/index.js` operator paths — `harden-config-ci-script-paths` next after audit
 - Suite greens + AppImage residual doc remain
 
@@ -77,7 +77,7 @@ Confirmed on tip `c361bae` / planning sync (this commit):
 1. **fix-e2e-repo-root-paths** — DONE (QA passed).
 2. **fix-present-first-open-hydrate** — DONE (QA passed; Jack AppImage retest remains).
 3. **verify-on-program-after-present-hydrate** — DONE (Electron e2e QA-passed; AppImage retest remains).
-4. **audit-layer-import-rule** — NEXT (re-selected loop 5): explicit domain/application import audit + evidence + fix any leaks.
+4. **audit-layer-import-rule** — DONE (QA passed).
 5. **harden-config-ci-script-paths** — Finish stale path sweep in scripts/README/CI comments.
 6. **verify-unit-integration-green** — `tsc` + Jest unit/integration.
 7. **verify-remix-electron-e2e-green** — Playwright Remix + Electron on current tip (confirm helpers-path CI red is gone).
@@ -96,7 +96,7 @@ Confirmed on tip `c361bae` / planning sync (this commit):
 ## Validation
 
 - [x] REQ-001 `electronHelpers` / Electron theme relaunch launch the app from the repo root; sample-deck paths resolve to `public/` (QA passed).
-- [ ] REQ-002 No Remix/Electron/Playwright imports under `src/domain` or `src/application`.
+- [x] REQ-002 No Remix/Electron/Playwright imports under `src/domain` or `src/application` (QA passed; Jest guard).
 - [ ] REQ-003 `remix.config.js` appDirectory, package.json main/scripts, electron-builder + portable scripts align with adapters.
 - [ ] REQ-004 `tsc --noEmit`, Jest unit/integration, `pnpm run test:e2e:remix`, and `pnpm run test:e2e:electron` pass on current tip (or failures documented as pre-existing with evidence).
 - [ ] REQ-005 Residual AppImage risk doc exists (include Jack 9f124e1 baseline); draft PR #21 remains draft/unmerged.

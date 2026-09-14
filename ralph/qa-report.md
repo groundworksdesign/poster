@@ -1,3 +1,34 @@
+# QA report — audit-layer-import-rule (REQ-002)
+
+**Result:** PASS  
+**Branch tip:** `3203a23` (+ this QA commit)  
+**Verified at:** 2026-09-14T15:33:30.000Z
+
+## Acceptance checks
+
+| Criterion | Evidence | Result |
+| --- | --- | --- |
+| No Remix/Electron/Playwright imports under domain/application | Independent scan of 20 source files under `src/domain` + `src/application` (comments stripped): 0 forbidden import/require hits | PASS |
+| No relative escapes to adapters/presentation/e2e | Same scan: 0 relative leaks | PASS |
+| Durable automated guard | `src/__tests__/layer-import-rule.test.js` walks both layers (prod + colocated tests), parses import/require/export-from, fails on forbidden specs | PASS |
+| Guard green under Jest | `CI=true pnpm exec react-scripts test --watchAll=false --testPathPattern=layer-import-rule` → 1 suite / 3 tests passed | PASS |
+| CI pickup | Path under `src/__tests__/`; `unit-integration` runs full `react-scripts test --watchAll=false --runInBand` | PASS |
+
+## Commands run
+
+```bash
+# Independent import audit (Python walk + comment-stripped import/require scan)
+# -> 20 files, 0 hits
+CI=true pnpm exec react-scripts test --watchAll=false --testPathPattern=layer-import-rule
+# -> 3 passed
+```
+
+## Residual
+
+- None for REQ-002. Next backlog: `harden-config-ci-script-paths`.
+
+---
+
 # QA report — verify-on-program-after-present-hydrate (task 8)
 
 **Result:** PASS  

@@ -103,3 +103,8 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - Durable guard: `src/__tests__/layer-import-rule.test.js` (source walk + import/require/export-from parse; CI unit-integration picks it up).
 - Verified: `CI=true pnpm exec react-scripts test --watchAll=false --testPathPattern=layer-import-rule` — 3 passed.
 - `passes` left false for QA.
+
+
+## Epic-006 QA (audit-layer-import-rule)
+
+- PASS (2026-09-14T15:33:30.000Z): independent domain/application import audit clean (20 files, 0 leaks); `layer-import-rule.test.js` 3/3 green; passes true.

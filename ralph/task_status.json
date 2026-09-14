@@ -3,7 +3,7 @@
   "branch": "cursor/clean-architecture-restructure-018c",
   "status": "in_progress",
   "loop": 5,
-  "persona": "dev",
+  "persona": "qa",
   "completeEpic": false,
   "requirements": [
     {
@@ -22,7 +22,7 @@
       "todoIds": [
         "audit-layer-import-rule"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "REQ-003",
@@ -106,10 +106,12 @@
       "id": "audit-layer-import-rule",
       "content": "Verify domain and application do not import Remix, Electron, or Playwright; fix any accidental coupling.",
       "requirementId": "REQ-002",
-      "status": "pending",
-      "passes": false,
-      "notes": "Dev: full audit clean (no Remix/Electron/Playwright or adapters/presentation/e2e imports under src/domain + src/application, including colocated tests). Added durable guard src/__tests__/layer-import-rule.test.js (3 tests green). Evidence in ralph/memory.md. passes remains false for QA.",
-      "devCompletedAt": "2026-09-14T15:31:56.000Z"
+      "status": "done",
+      "passes": true,
+      "notes": "QA verified: independent import/require audit of src/domain+src/application (20 files) found 0 Remix/Electron/Playwright or adapters/presentation/e2e leaks; durable guard src/__tests__/layer-import-rule.test.js (3 tests) green; CRA unit-integration picks up src/__tests__.",
+      "devCompletedAt": "2026-09-14T15:31:56.000Z",
+      "qaVerifiedAt": "2026-09-14T15:33:30.000Z",
+      "qaReport": "ralph/qa-report.md"
     },
     {
       "id": "harden-config-ci-script-paths",
@@ -193,5 +195,5 @@
     "cleanArchLayout": "pass",
     "ciOnThatTip": "unit_green_remix_e2e_and_electron_smoke_red_helpers_under_tests"
   },
-  "lastUpdated": "2026-09-14T15:31:56.000Z"
+  "lastUpdated": "2026-09-14T15:33:30.000Z"
 }

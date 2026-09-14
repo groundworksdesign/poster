@@ -16,10 +16,10 @@
       "id": 2,
       "title": "Audit layer import rule",
       "description": "Verify src/domain and src/application do not import Remix, Electron, or Playwright; fix any accidental coupling found.",
-      "status": "backlog",
+      "status": "done",
       "devIterations": 1,
       "createdAt": "2026-09-14T14:53:39.000Z",
-      "updatedAt": "2026-09-14T15:31:56.000Z"
+      "updatedAt": "2026-09-14T15:33:30.000Z"
     },
     {
       "id": 3,
@@ -76,18 +76,18 @@
       "updatedAt": "2026-09-14T15:26:32.000Z"
     }
   ],
-  "currentTaskNum": 2,
+  "currentTaskNum": 3,
   "totalLLMCalls": 6,
   "maxLLMCalls": 400,
   "nextTask": {
-    "taskId": 2,
-    "content": "audit-layer-import-rule",
-    "updatedAt": "2026-09-14T15:27:25.000Z"
+    "taskId": 3,
+    "content": "harden-config-ci-script-paths",
+    "updatedAt": "2026-09-14T15:33:30.000Z"
   },
   "feedback": {
     "taskId": 2,
-    "content": "Dev: layer import audit clean; added src/__tests__/layer-import-rule.test.js. Awaiting QA.",
-    "updatedAt": "2026-09-14T15:31:56.000Z"
+    "content": "QA pass: layer import rule clean + Jest guard green (REQ-002).",
+    "updatedAt": "2026-09-14T15:33:30.000Z"
   },
-  "lastUpdated": "2026-09-14T15:31:56.000Z"
+  "lastUpdated": "2026-09-14T15:33:30.000Z"
 }
