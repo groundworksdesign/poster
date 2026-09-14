@@ -83,6 +83,13 @@ export async function openPresentWindow(
   const presentPromise = app.waitForEvent('window');
   await deck.getByTestId('open-present').click();
   const present = await presentPromise;
+  // Deck opens about:blank first (click gesture), then navigates to the
+  // absolute /presentation?... URL after spawn. Wait for that navigation
+  // before reading presentId — otherwise CI races the blank placeholder.
+  await present.waitForURL(
+    (url) => url.pathname.includes('/presentation') && !!url.searchParams.get('presentId'),
+    { timeout: 30_000 },
+  );
   await present.waitForLoadState('domcontentloaded');
   const url = new URL(present.url());
   const presentId = url.searchParams.get('presentId');

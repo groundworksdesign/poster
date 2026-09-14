@@ -38,17 +38,9 @@ function greenScreenLowerThirdStyle(
 
 function previewJustify(program: ProgramThumbnailState): React.CSSProperties['justifyContent'] {
   const v = program.slideStyle?.verticalAlign;
-  if (v === VerticalAlign.TOP || v === 'top') return 'flex-start';
-  if (v === VerticalAlign.BOTTOM || v === 'bottom') return 'flex-end';
-  // Green-screen title/subtitle overlays default to a bottom lower-third when
-  // Present's absolute overlay uses bottom for BOTTOM and middle otherwise —
-  // operator title slides in green-screen mode almost always sit at the bottom.
-  if (program.useGreenScreen && (program.title || program.subTitle) && !program.lines?.length) {
-    if (!v || v === VerticalAlign.MIDDLE || v === 'middle') {
-      // Present middle = centered overlay; keep center for middle.
-      return 'center';
-    }
-  }
+  if (v === VerticalAlign.TOP) return 'flex-start';
+  if (v === VerticalAlign.BOTTOM) return 'flex-end';
+  // Present middle (and unset) = centered overlay.
   return 'center';
 }
 
