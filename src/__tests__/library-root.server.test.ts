@@ -208,4 +208,45 @@ describe('durable library root', () => {
 
     expect(resolveLibraryRoot({ POSTER_LIBRARY_PATH: override }, home)).toBe(override);
   });
+
+  it('never places the packaged default library under process.cwd() / AppImage mount', () => {
+    const home = fs.mkdtempSync(path.join(os.tmpdir(), 'poster-home-'));
+    const appImageMount = fs.mkdtempSync(path.join(os.tmpdir(), 'poster-appimage-'));
+    const previousCwd = process.cwd();
+    process.chdir(appImageMount);
+    try {
+      const root = resolveLibraryRoot({}, home);
+      expect(root).toBe(path.join(home, '.poster'));
+      expect(path.resolve(root).startsWith(path.resolve(appImageMount) + path.sep)).toBe(false);
+      expect(path.resolve(root)).not.toBe(path.resolve(appImageMount));
+      expect(path.resolve(root)).not.toBe(path.resolve(process.cwd()));
+    } finally {
+      process.chdir(previousCwd);
+    }
+  });
+
+  it('loads the durable root after a simulated restart even when cwd is a new ephemeral mount', () => {
+    const home = fs.mkdtempSync(path.join(os.tmpdir(), 'poster-home-'));
+    const firstMount = fs.mkdtempSync(path.join(os.tmpdir(), 'poster-mount-a-'));
+    const secondMount = fs.mkdtempSync(path.join(os.tmpdir(), 'poster-mount-b-'));
+    const durable = path.join(home, '.poster');
+    fs.mkdirSync(durable, { recursive: true });
+    fs.writeFileSync(path.join(durable, 'poster.library.json'), JSON.stringify({ presentations: [{ id: 'kept' }] }));
+
+    const previousCwd = process.cwd();
+    try {
+      process.chdir(firstMount);
+      const firstRoot = resolveLibraryRoot({}, home);
+      expect(firstRoot).toBe(durable);
+
+      // Quit AppImage → new FUSE mount on next launch; library must still resolve to ~/.poster.
+      process.chdir(secondMount);
+      const restartedRoot = resolveLibraryRoot({}, home);
+      expect(restartedRoot).toBe(durable);
+      expect(fs.readFileSync(path.join(restartedRoot, 'poster.library.json'), 'utf8')).toContain('kept');
+      expect(path.resolve(restartedRoot).startsWith(path.resolve(secondMount) + path.sep)).toBe(false);
+    } finally {
+      process.chdir(previousCwd);
+    }
+  });
 });

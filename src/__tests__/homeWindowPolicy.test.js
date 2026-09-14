@@ -31,6 +31,12 @@ describe('homeWindowPolicy', () => {
       expect(classifyOpenUrl('/presentation?')).toBe('present-bare');
       expect(classifyOpenUrl('/presentation?sessionId=only')).toBe('present-bare');
     });
+
+    test('about:blank is present-blank so first-open Present can hydrate', () => {
+      expect(classifyOpenUrl('about:blank')).toBe('present-blank');
+      expect(classifyOpenUrl('about:blank?')).toBe('present-blank');
+      expect(classifyOpenUrl('ABOUT:BLANK')).toBe('present-blank');
+    });
   });
 
   describe('shouldCreateHomeWindow', () => {

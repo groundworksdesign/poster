@@ -1,12 +1,14 @@
 import React, { act } from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 
+const mockSend = jest.fn().mockResolvedValue(undefined);
+
 // Mock session transport used by DeckBuilder
 jest.mock('../Present/SessionTransport', () => ({
   createDeckSession: async () => ({
     peerId: 'mock-peer',
     sessionId: 'mock-session',
-    send: jest.fn(),
+    send: mockSend,
     spawnPresent: jest.fn(async () => ({
       sessionId: 'mock-session',
       presentId: 'mock-present',
@@ -21,6 +23,7 @@ jest.mock('../Present/SessionTransport', () => ({
 
 // Mock fetch for library panel rendering
 beforeEach(() => {
+  mockSend.mockClear();
   jest.spyOn(global, 'fetch').mockResolvedValue({
     ok: true,
     json: async () => [],
@@ -93,7 +96,7 @@ test('DeckBuilder places the on-program preview in Presentation controls', async
   );
 });
 
-test('Open Present opens about:blank before spawn so the click gesture is kept', async () => {
+test('Open Present opens about:blank before spawn and navigates with an absolute Present URL', async () => {
   const openSpy = jest.spyOn(window, 'open').mockImplementation(() => {
     return {
       closed: false,
@@ -117,9 +120,33 @@ test('Open Present opens about:blank before spawn so the click gesture is kept',
   await waitFor(() => {
     const win = openSpy.mock.results[0]?.value as { location: { href: string } } | undefined;
     expect(win?.location.href).toContain('/presentation?');
+    // Packaged Electron/AppImage: relative href on about:blank never hydrates.
+    expect(win?.location.href.startsWith('http')).toBe(true);
+    expect(win?.location.href.startsWith('/presentation')).toBe(false);
   });
 
   openSpy.mockRestore();
+});
+
+test('Send Message omits slide so Present keeps the current program (no blank wipe)', async () => {
+  render(<DeckBuilder />);
+  await loadFile(makeJsonFile(VALID_DECK));
+  await waitFor(() => expect(screen.getByTestId('open-present')).toBeEnabled());
+
+  const field = screen.getByPlaceholderText(/type message to send/i);
+  const sendMessage = screen.getByRole('button', { name: /send message/i });
+  await act(async () => {
+    fireEvent.change(field, { target: { value: 'Operator note' } });
+  });
+  await waitFor(() => expect(sendMessage).not.toBeDisabled());
+  await act(async () => {
+    fireEvent.click(sendMessage);
+  });
+
+  await waitFor(() => expect(mockSend).toHaveBeenCalled());
+  const payload = mockSend.mock.calls[0][0];
+  expect(payload.message).toBe('Operator note');
+  expect(payload.slide).toBeUndefined();
 });
 
 test('does not render Library toggle; Export, Save, and Load remain', () => {

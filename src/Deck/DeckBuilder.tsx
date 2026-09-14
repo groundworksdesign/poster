@@ -19,6 +19,7 @@ import { validateDeck } from '../utils/deckValidator';
 import { CURRENT_SCHEMA_VERSION } from '../utils/schema';
 import { remixDataUrl, REMIX_ROUTE_ID } from '../utils/remixDataUrl';
 import { notifyLibraryChanged } from '../utils/libraryRefresh';
+import { navigatePresentAfterSpawn, PRESENT_OPEN_FEATURES } from './openPresentWindow';
 
 export default function DeckBuilder() {
   useTheme();
@@ -293,6 +294,8 @@ export default function DeckBuilder() {
   };
 
   const handleSendClick = (props: any) => {
+    // Explicit program-out only. Do not coerce a missing `slide` to null —
+    // message-only / clear-message sends must leave Present's slide alone.
     if (props.slide === null) {
       const payload = new PresentData({ ...props, slide: null });
       const target = sendTargetRef.current;
@@ -303,17 +306,22 @@ export default function DeckBuilder() {
       return;
     }
     const safeSlide = (sl: any) => {
-    if (!sl) return sl;
-    // ensure slide has an id so we can track it for sync across edits/reorder
-    (sl as any).id = (sl as any).id ?? genId();
-    const resolvedStyle = resolveSlideStyle(deck, sl);
-    return { ...sl, style: resolvedStyle };
-  };
-    const slideWithStyle = props.slide ? safeSlide(props.slide) : null;
-    const payload = new PresentData({ ...props, slide: slideWithStyle });
+      if (!sl) return sl;
+      // ensure slide has an id so we can track it for sync across edits/reorder
+      (sl as any).id = (sl as any).id ?? genId();
+      const resolvedStyle = resolveSlideStyle(deck, sl);
+      return { ...sl, style: resolvedStyle };
+    };
+    const payloadProps: Record<string, unknown> = { ...props };
+    if (props.slide) {
+      payloadProps.slide = safeSlide(props.slide);
+    } else {
+      delete payloadProps.slide;
+    }
+    const payload = new PresentData(payloadProps as any);
     const target = sendTargetRef.current;
     void deckSessionRef.current?.send(payload, target);
-    setLastSentSlideId(slideWithStyle?.id ?? null);
+    setLastSentSlideId((payloadProps.slide as { id?: string } | undefined)?.id ?? null);
     setPresentationBlank(false);
   };
 
@@ -520,19 +528,14 @@ export default function DeckBuilder() {
     // Open the window in the same turn as the click. `window.open` after
     // `await spawnPresent()` loses the user gesture and returns null (no page),
     // which is what timed out remix-program-thumbnail E2E on CI.
-    const features =
-      'width=1280,height=720,menubar=no,toolbar=no,location=no,status=no,scrollbars=yes,resizable=yes';
-    const w = window.open('about:blank', '_blank', features);
+    // Packaged Electron must allow about:blank (see homeWindowPolicy) and we
+    // must navigate with an absolute URL — relative href on about:blank never
+    // hydrates the Remix Present client on first open (AppImage v0.1.10).
+    const w = window.open('about:blank', '_blank', PRESENT_OPEN_FEATURES);
     try {
       const { url, presentId } = await session.spawnPresent();
       setPresentChildren((prev) => (prev.includes(presentId) ? prev : [...prev, presentId]));
-      if (w && !w.closed) {
-        w.opener = null;
-        w.location.href = url;
-        w.focus();
-      } else {
-        window.open(url, '_blank');
-      }
+      navigatePresentAfterSpawn(w, url, window.location.origin);
     } catch (err) {
       if (w && !w.closed) w.close();
       setMessage(

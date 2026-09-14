@@ -22,9 +22,17 @@ function parseAppUrl(urlString) {
 /**
  * Classify a target URL for window.open / new BrowserWindow.
  * @param {string} urlString
- * @returns {'home' | 'deck' | 'present-session' | 'present-bare' | 'other'}
+ * @returns {'home' | 'deck' | 'present-session' | 'present-bare' | 'present-blank' | 'other'}
  */
 function classifyOpenUrl(urlString) {
+  // Gesture-preserving Present open starts at about:blank, then navigates to
+  // /presentation?sessionId&presentId. Denying about:blank in packaged Electron
+  // leaves a non-hydrating shell on first open (Send never lands until reload).
+  const trimmed = String(urlString || '').trim().toLowerCase();
+  if (trimmed === 'about:blank' || trimmed.startsWith('about:blank?')) {
+    return 'present-blank';
+  }
+
   const { pathname, searchParams } = parseAppUrl(urlString);
   const path = pathname.replace(/\/+$/, '') || '/';
 

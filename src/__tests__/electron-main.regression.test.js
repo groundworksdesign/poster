@@ -77,6 +77,13 @@ describe('electron/main.cjs launch safety (all Electron installers)', () => {
     expect(mainSource).toMatch(/present-bare/);
   });
 
+  it('allows about:blank Present placeholders with preload (first-open hydrate)', () => {
+    expect(mainSource).toMatch(/present-blank/);
+    expect(mainSource).toMatch(
+      /kind === 'deck' \|\| kind === 'present-session' \|\| kind === 'present-blank'/,
+    );
+  });
+
   it('fails fast when packaged node_modules/express is missing', () => {
     expect(mainSource).toMatch(/node_modules['"].*express/);
     expect(mainSource).toMatch(/missing node_modules\/express/);

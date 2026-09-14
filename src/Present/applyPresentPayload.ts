@@ -24,6 +24,7 @@ export function applyPresentPayload(
   }
 
   // `slide: null` is an explicit program-out command, not an omitted field.
+  // Message-only payloads omit `slide` entirely — do not treat that as blank.
   if (present.slide === null) {
     handlers.setSlide(null);
     handlers.setMessage(null);
@@ -44,5 +45,8 @@ export function applyPresentPayload(
     }
   } else if (present.message || present.message === '') {
     handlers.setMessage(present.message);
+    if (present.useGreenScreen !== undefined && present.useGreenScreen !== null) {
+      handlers.setUseGreenScreen(!!present.useGreenScreen);
+    }
   }
 }

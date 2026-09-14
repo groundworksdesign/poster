@@ -1,15 +1,65 @@
 import React from 'react';
 import type { ProgramThumbnailState } from '../Present/SessionTransport';
+import { VerticalAlign } from '../Present/PresentTypes';
 
 export type ProgramThumbnailPanelProps = {
   program: ProgramThumbnailState | null;
 };
+
+function flexAlignFromHorizontal(h?: string): React.CSSProperties['alignItems'] {
+  if (h === 'left') return 'flex-start';
+  if (h === 'right') return 'flex-end';
+  return 'center';
+}
+
+/**
+ * Present paints title/subtitle (and song intro / lyrics band) as a full-width
+ * colored lower-third when green screen is on and the slide has a backgroundColor.
+ * Mirror that chrome here so Deck "On Program" matches the Present output.
+ */
+function greenScreenLowerThirdStyle(
+  program: ProgramThumbnailState,
+): React.CSSProperties | null {
+  if (!program.useGreenScreen) return null;
+  const barColor = program.slideStyle?.backgroundColor;
+  if (!barColor) return null;
+  return {
+    width: '100%',
+    boxSizing: 'border-box',
+    backgroundColor: barColor,
+    color: program.color || program.slideStyle?.color || '#fff',
+    padding: '8px 0',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: flexAlignFromHorizontal(program.slideStyle?.horizontalAlign),
+    textAlign: (program.slideStyle?.horizontalAlign ?? 'center') as React.CSSProperties['textAlign'],
+  };
+}
+
+function previewJustify(program: ProgramThumbnailState): React.CSSProperties['justifyContent'] {
+  const v = program.slideStyle?.verticalAlign;
+  if (v === VerticalAlign.TOP || v === 'top') return 'flex-start';
+  if (v === VerticalAlign.BOTTOM || v === 'bottom') return 'flex-end';
+  // Green-screen title/subtitle overlays default to a bottom lower-third when
+  // Present's absolute overlay uses bottom for BOTTOM and middle otherwise —
+  // operator title slides in green-screen mode almost always sit at the bottom.
+  if (program.useGreenScreen && (program.title || program.subTitle) && !program.lines?.length) {
+    if (!v || v === VerticalAlign.MIDDLE || v === 'middle') {
+      // Present middle = centered overlay; keep center for middle.
+      return 'center';
+    }
+  }
+  return 'center';
+}
 
 /** Deck-side preview of what a Present child reports as on program. */
 export function ProgramThumbnailPanel({ program }: ProgramThumbnailPanelProps) {
   const style = program?.slideStyle;
   const hasProgram = !!program;
   const isGreenScreen = !!program?.useGreenScreen;
+  const lowerThird = program ? greenScreenLowerThirdStyle(program) : null;
+  const hasTitleBlock = !!(program?.title || program?.subTitle);
+  const hasLines = !!(program?.lines && program.lines.length > 0);
 
   return (
     <div
@@ -23,24 +73,22 @@ export function ProgramThumbnailPanel({ program }: ProgramThumbnailPanelProps) {
           data-testid="program-thumbnail-preview"
           className="deck-program-thumbnail-preview"
           style={{
+            position: 'relative',
+            padding: lowerThird ? 0 : undefined,
             backgroundColor: isGreenScreen ? '#00b140' : (program.backgroundColor || style?.backgroundColor || '#111'),
             color: program.color || style?.color || '#fff',
             fontFamily: style?.fontFamily,
             fontSize: style?.fontSize,
             fontWeight: style?.fontWeight,
             textAlign: style?.horizontalAlign,
-            alignItems:
-              style?.horizontalAlign === 'left'
+            alignItems: lowerThird
+              ? 'stretch'
+              : style?.horizontalAlign === 'left'
                 ? 'flex-start'
                 : style?.horizontalAlign === 'right'
                   ? 'flex-end'
                   : 'center',
-            justifyContent:
-              style?.verticalAlign === 'top'
-                ? 'flex-start'
-                : style?.verticalAlign === 'bottom'
-                  ? 'flex-end'
-                  : 'center',
+            justifyContent: previewJustify(program),
             backgroundImage:
               !isGreenScreen && program.slideFile
                 ? `url(${program.slideFile})`
@@ -56,33 +104,65 @@ export function ProgramThumbnailPanel({ program }: ProgramThumbnailPanelProps) {
               {program.message}
             </div>
           ) : null}
-          {program.title ? (
-            <div
-              data-testid="program-thumbnail-title"
-              style={{ fontSize: program.titleFontSize ?? style?.fontSize }}
-            >
-              {program.title}
+
+          {lowerThird && (hasTitleBlock || hasLines) ? (
+            <div data-testid="program-thumbnail-lower-third" style={lowerThird}>
+              {program.title ? (
+                <div
+                  data-testid="program-thumbnail-title"
+                  style={{ fontSize: program.titleFontSize ?? style?.fontSize }}
+                >
+                  {program.title}
+                </div>
+              ) : null}
+              {program.subTitle ? (
+                <div
+                  data-testid="program-thumbnail-subtitle"
+                  style={{ fontSize: program.subTitleFontSize ?? style?.fontSize }}
+                >
+                  {program.subTitle}
+                </div>
+              ) : null}
+              {hasLines ? (
+                <div data-testid="program-thumbnail-lines">
+                  {program.lines!.map((line, idx) => (
+                    <div key={idx}>{line}</div>
+                  ))}
+                </div>
+              ) : null}
             </div>
-          ) : null}
-          {program.subTitle ? (
-            <div
-              data-testid="program-thumbnail-subtitle"
-              style={{ fontSize: program.subTitleFontSize ?? style?.fontSize }}
-            >
-              {program.subTitle}
-            </div>
-          ) : null}
-          {program.lines && program.lines.length > 0 ? (
-            <div data-testid="program-thumbnail-lines">
-              {program.lines.map((line, idx) => (
-                <div key={idx}>{line}</div>
-              ))}
-            </div>
-          ) : null}
+          ) : (
+            <>
+              {program.title ? (
+                <div
+                  data-testid="program-thumbnail-title"
+                  style={{ fontSize: program.titleFontSize ?? style?.fontSize }}
+                >
+                  {program.title}
+                </div>
+              ) : null}
+              {program.subTitle ? (
+                <div
+                  data-testid="program-thumbnail-subtitle"
+                  style={{ fontSize: program.subTitleFontSize ?? style?.fontSize }}
+                >
+                  {program.subTitle}
+                </div>
+              ) : null}
+              {hasLines ? (
+                <div data-testid="program-thumbnail-lines">
+                  {program.lines!.map((line, idx) => (
+                    <div key={idx}>{line}</div>
+                  ))}
+                </div>
+              ) : null}
+            </>
+          )}
+
           {!program.title &&
           !program.subTitle &&
           !program.message &&
-          !(program.lines && program.lines.length) ? (
+          !hasLines ? (
             <div data-testid="program-thumbnail-empty-slide">Slide on program</div>
           ) : null}
         </div>
