@@ -96,7 +96,8 @@ test('DeckBuilder places the on-program preview in Presentation controls', async
   );
 });
 
-test('Open Present opens about:blank before spawn and navigates with an absolute Present URL', async () => {
+test('Open Present (browser) opens about:blank before spawn and navigates with an absolute Present URL', async () => {
+  delete (window as Window & { poster?: unknown }).poster;
   const openSpy = jest.spyOn(window, 'open').mockImplementation(() => {
     return {
       closed: false,
@@ -120,12 +121,44 @@ test('Open Present opens about:blank before spawn and navigates with an absolute
   await waitFor(() => {
     const win = openSpy.mock.results[0]?.value as { location: { href: string } } | undefined;
     expect(win?.location.href).toContain('/presentation?');
-    // Packaged Electron/AppImage: relative href on about:blank never hydrates.
     expect(win?.location.href.startsWith('http')).toBe(true);
     expect(win?.location.href.startsWith('/presentation')).toBe(false);
   });
 
   openSpy.mockRestore();
+});
+
+test('Open Present (Electron) skips about:blank and opens absolute Present URL directly', async () => {
+  (window as Window & { poster?: unknown }).poster = {
+    deckCommand: jest.fn(),
+    presentEvent: jest.fn(),
+    onDeckEvent: jest.fn(() => () => {}),
+    onPresentPush: jest.fn(() => () => {}),
+    pickLibraryFolder: jest.fn(),
+  };
+  const openSpy = jest.spyOn(window, 'open').mockImplementation(() => {
+    return { closed: false, focus: jest.fn(), close: jest.fn() } as unknown as Window;
+  });
+
+  try {
+    render(<DeckBuilder />);
+    await waitFor(() => expect(screen.getByTestId('open-present')).toBeEnabled());
+
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('open-present'));
+    });
+
+    await waitFor(() => {
+      expect(openSpy).toHaveBeenCalled();
+    });
+    expect(openSpy.mock.calls.some((call) => call[0] === 'about:blank')).toBe(false);
+    const openedUrl = openSpy.mock.calls[0]?.[0] as string;
+    expect(openedUrl).toContain('/presentation?');
+    expect(openedUrl.startsWith('http')).toBe(true);
+  } finally {
+    delete (window as Window & { poster?: unknown }).poster;
+    openSpy.mockRestore();
+  }
 });
 
 test('Send Message omits slide so Present keeps the current program (no blank wipe)', async () => {

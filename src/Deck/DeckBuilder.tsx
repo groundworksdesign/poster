@@ -19,7 +19,7 @@ import { validateDeck } from '../utils/deckValidator';
 import { CURRENT_SCHEMA_VERSION } from '../utils/schema';
 import { remixDataUrl, REMIX_ROUTE_ID } from '../utils/remixDataUrl';
 import { notifyLibraryChanged } from '../utils/libraryRefresh';
-import { navigatePresentAfterSpawn, PRESENT_OPEN_FEATURES } from './openPresentWindow';
+import { openPresentForRuntime } from './openPresentWindow';
 
 export default function DeckBuilder() {
   useTheme();
@@ -525,19 +525,16 @@ export default function DeckBuilder() {
       setMessage('Deck session not ready yet — try Open Present again.');
       return;
     }
-    // Open the window in the same turn as the click. `window.open` after
-    // `await spawnPresent()` loses the user gesture and returns null (no page),
-    // which is what timed out remix-program-thumbnail E2E on CI.
-    // Packaged Electron must allow about:blank (see homeWindowPolicy) and we
-    // must navigate with an absolute URL — relative href on about:blank never
-    // hydrates the Remix Present client on first open (AppImage v0.1.10).
-    const w = window.open('about:blank', '_blank', PRESENT_OPEN_FEATURES);
+    // Browser: about:blank in the click turn (popup gesture), then absolute URL.
+    // Electron/AppImage: skip about:blank — blank→navigate leaves SSR Loading
+    // with no Remix hydrate on first open; open absolute Present URL directly.
     try {
-      const { url, presentId } = await session.spawnPresent();
+      const { presentId } = await openPresentForRuntime({
+        spawnPresent: () => session.spawnPresent(),
+        origin: window.location.origin,
+      });
       setPresentChildren((prev) => (prev.includes(presentId) ? prev : [...prev, presentId]));
-      navigatePresentAfterSpawn(w, url, window.location.origin);
     } catch (err) {
-      if (w && !w.closed) w.close();
       setMessage(
         `Open Present failed: ${err instanceof Error ? err.message : 'unknown error'}`,
       );

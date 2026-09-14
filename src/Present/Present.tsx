@@ -372,11 +372,12 @@ export default function Presentation() {
     );
 
   const display = loading ? (
-    <h1>Loading...</h1>
+    <h1 data-testid="present-loading">Loading...</h1>
   ) : sessionError ? (
-    <h1>{sessionError}</h1>
+    <h1 data-testid="present-session-error">{sessionError}</h1>
   ) : (
     <div
+      data-testid="present-ready"
       style={{
         minHeight: '100vh',
         height: '100vh',

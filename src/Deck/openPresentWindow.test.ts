@@ -1,5 +1,8 @@
 import {
+  hasPosterBridge,
   navigatePresentAfterSpawn,
+  openPresentForRuntime,
+  planPresentOpen,
   toAbsolutePresentUrl,
 } from './openPresentWindow';
 
@@ -11,6 +14,12 @@ describe('openPresentWindow', () => {
         'http://127.0.0.1:4173',
       ),
     ).toBe('http://127.0.0.1:4173/presentation?sessionId=s1&presentId=p1');
+  });
+
+  test('planPresentOpen uses electron-direct when window.poster exists', () => {
+    expect(hasPosterBridge({ poster: {} })).toBe(true);
+    expect(planPresentOpen({ poster: {} })).toEqual({ mode: 'electron-direct' });
+    expect(planPresentOpen({})).toEqual({ mode: 'browser-gesture-blank' });
   });
 
   test('navigatePresentAfterSpawn never assigns a relative href onto about:blank', () => {
@@ -52,8 +61,64 @@ describe('openPresentWindow', () => {
       '_blank',
       expect.any(String),
     );
-    // Old boot path opened the relative spawn URL — that fails to hydrate after
-    // a denied about:blank shell in packaged Electron/AppImage.
     expect(open.mock.calls[0][0]).not.toMatch(/^\/presentation/);
+  });
+
+  test('openPresentForRuntime Electron path never opens about:blank (AppImage cold-open fix)', async () => {
+    const open = jest.fn().mockReturnValue({ closed: false });
+    const spawnPresent = jest.fn().mockResolvedValue({
+      url: '/presentation?sessionId=s1&presentId=p1',
+      presentId: 'p1',
+    });
+
+    const result = await openPresentForRuntime({
+      spawnPresent,
+      origin: 'http://127.0.0.1:3000',
+      open: open as unknown as typeof window.open,
+      bridgeWindow: { poster: { deckCommand: jest.fn() } },
+    });
+
+    expect(result.mode).toBe('electron-direct');
+    expect(result.presentId).toBe('p1');
+    expect(result.absoluteUrl).toBe(
+      'http://127.0.0.1:3000/presentation?sessionId=s1&presentId=p1',
+    );
+    expect(open).toHaveBeenCalledTimes(1);
+    expect(open).toHaveBeenCalledWith(
+      'http://127.0.0.1:3000/presentation?sessionId=s1&presentId=p1',
+      '_blank',
+      expect.any(String),
+    );
+    // Old packaged path opened about:blank first — that shell never hydrates.
+    expect(open.mock.calls.some((call) => call[0] === 'about:blank')).toBe(false);
+  });
+
+  test('openPresentForRuntime browser path keeps about:blank gesture then absolute navigate', async () => {
+    const location = { href: 'about:blank' };
+    const blank = {
+      closed: false,
+      opener: {} as Window | null,
+      focus: jest.fn(),
+      close: jest.fn(),
+      location,
+    };
+    const open = jest.fn().mockReturnValue(blank);
+    const spawnPresent = jest.fn().mockResolvedValue({
+      url: '/presentation?sessionId=s1&presentId=p1',
+      presentId: 'p1',
+    });
+
+    const result = await openPresentForRuntime({
+      spawnPresent,
+      origin: 'http://127.0.0.1:3000',
+      open: open as unknown as typeof window.open,
+      bridgeWindow: {},
+    });
+
+    expect(result.mode).toBe('browser-gesture-blank');
+    expect(open).toHaveBeenCalledWith('about:blank', '_blank', expect.any(String));
+    expect(location.href).toBe(
+      'http://127.0.0.1:3000/presentation?sessionId=s1&presentId=p1',
+    );
   });
 });

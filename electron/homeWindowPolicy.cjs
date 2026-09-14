@@ -25,9 +25,10 @@ function parseAppUrl(urlString) {
  * @returns {'home' | 'deck' | 'present-session' | 'present-bare' | 'present-blank' | 'other'}
  */
 function classifyOpenUrl(urlString) {
-  // Gesture-preserving Present open starts at about:blank, then navigates to
-  // /presentation?sessionId&presentId. Denying about:blank in packaged Electron
-  // leaves a non-hydrating shell on first open (Send never lands until reload).
+  // about:blank is still classified for browser/Remix popup gesture opens.
+  // Packaged Electron Deck skips about:blank and opens the Present URL
+  // directly (see openPresentWindow.openPresentForRuntime) — blank→navigate
+  // left SSR Loading with no client hydrate on AppImage cold open.
   const trimmed = String(urlString || '').trim().toLowerCase();
   if (trimmed === 'about:blank' || trimmed.startsWith('about:blank?')) {
     return 'present-blank';
