@@ -76,7 +76,8 @@ export async function openDeckWindow(app: ElectronApplication, home: Page): Prom
 /**
  * Open a Present window from the deck (window.open -> Electron BrowserWindow).
  * Waits until Present has client-hydrated (not merely until the URL navigates).
- * URL-only waits are false comfort: SSR can sit on "Loading..." forever.
+ * URL-only waits are false comfort: SSR can sit on "Loading..." forever, and
+ * On Program thumbnails never update until present-ready (REQ-006/007).
  */
 export async function openPresentWindow(
   app: ElectronApplication,

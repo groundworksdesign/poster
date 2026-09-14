@@ -3,7 +3,7 @@
   "branch": "cursor/clean-architecture-restructure-018c",
   "status": "in_progress",
   "loop": 3,
-  "persona": "planning",
+  "persona": "dev",
   "completeEpic": false,
   "requirements": [
     {
@@ -96,8 +96,9 @@
       "id": "verify-on-program-after-present-hydrate",
       "content": "After Present first-open hydrate is reliable on packaged Electron, verify On Program thumbnail/state works end-to-end (blocked while Present stays on Loading).",
       "requirementId": "REQ-007",
-      "status": "pending",
-      "passes": false
+      "status": "done",
+      "passes": false,
+      "notes": "Dev: added tests/e2e/electron-program-thumbnail.spec.ts \u2014 cold Open Present (present-ready) then Start; Deck program-thumbnail title/subtitle match Present; End clears thumbnail. openPresentWindow comment notes On Program depends on hydrate. Ran: xvfb electron e2e (pass after remix build); programThumbnail unit+integration pass. Packaged AppImage binary not re-run here \u2014 residual for Jack/REQ-005. passes left false for QA."
     },
     {
       "id": "audit-layer-import-rule",
@@ -191,5 +192,5 @@
     "cleanArchLayout": "pass",
     "ciOnThatTip": "unit_green_remix_e2e_and_electron_smoke_red_helpers_under_tests"
   },
-  "lastUpdated": "2026-09-14T15:19:38.000Z"
+  "lastUpdated": "2026-09-14T15:24:12.000Z"
 }

@@ -68,3 +68,10 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - Selected verify-on-program-after-present-hydrate (REQ-007) now that hydrate passes.
 - On Program UI/domain/remix e2e already exist; task is post-hydrate verification (Electron path priority).
 - Remaining backlog: audit-layer-import-rule, harden-config-ci-script-paths, verify-unit-integration-green, verify-remix-electron-e2e-green, document-appimage-residual-risk.
+
+
+## Epic-006 dev (verify-on-program-after-present-hydrate)
+
+- Added Electron e2e `electron-program-thumbnail.spec.ts`: cold present-ready → Start → Deck On Program matches Present; End clears.
+- No product UI change required; directed thumbnail path already worked once Present hydrates.
+- AppImage installer retest still Jack/REQ-005. passes=false for QA.
