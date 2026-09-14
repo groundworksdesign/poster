@@ -1,0 +1,75 @@
+{
+  "branchName": "cursor/clean-architecture-restructure-018c",
+  "status": "in_progress",
+  "completeEpic": false,
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Fix e2e repo root paths",
+      "description": "Fix tests/e2e helpers and specs that still resolve repo root as tests/ (one level up) instead of the real repository root after the e2e/ to tests/e2e move. Update electronHelpers, electron-theme-relaunch, and sample-deck public paths to use ../.. .",
+      "status": "backlog",
+      "devIterations": 0,
+      "createdAt": "2026-09-14T14:53:39.000Z",
+      "updatedAt": "2026-09-14T14:53:39.000Z"
+    },
+    {
+      "id": 2,
+      "title": "Audit layer import rule",
+      "description": "Verify src/domain and src/application do not import Remix, Electron, or Playwright; fix any accidental coupling found.",
+      "status": "backlog",
+      "devIterations": 0,
+      "createdAt": "2026-09-14T14:53:39.000Z",
+      "updatedAt": "2026-09-14T14:53:39.000Z"
+    },
+    {
+      "id": 3,
+      "title": "Harden config CI script paths",
+      "description": "Sweep remaining stale app/, electron/, server/, shared/, e2e/ path references in configs, scripts, CI comments, and operator-facing README paths that would mislead packaging or local runs.",
+      "status": "backlog",
+      "devIterations": 0,
+      "createdAt": "2026-09-14T14:53:39.000Z",
+      "updatedAt": "2026-09-14T14:53:39.000Z"
+    },
+    {
+      "id": 4,
+      "title": "Verify unit integration green",
+      "description": "Run and fix unit and integration suites broken by the restructure so CI unit-integration stays green.",
+      "status": "backlog",
+      "devIterations": 0,
+      "createdAt": "2026-09-14T14:53:39.000Z",
+      "updatedAt": "2026-09-14T14:53:39.000Z"
+    },
+    {
+      "id": 5,
+      "title": "Verify remix electron e2e green",
+      "description": "Run Remix and Electron Playwright suites after path fixes; repair any remaining move-induced failures that should pass.",
+      "status": "backlog",
+      "devIterations": 0,
+      "createdAt": "2026-09-14T14:53:39.000Z",
+      "updatedAt": "2026-09-14T14:53:39.000Z"
+    },
+    {
+      "id": 6,
+      "title": "Document AppImage residual risk",
+      "description": "Document residual risk and a short manual AppImage regression checklist for Jack; do not claim packaged installers were fully re-proven unless evidence exists.",
+      "status": "backlog",
+      "devIterations": 0,
+      "createdAt": "2026-09-14T14:53:39.000Z",
+      "updatedAt": "2026-09-14T14:53:39.000Z"
+    }
+  ],
+  "currentTaskNum": 1,
+  "totalLLMCalls": 0,
+  "maxLLMCalls": 400,
+  "nextTask": {
+    "taskId": 1,
+    "content": "fix-e2e-repo-root-paths",
+    "updatedAt": "2026-09-14T14:53:39.000Z"
+  },
+  "feedback": {
+    "taskId": null,
+    "content": "",
+    "updatedAt": "2026-09-14T14:53:39.000Z"
+  },
+  "lastUpdated": "2026-09-14T14:53:39.000Z"
+}

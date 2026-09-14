@@ -47,6 +47,8 @@ poster.library.json
 
 # Portable zip build output
 /dist/
-# Ralph agent trees (removed from repo; keep ignored if recreated locally)
-/ralph/
+# Legacy parallel Ralph tree (do not recreate). Loop harness lives in ralph/.
 /.ralph/
+# Transient Ralph runtime noise (harness files under ralph/ are committed)
+ralph/run.log
+ralph/*.pending
