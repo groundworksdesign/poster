@@ -142,7 +142,7 @@ Local builds and CI use `CSC_IDENTITY_AUTO_DISCOVERY=false`, so macOS and Window
 
 ## CI: PR workflow artifacts
 
-The **PR Build** workflow (`.github/workflows/pr.yml`) runs on every pull request.
+The **PR Build** workflow (`.github/workflows/pr.yml`) runs on pull requests that change application code, tests, package manifests, build config, or `.github/workflows/**`. Docs/license/markdown-only changes are ignored so they do not build portable zips or Electron installers.
 
 - **Portable zip** job matrix (`ubuntu-latest`, `windows-latest`, `macos-latest`) uploads one zip per OS with artifact names like `poster-portable-<runner>-<full-commit-sha>`.
 - **Electron installers** job matrix uploads staged installers (DMG, NSIS exe, deb, AppImage when produced) with names like `poster-electron-<runner>-pr-<PR#>-<full-commit-sha>`.
@@ -155,7 +155,7 @@ The **Release** workflow (`.github/workflows/release.yml`) handles two flows: au
 
 ### Pre-releases (automatic)
 
-Pushing to `main` (typically a PR merge) triggers a pre-release. The workflow:
+Pushing to `main` (typically a PR merge) triggers a release build unless the push only changes docs/license/markdown (same `paths-ignore` as the PR workflow). The workflow:
 
 1. Reads the PR description and merge commit message for a `+semver:` annotation (see rules below).
 2. Applies the version bump to `package.json`, commits it with `[skip ci]`, and creates a pre-release tag `v<version>-pr.<N>`.
@@ -186,6 +186,10 @@ When you're ready to ship the accumulated pre-release changes:
 ### Artifacts
 
 Each run of the Release workflow builds the same **portable zips** (one per OS) and **Electron installers** (DMG, NSIS exe, deb, AppImage) as the PR workflow. The `publish` job attaches them to the GitHub Release or Pre-release. Intermediate artifact names use the resolved version tag (e.g. `poster-portable-release-ubuntu-latest-v0.2.0-pr.3-<sha>`).
+
+## License
+
+Poster is licensed under the [PolyForm Strict License 1.0.0](https://polyformproject.org/licenses/strict/1.0.0). See [`LICENSE`](./LICENSE) for the Required Notice and full terms.
 
 ## Learn more
 

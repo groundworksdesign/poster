@@ -1,9 +1,20 @@
 name: PR Build
 
+# Skip the full PR pipeline (unit/e2e/smoke + portable zip + Electron installers
+# + publish) when the PR only touches docs/license/markdown. Any change to app
+# code, tests, package manifests, build config, or .github/workflows/** still
+# runs the normal jobs. workflow_dispatch always runs (no path filter).
 on:
   pull_request:
     branches: ["**"]
     types: [opened, synchronize, reopened, ready_for_review]
+    paths-ignore:
+      - "**/*.md"
+      - "LICENSE"
+      - "LICENSE.*"
+      - "docs/**"
+      - ".ralph/**"
+      - "ralph/**"
   workflow_dispatch:
 
 # Default read-only; release jobs elevate contents: write.
