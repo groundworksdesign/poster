@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 /**
  * Diagnoses "blank window" / no controls:
  * - CRA dev server injects JS into index.html; raw public/index.html has no bundles → #root stays empty.
- * - If webServer uses `node server/index.js` without a built bundle served from build/, same problem for /.
+ * - If webServer uses `node src/adapters/persistence/server.js` without a built bundle served from build/, same problem for /.
  */
 test.describe('Blank page diagnostics', () => {
   test('page should load React bundle (script tags + #root has content)', async ({ page }) => {

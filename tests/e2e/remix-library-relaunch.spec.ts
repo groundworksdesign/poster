@@ -38,7 +38,7 @@ function startServer(port: number, home: string): ChildProcess {
   delete env.POSTER_LIBRARY_PATH;
   delete env.POSTER_DB_PATH;
   delete env.POSTER_LIBRARY_JSON_PATH;
-  return spawn(process.execPath, [path.join(process.cwd(), 'server', 'index.js')], {
+  return spawn(process.execPath, [path.join(process.cwd(), 'src', 'adapters', 'persistence', 'server.js')], {
     cwd: process.cwd(),
     env,
     stdio: ['ignore', 'pipe', 'pipe'],

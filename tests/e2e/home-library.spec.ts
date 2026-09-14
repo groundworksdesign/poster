@@ -20,7 +20,7 @@ import fs from 'fs';
  *   trim duplicate deck library toggle; update unit/e2e tests.
  */
 
-const SAMPLE_DECK_PATH = path.join(__dirname, '..', 'public', 'sample-slide-deck.json');
+const SAMPLE_DECK_PATH = path.join(__dirname, '..', '..', 'public', 'sample-slide-deck.json');
 const SAMPLE_DECK = JSON.parse(fs.readFileSync(SAMPLE_DECK_PATH, 'utf-8'));
 
 const MOCK_ENTRY = {

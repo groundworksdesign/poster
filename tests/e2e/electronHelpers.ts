@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
-const root = path.resolve(__dirname, '..');
+const root = path.resolve(__dirname, '..', '..');
 const electronPath = require('electron') as string;
 
 export type LaunchPosterOptions = {
@@ -25,8 +25,8 @@ export function makeSandbox(prefix = 'poster-electron-'): string {
 }
 
 /**
- * Launch the real Electron app (electron/main.cjs wraps the embedded Express/Remix
- * server) with an isolated HOME / user-data dir so it never touches a real profile.
+ * Launch the real Electron app (src/adapters/electron/main.cjs wraps the embedded
+ * Express/Remix server) with an isolated HOME / user-data dir so it never touches a real profile.
  * POSTER_HOME is intentionally not set unless the caller supplies one, so
  * "default ~/.poster" behavior is what is exercised by default.
  */
