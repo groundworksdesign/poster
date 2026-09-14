@@ -18,7 +18,7 @@ todos:
     status: done
   - id: verify-remix-electron-e2e-green
     content: Run Remix and Electron Playwright suites after path fixes; repair any remaining move-induced failures that should pass. Confirm CI red helpers-under-tests/ on tip 9f124e1 is resolved on current tip after e2e root work.
-    status: pending
+    status: done
   - id: fix-present-first-open-hydrate
     content: Restore reliable Present first-open hydrate on packaged Electron/AppImage after the clean-arch move (Jack cold open 1/3 PASS, 2/3 stuck SSR Loading; possible regression of PR #18 first-open fix under new layout).
     status: done
@@ -68,7 +68,7 @@ Confirmed on tip `f1f2a9d` / planning sync (this commit):
 
 - Rings present; no root `app/`; no `.ralph/`
 - Prior todos through `verify-unit-integration-green` **done / passes true**
-- REQ-004 still open: full Remix + Electron Playwright suites not yet re-proven on current tip — `verify-remix-electron-e2e-green` selected
+- `verify-remix-electron-e2e-green` **done / passes true** (remix 52 + electron 9; helpers-under-tests gone)
 - AppImage residual doc remains last
 
 ## Implementation Plan (planning guidance; do not code in planning)
@@ -79,7 +79,7 @@ Confirmed on tip `f1f2a9d` / planning sync (this commit):
 4. **audit-layer-import-rule** — DONE (QA passed).
 5. **harden-config-ci-script-paths** — DONE (QA passed).
 6. **verify-unit-integration-green** — DONE (QA passed).
-7. **verify-remix-electron-e2e-green** — NEXT (loop 8): Playwright Remix + Electron on current tip (confirm helpers-path CI red is gone).
+7. **verify-remix-electron-e2e-green** — DONE (QA passed).
 8. **document-appimage-residual-risk** — Residual-risk note + Jack checklist including 9f124e1 baseline; draft PR stays draft.
 
 
@@ -98,7 +98,7 @@ Confirmed on tip `f1f2a9d` / planning sync (this commit):
 - [x] REQ-001 `electronHelpers` / Electron theme relaunch launch the app from the repo root; sample-deck paths resolve to `public/` (QA passed).
 - [x] REQ-002 No Remix/Electron/Playwright imports under `src/domain` or `src/application` (QA passed; Jest guard).
 - [x] REQ-003 `remix.config.js` appDirectory, package.json main/scripts, electron-builder + portable scripts align with adapters.
-- [ ] REQ-004 `tsc --noEmit`, Jest unit/integration, `pnpm run test:e2e:remix`, and `pnpm run test:e2e:electron` pass on current tip (or failures documented as pre-existing with evidence).
+- [x] REQ-004 `tsc --noEmit`, Jest unit/integration, `pnpm run test:e2e:remix`, and `pnpm run test:e2e:electron` pass on current tip (or failures documented as pre-existing with evidence).
 - [ ] REQ-005 Residual AppImage risk doc exists (include Jack 9f124e1 baseline); draft PR #21 remains draft/unmerged.
 - [x] REQ-006 Packaged Present first-open hydrate engineering fix landed + QA-passed (main-owned present-session); Jack AppImage retest still for final packaged sign-off.
 - [x] REQ-007 On Program verified after Present hydrate is reliable (Electron e2e QA-passed; AppImage installer retest still Jack/REQ-005).

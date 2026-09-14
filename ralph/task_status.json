@@ -3,7 +3,7 @@
   "branch": "cursor/clean-architecture-restructure-018c",
   "status": "in_progress",
   "loop": 8,
-  "persona": "dev",
+  "persona": "qa",
   "completeEpic": false,
   "requirements": [
     {
@@ -41,7 +41,7 @@
         "verify-unit-integration-green",
         "verify-remix-electron-e2e-green"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "REQ-005",
@@ -147,16 +147,18 @@
       "id": "verify-remix-electron-e2e-green",
       "content": "Run Remix and Electron Playwright suites after path fixes; repair any remaining move-induced failures that should pass. Confirm helpers-under-tests/ CI failure from tip 9f124e1 is resolved on current tip.",
       "requirementId": "REQ-004",
-      "status": "pending",
-      "passes": false,
-      "notes": "Dev: helpers-under-tests confirmed gone (repoRoot.selfcheck -> /workspace). Remix e2e: CI=true pnpm run test:e2e:remix -> 52 passed. Electron e2e: after NODE_ENV=production build, CI=true ELECTRON_DISABLE_SANDBOX=1 xvfb-run -a pnpm run test:e2e:electron -> 9 passed. First Electron fail was env ordering (remix e2e left jsx-dev-runtime build causing Home SSR 500), not move-induced paths. Added tests/e2e/electron.global-setup.cjs to rebuild production build when needed. passes remains false for QA.",
+      "status": "done",
+      "passes": true,
+      "notes": "QA verified independently: repoRoot.selfcheck -> /workspace (not tests/); CI=true pnpm run test:e2e:remix -> 52 passed; after remix e2e left jsx-dev-runtime build, electron.global-setup rebuilt production; CI=true ELECTRON_DISABLE_SANDBOX=1 xvfb-run -a pnpm run test:e2e:electron -> 9 passed. helpers-under-tests CI red from tip 9f124e1 confirmed gone.",
       "devCompletedAt": "2026-09-14T16:02:48.000Z",
       "devEvidence": {
         "repoRoot.selfcheck": "/workspace",
         "test:e2e:remix": "52 passed",
         "test:e2e:electron": "9 passed (after production remix build)",
         "hardening": "tests/e2e/electron.global-setup.cjs"
-      }
+      },
+      "qaVerifiedAt": "2026-09-14T16:05:35.000Z",
+      "qaReport": "ralph/qa-report.md"
     },
     {
       "id": "document-appimage-residual-risk",
@@ -220,5 +222,5 @@
     "cleanArchLayout": "pass",
     "ciOnThatTip": "unit_green_remix_e2e_and_electron_smoke_red_helpers_under_tests"
   },
-  "lastUpdated": "2026-09-14T16:02:48.000Z"
+  "lastUpdated": "2026-09-14T16:05:35.000Z"
 }

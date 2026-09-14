@@ -164,3 +164,8 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - Electron Home timeout was jsx-dev-runtime build left by remix e2e (SSR 500), not path roots.
 - Added electron.global-setup.cjs to ensure production build before Electron specs.
 - passes left false for QA.
+
+
+## Epic-006 QA (verify-remix-electron-e2e-green)
+
+- PASS (2026-09-14T16:05:35.000Z): remix 52 + electron 9; repoRoot ok; globalSetup rebuild observed; passes true. REQ-004 done.

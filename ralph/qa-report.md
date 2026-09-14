@@ -1,3 +1,25 @@
+# QA report — verify-remix-electron-e2e-green (REQ-004)
+
+**Result:** PASS  
+**Branch tip:** `d975b70` (+ this QA commit)  
+**Verified at:** 2026-09-14T16:05:35.000Z
+
+## Acceptance checks
+
+| Criterion | Evidence | Result |
+| --- | --- | --- |
+| helpers-under-tests gone | node tests/e2e/repoRoot.selfcheck.cjs -> /workspace; REPO_ROOT not tests/ | PASS |
+| Remix Playwright suite | CI=true pnpm run test:e2e:remix -> 52 passed | PASS |
+| Electron Playwright suite | After remix e2e polluted build with jsx-dev-runtime, electron.global-setup rebuilt production; CI=true ELECTRON_DISABLE_SANDBOX=1 xvfb-run -a pnpm run test:e2e:electron -> 9 passed | PASS |
+| Durable globalSetup | Wired in playwright.electron.config.ts; observed rebuild during QA Electron run | PASS |
+
+## Residual
+
+- Next backlog: document-appimage-residual-risk (REQ-005).
+- REQ-004 now complete (unit + e2e todos both passes true).
+
+---
+
 # QA report — verify-unit-integration-green (REQ-004 partial)
 
 **Result:** PASS  
