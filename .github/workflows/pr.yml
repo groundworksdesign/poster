@@ -272,6 +272,12 @@ jobs:
         run: |
           set -euo pipefail
           VERSION='${{ needs.resolve-pr-release.outputs.version }}'
+          # Merge race: Release may have already deleted v*-pr.<N> while this job
+          # was still building. Skip upload rather than fail on a missing target.
+          if ! gh release view "$VERSION" --repo "${{ github.repository }}" >/dev/null 2>&1; then
+            echo "PR pre-release $VERSION is gone (likely deleted after merge). Skipping upload."
+            exit 0
+          fi
           shopt -s nullglob
           files=(dist/poster-portable-*.zip)
           if [ ${#files[@]} -eq 0 ]; then
@@ -368,6 +374,12 @@ jobs:
         run: |
           set -euo pipefail
           VERSION='${{ needs.resolve-pr-release.outputs.version }}'
+          # Merge race: Release may have already deleted v*-pr.<N> while this job
+          # was still building. Skip upload rather than fail on a missing target.
+          if ! gh release view "$VERSION" --repo "${{ github.repository }}" >/dev/null 2>&1; then
+            echo "PR pre-release $VERSION is gone (likely deleted after merge). Skipping upload."
+            exit 0
+          fi
           shopt -s nullglob
           files=(dist/electron-installers/*)
           if [ ${#files[@]} -eq 0 ]; then
@@ -382,9 +394,13 @@ jobs:
   publish-pr-release:
     name: Publish ${{ needs.resolve-pr-release.outputs.version }}
     needs: [portable-zip, electron-installers, resolve-pr-release]
+    # always() keeps Finalize running when a matrix leg failed so we still undraft
+    # whatever uploaded. Skip when the PR is already merged (event payload) so a
+    # late/concurrent Publish does not race Release's PR pre-release cleanup.
     if: >-
       always() &&
       github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.merged != true &&
       needs.resolve-pr-release.result == 'success' &&
       !cancelled()
     runs-on: ubuntu-latest
@@ -401,6 +417,13 @@ jobs:
         run: |
           set -euo pipefail
           VERSION='${{ needs.resolve-pr-release.outputs.version }}'
+          # Merge race: on PR merge, release.yml deletes v*-pr.<PR_NUMBER> while a
+          # concurrent/late pr.yml Publish (uses always()) may still be running.
+          # If the draft is already gone, succeed — do not fail the job.
+          if ! gh release view "$VERSION" --repo "${{ github.repository }}" >/dev/null 2>&1; then
+            echo "PR pre-release $VERSION not found (likely deleted after merge). Skipping finalize."
+            exit 0
+          fi
           gh release edit "$VERSION" --repo "${{ github.repository }}" --draft=false --prerelease
           echo "PR pre-release assets:"
           gh release view "$VERSION" --repo "${{ github.repository }}" --json assets \
