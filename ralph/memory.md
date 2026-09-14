@@ -155,3 +155,12 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - Selected verify-remix-electron-e2e-green (REQ-004 remaining half) after unit-integration QA pass.
 - Tip f1f2a9d; draft PR #21 only. No product code.
 - Remaining after this: document-appimage-residual-risk.
+
+
+## Epic-006 dev (verify-remix-electron-e2e-green)
+
+- helpers-under-tests gone: repoRoot.selfcheck ok.
+- Remix e2e 52 passed; Electron e2e 9 passed after production remix build.
+- Electron Home timeout was jsx-dev-runtime build left by remix e2e (SSR 500), not path roots.
+- Added electron.global-setup.cjs to ensure production build before Electron specs.
+- passes left false for QA.
