@@ -1,3 +1,26 @@
+# QA report — document-appimage-residual-risk (REQ-005)
+
+**Result:** PASS  
+**Branch tip:** `134d494` (+ this QA commit)  
+**Verified at:** 2026-09-14T16:11:31.000Z
+
+## Acceptance checks
+
+| Criterion | Evidence | Result |
+| --- | --- | --- |
+| Jack checklist completeness | docs/appimage-residual-risk.md sections: Home, Library, Cold Present x3, Directed-send, Message-only, On Program, Theme | PASS |
+| 9f124e1 baseline | NOT READY table with flaky Present hydrate / blocked On Program | PASS |
+| No false AppImage proof claim | Status + residual text explicitly not claiming packaged AppImage fully proven | PASS |
+| Linked from README + epic | README Electron section; ralph/epic.md operator doc link; files resolve | PASS |
+| Draft PR #21 | isDraft true, state OPEN | PASS |
+
+## Epic
+
+- All todos passes true -> `completeEpic` true.
+- Draft PR #21 remains draft — not marked ready, not merged.
+
+---
+
 # QA report — verify-remix-electron-e2e-green (REQ-004)
 
 **Result:** PASS  

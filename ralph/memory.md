@@ -183,3 +183,9 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - Added docs/appimage-residual-risk.md with 9f124e1 baseline, residual risks, and Jack checklist (Home, library, cold Present x3, directed-send, message-only, On Program, theme).
 - Linked from README + epic. No AppImage binary claimed proven.
 - passes left false for QA.
+
+
+## Epic-006 QA (document-appimage-residual-risk)
+
+- PASS (2026-09-14T16:11:31.000Z): docs/appimage-residual-risk.md complete vs Jack checklist; passes true.
+- completeEpic true. Draft PR #21 stays draft (no ready/merge).

@@ -1,10 +1,10 @@
 {
   "epic": "epic-006-clean-architecture-harden",
   "branch": "cursor/clean-architecture-restructure-018c",
-  "status": "in_progress",
+  "status": "complete",
   "loop": 9,
-  "persona": "dev",
-  "completeEpic": false,
+  "persona": "qa",
+  "completeEpic": true,
   "requirements": [
     {
       "id": "REQ-001",
@@ -50,7 +50,7 @@
       "todoIds": [
         "document-appimage-residual-risk"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "REQ-006",
@@ -164,10 +164,12 @@
       "id": "document-appimage-residual-risk",
       "content": "Document residual risk and a short manual AppImage regression checklist for Jack, including tip 9f124e1 baseline (Present hydrate flaky, On Program blocked, Home/library/theme/layout PASS); do not claim packaged installers were fully re-proven in this loop unless evidence exists.",
       "requirementId": "REQ-005",
-      "status": "pending",
-      "passes": false,
-      "notes": "Dev: wrote docs/appimage-residual-risk.md (9f124e1 baseline, residual risks, Jack checklist: Home, library, cold Present x3, directed-send, message-only, On Program, theme). Linked from README + ralph/epic.md. Explicitly does not claim AppImage fully proven. passes remains false for QA.",
-      "devCompletedAt": "2026-09-14T16:09:24.000Z"
+      "status": "done",
+      "passes": true,
+      "notes": "QA verified: docs/appimage-residual-risk.md has Home, library, cold Present x3, directed-send, message-only, On Program, theme; includes 9f124e1 NOT READY baseline; does not claim AppImage fully proven; linked from README + epic; draft PR #21 remains draft.",
+      "devCompletedAt": "2026-09-14T16:09:24.000Z",
+      "qaVerifiedAt": "2026-09-14T16:11:31.000Z",
+      "qaReport": "ralph/qa-report.md"
     }
   ],
   "acceptanceCriteria": [
@@ -224,5 +226,6 @@
     "cleanArchLayout": "pass",
     "ciOnThatTip": "unit_green_remix_e2e_and_electron_smoke_red_helpers_under_tests"
   },
-  "lastUpdated": "2026-09-14T16:09:24.000Z"
+  "lastUpdated": "2026-09-14T16:11:31.000Z",
+  "epicCompleteNotes": "Epic complete @ 2026-09-14T16:11:31.000Z tip 134d494: all todos passes true. Draft PR #21 remains draft \u2014 do not mark ready or merge in this loop."
 }

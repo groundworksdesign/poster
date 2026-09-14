@@ -1,7 +1,7 @@
 ---
 name: QA and harden clean-architecture restructure
 epic: epic-006-clean-architecture-harden
-status: in_progress
+status: complete
 overview: "The structural move to src rings + tests/e2e is already on this branch. Harden it: confirm layout and dependency rules, fix path/config/CI breakages from the move, make unit/integration/e2e that should pass actually pass, restore packaged Electron Present first-open hydrate reliability (Jack AppImage NOT READY), unblock On Program once Present is live, keep the Ralph loop harness under ralph/ (not .ralph/), and document residual AppImage risk for Jack."
 todos:
   - id: fix-e2e-repo-root-paths
@@ -27,7 +27,7 @@ todos:
     status: done
   - id: document-appimage-residual-risk
     content: Document residual risk and a short manual AppImage regression checklist for Jack, including the 9f124e1 baseline (Present hydrate flaky, On Program blocked, Home/library/theme/layout PASS); do not claim packaged installers were fully re-proven in this loop unless evidence exists.
-    status: pending
+    status: done
 isProject: false
 ---
 
@@ -70,7 +70,7 @@ Confirmed on tip `03224fc` / planning sync (this commit):
 
 - Rings present; no root `app/`; no `.ralph/`
 - All harden/QA todos through `verify-remix-electron-e2e-green` **done / passes true** (REQ-001..004, 006, 007)
-- No dedicated AppImage residual-risk checklist doc yet — `document-appimage-residual-risk` selected (REQ-005, last unfinished)
+- `document-appimage-residual-risk` **done / passes true**; `completeEpic` true — draft PR #21 still not ready/merged
 - Draft PR #21 remains draft/unmerged
 
 ## Implementation Plan (planning guidance; do not code in planning)
@@ -82,7 +82,7 @@ Confirmed on tip `03224fc` / planning sync (this commit):
 5. **harden-config-ci-script-paths** — DONE (QA passed).
 6. **verify-unit-integration-green** — DONE (QA passed).
 7. **verify-remix-electron-e2e-green** — DONE (QA passed).
-8. **document-appimage-residual-risk** — NEXT (loop 9): residual-risk note + Jack checklist including 9f124e1 baseline; draft PR stays draft.
+8. **document-appimage-residual-risk** — DONE (QA passed). Epic complete; draft PR #21 stays draft/unmerged.
 
 
 ### Functional requirements
@@ -101,7 +101,7 @@ Confirmed on tip `03224fc` / planning sync (this commit):
 - [x] REQ-002 No Remix/Electron/Playwright imports under `src/domain` or `src/application` (QA passed; Jest guard).
 - [x] REQ-003 `remix.config.js` appDirectory, package.json main/scripts, electron-builder + portable scripts align with adapters.
 - [x] REQ-004 `tsc --noEmit`, Jest unit/integration, `pnpm run test:e2e:remix`, and `pnpm run test:e2e:electron` pass on current tip (or failures documented as pre-existing with evidence).
-- [ ] REQ-005 Residual AppImage risk doc exists (include Jack 9f124e1 baseline); draft PR #21 remains draft/unmerged.
+- [x] REQ-005 Residual AppImage risk doc exists (include Jack 9f124e1 baseline); draft PR #21 remains draft/unmerged.
 - [x] REQ-006 Packaged Present first-open hydrate engineering fix landed + QA-passed (main-owned present-session); Jack AppImage retest still for final packaged sign-off.
 - [x] REQ-007 On Program verified after Present hydrate is reliable (Electron e2e QA-passed; AppImage installer retest still Jack/REQ-005).
 - [ ] No `.ralph/`; `ralph/` is only the loop harness for this pass.

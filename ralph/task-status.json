@@ -1,7 +1,7 @@
 {
   "branchName": "cursor/clean-architecture-restructure-018c",
-  "status": "in_progress",
-  "completeEpic": false,
+  "status": "complete",
+  "completeEpic": true,
   "tasks": [
     {
       "id": 1,
@@ -52,10 +52,10 @@
       "id": 6,
       "title": "Document AppImage residual risk",
       "description": "Document residual risk and a short manual AppImage regression checklist for Jack, including tip 9f124e1 baseline (Present hydrate flaky, On Program blocked, Home/library/theme/layout PASS); do not claim packaged installers were fully re-proven unless evidence exists.",
-      "status": "backlog",
+      "status": "done",
       "devIterations": 1,
       "createdAt": "2026-09-14T14:53:39.000Z",
-      "updatedAt": "2026-09-14T16:09:24.000Z"
+      "updatedAt": "2026-09-14T16:11:31.000Z"
     },
     {
       "id": 7,
@@ -86,8 +86,8 @@
   },
   "feedback": {
     "taskId": 6,
-    "content": "Dev: docs/appimage-residual-risk.md + README/epic links. Awaiting QA.",
-    "updatedAt": "2026-09-14T16:09:24.000Z"
+    "content": "QA pass: AppImage residual doc + Jack checklist complete. Epic complete; PR #21 stays draft.",
+    "updatedAt": "2026-09-14T16:11:31.000Z"
   },
-  "lastUpdated": "2026-09-14T16:09:24.000Z"
+  "lastUpdated": "2026-09-14T16:11:31.000Z"
 }

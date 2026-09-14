@@ -1,6 +1,6 @@
 {
-  "updatedAt": "2026-09-14T16:09:24.000Z",
-  "lastLog": "[ralph] dev: document-appimage-residual-risk \u2014 docs written, awaiting QA",
+  "updatedAt": "2026-09-14T16:11:31.000Z",
+  "lastLog": "[ralph] QA pass document-appimage-residual-risk; completeEpic true; PR #21 stays draft",
   "loopStatus": "idle",
   "tag": "ralph",
   "elapsed": null,
