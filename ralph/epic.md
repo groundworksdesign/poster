@@ -51,7 +51,7 @@ Confirmed on tip `9f124e1`:
 - `remix.config.js` → `appDirectory: "src/adapters/remix"`
 - `package.json` `main` / start scripts / Playwright scripts point at adapters + `tests/e2e`
 - Portable + electron-builder pack lists rewritten for adapters/domain
-- **Regressions from the move (highest risk):** several `tests/e2e` files still use `path.resolve(__dirname, '..')` / `path.join(__dirname, '..', 'public', ...)` which now resolves under `tests/` instead of the repo root (`electronHelpers.ts`, `electron-theme-relaunch.spec.ts`, `home-library.spec.ts`, `library.spec.ts`). `playwright.remix.config.ts` already uses `../..` correctly.
+- **Regressions from the move (highest risk, largely fixed in `cc2233f`):** `tests/e2e` helpers/specs that used one-level-up roots now use `../..` (`electronHelpers.ts`, `electron-theme-relaunch.spec.ts`, sample-deck paths, remix library relaunch/repoint server entry). Still selected for confirm + QA `passes`.
 - Domain/application source (non-test) shows no Remix/Electron/Playwright imports in a quick scan; still needs an explicit audit task
 - Historical epic docs under `docs/epics/` and some README strings still mention old `e2e/`, `electron/main.cjs`, `server/index.js` paths — operator docs risk, not always runtime
 - `.gitignore` previously ignored `/ralph/`; this epic restores the loop harness and must keep `/.ralph/` ignored

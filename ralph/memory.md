@@ -30,5 +30,6 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 
 ## Epic-006 planning (loop 1)
 
-- Structural restructure already on branch tip `9f124e1` / draft PR #21.
+- Structural restructure already on branch / draft PR #21.
 - Selected first task: fix-e2e-repo-root-paths (highest runtime risk for Electron smoke + sample-deck e2e).
+- Concurrent commit `cc2233f` already applied the `../..` root fixes (and library relaunch/repoint server entry). Task stays selected for confirm + QA `passes`; do not set `passes` in planning/dev.

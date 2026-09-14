@@ -99,28 +99,29 @@
   ],
   "selected": {
     "id": "fix-e2e-repo-root-paths",
-    "reason": "Highest-risk move breakage: tests/e2e/electronHelpers.ts and electron-theme-relaunch.spec.ts use path.resolve(__dirname, '..') which now resolves to tests/ instead of the repo root, so Electron smoke launches the wrong tree. home-library.spec.ts and library.spec.ts likewise join(__dirname, '..', 'public', ...) and miss repo public/. This unblocks REQ-004 e2e verification and CI electron-smoke; layer audit and doc polish can follow."
+    "reason": "Highest-risk move breakage for Electron smoke and sample-deck e2e. Concurrent commit cc2233f already rewrote tests/e2e roots to ../.. and fixed remix-library-relaunch/repoint server entry; keep this task selected so the next loop confirms/finishes any remainder and QA can set passes. Next after QA: audit-layer-import-rule."
   },
-  "planningNotes": "Baseline tip 9f124e1: rings + remix appDirectory + package main already rewritten; no root app/; no .ralph/. playwright.remix.config.ts correctly uses ../.. . Stale path strings remain in historical docs/epics and some README lines — lower priority than broken e2e roots. Domain/application quick scan showed no framework imports; still schedule explicit audit. Restored ralph/ harness and stopped gitignoring /ralph/ while keeping /.ralph/ ignored.",
+  "planningNotes": "Baseline after rebase: 9f124e1 restructure + cc2233f e2e path fix + this ralph seed. Rings + remix appDirectory + package main rewritten; no root app/; no .ralph/. Verified electronHelpers, electron-theme-relaunch, home-library, library now use ../.. ; remix-library-relaunch/repoint also fixed in cc2233f. Domain/application quick scan showed no framework imports; still schedule explicit audit. Stale docs/README path strings remain lower priority. Restored ralph/ harness; /.ralph/ stays ignored.",
   "planningBrief": {
     "fix-e2e-repo-root-paths": {
       "alreadyPresent": [
         "Playwright configs under tests/e2e with testDir: '.'",
         "playwright.remix.config.ts repoRoot = join(__dirname, '..', '..')",
-        "package.json test:e2e* scripts point at tests/e2e configs"
+        "package.json test:e2e* scripts point at tests/e2e configs",
+        "cc2233f: electronHelpers + theme relaunch + sample-deck paths use ../..",
+        "cc2233f: remix-library-relaunch/repoint no longer spawn stale server/index.js"
       ],
       "stillNeeded": [
-        "electronHelpers.ts root → ../..",
-        "electron-theme-relaunch.spec.ts root → ../..",
-        "home-library.spec.ts and library.spec.ts SAMPLE_DECK_PATH → ../.. / public",
-        "Quick grep for any other __dirname,'..' assumptions under tests/e2e",
-        "Smoke the affected Electron/Remix specs or at least assert resolved paths exist"
+        "Dev/QA confirm no remaining one-level-up repo-root assumptions under tests/e2e",
+        "QA sets passes true only after acceptance checks (roots resolve to package.json / adapters / public sample deck)"
       ],
       "primaryFiles": [
         "tests/e2e/electronHelpers.ts",
         "tests/e2e/electron-theme-relaunch.spec.ts",
         "tests/e2e/home-library.spec.ts",
-        "tests/e2e/library.spec.ts"
+        "tests/e2e/library.spec.ts",
+        "tests/e2e/remix-library-relaunch.spec.ts",
+        "tests/e2e/remix-library-repoint.spec.ts"
       ],
       "acceptanceCriteria": [
         "Resolved repo root from helpers equals the directory containing package.json and src/adapters/electron/main.cjs",
@@ -129,5 +130,5 @@
       ]
     }
   },
-  "lastUpdated": "2026-09-14T14:53:39.000Z"
+  "lastUpdated": "2026-09-14T14:56:00.000Z"
 }
