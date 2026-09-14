@@ -116,3 +116,11 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - Runtime/adapters already aligned; README (+ similar) still cite stale electron/main.cjs and server/index.js.
 - Remaining after this: verify-unit-integration-green, verify-remix-electron-e2e-green, document-appimage-residual-risk.
 - Draft PR #21 only; no product code.
+
+
+## Epic-006 dev (harden-config-ci-script-paths)
+
+- Runtime already correct (package.json main/start, remix appDirectory, electron-builder files, package-portable.mjs).
+- Fixed operator README + requirements.md stale  / ; qualified  Playwright config paths.
+- Added  (5 tests green). Left historical docs/epics untouched.
+-  left false for QA (2026-09-14T15:44:04.000Z).

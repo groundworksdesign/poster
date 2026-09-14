@@ -26,9 +26,9 @@
       "title": "Harden config CI script paths",
       "description": "Sweep remaining stale app/, electron/, server/, shared/, e2e/ path references in configs, scripts, CI comments, and operator-facing README paths that would mislead packaging or local runs.",
       "status": "backlog",
-      "devIterations": 0,
+      "devIterations": 1,
       "createdAt": "2026-09-14T14:53:39.000Z",
-      "updatedAt": "2026-09-14T15:37:19.000Z"
+      "updatedAt": "2026-09-14T15:44:04.000Z"
     },
     {
       "id": 4,
@@ -77,7 +77,7 @@
     }
   ],
   "currentTaskNum": 3,
-  "totalLLMCalls": 7,
+  "totalLLMCalls": 8,
   "maxLLMCalls": 400,
   "nextTask": {
     "taskId": 3,
@@ -85,9 +85,9 @@
     "updatedAt": "2026-09-14T15:37:19.000Z"
   },
   "feedback": {
-    "taskId": 2,
-    "content": "QA pass: layer import rule clean + Jest guard green (REQ-002).",
-    "updatedAt": "2026-09-14T15:33:30.000Z"
+    "taskId": 3,
+    "content": "Dev: operator path sweep + config-path-alignment Jest guard. Awaiting QA.",
+    "updatedAt": "2026-09-14T15:44:04.000Z"
   },
-  "lastUpdated": "2026-09-14T15:37:19.000Z"
+  "lastUpdated": "2026-09-14T15:44:04.000Z"
 }

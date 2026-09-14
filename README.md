@@ -87,9 +87,9 @@ pnpm run rebuild:sqlite
 | Command | Description |
 | --- | --- |
 | `pnpm test` | Jest tests (interactive watch by default) |
-| `pnpm run test:e2e` | Playwright end-to-end tests (see `playwright.config.ts`) |
-| `pnpm run test:e2e:remix` | Playwright against Remix dev (`playwright.remix.config.ts`) — unit/smoke for Present, theme, thumbnail, library |
-| `pnpm run test:e2e:electron` | Playwright Electron smoke (`playwright.electron.config.ts`) — packaged app at the real `electron/main.cjs`: End blank, Present close-list cleanup, library default `~/.poster` + re-point leave-old, Home guard, theme relaunch |
+| `pnpm run test:e2e` | Playwright end-to-end tests (see `tests/e2e/playwright.config.ts`) |
+| `pnpm run test:e2e:remix` | Playwright against Remix dev (`tests/e2e/playwright.remix.config.ts`) — unit/smoke for Present, theme, thumbnail, library |
+| `pnpm run test:e2e:electron` | Playwright Electron smoke (`tests/e2e/playwright.electron.config.ts`) — packaged app at the real `src/adapters/electron/main.cjs`: End blank, Present close-list cleanup, library default `~/.poster` + re-point leave-old, Home guard, theme relaunch |
 | `pnpm run build` | CRA production build to `build/` |
 | `pnpm run build:remix` | Remix production build |
 | `pnpm run package:portable` | Zip a **portable** server bundle to `dist/` (requires `build/`; see below) |
@@ -121,7 +121,7 @@ node scripts/package-portable.mjs --sha abc1234 --tag v0.2.0
 
 **Output:** `dist/poster-portable-<linux|win|mac>-<sha>.zip`, or `dist/poster-portable-<os>-<tag>-<sha>.zip` when `--tag` is set.
 
-**Run after unzip:** see `PORTABLE.md` inside the archive (typically `PORT=3000 node server/index.js`). On Windows, use `set PORT=3000 && node server\index.js`.
+**Run after unzip:** see `PORTABLE.md` inside the archive (typically `PORT=3000 node src/adapters/persistence/server.js`). On Windows, use `set PORT=3000 && node src\adapters\persistence\server.js`.
 
 A legacy shell helper `scripts/package-portable.sh` may still exist; prefer `package-portable.mjs` and `pnpm run package:portable` so behavior matches CI.
 

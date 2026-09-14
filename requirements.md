@@ -35,8 +35,8 @@ Aligned with [`ralph/epic.md`](ralph/epic.md).
 Aligned with [`docs/epics/epic-001-tech-stack-and-runtime-workflows.plan.md`](docs/epics/epic-001-tech-stack-and-runtime-workflows.plan.md) and ADR 0001.
 
 - **UI:** React 18 + TypeScript for shared types and components.
-- **Routing:** Remix is the **primary** app path (`app/` routes, `pnpm dev` / `remix dev` per project scripts); CRA may remain for legacy `build` / Jest until consolidated.
-- **HTTP:** Express [`server/index.js`](server/index.js) serves static assets and Remix via **`createRequestHandler`** when the Remix build exists; documented fallback behavior if the Remix build is absent.
+- **Routing:** Remix is the **primary** app path (`src/adapters/remix` routes via `remix.config.js` `appDirectory`, `pnpm dev` / `remix dev` per project scripts); CRA may remain for legacy `build` / Jest until consolidated.
+- **HTTP:** Express [`src/adapters/persistence/server.js`](src/adapters/persistence/server.js) serves static assets and Remix via **`createRequestHandler`** when the Remix build exists; documented fallback behavior if the Remix build is absent.
 - **Tests:** Jest + React Testing Library for units; Playwright for cross-route and channel behavior where applicable.
 - **E2E / library APIs:** Remix library routes must be called in a way that returns JSON for programmatic use (e.g. `_data` / loader JSON as documented in [`README.md`](README.md) and [`src/utils/remixDataUrl.ts`](src/utils/remixDataUrl.ts)), not accidental HTML shell responses.
 
@@ -62,7 +62,7 @@ Aligned with [`docs/epics/epic-002-theme-install-reorg.plan.md`](docs/epics/epic
 ### Portable zip packaging
 
 - Production bundle is **zipped per OS** in CI; **`better-sqlite3`** (and native deps) must be **built on the target OS** -- no mixing `node_modules` across platforms.
-- Archive includes runtime needs (e.g. `build/`, `server/`, `public/`, lockfile, prod `node_modules`, **`PORTABLE.md`** with run instructions). **Canonical packager:** [`scripts/package-portable.mjs`](scripts/package-portable.mjs) via **`pnpm run package:portable`** (see [`README.md`](README.md)).
+- Archive includes runtime needs (e.g. `build/`, `src/adapters/persistence/` (+ realtime/domain as packed), `public/`, lockfile, prod `node_modules`, **`PORTABLE.md`** with run instructions). **Canonical packager:** [`scripts/package-portable.mjs`](scripts/package-portable.mjs) via **`pnpm run package:portable`** (see [`README.md`](README.md)).
 
 ### Electron
 

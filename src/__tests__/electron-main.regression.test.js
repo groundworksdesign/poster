@@ -16,7 +16,7 @@ const portableSource = fs.readFileSync(
   'utf8',
 );
 
-// All Electron installers from electron-builder.yml share electron/main.cjs:
+// All Electron installers from electron-builder.yml share src/adapters/electron/main.cjs:
 // macOS DMG (x64 + arm64), Windows NSIS (x64), Linux deb + AppImage (x64).
 const ELECTRON_INSTALLER_TARGETS = [
   'macOS DMG (x64, arm64)',
@@ -24,7 +24,7 @@ const ELECTRON_INSTALLER_TARGETS = [
   'Linux deb + AppImage (x64)',
 ];
 
-describe('electron/main.cjs launch safety (all Electron installers)', () => {
+describe('src/adapters/electron/main.cjs launch safety (all Electron installers)', () => {
   it.each(ELECTRON_INSTALLER_TARGETS)(
     'guards apply to %s',
     () => {
@@ -178,7 +178,7 @@ describe('electron packaging includes production node_modules', () => {
 });
 
 describe('portable zip launch path (all OS portable targets)', () => {
-  it('does not bundle or invoke electron/main.cjs', () => {
+  it('does not bundle or invoke the Electron main entry', () => {
     expect(portableSource).not.toMatch(/electron\/main\.cjs/);
     expect(portableSource).not.toMatch(/process\.execPath/);
   });

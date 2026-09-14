@@ -3,7 +3,7 @@
   "branch": "cursor/clean-architecture-restructure-018c",
   "status": "in_progress",
   "loop": 6,
-  "persona": "planning",
+  "persona": "dev",
   "completeEpic": false,
   "requirements": [
     {
@@ -118,7 +118,9 @@
       "content": "Sweep remaining stale app/, electron/, server/, shared/, e2e/ path references in configs, scripts, CI comments, and operator-facing README paths that would mislead packaging or local runs.",
       "requirementId": "REQ-003",
       "status": "pending",
-      "passes": false
+      "passes": false,
+      "notes": "Dev: runtime/packaging already on adapters; fixed operator README + requirements.md stale electron/main.cjs and server/index.js paths; qualified tests/e2e Playwright refs; aligned electron-main regression describe strings; added durable src/__tests__/config-path-alignment.test.js (5 green). Historical docs/epics left as-is. passes remains false for QA.",
+      "devCompletedAt": "2026-09-14T15:44:04.000Z"
     },
     {
       "id": "verify-unit-integration-green",
@@ -199,5 +201,5 @@
     "cleanArchLayout": "pass",
     "ciOnThatTip": "unit_green_remix_e2e_and_electron_smoke_red_helpers_under_tests"
   },
-  "lastUpdated": "2026-09-14T15:37:19.000Z"
+  "lastUpdated": "2026-09-14T15:44:04.000Z"
 }
