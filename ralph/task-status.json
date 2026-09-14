@@ -10,7 +10,7 @@
       "status": "done",
       "devIterations": 1,
       "createdAt": "2026-09-14T14:53:39.000Z",
-      "updatedAt": "2026-09-14T15:02:00.000Z"
+      "updatedAt": "2026-09-14T15:03:28.000Z"
     },
     {
       "id": 2,
@@ -67,9 +67,9 @@
     "updatedAt": "2026-09-14T15:02:00.000Z"
   },
   "feedback": {
-    "taskId": null,
-    "content": "",
-    "updatedAt": "2026-09-14T14:53:39.000Z"
+    "taskId": 1,
+    "content": "QA pass: e2e repo roots resolve to repository root, not tests/.",
+    "updatedAt": "2026-09-14T15:03:28.000Z"
   },
-  "lastUpdated": "2026-09-14T15:02:00.000Z"
+  "lastUpdated": "2026-09-14T15:03:28.000Z"
 }

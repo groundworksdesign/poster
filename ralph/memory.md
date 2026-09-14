@@ -40,3 +40,7 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - Wired electronHelpers, theme relaunch, home-library, library, remix library relaunch/repoint, smoke, import-validation to REPO_ROOT.
 - Playwright CRA configs set `webServer.cwd` to repo root (Playwright default is the config dir = `tests/e2e`).
 - Do not set `passes: true` here; QA owns that.
+
+## Epic-006 QA (fix-e2e-repo-root-paths)
+
+- PASS: REPO_ROOT is repo root; Electron launch args and Playwright webServer cwd use it; sample deck + persistence server paths exist; selfcheck green. passes=true for task 1 only.
