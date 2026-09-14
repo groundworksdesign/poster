@@ -94,3 +94,12 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - Re-selected audit-layer-import-rule (still pending; no audit evidence landed after loop 4 select).
 - Tip c361bae; draft PR #21 only. No product code.
 - Remaining pending after audit: harden-config-ci-script-paths, verify-unit-integration-green, verify-remix-electron-e2e-green, document-appimage-residual-risk.
+
+
+## Epic-006 dev (audit-layer-import-rule)
+
+- Full audit of `src/domain` + `src/application` (production + colocated tests): no `@remix-run` / `remix` / `electron` / `@electron` / `playwright` / `@playwright` imports/requires; no relative imports into adapters/presentation/e2e.
+- Comment-only mentions remain (application index dependency rule; posterSessionGraph "Used by Electron main"; SessionTransport `deckCommandElectron` name).
+- Durable guard: `src/__tests__/layer-import-rule.test.js` (source walk + import/require/export-from parse; CI unit-integration picks it up).
+- Verified: `CI=true pnpm exec react-scripts test --watchAll=false --testPathPattern=layer-import-rule` — 3 passed.
+- `passes` left false for QA.

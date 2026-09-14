@@ -17,9 +17,9 @@
       "title": "Audit layer import rule",
       "description": "Verify src/domain and src/application do not import Remix, Electron, or Playwright; fix any accidental coupling found.",
       "status": "backlog",
-      "devIterations": 0,
+      "devIterations": 1,
       "createdAt": "2026-09-14T14:53:39.000Z",
-      "updatedAt": "2026-09-14T15:27:25.000Z"
+      "updatedAt": "2026-09-14T15:31:56.000Z"
     },
     {
       "id": 3,
@@ -77,7 +77,7 @@
     }
   ],
   "currentTaskNum": 2,
-  "totalLLMCalls": 5,
+  "totalLLMCalls": 6,
   "maxLLMCalls": 400,
   "nextTask": {
     "taskId": 2,
@@ -85,9 +85,9 @@
     "updatedAt": "2026-09-14T15:27:25.000Z"
   },
   "feedback": {
-    "taskId": 8,
-    "content": "QA pass: Electron On Program e2e after cold present-ready; unit/integration green.",
-    "updatedAt": "2026-09-14T15:25:24.000Z"
+    "taskId": 2,
+    "content": "Dev: layer import audit clean; added src/__tests__/layer-import-rule.test.js. Awaiting QA.",
+    "updatedAt": "2026-09-14T15:31:56.000Z"
   },
-  "lastUpdated": "2026-09-14T15:27:25.000Z"
+  "lastUpdated": "2026-09-14T15:31:56.000Z"
 }

@@ -3,7 +3,7 @@
   "branch": "cursor/clean-architecture-restructure-018c",
   "status": "in_progress",
   "loop": 5,
-  "persona": "planning",
+  "persona": "dev",
   "completeEpic": false,
   "requirements": [
     {
@@ -107,7 +107,9 @@
       "content": "Verify domain and application do not import Remix, Electron, or Playwright; fix any accidental coupling.",
       "requirementId": "REQ-002",
       "status": "pending",
-      "passes": false
+      "passes": false,
+      "notes": "Dev: full audit clean (no Remix/Electron/Playwright or adapters/presentation/e2e imports under src/domain + src/application, including colocated tests). Added durable guard src/__tests__/layer-import-rule.test.js (3 tests green). Evidence in ralph/memory.md. passes remains false for QA.",
+      "devCompletedAt": "2026-09-14T15:31:56.000Z"
     },
     {
       "id": "harden-config-ci-script-paths",
@@ -153,7 +155,7 @@
   ],
   "selected": {
     "id": "audit-layer-import-rule",
-    "reason": "New loop 5: REQ-001/006/007 still passes true; audit-layer-import-rule is preferred unfinished task (REQ-002). Prior planning selected it but no audit evidence/guard landed yet — re-select. harden-config-ci-script-paths remains next (stale README electron/main.cjs + server/index.js). Then suite greens, then residual-risk doc."
+    "reason": "New loop 5: REQ-001/006/007 still passes true; audit-layer-import-rule is preferred unfinished task (REQ-002). Prior planning selected it but no audit evidence/guard landed yet \u2014 re-select. harden-config-ci-script-paths remains next (stale README electron/main.cjs + server/index.js). Then suite greens, then residual-risk doc."
   },
   "planningNotes": "Planning loop 5 @ 2026-09-14T15:27:25.000Z: re-selected audit-layer-import-rule (still pending). Remaining pending: harden-config-ci-script-paths, verify-unit-integration-green, verify-remix-electron-e2e-green, document-appimage-residual-risk. Draft PR #21 only; no product code this persona.",
   "planningBrief": {
@@ -191,5 +193,5 @@
     "cleanArchLayout": "pass",
     "ciOnThatTip": "unit_green_remix_e2e_and_electron_smoke_red_helpers_under_tests"
   },
-  "lastUpdated": "2026-09-14T15:27:25.000Z"
+  "lastUpdated": "2026-09-14T15:31:56.000Z"
 }
