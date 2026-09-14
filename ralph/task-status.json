@@ -64,7 +64,7 @@
       "status": "done",
       "devIterations": 1,
       "createdAt": "2026-09-14T15:06:00.000Z",
-      "updatedAt": "2026-09-14T15:15:35.000Z"
+      "updatedAt": "2026-09-14T15:18:30.000Z"
     },
     {
       "id": 8,
@@ -85,9 +85,9 @@
     "updatedAt": "2026-09-14T15:06:00.000Z"
   },
   "feedback": {
-    "taskId": 1,
-    "content": "QA pass: e2e repo roots resolve to repository root, not tests/. Jack tip 9f124e1 CI Remix/Electron red from helpers-under-tests/ should be addressed; re-verify on current tip in task 5.",
-    "updatedAt": "2026-09-14T15:06:00.000Z"
+    "taskId": 7,
+    "content": "QA pass: main-owned present-session loadURL + PR #18 path intact; focused regression green. Jack AppImage retest still needed for packaged sign-off.",
+    "updatedAt": "2026-09-14T15:18:30.000Z"
   },
-  "lastUpdated": "2026-09-14T15:15:35.000Z"
+  "lastUpdated": "2026-09-14T15:18:30.000Z"
 }

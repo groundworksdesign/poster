@@ -3,7 +3,7 @@
   "branch": "cursor/clean-architecture-restructure-018c",
   "status": "in_progress",
   "loop": 2,
-  "persona": "dev",
+  "persona": "qa",
   "completeEpic": false,
   "requirements": [
     {
@@ -59,7 +59,7 @@
       "todoIds": [
         "fix-present-first-open-hydrate"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "REQ-007",
@@ -87,8 +87,10 @@
       "content": "Restore reliable Present first-open hydrate on packaged Electron/AppImage after the clean-arch move (Jack cold open 1/3 PASS, 2/3 stuck SSR Loading; possible regression of PR #18 first-open fix under new layout).",
       "requirementId": "REQ-006",
       "status": "done",
-      "passes": false,
-      "notes": "Dev: PR #18 Deck skip-about:blank path already intact. Hardened main.cjs so present-session opens are main-owned BrowserWindow.loadURL (deny Chromium popup allow after async spawn). Regression tests updated. passes left false for QA/Jack AppImage."
+      "passes": true,
+      "notes": "QA verified: main-owned present-session (openPresentSessionWindow + loadURL + deny); PR #18 electron-direct skip-about:blank + absolute URL intact; browser about:blank gesture intact; 51 focused unit/regression tests pass; electronHelpers waits present-ready. Live AppImage cold-open not re-run here \u2014 Jack retest remains for final AppImage sign-off (REQ-005).",
+      "qaVerifiedAt": "2026-09-14T15:18:30.000Z",
+      "qaReport": "ralph/qa-report.md"
     },
     {
       "id": "verify-on-program-after-present-hydrate",
@@ -190,5 +192,5 @@
     "cleanArchLayout": "pass",
     "ciOnThatTip": "unit_green_remix_e2e_and_electron_smoke_red_helpers_under_tests"
   },
-  "lastUpdated": "2026-09-14T15:15:35.000Z"
+  "lastUpdated": "2026-09-14T15:18:30.000Z"
 }

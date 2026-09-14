@@ -1,3 +1,33 @@
+# QA report — fix-present-first-open-hydrate (task 7)
+
+**Result:** PASS  
+**Branch:** `cursor/clean-architecture-restructure-018c` @ `2278b6c`  
+**Verified at:** 2026-09-14T15:18:30.000Z
+
+## Acceptance checks
+
+| Criterion | Evidence | Result |
+| --- | --- | --- |
+| Main-owned present-session | `main.cjs` `openPresentSessionWindow` + `loadURL` + `{ action: 'deny' }`; regression test "owns present-session windows via loadURL" | PASS |
+| PR #18 path intact | `openPresentWindow.ts` electron-direct: spawn then absolute `window.open`, never about:blank; browser keeps about:blank gesture; unit tests in openPresentWindow + DeckBuilder | PASS |
+| Hydrate-gated e2e helper | `electronHelpers.openPresentWindow` waits `present-ready` and zero `present-loading` | PASS |
+| Home/deck policy not regressed | Home deny + ensureHomeWindow; deck/present-blank still allow; present-bare → openDeckWindow | PASS |
+| Focused tests | 4 suites / 51 tests PASS; `tsc --noEmit` clean | PASS |
+
+## Commands run
+
+```bash
+CI=true pnpm exec react-scripts test --watchAll=false --runInBand \
+  --testPathPattern='electron-main.regression|openPresentWindow|homeWindowPolicy|DeckBuilder.unit'
+pnpm exec tsc --noEmit
+```
+
+## Gaps / residual
+
+- Live packaged AppImage cold first-open was **not** re-run in this QA environment. Engineering criteria for this task pass; Jack AppImage retest remains for final packaged sign-off (track under `document-appimage-residual-risk` / REQ-005).
+
+---
+
 # QA report — fix-e2e-repo-root-paths (task 1)
 
 **Result:** PASS  

@@ -57,3 +57,8 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - PR #18 Deck path (skip about:blank when window.poster; absolute Present URL) already intact after clean-arch move.
 - Residual AppImage flake: Chromium window.open allow after async spawnPresent. Fix: main.cjs openPresentSessionWindow + deny for present-session (main-owned loadURL with preload).
 - Tests: electron-main.regression, openPresentWindow, homeWindowPolicy, DeckBuilder.unit Open Present cases — pass. passes remains false for QA/Jack.
+
+
+## Epic-006 QA (fix-present-first-open-hydrate)
+
+- PASS (2026-09-14T15:18:30.000Z): main-owned present-session loadURL + PR #18 Deck path intact; 51 focused tests green. Jack AppImage retest still required for packaged sign-off.
