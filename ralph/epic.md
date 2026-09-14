@@ -62,14 +62,14 @@ Recorded for planning; do not treat as a green AppImage sign-off:
 | Clean-arch layout | PASS |
 | CI on that tip | Unit green; Remix E2E + Electron smoke **red** due to helpers path under `tests/` — addressed by `fix-e2e-repo-root-paths` (passes true); re-verify on current tip in `verify-remix-electron-e2e-green` |
 
-## Current Baseline (planning loop 8)
+## Current Baseline (planning loop 9)
 
-Confirmed on tip `f1f2a9d` / planning sync (this commit):
+Confirmed on tip `03224fc` / planning sync (this commit):
 
 - Rings present; no root `app/`; no `.ralph/`
-- Prior todos through `verify-unit-integration-green` **done / passes true**
-- `verify-remix-electron-e2e-green` **done / passes true** (remix 52 + electron 9; helpers-under-tests gone)
-- AppImage residual doc remains last
+- All harden/QA todos through `verify-remix-electron-e2e-green` **done / passes true** (REQ-001..004, 006, 007)
+- No dedicated AppImage residual-risk checklist doc yet — `document-appimage-residual-risk` selected (REQ-005, last unfinished)
+- Draft PR #21 remains draft/unmerged
 
 ## Implementation Plan (planning guidance; do not code in planning)
 
@@ -80,7 +80,7 @@ Confirmed on tip `f1f2a9d` / planning sync (this commit):
 5. **harden-config-ci-script-paths** — DONE (QA passed).
 6. **verify-unit-integration-green** — DONE (QA passed).
 7. **verify-remix-electron-e2e-green** — DONE (QA passed).
-8. **document-appimage-residual-risk** — Residual-risk note + Jack checklist including 9f124e1 baseline; draft PR stays draft.
+8. **document-appimage-residual-risk** — NEXT (loop 9): residual-risk note + Jack checklist including 9f124e1 baseline; draft PR stays draft.
 
 
 ### Functional requirements

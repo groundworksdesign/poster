@@ -169,3 +169,10 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 ## Epic-006 QA (verify-remix-electron-e2e-green)
 
 - PASS (2026-09-14T16:05:35.000Z): remix 52 + electron 9; repoRoot ok; globalSetup rebuild observed; passes true. REQ-004 done.
+
+
+## Epic-006 planning (loop 9)
+
+- Selected document-appimage-residual-risk (REQ-005) — last unfinished after e2e QA pass.
+- Tip 03224fc; draft PR #21 only. No product code.
+- After this: epic documentation DoD; completeEpic still false until QA passes.

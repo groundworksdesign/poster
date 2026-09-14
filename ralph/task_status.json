@@ -2,8 +2,8 @@
   "epic": "epic-006-clean-architecture-harden",
   "branch": "cursor/clean-architecture-restructure-018c",
   "status": "in_progress",
-  "loop": 8,
-  "persona": "qa",
+  "loop": 9,
+  "persona": "planning",
   "completeEpic": false,
   "requirements": [
     {
@@ -182,34 +182,34 @@
     "No .ralph/ directory; ralph/ is only this loop harness."
   ],
   "selected": {
-    "id": "verify-remix-electron-e2e-green",
-    "reason": "Loop 8 @ tip f1f2a9d: unit-integration passes true; prefer verify-remix-electron-e2e-green (remaining REQ-004 half). Jack tip 9f124e1 Remix/Electron CI was red from helpers-under-tests/; e2e root fix already QA-passed but full suites not re-proven on current tip. Unblocks REQ-004 done + residual-risk doc."
+    "id": "document-appimage-residual-risk",
+    "reason": "Loop 9 @ tip 03224fc: REQ-001..004/006/007 done+passes; only pending todo is document-appimage-residual-risk (REQ-005). No dedicated residual-risk/checklist doc yet (only epic/Jack baseline notes). Closes epic documentation DoD; draft PR #21 stays draft."
   },
-  "planningNotes": "Planning loop 8 @ 2026-09-14T15:53:40.000Z: selected verify-remix-electron-e2e-green. Remaining pending after this: document-appimage-residual-risk. Draft PR #21 only; no product code this persona.",
+  "planningNotes": "Planning loop 9 @ 2026-09-14T16:07:16.000Z: selected document-appimage-residual-risk (last unfinished). No remaining pending todos after this. Draft PR #21 only; no product code this persona.",
   "planningBrief": {
-    "verify-remix-electron-e2e-green": {
+    "document-appimage-residual-risk": {
       "alreadyPresent": [
-        "package.json test:e2e:remix -> tests/e2e/playwright.remix.config.ts",
-        "package.json test:e2e:electron -> tests/e2e/playwright.electron.config.ts",
-        "fix-e2e-repo-root-paths passes true (repoRoot ../..; electronHelpers assertRepoRoot)",
-        "Focused Electron On Program e2e previously green; unit/integration green on tip"
+        "Jack AppImage baseline table in ralph/epic.md for tip 9f124e1 (NOT READY)",
+        "Engineering fixes QA-passed for Present hydrate + On Program (Electron e2e); AppImage installer retest still open",
+        "Suites green on tip (unit/integration + remix/electron e2e)",
+        "Draft PR #21 still draft"
       ],
       "stillNeeded": [
-        "Run pnpm run test:e2e:remix on current tip (CI-equivalent)",
-        "Run pnpm run test:e2e:electron on current tip (likely xvfb + ELECTRON_DISABLE_SANDBOX)",
-        "Confirm helpers-under-tests/ failure from tip 9f124e1 is gone",
-        "Fix only move-induced breakages; document any pre-existing out-of-scope failures with evidence"
+        "Write residual-risk note + short Jack AppImage manual checklist (include 9f124e1 baseline)",
+        "Place in docs/ or README section or ralph note linked from epic",
+        "Do not claim packaged AppImage was fully re-proven unless evidence exists",
+        "Keep PR #21 draft/unmerged"
       ],
       "primaryFiles": [
-        "tests/e2e/**",
-        "package.json",
-        ".github/workflows/pr.yml",
-        "ralph/specs/REQ-004.md"
+        "docs/ (new residual risk note preferred)",
+        "README.md (optional short link)",
+        "ralph/epic.md",
+        "ralph/specs/REQ-005.md"
       ],
       "acceptanceCriteria": [
-        "pnpm run test:e2e:remix passes (or pre-existing failures documented)",
-        "pnpm run test:e2e:electron passes (or pre-existing failures documented)",
-        "No helpers resolving repo root as tests/ (confirm Jack CI red root cause gone)"
+        "Residual AppImage risk + Jack checklist documented (include 9f124e1 baseline)",
+        "Draft PR #21 remains draft/unmerged",
+        "No false claim of full packaged AppImage proof without evidence"
       ]
     }
   },
@@ -222,5 +222,5 @@
     "cleanArchLayout": "pass",
     "ciOnThatTip": "unit_green_remix_e2e_and_electron_smoke_red_helpers_under_tests"
   },
-  "lastUpdated": "2026-09-14T16:05:35.000Z"
+  "lastUpdated": "2026-09-14T16:07:16.000Z"
 }

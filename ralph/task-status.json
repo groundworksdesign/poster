@@ -55,7 +55,7 @@
       "status": "backlog",
       "devIterations": 0,
       "createdAt": "2026-09-14T14:53:39.000Z",
-      "updatedAt": "2026-09-14T15:06:00.000Z"
+      "updatedAt": "2026-09-14T16:07:16.000Z"
     },
     {
       "id": 7,
@@ -77,17 +77,17 @@
     }
   ],
   "currentTaskNum": 6,
-  "totalLLMCalls": 12,
+  "totalLLMCalls": 13,
   "maxLLMCalls": 400,
   "nextTask": {
     "taskId": 6,
     "content": "document-appimage-residual-risk",
-    "updatedAt": "2026-09-14T16:05:35.000Z"
+    "updatedAt": "2026-09-14T16:07:16.000Z"
   },
   "feedback": {
     "taskId": 5,
     "content": "QA pass: remix e2e 52 + electron e2e 9; globalSetup rebuild; repoRoot ok.",
     "updatedAt": "2026-09-14T16:05:35.000Z"
   },
-  "lastUpdated": "2026-09-14T16:05:35.000Z"
+  "lastUpdated": "2026-09-14T16:07:16.000Z"
 }
