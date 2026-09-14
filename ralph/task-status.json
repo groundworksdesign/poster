@@ -61,10 +61,10 @@
       "id": 7,
       "title": "Fix Present first-open hydrate",
       "description": "Restore reliable Present first-open hydrate on packaged Electron/AppImage after the clean-arch move. Jack cold open on tip 9f124e1 was 1/3 PASS and 2/3 stuck SSR Loading; possible regression of PR #18 first-open fix under the new layout.",
-      "status": "backlog",
-      "devIterations": 0,
+      "status": "done",
+      "devIterations": 1,
       "createdAt": "2026-09-14T15:06:00.000Z",
-      "updatedAt": "2026-09-14T15:06:00.000Z"
+      "updatedAt": "2026-09-14T15:15:35.000Z"
     },
     {
       "id": 8,
@@ -77,7 +77,7 @@
     }
   ],
   "currentTaskNum": 7,
-  "totalLLMCalls": 2,
+  "totalLLMCalls": 3,
   "maxLLMCalls": 400,
   "nextTask": {
     "taskId": 7,
@@ -89,5 +89,5 @@
     "content": "QA pass: e2e repo roots resolve to repository root, not tests/. Jack tip 9f124e1 CI Remix/Electron red from helpers-under-tests/ should be addressed; re-verify on current tip in task 5.",
     "updatedAt": "2026-09-14T15:06:00.000Z"
   },
-  "lastUpdated": "2026-09-14T15:06:00.000Z"
+  "lastUpdated": "2026-09-14T15:15:35.000Z"
 }

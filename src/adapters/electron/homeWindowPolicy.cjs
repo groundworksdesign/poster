@@ -26,9 +26,10 @@ function parseAppUrl(urlString) {
  */
 function classifyOpenUrl(urlString) {
   // about:blank is still classified for browser/Remix popup gesture opens.
-  // Packaged Electron Deck skips about:blank and opens the Present URL
-  // directly (see openPresentWindow.openPresentForRuntime) — blank→navigate
-  // left SSR Loading with no client hydrate on AppImage cold open.
+  // Packaged Electron Deck skips about:blank and opens the absolute Present URL
+  // (see openPresentWindow.openPresentForRuntime). main.cjs owns that
+  // present-session BrowserWindow via loadURL (deny Chromium popup allow) so
+  // cold AppImage open gets preload + Remix hydrate — not SSR Loading forever.
   const trimmed = String(urlString || '').trim().toLowerCase();
   if (trimmed === 'about:blank' || trimmed.startsWith('about:blank?')) {
     return 'present-blank';

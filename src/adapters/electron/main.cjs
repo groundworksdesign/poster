@@ -219,8 +219,29 @@ function defaultWebPreferences() {
 }
 
 /**
+ * Open Present as a first-class BrowserWindow with preload + normal document load.
+ * Do not use Chromium's window.open "allow" popup path after async spawnPresent():
+ * on packaged AppImage that path can still leave SSR "Loading..." with no Remix
+ * client hydrate on cold first open (Jack 2/3). Main-owned loadURL matches how
+ * Home opens Deck and restores PR #18 reliability under the clean-arch layout.
+ */
+function openPresentSessionWindow(absoluteUrl) {
+  const present = new BrowserWindow({
+    width: 1280,
+    height: 800,
+    show: true,
+    title: 'Poster Present',
+    webPreferences: defaultWebPreferences(),
+  });
+  attachWindowLifecycle(present);
+  attachWindowOpenPolicy(present);
+  present.loadURL(absoluteUrl);
+  return present;
+}
+
+/**
  * Window-open policy: never a second Home; bare /presentation denied;
- * deck and session Present allowed as child windows.
+ * present-session is main-owned (loadURL); deck / present-blank may use allow.
  */
 function attachWindowOpenPolicy(win) {
   win.webContents.setWindowOpenHandler(({ url }) => {
@@ -234,10 +255,15 @@ function attachWindowOpenPolicy(win) {
       openDeckWindow();
       return { action: 'deny' };
     }
-    // present-blank: about:blank placeholder opened synchronously on Open Present
-    // so the click gesture is kept; must ship preload so the later Present
-    // navigation hydrates and can emit IPC ready on first open (AppImage).
-    if (kind === 'deck' || kind === 'present-session' || kind === 'present-blank') {
+    // Packaged Deck skips about:blank and window.open(absolute Present URL).
+    // Own that window in main so cold open always gets preload + full navigation.
+    if (kind === 'present-session') {
+      openPresentSessionWindow(url);
+      return { action: 'deny' };
+    }
+    // deck: Home "Open Presentation" still uses window.open allow path.
+    // present-blank: browser/Remix gesture path (about:blank) if it reaches Electron.
+    if (kind === 'deck' || kind === 'present-blank') {
       return {
         action: 'allow',
         overrideBrowserWindowOptions: {

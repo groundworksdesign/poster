@@ -51,3 +51,9 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - CI on that tip: unit green; Remix E2E + Electron smoke red (helpers under tests/) — should be fixed by e2e root work; confirm via verify-remix-electron-e2e-green.
 - Added REQ-006/007 and tasks fix-present-first-open-hydrate + verify-on-program-after-present-hydrate; did not drop prior backlog.
 - Selected next: fix-present-first-open-hydrate (highest product risk; unblocks On Program and AppImage sign-off). Layer import audit deferred (quick scan already clean).
+
+## Epic-006 dev (fix-present-first-open-hydrate)
+
+- PR #18 Deck path (skip about:blank when window.poster; absolute Present URL) already intact after clean-arch move.
+- Residual AppImage flake: Chromium window.open allow after async spawnPresent. Fix: main.cjs openPresentSessionWindow + deny for present-session (main-owned loadURL with preload).
+- Tests: electron-main.regression, openPresentWindow, homeWindowPolicy, DeckBuilder.unit Open Present cases — pass. passes remains false for QA/Jack.

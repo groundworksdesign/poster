@@ -77,9 +77,24 @@ describe('electron/main.cjs launch safety (all Electron installers)', () => {
     expect(mainSource).toMatch(/present-bare/);
   });
 
-  it('allows about:blank Present placeholders with preload (first-open hydrate)', () => {
+  it('allows about:blank Present placeholders with preload (browser gesture path)', () => {
     expect(mainSource).toMatch(/present-blank/);
-    expect(mainSource).toMatch(
+    expect(mainSource).toMatch(/kind === 'deck' \|\| kind === 'present-blank'/);
+  });
+
+  it('owns present-session windows via loadURL (AppImage cold first-open hydrate)', () => {
+    expect(mainSource).toMatch(/function openPresentSessionWindow/);
+    expect(mainSource).toMatch(/openPresentSessionWindow\(url\)/);
+    expect(mainSource).toMatch(/present\.loadURL\(absoluteUrl\)/);
+    // Deny Chromium popup creation; main loads the absolute Present URL itself.
+    const handlerBlock = mainSource.slice(
+      mainSource.indexOf('function attachWindowOpenPolicy'),
+      mainSource.indexOf('function createHomeWindow'),
+    );
+    expect(handlerBlock).toMatch(
+      /if\s*\(\s*kind === ['"]present-session['"]\s*\)\s*\{[\s\S]*?return\s*\{\s*action:\s*['"]deny['"]/,
+    );
+    expect(handlerBlock).not.toMatch(
       /kind === 'deck' \|\| kind === 'present-session' \|\| kind === 'present-blank'/,
     );
   });

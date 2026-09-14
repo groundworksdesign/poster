@@ -7,8 +7,9 @@
  * Packaged Electron/AppImage: do NOT use about:blank. Chromium's about:blank
  * popup path + later location.assign can leave SSR HTML ("Loading...") with no
  * Remix client hydrate on first open; a manual reload then works. Electron does
- * not need the browser gesture — open the absolute Present URL directly so the
- * window is created as a real present-session BrowserWindow with preload.
+ * not need the browser gesture — open the absolute Present URL directly. Main
+ * then owns that present-session BrowserWindow (loadURL, not Chromium allow)
+ * so cold AppImage open always gets preload + a normal document load.
  */
 
 export const PRESENT_OPEN_FEATURES =
