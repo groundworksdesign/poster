@@ -59,17 +59,17 @@
     }
   ],
   "currentTaskNum": 1,
-  "totalLLMCalls": 0,
+  "totalLLMCalls": 1,
   "maxLLMCalls": 400,
   "nextTask": {
     "taskId": 1,
     "content": "fix-e2e-repo-root-paths",
-    "updatedAt": "2026-09-14T14:53:39.000Z"
+    "updatedAt": "2026-09-14T15:02:00.000Z"
   },
   "feedback": {
     "taskId": null,
     "content": "",
     "updatedAt": "2026-09-14T14:53:39.000Z"
   },
-  "lastUpdated": "2026-09-14T14:53:39.000Z"
+  "lastUpdated": "2026-09-14T15:02:00.000Z"
 }
