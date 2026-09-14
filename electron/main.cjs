@@ -234,7 +234,10 @@ function attachWindowOpenPolicy(win) {
       openDeckWindow();
       return { action: 'deny' };
     }
-    if (kind === 'deck' || kind === 'present-session') {
+    // present-blank: about:blank placeholder opened synchronously on Open Present
+    // so the click gesture is kept; must ship preload so the later Present
+    // navigation hydrates and can emit IPC ready on first open (AppImage).
+    if (kind === 'deck' || kind === 'present-session' || kind === 'present-blank') {
       return {
         action: 'allow',
         overrideBrowserWindowOptions: {

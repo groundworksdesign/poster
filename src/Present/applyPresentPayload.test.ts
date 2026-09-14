@@ -40,6 +40,26 @@ describe('applyPresentPayload', () => {
     expect(handlers.setMessage).not.toHaveBeenCalled();
   });
 
+  test('applies message-only payloads without treating missing slide as blank', () => {
+    const handlers = makeHandlers();
+
+    applyPresentPayload({ message: 'Operator note', useGreenScreen: true }, handlers);
+
+    expect(handlers.setMessage).toHaveBeenCalledWith('Operator note');
+    expect(handlers.setUseGreenScreen).toHaveBeenCalledWith(true);
+    expect(handlers.setSlide).not.toHaveBeenCalled();
+    expect(handlers.setSongData).not.toHaveBeenCalled();
+  });
+
+  test('applies clear-message without wiping the current slide', () => {
+    const handlers = makeHandlers();
+
+    applyPresentPayload({ message: '', useGreenScreen: false }, handlers);
+
+    expect(handlers.setMessage).toHaveBeenCalledWith('');
+    expect(handlers.setSlide).not.toHaveBeenCalled();
+  });
+
   test('continues applying a non-blank slide payload', () => {
     const handlers = makeHandlers();
     const slide = {

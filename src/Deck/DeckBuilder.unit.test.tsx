@@ -1,12 +1,14 @@
 import React, { act } from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 
+const mockSend = jest.fn().mockResolvedValue(undefined);
+
 // Mock session transport used by DeckBuilder
 jest.mock('../Present/SessionTransport', () => ({
   createDeckSession: async () => ({
     peerId: 'mock-peer',
     sessionId: 'mock-session',
-    send: jest.fn(),
+    send: mockSend,
     spawnPresent: jest.fn(async () => ({
       sessionId: 'mock-session',
       presentId: 'mock-present',
@@ -21,6 +23,7 @@ jest.mock('../Present/SessionTransport', () => ({
 
 // Mock fetch for library panel rendering
 beforeEach(() => {
+  mockSend.mockClear();
   jest.spyOn(global, 'fetch').mockResolvedValue({
     ok: true,
     json: async () => [],
@@ -93,7 +96,8 @@ test('DeckBuilder places the on-program preview in Presentation controls', async
   );
 });
 
-test('Open Present opens about:blank before spawn so the click gesture is kept', async () => {
+test('Open Present (browser) opens about:blank before spawn and navigates with an absolute Present URL', async () => {
+  delete (window as Window & { poster?: unknown }).poster;
   const openSpy = jest.spyOn(window, 'open').mockImplementation(() => {
     return {
       closed: false,
@@ -117,9 +121,65 @@ test('Open Present opens about:blank before spawn so the click gesture is kept',
   await waitFor(() => {
     const win = openSpy.mock.results[0]?.value as { location: { href: string } } | undefined;
     expect(win?.location.href).toContain('/presentation?');
+    expect(win?.location.href.startsWith('http')).toBe(true);
+    expect(win?.location.href.startsWith('/presentation')).toBe(false);
   });
 
   openSpy.mockRestore();
+});
+
+test('Open Present (Electron) skips about:blank and opens absolute Present URL directly', async () => {
+  (window as Window & { poster?: unknown }).poster = {
+    deckCommand: jest.fn(),
+    presentEvent: jest.fn(),
+    onDeckEvent: jest.fn(() => () => {}),
+    onPresentPush: jest.fn(() => () => {}),
+    pickLibraryFolder: jest.fn(),
+  };
+  const openSpy = jest.spyOn(window, 'open').mockImplementation(() => {
+    return { closed: false, focus: jest.fn(), close: jest.fn() } as unknown as Window;
+  });
+
+  try {
+    render(<DeckBuilder />);
+    await waitFor(() => expect(screen.getByTestId('open-present')).toBeEnabled());
+
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('open-present'));
+    });
+
+    await waitFor(() => {
+      expect(openSpy).toHaveBeenCalled();
+    });
+    expect(openSpy.mock.calls.some((call) => call[0] === 'about:blank')).toBe(false);
+    const openedUrl = openSpy.mock.calls[0]?.[0] as string;
+    expect(openedUrl).toContain('/presentation?');
+    expect(openedUrl.startsWith('http')).toBe(true);
+  } finally {
+    delete (window as Window & { poster?: unknown }).poster;
+    openSpy.mockRestore();
+  }
+});
+
+test('Send Message omits slide so Present keeps the current program (no blank wipe)', async () => {
+  render(<DeckBuilder />);
+  await loadFile(makeJsonFile(VALID_DECK));
+  await waitFor(() => expect(screen.getByTestId('open-present')).toBeEnabled());
+
+  const field = screen.getByPlaceholderText(/type message to send/i);
+  const sendMessage = screen.getByRole('button', { name: /send message/i });
+  await act(async () => {
+    fireEvent.change(field, { target: { value: 'Operator note' } });
+  });
+  await waitFor(() => expect(sendMessage).not.toBeDisabled());
+  await act(async () => {
+    fireEvent.click(sendMessage);
+  });
+
+  await waitFor(() => expect(mockSend).toHaveBeenCalled());
+  const payload = mockSend.mock.calls[0][0];
+  expect(payload.message).toBe('Operator note');
+  expect(payload.slide).toBeUndefined();
 });
 
 test('does not render Library toggle; Export, Save, and Load remain', () => {

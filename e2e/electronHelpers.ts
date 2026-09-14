@@ -1,4 +1,4 @@
-import { _electron as electron, type ElectronApplication, type Page } from '@playwright/test';
+import { _electron as electron, expect, type ElectronApplication, type Page } from '@playwright/test';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -73,8 +73,9 @@ export async function openDeckWindow(app: ElectronApplication, home: Page): Prom
 }
 
 /**
- * Open a Present window from the deck (window.open -> Electron BrowserWindow)
- * and wait until it leaves the loading state.
+ * Open a Present window from the deck (window.open -> Electron BrowserWindow).
+ * Waits until Present has client-hydrated (not merely until the URL navigates).
+ * URL-only waits are false comfort: SSR can sit on "Loading..." forever.
  */
 export async function openPresentWindow(
   app: ElectronApplication,
@@ -83,7 +84,21 @@ export async function openPresentWindow(
   const presentPromise = app.waitForEvent('window');
   await deck.getByTestId('open-present').click();
   const present = await presentPromise;
+  // Electron opens the absolute /presentation?... URL directly (no about:blank).
+  await present.waitForURL(
+    (url) => url.pathname.includes('/presentation') && !!url.searchParams.get('presentId'),
+    { timeout: 30_000 },
+  );
   await present.waitForLoadState('domcontentloaded');
+  // Prove Remix client hydrate + Present session boot — SSR "Loading..." alone must fail.
+  await present.getByTestId('present-ready').waitFor({ state: 'visible', timeout: 30_000 });
+  await expect(present.getByTestId('present-loading')).toHaveCount(0);
+  const hasPosterBridge = await present.evaluate(
+    () => typeof (window as Window & { poster?: { presentEvent?: unknown } }).poster?.presentEvent === 'function',
+  );
+  if (!hasPosterBridge) {
+    throw new Error('Present window hydrated without window.poster — preload missing on cold open');
+  }
   const url = new URL(present.url());
   const presentId = url.searchParams.get('presentId');
   if (!presentId) {

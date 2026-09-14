@@ -225,6 +225,43 @@ test('ProgramThumbnailPanel matches green-screen output and suppresses image bac
   expect(preview).not.toHaveStyle({ backgroundImage: 'url(https://example.com/slide.jpg)' });
   expect(preview).not.toHaveStyle({ backgroundImage: 'url(https://example.com/style.jpg)' });
   expect(screen.getByTestId('program-thumbnail-title')).toHaveTextContent('Green-screen slide');
+  const lowerThird = screen.getByTestId('program-thumbnail-lower-third');
+  expect(lowerThird).toHaveStyle({ backgroundColor: '#222' });
+  expect(lowerThird).toContainElement(screen.getByTestId('program-thumbnail-title'));
+});
+
+test('ProgramThumbnailPanel matches Present lower-third for title/subtitle green-screen slides', () => {
+  render(
+    <ProgramThumbnailPanel
+      program={{
+        title: 'Willow Creek Stake Conference',
+        subTitle: 'Ward & StakeLeadership Meeting',
+        slideType: 'title',
+        slideStyle: {
+          backgroundColor: '#003366',
+          color: '#ffffff',
+          verticalAlign: VerticalAlign.BOTTOM,
+          horizontalAlign: HorizontalAlign.CENTER,
+        },
+        backgroundColor: 'transparent',
+        color: '#ffffff',
+        useGreenScreen: true,
+      }}
+    />,
+  );
+
+  const preview = screen.getByTestId('program-thumbnail-preview');
+  expect(preview).toHaveStyle({ backgroundColor: '#00b140', justifyContent: 'flex-end' });
+  const bar = screen.getByTestId('program-thumbnail-lower-third');
+  expect(bar).toHaveStyle({ backgroundColor: '#003366', width: '100%' });
+  expect(screen.getByTestId('program-thumbnail-title')).toHaveTextContent(
+    'Willow Creek Stake Conference',
+  );
+  expect(screen.getByTestId('program-thumbnail-subtitle')).toHaveTextContent(
+    'Ward & StakeLeadership Meeting',
+  );
+  expect(bar).toContainElement(screen.getByTestId('program-thumbnail-title'));
+  expect(bar).toContainElement(screen.getByTestId('program-thumbnail-subtitle'));
 });
 
 test('ProgramThumbnailPanel preserves Present alignment and typography', () => {

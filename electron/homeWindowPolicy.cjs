@@ -22,9 +22,18 @@ function parseAppUrl(urlString) {
 /**
  * Classify a target URL for window.open / new BrowserWindow.
  * @param {string} urlString
- * @returns {'home' | 'deck' | 'present-session' | 'present-bare' | 'other'}
+ * @returns {'home' | 'deck' | 'present-session' | 'present-bare' | 'present-blank' | 'other'}
  */
 function classifyOpenUrl(urlString) {
+  // about:blank is still classified for browser/Remix popup gesture opens.
+  // Packaged Electron Deck skips about:blank and opens the Present URL
+  // directly (see openPresentWindow.openPresentForRuntime) — blank→navigate
+  // left SSR Loading with no client hydrate on AppImage cold open.
+  const trimmed = String(urlString || '').trim().toLowerCase();
+  if (trimmed === 'about:blank' || trimmed.startsWith('about:blank?')) {
+    return 'present-blank';
+  }
+
   const { pathname, searchParams } = parseAppUrl(urlString);
   const path = pathname.replace(/\/+$/, '') || '/';
 
