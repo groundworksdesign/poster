@@ -1,4 +1,4 @@
-import { themeInitScript } from '../app/root';
+import { themeInitScript } from './adapters/remix/root';
 
 describe('theme bootstrap script', () => {
   beforeEach(() => {

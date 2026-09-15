@@ -7,7 +7,7 @@ import {
   resolveLibraryRoot,
   resolvePosterHome,
   writeLibraryRoot,
-} from '../../app/utils/library-root.server';
+} from '../adapters/persistence/library-root.server';
 
 describe('durable library root', () => {
   it('defaults to HOME/.poster and supports a tilde path', () => {

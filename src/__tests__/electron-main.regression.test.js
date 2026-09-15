@@ -2,12 +2,12 @@ const fs = require('fs');
 const path = require('path');
 
 const mainSource = fs.readFileSync(
-  path.join(__dirname, '../../electron/main.cjs'),
+  path.join(__dirname, '../adapters/electron/main.cjs'),
   'utf8',
 );
 
 const preloadSource = fs.readFileSync(
-  path.join(__dirname, '../../electron/preload.cjs'),
+  path.join(__dirname, '../adapters/electron/preload.cjs'),
   'utf8',
 );
 
@@ -16,7 +16,7 @@ const portableSource = fs.readFileSync(
   'utf8',
 );
 
-// All Electron installers from electron-builder.yml share electron/main.cjs:
+// All Electron installers from electron-builder.yml share src/adapters/electron/main.cjs:
 // macOS DMG (x64 + arm64), Windows NSIS (x64), Linux deb + AppImage (x64).
 const ELECTRON_INSTALLER_TARGETS = [
   'macOS DMG (x64, arm64)',
@@ -24,7 +24,7 @@ const ELECTRON_INSTALLER_TARGETS = [
   'Linux deb + AppImage (x64)',
 ];
 
-describe('electron/main.cjs launch safety (all Electron installers)', () => {
+describe('src/adapters/electron/main.cjs launch safety (all Electron installers)', () => {
   it.each(ELECTRON_INSTALLER_TARGETS)(
     'guards apply to %s',
     () => {
@@ -77,13 +77,39 @@ describe('electron/main.cjs launch safety (all Electron installers)', () => {
     expect(mainSource).toMatch(/present-bare/);
   });
 
-  it('allows about:blank Present placeholders with preload (first-open hydrate)', () => {
+  it('allows about:blank Present placeholders with preload (browser gesture path)', () => {
     expect(mainSource).toMatch(/present-blank/);
-    expect(mainSource).toMatch(
+    expect(mainSource).toMatch(/kind === 'deck' \|\| kind === 'present-blank'/);
+  });
+
+  it('owns present-session windows via loadURL (AppImage cold first-open hydrate)', () => {
+    expect(mainSource).toMatch(/function openPresentSessionWindow/);
+    expect(mainSource).toMatch(/openPresentSessionWindow\(url\)/);
+    expect(mainSource).toMatch(/present\.loadURL\(absoluteUrl\)/);
+    // Deny Chromium popup creation; main loads the absolute Present URL itself.
+    const handlerBlock = mainSource.slice(
+      mainSource.indexOf('function attachWindowOpenPolicy'),
+      mainSource.indexOf('function createHomeWindow'),
+    );
+    expect(handlerBlock).toMatch(
+      /if\s*\(\s*kind === ['"]present-session['"]\s*\)\s*\{[\s\S]*?return\s*\{\s*action:\s*['"]deny['"]/,
+    );
+    expect(handlerBlock).not.toMatch(
       /kind === 'deck' \|\| kind === 'present-session' \|\| kind === 'present-blank'/,
     );
   });
 
+  it('attaches REQ-010 hydrate watchdog on present-session (reload stuck SSR Loading)', () => {
+    expect(mainSource).toMatch(/attachPresentHydrateWatchdog/);
+    expect(mainSource).toMatch(/presentHydrateWatchdog\.cjs/);
+    const openBlock = mainSource.slice(
+      mainSource.indexOf('function openPresentSessionWindow'),
+      mainSource.indexOf('function attachWindowOpenPolicy'),
+    );
+    expect(openBlock).toMatch(/attachPresentHydrateWatchdog\(present\.webContents\)/);
+    expect(openBlock).toMatch(/backgroundThrottling:\s*false/);
+    expect(openBlock).toMatch(/present\.loadURL\(absoluteUrl\)/);
+  });
   it('fails fast when packaged node_modules/express is missing', () => {
     expect(mainSource).toMatch(/node_modules['"].*express/);
     expect(mainSource).toMatch(/missing node_modules\/express/);
@@ -163,12 +189,12 @@ describe('electron packaging includes production node_modules', () => {
 });
 
 describe('portable zip launch path (all OS portable targets)', () => {
-  it('does not bundle or invoke electron/main.cjs', () => {
+  it('does not bundle or invoke the Electron main entry', () => {
     expect(portableSource).not.toMatch(/electron\/main\.cjs/);
     expect(portableSource).not.toMatch(/process\.execPath/);
   });
 
   it('documents system Node startup instead of Electron self-spawn', () => {
-    expect(portableSource).toMatch(/node server\/index\.js/);
+    expect(portableSource).toMatch(/node src\/adapters\/persistence\/server\.js/);
   });
 });

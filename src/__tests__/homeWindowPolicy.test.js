@@ -3,7 +3,7 @@
 const {
   classifyOpenUrl,
   shouldCreateHomeWindow,
-} = require('../../electron/homeWindowPolicy.cjs');
+} = require('../adapters/electron/homeWindowPolicy.cjs');
 
 describe('homeWindowPolicy', () => {
   describe('classifyOpenUrl', () => {

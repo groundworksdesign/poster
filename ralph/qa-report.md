@@ -1,111 +1,265 @@
-# QA Report: epic-005 packaged / Electron acceptance evidence
+# QA Report — fix-appimage-present-hydrate-real-url-preload (REQ-010)
 
-**Epic:** epic-005 next-cycle fixes (tasks 1–6 ship Items A–E + Home guard)
-**Branch:** `ralph/epic-005-next-cycle` (poster repo, `/Users/hpractv/ralph-runs/poster`)
-**Task 9:** Validate packaged acceptance flows
-**Verified at:** 2026-09-07 (local run, macOS darwin)
-**Persona:** qa (independent)
+**Verdict:** PASS  
+**Tip:** `db1c30eaad20459e28fc2fd497ced0cb15fb826b`  
+**When:** 2026-09-15T01:14:14.000Z
 
-## Scope
+## Evidence
 
-Add and run **packaged / Electron smoke** for the five epic-005 flows at the full
-`electron/main.cjs` runtime (real `BrowserWindow`s, embedded Express/Remix server,
-IPC session graph, `~/.poster` durable home). No directed-send code was rebuilt.
+- Code: `presentHydrateWatchdog.cjs` reload-once when client boot missing after `did-finish-load`; Present sets `__posterPresentClientBoot`; present-session `backgroundThrottling: false`
+- Marker names consistent across Present / watchdog / unit / stress e2e
+- Unit: 42 suites / 274 tests PASS
+- Electron e2e (xvfb): `electron-present-hydrate-stress`, `electron-import-present-send`, `electron-library-present-hydrate` PASS
 
-## Prerequisite fix (needed to make Electron feasibility real)
+## Epic
 
-The leftover local Remix build at `build/` had been produced by `remix dev` and
-referenced `react/jsx-dev-runtime.jsxDEV`. Because `electron/main.cjs` starts the
-embedded server with `NODE_ENV=production`, every route 500'd with
-`TypeError: (0 , import_jsx_dev_runtime.jsxDEV) is not a function` — the packaged
-app could not render at all on this machine. Regenerating with
-`pnpm run build:remix` (which builds with `NODE_ENV=production` and emits the
-non-dev `jsx` runtime) makes the Electron server render correctly. All Electron
-smoke below runs against that production-mode server.
+- All todos `passes` true → `completeEpic` true
+- Draft PR #21 remains draft — not marked ready, not merged
+- Jack AppImage cold Present repeats still residual for packaged sign-off
 
-Related finding for the packaged path (**resolved**): **Home "Change..." was unusable in
-Electron.** `src/HomePage.tsx` called `window.prompt`, which Electron renderers do not
-support (`Error: prompt() is not supported.`), so the button threw before re-pointing.
-**Fix landed:** the Home Change... control now uses a native folder-picker bridge
-(`window.poster.pickLibraryFolder` → IPC `poster:pick-library-folder` →
-`dialog.showOpenDialog` with openDirectory/createDirectory) when `window.poster` is
-present, with the browser `window.prompt` fallback otherwise. The re-point flow (and
-its leave-old-folder guarantee) is exercised end-to-end via the same `/library/settings`
-route the button calls, and the button's picker/prompt selection is guarded at the
-component and main-process test level. See the Change... coverage note below and
-`src/HomePage.unit.test.tsx` / `src/__tests__/electron-main.regression.test.js`.
+---
 
-## New smoke specs (electron-* — run under `playwright.electron.config.ts`, no dev server)
+# QA Report — fix-appimage-blank-deck-present-send-after-import (REQ-009)
 
-| Spec | Covers | Assertions |
+**Verdict:** PASS  
+**Tip:** `083bfcb969f0326129b047b8254b7b82c8c50728`  
+**When:** 2026-09-15T00:41:52.000Z
+
+## Evidence
+
+- Code: `isElectronUserAgent` gates `waitForPosterBridge`; Import CTA `_blank`; Start gated on `child-ready`
+- Unit+integration: 41 suites / 261 tests PASS
+- Electron e2e: import-present-send, library-present-hydrate, program-thumbnail PASS
+- CI: Unit and integration tests success on tip `083bfcb` (run 34914141178)
+
+## Residual
+
+Packaged AppImage Import → Present → send cold repeats still require Jack confirmation (tip Electron ≠ AppImage proof). Draft PR #21 stays draft.
+
+---
+
+# QA report — document-appimage-residual-risk (REQ-005)
+
+**Result:** PASS  
+**Branch tip:** `134d494` (+ this QA commit)  
+**Verified at:** 2026-09-14T16:11:31.000Z
+
+## Acceptance checks
+
+| Criterion | Evidence | Result |
 | --- | --- | --- |
-| `e2e/electron-end-blank.spec.ts` | Item A End blank | Open Present → Start shows slide 1; End clears title/body text on Present, deck controls show Blank; Start after End resumes at slide 1 |
-| `e2e/electron-present-close.spec.ts` | Item C close list cleanup | Present is listed in deck `present-list`; closing the BrowserWindow removes it (no stale UUID) |
-| `e2e/electron-library.spec.ts` | Item E default `~/.poster`, relaunch, re-point leave-old | Home shows default `HOME/.poster`; save → library store (`poster.sqlite` or JSON fallback) under it; quit + relaunch lists the deck again; re-point via Change... → new root active, old root keeps data (re-point back still lists old deck), sentinel untouched |
-| `e2e/electron-home-guard.spec.ts` | Home no bare "Open Present" | No `Open Present` CTA; home hrefs are only `/deck`, `/deck`, `/deck?focusImport=1`; bare `/presentation` shows operator guidance; `window.open('/presentation')` is denied and opens a deck window |
-| `e2e/electron-theme-relaunch.spec.ts` (existing) | Item B theme relaunch | Set Tokyo Night → quit → relaunch → Home/deck/Present restore `dracula` from `~/.poster/theme.json` |
+| Jack checklist completeness | docs/appimage-residual-risk.md sections: Home, Library, Cold Present x3, Directed-send, Message-only, On Program, Theme | PASS |
+| 9f124e1 baseline | NOT READY table with flaky Present hydrate / blocked On Program | PASS |
+| No false AppImage proof claim | Status + residual text explicitly not claiming packaged AppImage fully proven | PASS |
+| Linked from README + epic | README Electron section; ralph/epic.md operator doc link; files resolve | PASS |
+| Draft PR #21 | isDraft true, state OPEN | PASS |
 
-The Home **Change...** control itself is covered at the component and main-process level:
-`src/HomePage.unit.test.tsx` asserts the button prefers the native picker
-(`window.poster.pickLibraryFolder`) and falls back to `window.prompt` in a plain
-browser; `src/__tests__/electron-main.regression.test.js` asserts
-`poster:pick-library-folder` (`dialog.showOpenDialog`) exists and is exposed on the
-preload bridge. An Electron smoke that clicks the real Change... button remains an
-unblocked follow-up (task 11); re-point *behavior* is already exercised end-to-end by
-`e2e/electron-library.spec.ts` via the same `/library/settings` route.
+## Epic
 
-Shared launch helper: `e2e/electronHelpers.ts` (isolated `HOME` / `--user-data-dir`,
-pins process env, never touches a real profile).
+- All todos passes true -> `completeEpic` true.
+- Draft PR #21 remains draft — not marked ready, not merged.
 
-## Tests executed (packaged/Electron smoke)
+---
 
-`pnpm exec playwright test --config=playwright.electron.config.ts`
-→ **8 passed** (10.5s): end-blank, home-guard x3, library-default-relaunch,
-library-repoint-leave-old, present-close, theme-relaunch.
+# QA report — verify-remix-electron-e2e-green (REQ-004)
 
-## Regression re-run (after the Change... fix; product behavior otherwise untouched)
+**Result:** PASS  
+**Branch tip:** `d975b70` (+ this QA commit)  
+**Verified at:** 2026-09-14T16:05:35.000Z
 
-| Command | Result |
-| --- | --- |
-| `CI=true pnpm exec react-scripts test --watchAll=false --runInBand` | 38 suites, **229 passed** (+3 for the Change... fix guard) |
-| `CI=true pnpm run test:e2e:remix` | **52 passed** |
+## Acceptance checks
 
-## Per-flow verdict (packaged/Electron level)
-
-| Flow | Electron evidence | Verdict |
+| Criterion | Evidence | Result |
 | --- | --- | --- |
-| A End blank | `electron-end-blank.spec.ts` | **PASS** |
-| B Theme relaunch | `electron-theme-relaunch.spec.ts` | **PASS** |
-| C Closing Present cleans deck list | `electron-present-close.spec.ts` | **PASS** |
-| E Library default `~/.poster` + re-point leave-old | `electron-library.spec.ts` (x2) + Change... component/main guard | **PASS** (button fixed: native folder-picker bridge replaces unsupported `window.prompt`; see closed finding 2) |
-| Guard Home no bare Open Present | `electron-home-guard.spec.ts` (x3) | **PASS** |
+| helpers-under-tests gone | node tests/e2e/repoRoot.selfcheck.cjs -> /workspace; REPO_ROOT not tests/ | PASS |
+| Remix Playwright suite | CI=true pnpm run test:e2e:remix -> 52 passed | PASS |
+| Electron Playwright suite | After remix e2e polluted build with jsx-dev-runtime, electron.global-setup rebuilt production; CI=true ELECTRON_DISABLE_SANDBOX=1 xvfb-run -a pnpm run test:e2e:electron -> 9 passed | PASS |
+| Durable globalSetup | Wired in playwright.electron.config.ts; observed rebuild during QA Electron run | PASS |
 
-## Item D Mac fidelity — **Roy-waived 2026-09-09**
+## Residual
 
-Mac pixel-fidelity recording for Item D (on-program thumbnail) is **Roy-waived
-2026-09-09** for this PR (`ralph/epic-005-next-cycle` / PR #17). Linux CI continues
-to assert content markers / placement via unit + `e2e/remix-program-thumbnail.spec.ts`.
-Do not treat missing Mac capture evidence as a merge blocker for this cycle.
+- Next backlog: document-appimage-residual-risk (REQ-005).
+- REQ-004 now complete (unit + e2e todos both passes true).
 
-## Findings / notes
+---
 
-1. **Packaged SSR 500 beforehand** — stale local `build/` (jsx-dev runtime) broke the
-   Electron server under `NODE_ENV=production`; regenerated with `pnpm run build:remix`.
-   CI is unaffected (always builds fresh).
-2. ~~**Electron Home "Change..." broken by `window.prompt`**~~ — **CLOSED.** The button
-   now prefers the native folder picker (`poster:pick-library-folder` IPC →
-   `dialog.showOpenDialog`, bridge exposed via `electron/preload.cjs` through
-   `window.poster.pickLibraryFolder`); `window.prompt` remains only as the browser
-   fallback. Guarded by `src/HomePage.unit.test.tsx` and the
-   `poster:pick-library-folder` regression assertion in
-   `src/__tests__/electron-main.regression.test.js`. No canonical doc claims the
-   re-point control is broken; re-point leave-old remains **PASS** end-to-end.
-3. Root `playwright.config.ts` now ignores `electron-*.spec.ts` (they run only under
-   the Electron config), so `pnpm run test:e2e` does not launch stray app processes.
+# QA report — verify-unit-integration-green (REQ-004 partial)
 
---- historical ---
+**Result:** PASS  
+**Branch tip:** `2b563c2` (+ this QA commit)  
+**Verified at:** 2026-09-14T15:52:35.000Z
 
-# QA Report: epic-004 completion check (historical, 2026-09-02)
+## Acceptance checks
 
-Prior report confirming epic-004 completion (directed-send, single-home, theme
-persist, program thumbnail). Superseded by the epic-005 evidence above.
+| Criterion | Evidence | Result |
+| --- | --- | --- |
+| tsc --noEmit | Independently ran pnpm exec tsc --noEmit -> exit 0 | PASS |
+| Jest unit/integration | Independently ran CI=true pnpm exec react-scripts test --watchAll=false --runInBand -> 41 suites / 254 tests passed; no FAIL lines | PASS |
+| Matches CI unit-integration | .github/workflows/pr.yml uses the same two commands | PASS |
+
+## Residual
+
+- REQ-004 e2e half remains: verify-remix-electron-e2e-green.
+- Console warnings (jsdom navigation / ReactDOMTestUtils.act deprecation) present but non-failing.
+
+---
+
+# QA report — harden-config-ci-script-paths (REQ-003)
+
+**Result:** PASS  
+**Branch tip:** `668a5ed` (+ this QA commit)  
+**Verified at:** 2026-09-14T15:47:15.000Z
+
+## Acceptance checks
+
+| Criterion | Evidence | Result |
+| --- | --- | --- |
+| remix appDirectory = src/adapters/remix | remix.config.js | PASS |
+| package.json main/start on adapters | main=src/adapters/electron/main.cjs; start/start:remix use persistence server | PASS |
+| electron-builder + portable pack adapter paths | files include adapters; package-portable.mjs copies + documents adapter server; no server/index.js | PASS |
+| Operator README/requirements paths | No stale electron/main.cjs or server/index.js; tests/e2e Playwright paths | PASS |
+| Durable guard green | CI=true pnpm exec react-scripts test --watchAll=false --testPathPattern=config-path-alignment -> 5/5 | PASS |
+
+## Residual
+
+- Historical docs/epics may still mention old paths (out of scope for this task).
+- Next backlog: verify-unit-integration-green.
+
+---
+
+# QA report — audit-layer-import-rule (REQ-002)
+
+**Result:** PASS  
+**Branch tip:** `3203a23` (+ this QA commit)  
+**Verified at:** 2026-09-14T15:33:30.000Z
+
+## Acceptance checks
+
+| Criterion | Evidence | Result |
+| --- | --- | --- |
+| No Remix/Electron/Playwright imports under domain/application | Independent scan of 20 source files under `src/domain` + `src/application` (comments stripped): 0 forbidden import/require hits | PASS |
+| No relative escapes to adapters/presentation/e2e | Same scan: 0 relative leaks | PASS |
+| Durable automated guard | `src/__tests__/layer-import-rule.test.js` walks both layers (prod + colocated tests), parses import/require/export-from, fails on forbidden specs | PASS |
+| Guard green under Jest | `CI=true pnpm exec react-scripts test --watchAll=false --testPathPattern=layer-import-rule` → 1 suite / 3 tests passed | PASS |
+| CI pickup | Path under `src/__tests__/`; `unit-integration` runs full `react-scripts test --watchAll=false --runInBand` | PASS |
+
+## Commands run
+
+```bash
+# Independent import audit (Python walk + comment-stripped import/require scan)
+# -> 20 files, 0 hits
+CI=true pnpm exec react-scripts test --watchAll=false --testPathPattern=layer-import-rule
+# -> 3 passed
+```
+
+## Residual
+
+- None for REQ-002. Next backlog: `harden-config-ci-script-paths`.
+
+---
+
+# QA report — verify-on-program-after-present-hydrate (task 8)
+
+**Result:** PASS  
+**Branch tip:** `b6660fd` (+ this QA commit)  
+**Verified at:** 2026-09-14T15:25:24.000Z
+
+## Acceptance checks
+
+| Criterion | Evidence | Result |
+| --- | --- | --- |
+| After present-ready, Start updates On Program | `electron-program-thumbnail.spec.ts` waits `present-ready`, Start, asserts Present text + `program-thumbnail-title`/`subtitle` | PASS |
+| End clears thumbnail | Same spec: End → Present text gone + `program-thumbnail-empty` | PASS |
+| Automated coverage | Electron e2e + `programThumbnail` unit/integration (14 tests) | PASS |
+| Cold hydrate gate | `openPresentWindow` requires `present-ready` / zero `present-loading` before Send path | PASS |
+| Home/library/theme | No product changes in this task (test-only) | PASS |
+
+## Commands run
+
+```bash
+pnpm run build:remix
+CI=true ELECTRON_DISABLE_SANDBOX=1 xvfb-run -a pnpm exec playwright test \
+  --config=tests/e2e/playwright.electron.config.ts electron-program-thumbnail.spec.ts
+# -> 1 passed
+CI=true pnpm exec react-scripts test --watchAll=false --runInBand \
+  --testPathPattern='programThumbnail|ProgramThumbnail'
+# -> 2 suites / 14 tests passed
+```
+
+## Residual
+
+- Packaged AppImage installer cold path not re-run in this QA env; track under `document-appimage-residual-risk` / Jack retest.
+
+---
+
+# QA report — fix-present-first-open-hydrate (task 7)
+
+**Result:** PASS  
+**Branch:** `cursor/clean-architecture-restructure-018c` @ `2278b6c`  
+**Verified at:** 2026-09-14T15:18:30.000Z
+
+## Acceptance checks
+
+| Criterion | Evidence | Result |
+| --- | --- | --- |
+| Main-owned present-session | `main.cjs` `openPresentSessionWindow` + `loadURL` + `{ action: 'deny' }`; regression test "owns present-session windows via loadURL" | PASS |
+| PR #18 path intact | `openPresentWindow.ts` electron-direct: spawn then absolute `window.open`, never about:blank; browser keeps about:blank gesture; unit tests in openPresentWindow + DeckBuilder | PASS |
+| Hydrate-gated e2e helper | `electronHelpers.openPresentWindow` waits `present-ready` and zero `present-loading` | PASS |
+| Home/deck policy not regressed | Home deny + ensureHomeWindow; deck/present-blank still allow; present-bare → openDeckWindow | PASS |
+| Focused tests | 4 suites / 51 tests PASS; `tsc --noEmit` clean | PASS |
+
+## Commands run
+
+```bash
+CI=true pnpm exec react-scripts test --watchAll=false --runInBand \
+  --testPathPattern='electron-main.regression|openPresentWindow|homeWindowPolicy|DeckBuilder.unit'
+pnpm exec tsc --noEmit
+```
+
+## Gaps / residual
+
+- Live packaged AppImage cold first-open was **not** re-run in this QA environment. Engineering criteria for this task pass; Jack AppImage retest remains for final packaged sign-off (track under `document-appimage-residual-risk` / REQ-005).
+
+---
+
+# QA report — fix-e2e-repo-root-paths (task 1)
+
+**Result:** PASS  
+**Branch:** `cursor/clean-architecture-restructure-018c`  
+**Verified at tip:** see commit after this report  
+
+## Acceptance checks
+
+| Criterion | Evidence | Result |
+| --- | --- | --- |
+| Repo root from helpers is real repo (package.json + Electron main), not `tests/` | `node tests/e2e/repoRoot.selfcheck.cjs` → `/workspace`; one-level-up resolves to `/workspace/tests` and is rejected | PASS |
+| Sample deck path resolves under repo `public/` | `public/sample-slide-deck.json` exists; `home-library.spec.ts` / `library.spec.ts` use `path.join(REPO_ROOT, 'public', 'sample-slide-deck.json')` | PASS |
+| Electron helpers/theme relaunch launch with repo root | `electronHelpers.ts` / `electron-theme-relaunch.spec.ts` call `assertRepoRoot(REPO_ROOT)` and pass `root` as Electron app path arg | PASS |
+| Playwright webServer cwd is repo root | `playwright.config.ts`, `playwright.local.config.ts`, `playwright.config.js`, `playwright.remix.config.ts` set `cwd: repoRoot` with `path.resolve(__dirname, '..', '..')` | PASS |
+| No remaining one-level repo-root assumption | Grep: no `process.cwd()`; bare `__dirname,'..'` only in selfcheck as intentional wrong-path guard | PASS |
+| Remix library spawn paths | `remix-library-relaunch.spec.ts` / `remix-library-repoint.spec.ts` spawn `src/adapters/persistence/server.js` with `cwd: REPO_ROOT` | PASS |
+
+## Commands run
+
+```bash
+node tests/e2e/repoRoot.selfcheck.cjs
+node -e 'assert assets under REPO_ROOT'
+rg process.cwd / path.resolve(__dirname) under tests/e2e
+```
+
+## Notes
+
+- Full Playwright Electron/Remix suite not re-run in this QA loop; path-resolution acceptance for this task is satisfied by filesystem + static evidence + selfcheck.
+- `passes: true` set only for `fix-e2e-repo-root-paths` / task 1.
+
+## QA — fix-library-open-present-hydrate (REQ-008) PASS
+
+- Tip: `a4a1a18`
+- When: 2026-09-14T23:52:47.000Z
+- Verdict: **PASS** (engineering + automated Electron e2e). Packaged AppImage READY still Jack.
+- Evidence:
+  - HomePage `handleOpenFromLibrary` uses `_blank` + `POPUP_FEATURES` (no noopener) — same as blank-deck.
+  - Unit: REQ-008 + Open Presentation PASS.
+  - Electron: `electron-library-present-hydrate.spec.ts` PASS; `electron-program-thumbnail.spec.ts` PASS.
+  - openPresentWindow / DeckBuilder Electron Open Present units PASS.
+- completeEpic: true (all todos passes). Draft PR #21 stays draft.

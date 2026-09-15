@@ -108,9 +108,17 @@ if (!existsSync(buildDir)) {
   );
 }
 
-const serverDir = join(ROOT, "server");
-if (!existsSync(serverDir)) {
-  die("server/ directory not found at: " + serverDir);
+const serverEntry = join(ROOT, "src", "adapters", "persistence", "server.js");
+const realtimeEntry = join(ROOT, "src", "adapters", "realtime", "posterSessionRelay.js");
+const sessionGraph = join(ROOT, "src", "domain", "posterSessionGraph.cjs");
+if (!existsSync(serverEntry)) {
+  die("server entry not found at: " + serverEntry);
+}
+if (!existsSync(realtimeEntry)) {
+  die("realtime relay not found at: " + realtimeEntry);
+}
+if (!existsSync(sessionGraph)) {
+  die("session graph not found at: " + sessionGraph);
 }
 
 // ---------------------------------------------------------------------------
@@ -129,8 +137,16 @@ try {
   log("Copying build/ ...");
   cpSync(join(ROOT, "build"), join(stagingDir, "build"), { recursive: true });
 
-  log("Copying server/ ...");
-  cpSync(join(ROOT, "server"), join(stagingDir, "server"), { recursive: true });
+  log("Copying runtime adapters (persistence server, realtime, domain graph) ...");
+  const persistStaging = join(stagingDir, "src", "adapters", "persistence");
+  const realtimeStaging = join(stagingDir, "src", "adapters", "realtime");
+  const domainStaging = join(stagingDir, "src", "domain");
+  mkdirSync(persistStaging, { recursive: true });
+  mkdirSync(realtimeStaging, { recursive: true });
+  mkdirSync(domainStaging, { recursive: true });
+  cpSync(serverEntry, join(persistStaging, "server.js"));
+  cpSync(realtimeEntry, join(realtimeStaging, "posterSessionRelay.js"));
+  cpSync(sessionGraph, join(domainStaging, "posterSessionGraph.cjs"));
 
   log("Copying public/ ...");
   cpSync(join(ROOT, "public"), join(stagingDir, "public"), {
@@ -204,14 +220,14 @@ try {
     "## Startup",
     "",
     "```sh",
-    "PORT=3000 node server/index.js",
+    "PORT=3000 node src/adapters/persistence/server.js",
     "# or, if pnpm is installed:",
     "pnpm start",
     "```",
     "",
     "On Windows:",
     "```cmd",
-    "set PORT=3000 && node server/index.js",
+    "set PORT=3000 && node src/adapters/persistence/server.js",
     "```",
     "",
     "Then open http://localhost:3000 in your browser.",
@@ -222,7 +238,7 @@ try {
     "on first run. Override with:",
     "",
     "```sh",
-    "POSTER_DB_PATH=/path/to/poster.sqlite node server/index.js",
+    "POSTER_DB_PATH=/path/to/poster.sqlite node src/adapters/persistence/server.js",
     "```",
     "",
     "## Notes",

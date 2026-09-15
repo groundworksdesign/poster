@@ -1,0 +1,1473 @@
+import React, { ChangeEvent, useEffect, useRef, useState } from 'react';
+import { useTheme } from '../useTheme';
+import { createDeckSession, type DeckSession, type ProgramThumbnailState } from '../../application/SessionTransport';
+import { ProgramThumbnailPanel } from './ProgramThumbnailPanel';
+import {
+  PresentData,
+  Slide,
+  SlideType,
+  Deck,
+  SongData,
+  HorizontalAlign,
+  VerticalAlign,
+} from '../../domain/PresentTypes';
+import { resolveSlideStyle } from '../../domain/resolveSlideStyle';
+import { maybeNormalizeStyleColor } from '../../domain/normalizeCssColor';
+import { buildStagedSongSlide, getSongStageCount } from '../../domain/stagedSongSlide';
+import { parseSongXML, createSongSlide, isSongData } from '../../domain/songParser';
+import { validateDeck } from '../../domain/deckValidator';
+import { CURRENT_SCHEMA_VERSION } from '../../domain/schema';
+import { remixDataUrl, REMIX_ROUTE_ID } from '../remixDataUrl';
+import { notifyLibraryChanged } from '../libraryRefresh';
+import { openPresentForRuntime } from './openPresentWindow';
+
+export default function DeckBuilder() {
+  useTheme();
+  const [message, setMessage] = useState<string | null>(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [deck, setDeck] = useState<Deck | null>(null);
+  const deckSessionRef = useRef<DeckSession | null>(null);
+  const [deckSessionReady, setDeckSessionReady] = useState(false);
+  const [presentChildren, setPresentChildren] = useState<string[]>([]);
+  const [readyPresentIds, setReadyPresentIds] = useState<string[]>([]);
+  /** Last program snapshot reported by a Present child (directed deck-event). */
+  const [programThumbnail, setProgramThumbnail] = useState<{
+    presentId: string;
+    program: ProgramThumbnailState;
+  } | null>(null);
+  /** 'all' = every child of this deck session only; otherwise a presentId of this session. */
+  const [sendTarget, setSendTarget] = useState<'all' | string>('all');
+  const sendTargetRef = useRef<'all' | string>('all');
+  sendTargetRef.current = sendTarget;
+  const [isLoadingSong, setIsLoadingSong] = useState<boolean>(false);
+  const [isSongMode, setIsSongMode] = useState<boolean>(false);
+  const [, setCurrentSongIndex] = useState<number>(0);
+  const [lastSentSlideId, setLastSentSlideId] = useState<string | null>(null);
+  /** Index of the slide currently on the presentation output (null = blank/end). */
+  const [presentSlideIndex, setPresentSlideIndex] = useState<number | null>(null);
+  const [presentationBlank, setPresentationBlank] = useState<boolean>(false);
+  const [selectedSlideIndex, setSelectedSlideIndex] = useState<number | null>(null);
+  /** Draft copy of the slide being edited; committed to deck only via Save slide. */
+  const [slideEditDraft, setSlideEditDraft] = useState<any | null>(null);
+  const [jumpToSlideInput, setJumpToSlideInput] = useState<string>('');
+  const [moveTargetByIndex, setMoveTargetByIndex] = useState<Record<number, string>>({});
+  const [operatorMessage, setOperatorMessage] = useState<string>('');
+  const [libraryId, setLibraryId] = useState<string | null>(null);
+  const [showSaveToLibraryPrompt, setShowSaveToLibraryPrompt] = useState<boolean>(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  /** Last stage index sent via Advance/Reverse per song slide id (0 = title, 1+ = lyric pairs). */
+  const [songLastStagedById, setSongLastStagedById] = useState<Record<string, number>>({});
+  /** Slide list index being dragged (visual feedback only; drop uses dataTransfer). */
+  const [dragSlideIndex, setDragSlideIndex] = useState<number | null>(null);
+
+  const genId = () => (typeof (globalThis as any).crypto !== 'undefined' && typeof (globalThis as any).crypto.randomUUID === 'function') ? (globalThis as any).crypto.randomUUID() : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+
+  const ensureDeckIds = (d: Deck): Deck => {
+    return { ...d, slides: d.slides.map(sl => ({ ...sl, id: (sl as any).id ?? genId() })) };
+  };
+
+  useEffect(() => {
+    let disposed = false;
+    let unsubEvents: (() => void) | undefined;
+    createDeckSession().then(async (session) => {
+      if (disposed) {
+        session.dispose();
+        return;
+      }
+      deckSessionRef.current = session;
+      setDeckSessionReady(true);
+      unsubEvents = session.onDeckEvent((event) => {
+        if (event.type === 'child-ready') {
+          setPresentChildren((prev) =>
+            prev.includes(event.presentId) ? prev : [...prev, event.presentId],
+          );
+          setReadyPresentIds((prev) =>
+            prev.includes(event.presentId) ? prev : [...prev, event.presentId],
+          );
+        } else if (event.type === 'child-closed') {
+          setPresentChildren((prev) => prev.filter((id) => id !== event.presentId));
+          setReadyPresentIds((prev) => prev.filter((id) => id !== event.presentId));
+          setSendTarget((current) => (current === event.presentId ? 'all' : current));
+          setProgramThumbnail((current) =>
+            current && current.presentId === event.presentId ? null : current,
+          );
+        } else if (event.type === 'program-thumbnail') {
+          if (event.program) {
+            setProgramThumbnail({ presentId: event.presentId, program: event.program });
+          } else {
+            setProgramThumbnail((current) =>
+              current && current.presentId === event.presentId ? null : current,
+            );
+          }
+        }
+      });
+      const listed = await session.listPresents();
+      if (!disposed) {
+        setPresentChildren(listed);
+        setMessage('Deck builder connected');
+      }
+    });
+    return () => {
+      disposed = true;
+      unsubEvents?.();
+      deckSessionRef.current?.dispose();
+      deckSessionRef.current = null;
+      setDeckSessionReady(false);
+    };
+  }, []);
+
+  // Keyboard shortcut handler ref -- always reflects latest state without stale closures
+  const keyHandlerRef = useRef<(e: KeyboardEvent) => void>();
+  keyHandlerRef.current = (e: KeyboardEvent) => {
+    const tag = (document.activeElement as HTMLElement)?.tagName?.toUpperCase();
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+
+    if (!deck) return;
+    if (e.key === 'ArrowRight' || e.key === 'PageDown') {
+      e.preventDefault();
+      navigatePresentationNext();
+    } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+      e.preventDefault();
+      navigatePresentationPrevious();
+    } else if (isSongMode && e.key === 'ArrowDown') {
+      e.preventDefault();
+      advanceSong();
+    } else if (isSongMode && e.key === 'ArrowUp') {
+      e.preventDefault();
+      rewindSong();
+    }
+  };
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => keyHandlerRef.current?.(e);
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
+
+  // Previously the builder auto-sent status messages to the presenter when the local `message` state
+  // changed. That caused slide-number or status banners to appear on the presentation unexpectedly.
+  // Status messages should only be sent explicitly via handleSendClick so normal slide sends don't
+  // show a persistent top-banner. Intentionally do not auto-broadcast `message` changes here.
+  // (Kept the connection alive via the other effect.)
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) setFile(e.target.files[0]);
+  };
+
+  const handleUploadClick = () => {
+    if (!file) return;
+    const reader = new FileReader();
+    const fileName = file.name.toLowerCase();
+
+    if (fileName.endsWith('.xml')) {
+      setIsLoadingSong(true);
+      reader.addEventListener('load', async () => {
+        try {
+          const xmlContent = reader.result as string;
+          const songData = await parseSongXML(xmlContent);
+
+          const baseStyle = {
+            backgroundColor: '#000000',
+            color: '#ffffff',
+            fontFamily: 'Arial, sans-serif',
+            fontSize: '28px',
+            height: '100%',
+            width: '100%',
+          };
+
+          const songSlide = createSongSlide(songData, baseStyle);
+          (songSlide as any).id = (songSlide as any).id ?? genId();
+
+          const newDeck: Deck = {
+            schemaVersion: CURRENT_SCHEMA_VERSION,
+            title: `Song: ${songData.title}`,
+            date: new Date().toISOString().split('T')[0],
+            location: '',
+            useGreenScreen: false,
+            notes: `Loaded from ${file.name}`,
+            slideStyles: {
+              [SlideType.GENERAL]: {
+                backgroundColor: '#000000',
+                color: '#ffffff',
+                fontFamily: 'Arial, sans-serif',
+                fontSize: '24px',
+                horizontalAlign: HorizontalAlign.CENTER,
+                verticalAlign: VerticalAlign.MIDDLE,
+              },
+              [SlideType.SONG]: baseStyle,
+            },
+            slides: [songSlide],
+          };
+
+          setDeck(ensureDeckIds(newDeck));
+          setIsSongMode(true);
+          setCurrentSongIndex(0);
+          setLibraryId(null);
+          setShowSaveToLibraryPrompt(true);
+          setMessage(`Loaded song: ${songData.title}`);
+        } catch (error) {
+          setMessage(`Error parsing XML: ${error instanceof Error ? error.message : 'Unknown'}`);
+        } finally {
+          setIsLoadingSong(false);
+        }
+      });
+
+      reader.readAsText(file);
+    } else if (fileName.endsWith('.json')) {
+      reader.addEventListener('load', () => {
+        try {
+          const parsed = JSON.parse(reader.result as string);
+
+          if (isSongData(parsed)) {
+            const baseStyle = {
+              backgroundColor: '#000000',
+              color: '#ffffff',
+              fontFamily: 'Arial, sans-serif',
+              fontSize: '28px',
+              height: '100%',
+              width: '100%',
+            };
+            const songSlide = createSongSlide(parsed as SongData, baseStyle);
+            (songSlide as any).id = (songSlide as any).id ?? genId();
+            const newDeck: Deck = {
+              schemaVersion: CURRENT_SCHEMA_VERSION,
+              title: `Song: ${parsed.title}`,
+              date: new Date().toISOString().split('T')[0],
+              location: '',
+              useGreenScreen: false,
+              notes: `Loaded from ${file.name}`,
+              slideStyles: {
+                [SlideType.GENERAL]: {
+                  backgroundColor: '#000000',
+                  color: '#ffffff',
+                  fontFamily: 'Arial, sans-serif',
+                  fontSize: '24px',
+                  horizontalAlign: HorizontalAlign.CENTER,
+                  verticalAlign: VerticalAlign.MIDDLE,
+                },
+                [SlideType.SONG]: baseStyle,
+              },
+              slides: [songSlide],
+            };
+            setDeck(ensureDeckIds(newDeck));
+            setIsSongMode(true);
+            setCurrentSongIndex(0);
+            setLibraryId(null);
+            setShowSaveToLibraryPrompt(true);
+            setMessage(`Loaded song: ${parsed.title}`);
+          } else {
+            const validationError = validateDeck(parsed);
+            if (validationError) {
+              setMessage(validationError);
+            } else {
+              // Normalize schemaVersion: default to 1 for files that predate versioning.
+              const importedVersion = (parsed as any).schemaVersion ?? 1;
+              if (importedVersion > CURRENT_SCHEMA_VERSION) {
+                console.warn(
+                  `Imported deck has schemaVersion ${importedVersion} which is newer than the current version (${CURRENT_SCHEMA_VERSION}). ` +
+                  'Some fields may not be recognized. Consider updating the app.'
+                );
+              }
+              const parsedDeck: Deck = { ...(parsed as Deck), schemaVersion: importedVersion };
+              setDeck(ensureDeckIds(parsedDeck));
+              setIsSongMode(false);
+              // If the imported JSON deck already contains an id, treat it as a library record
+              const importedLibraryId = (parsedDeck as any).id ?? null;
+              if (importedLibraryId) {
+                setLibraryId(importedLibraryId);
+                setShowSaveToLibraryPrompt(false);
+              } else {
+                setLibraryId(null);
+                setShowSaveToLibraryPrompt(true);
+              }
+              setMessage('Loaded JSON deck');
+            }
+          }
+        } catch (err) {
+          setMessage('Could not parse file as JSON. Check that the file is valid JSON.');
+        }
+      });
+      reader.readAsText(file);
+    } else {
+      setMessage('Unsupported file type. Please upload .json or .xml');
+    }
+
+    // reset file input
+    const fileInput = document.getElementById('file') as HTMLInputElement | null;
+    if (fileInput) fileInput.value = '';
+    setFile(null);
+  };
+
+  const handleSendClick = (props: any) => {
+    // Explicit program-out only. Do not coerce a missing `slide` to null —
+    // message-only / clear-message sends must leave Present's slide alone.
+    if (props.slide === null) {
+      const payload = new PresentData({ ...props, slide: null });
+      const target = sendTargetRef.current;
+      void deckSessionRef.current?.send(payload, target);
+      setLastSentSlideId(null);
+      setPresentSlideIndex(null);
+      setPresentationBlank(true);
+      return;
+    }
+    const safeSlide = (sl: any) => {
+      if (!sl) return sl;
+      // ensure slide has an id so we can track it for sync across edits/reorder
+      (sl as any).id = (sl as any).id ?? genId();
+      const resolvedStyle = resolveSlideStyle(deck, sl);
+      return { ...sl, style: resolvedStyle };
+    };
+    const payloadProps: Record<string, unknown> = { ...props };
+    if (props.slide) {
+      payloadProps.slide = safeSlide(props.slide);
+    } else {
+      delete payloadProps.slide;
+    }
+    const payload = new PresentData(payloadProps as any);
+    const target = sendTargetRef.current;
+    void deckSessionRef.current?.send(payload, target);
+    setLastSentSlideId((payloadProps.slide as { id?: string } | undefined)?.id ?? null);
+    setPresentationBlank(false);
+  };
+
+  /** Slide id currently on program output; null when blank/end. Keyed by identity for reorder safety. */
+  const getShowingSlideId = (): string | null => {
+    if (presentationBlank || !lastSentSlideId) return null;
+    return lastSentSlideId;
+  };
+
+  const isSlideEditorExpanded =
+    typeof selectedSlideIndex === 'number' &&
+    deck !== null &&
+    deck.slides[selectedSlideIndex] !== undefined;
+
+  const cloneSlideForEdit = (slide: any): any => {
+    const copy = { ...slide };
+    if (slide.style) copy.style = { ...slide.style };
+    if (slide.lyrics) copy.lyrics = JSON.parse(JSON.stringify(slide.lyrics));
+    return copy;
+  };
+
+  useEffect(() => {
+    if (typeof selectedSlideIndex !== 'number' || !deck || !deck.slides[selectedSlideIndex]) {
+      setSlideEditDraft(null);
+      return;
+    }
+    const source = deck.slides[selectedSlideIndex] as any;
+    setSlideEditDraft((prev: any) => {
+      if (prev && prev.id === source.id) return prev;
+      return cloneSlideForEdit(source);
+    });
+  }, [selectedSlideIndex, deck]);
+
+  /** Collapse expanded slide editor back to the side rail; discards unsaved draft. */
+  const collapseSlideEditor = () => {
+    setSlideEditDraft(null);
+    setSelectedSlideIndex(null);
+  };
+
+  const updateDraftField = (field: string, value: any) => {
+    setSlideEditDraft((prev: any) => (prev ? { ...prev, [field]: value } : prev));
+  };
+
+  const updateDraftStyle = (key: keyof any, value: any) => {
+    setSlideEditDraft((prev: any) => {
+      if (!prev) return prev;
+      const style = { ...(prev.style || {}) } as any;
+      if (value === '' || value === null || value === undefined) {
+        delete style[key as string];
+      } else {
+        style[key as string] =
+          typeof value === 'string' ? maybeNormalizeStyleColor(String(key), value) : value;
+      }
+      return { ...prev, style };
+    });
+  };
+
+  const resetDraftStyleField = (key: keyof any) => {
+    setSlideEditDraft((prev: any) => {
+      if (!prev) return prev;
+      const style = { ...(prev.style || {}) } as any;
+      delete style[key as string];
+      return { ...prev, style };
+    });
+  };
+
+  const resetAllDraftStyleOverrides = () => {
+    setSlideEditDraft((prev: any) => (prev ? { ...prev, style: {} } : prev));
+  };
+
+  const saveSlideEdits = () => {
+    if (!deck || typeof selectedSlideIndex !== 'number' || !slideEditDraft) return;
+    let draft = slideEditDraft;
+    if (draft.type === SlideType.SONG) {
+      const t = document.getElementById('lyrics-json') as HTMLTextAreaElement | null;
+      if (t) {
+        try {
+          draft = { ...draft, lyrics: JSON.parse(t.value) as SongData };
+        } catch {
+          setMessage('Invalid Lyrics JSON — fix before saving');
+          return;
+        }
+      }
+    }
+    const slides = deck.slides.slice();
+    const prevSlide = slides[selectedSlideIndex] as any;
+    slides[selectedSlideIndex] = draft;
+    const newDeck = { ...deck, slides };
+    setDeck(newDeck);
+    const slideId = draft.id as string | undefined;
+    if (slideId && draft.lyrics !== prevSlide?.lyrics) {
+      setSongLastStagedById(s => {
+        const next = { ...s };
+        delete next[slideId];
+        return next;
+      });
+    }
+    syncSentSlideIfNeeded(newDeck);
+    setMessage('Slide saved');
+    collapseSlideEditor();
+  };
+
+  const getResolvedPresentIndex = (): number => {
+    if (!deck) return -1;
+    if (presentSlideIndex !== null && presentSlideIndex >= 0 && presentSlideIndex < deck.slides.length) {
+      return presentSlideIndex;
+    }
+    if (lastSentSlideId) {
+      const idx = deck.slides.findIndex((s: any) => (s as any).id === lastSentSlideId);
+      if (idx >= 0) return idx;
+    }
+    return -1;
+  };
+
+  const getPresentedSongSlide = (): Slide | null => {
+    if (!deck) return null;
+    const idx = getResolvedPresentIndex();
+    if (idx < 0) return null;
+    const slide = deck.slides[idx] as Slide;
+    if (slide.type !== SlideType.SONG || !slide.lyrics || !(slide as any).id) return null;
+    return slide;
+  };
+
+  const canReverseSongStage = (slide: Slide): boolean => {
+    const id = (slide as any).id as string;
+    const last = songLastStagedById[id];
+    return last !== undefined && last > 0;
+  };
+
+  const sendSlideAtIndex = (index: number) => {
+    if (!deck || index < 0 || index >= deck.slides.length) return;
+    const slide = deck.slides[index] as Slide;
+    const sid = (slide as any).id as string | undefined;
+    if (slide.type === SlideType.SONG && slide.lyrics && sid) {
+      const staged = buildStagedSongSlide(slide, 0);
+      handleSendClick({ slide: staged, useGreenScreen: deck.useGreenScreen });
+      setSongLastStagedById(s => ({ ...s, [sid]: 0 }));
+    } else {
+      handleSendClick({ slide, useGreenScreen: deck.useGreenScreen });
+    }
+    setPresentSlideIndex(index);
+    setPresentationBlank(false);
+  };
+
+  const sendBlankSlide = () => {
+    if (!deck) return;
+    handleSendClick({ slide: null, useGreenScreen: deck.useGreenScreen });
+  };
+
+  const navigatePresentationStart = () => {
+    if (!deck || deck.slides.length === 0) return;
+    sendSlideAtIndex(0);
+  };
+
+  const navigatePresentationEnd = () => {
+    sendBlankSlide();
+  };
+
+  const navigatePresentationNext = () => {
+    if (!deck || deck.slides.length === 0) return;
+    const current = getResolvedPresentIndex();
+    if (presentationBlank || current < 0) {
+      sendSlideAtIndex(0);
+      return;
+    }
+    const songSlide = getPresentedSongSlide();
+    if (songSlide) {
+      handleSongStageAdvance(songSlide);
+      return;
+    }
+    if (current >= deck.slides.length - 1) return;
+    sendSlideAtIndex(current + 1);
+  };
+
+  const navigatePresentationPrevious = () => {
+    if (!deck || deck.slides.length === 0) return;
+    const current = getResolvedPresentIndex();
+    if (presentationBlank || current < 0) {
+      sendSlideAtIndex(deck.slides.length - 1);
+      return;
+    }
+    const songSlide = getPresentedSongSlide();
+    if (songSlide && canReverseSongStage(songSlide)) {
+      handleSongStageReverse(songSlide);
+      return;
+    }
+    if (current <= 0) return;
+    sendSlideAtIndex(current - 1);
+  };
+
+  const navigatePresentationJump = () => {
+    if (!deck) return;
+    const n = parseInt(jumpToSlideInput, 10);
+    if (!Number.isFinite(n) || n < 1 || n > deck.slides.length) return;
+    sendSlideAtIndex(n - 1);
+  };
+
+  const handleOpenPresent = async () => {
+    const session = deckSessionRef.current;
+    if (!session) {
+      setMessage('Deck session not ready yet — try Open Present again.');
+      return;
+    }
+    // Browser: about:blank in the click turn (popup gesture), then absolute URL.
+    // Electron/AppImage: skip about:blank — blank→navigate leaves SSR Loading
+    // with no Remix hydrate on first open; open absolute Present URL directly.
+    try {
+      const { presentId } = await openPresentForRuntime({
+        spawnPresent: () => session.spawnPresent(),
+        origin: window.location.origin,
+      });
+      setPresentChildren((prev) => (prev.includes(presentId) ? prev : [...prev, presentId]));
+    } catch (err) {
+      setMessage(
+        `Open Present failed: ${err instanceof Error ? err.message : 'unknown error'}`,
+      );
+    }
+  };
+
+  const handleClosePresent = async (presentId: string) => {
+    const session = deckSessionRef.current;
+    if (!session) return;
+    await session.closePresent(presentId);
+    setPresentChildren((prev) => prev.filter((id) => id !== presentId));
+    setSendTarget((current) => (current === presentId ? 'all' : current));
+  };
+
+  const handleSongStageAdvance = (slideRef: any) => {
+    if (!deck) return;
+    const full = (
+      slideRef.id
+        ? deck.slides.find((s: any) => (s as any).id === slideRef.id)
+        : deck.slides.find(s => s === slideRef)
+    ) as Slide | undefined;
+    if (!full || full.type !== SlideType.SONG || !full.lyrics) return;
+    const id = (full as any).id as string | undefined;
+    if (!id) return;
+    const total = getSongStageCount(full);
+    const last = songLastStagedById[id];
+    const nextStage = last === undefined ? 0 : last + 1;
+    if (nextStage >= total) {
+      const currentIndex = getResolvedPresentIndex();
+      if (currentIndex >= 0 && currentIndex < deck.slides.length - 1) {
+        sendSlideAtIndex(currentIndex + 1);
+      }
+      return;
+    }
+    const staged = buildStagedSongSlide(full, nextStage);
+    handleSendClick({ slide: staged, useGreenScreen: deck.useGreenScreen });
+    setSongLastStagedById(s => ({ ...s, [id]: nextStage }));
+  };
+
+  const handleSongStageReverse = (slideRef: any) => {
+    if (!deck) return;
+    const full = (
+      slideRef.id
+        ? deck.slides.find((s: any) => (s as any).id === slideRef.id)
+        : deck.slides.find(s => s === slideRef)
+    ) as Slide | undefined;
+    if (!full || full.type !== SlideType.SONG || !full.lyrics) return;
+    const id = (full as any).id as string | undefined;
+    if (!id) return;
+    const last = songLastStagedById[id];
+    if (last === undefined || last === 0) return;
+    const prevStage = last - 1;
+    const staged = buildStagedSongSlide(full, prevStage);
+    handleSendClick({ slide: staged, useGreenScreen: deck.useGreenScreen });
+    setSongLastStagedById(s => ({ ...s, [id]: prevStage }));
+  };
+
+  /** Jump to title/subtitle stage (stage 0) in one step. */
+  const handleSongFullRewind = (slideRef: any) => {
+    if (!deck) return;
+    const full = (
+      slideRef.id
+        ? deck.slides.find((s: any) => (s as any).id === slideRef.id)
+        : deck.slides.find(s => s === slideRef)
+    ) as Slide | undefined;
+    if (!full || full.type !== SlideType.SONG || !full.lyrics) return;
+    const id = (full as any).id as string | undefined;
+    if (!id) return;
+    const staged = buildStagedSongSlide(full, 0);
+    handleSendClick({ slide: staged, useGreenScreen: deck.useGreenScreen });
+    setSongLastStagedById(s => ({ ...s, [id]: 0 }));
+  };
+
+  const sendLyricsNavigation = (command: 'next' | 'previous' | 'goToVerse', verseIndex?: number) => {
+    const nav = command === 'goToVerse' ? { command, verseIndex } : { command };
+    void deckSessionRef.current?.send(
+      new PresentData({ data: { lyricsNavigation: nav } }),
+      sendTargetRef.current,
+    );
+  };
+
+  const startSong = () => {
+    if (!deck || !isSongMode) return;
+    setCurrentSongIndex(0);
+    const first = deck.slides[0] as Slide;
+    const id = (first as any).id as string | undefined;
+    if (first.type === SlideType.SONG && first.lyrics && id) {
+      const staged = buildStagedSongSlide(first, 0);
+      handleSendClick({ slide: staged, message: `Song start`, useGreenScreen: deck.useGreenScreen });
+      setSongLastStagedById(s => ({ ...s, [id]: 0 }));
+    } else {
+      handleSendClick({ slide: first, message: `Song start`, useGreenScreen: deck.useGreenScreen });
+    }
+  };
+
+  const advanceSong = () => {
+    if (!deck || !isSongMode) return;
+    setCurrentSongIndex(prev => {
+      const next = prev + 1;
+      // send navigation command (Presentation will handle segment index)
+      sendLyricsNavigation('next');
+      return next;
+    });
+  };
+
+  const rewindSong = () => {
+    if (!deck || !isSongMode) return;
+    setCurrentSongIndex(prev => {
+      const next = Math.max(0, prev - 1);
+      sendLyricsNavigation('previous');
+      return next;
+    });
+  };
+
+  const syncSentSlideIfNeeded = (newDeck: Deck | null) => {
+    if (!newDeck || !lastSentSlideId) return;
+    const found = newDeck.slides.find((s: any) => (s as any).id === lastSentSlideId);
+    if (found && found.type === SlideType.SONG) return;
+    if (found) {
+      // re-send updated slide to presenter so presentation stays in sync (no status banner)
+      handleSendClick({ slide: found, useGreenScreen: newDeck.useGreenScreen });
+    }
+  };
+
+  // Deck defaults helpers
+  const updateDeckDefaultStyle = (key: keyof any, value: any) => {
+    if (!deck) return;
+    const normalized =
+      typeof value === 'string' ? maybeNormalizeStyleColor(String(key), value) : value;
+    const newSlideStyles = { ...(deck.slideStyles || {}) } as Record<string, any>;
+    const general = newSlideStyles[SlideType.GENERAL] || {};
+    newSlideStyles[SlideType.GENERAL] = { ...general, [key]: normalized };
+    const newDeck = { ...deck, slideStyles: newSlideStyles };
+    setDeck(newDeck);
+    syncSentSlideIfNeeded(newDeck);
+  };
+
+  const resetDeckGeneralDefaults = () => {
+    if (!deck) return;
+    const newSlideStyles = { ...(deck.slideStyles || {}) } as Record<string, any>;
+    delete newSlideStyles[SlideType.GENERAL];
+    const newDeck = { ...deck, slideStyles: newSlideStyles };
+    setDeck(newDeck);
+    syncSentSlideIfNeeded(newDeck);
+  };
+
+  const createNewDeck = () => {
+    const newDeck: Deck = {
+      schemaVersion: CURRENT_SCHEMA_VERSION,
+      title: 'New Deck',
+      date: new Date().toISOString().split('T')[0],
+      location: '',
+      useGreenScreen: false,
+      notes: '',
+      slideStyles: {
+        [SlideType.GENERAL]: {
+          backgroundColor: '#000000',
+          color: '#ffffff',
+          fontFamily: 'Arial, sans-serif',
+          fontSize: '24px',
+          horizontalAlign: HorizontalAlign.CENTER,
+          verticalAlign: VerticalAlign.MIDDLE,
+        },
+      },
+      slides: [
+        {
+          type: SlideType.TITLE,
+          title: 'Title',
+          subTitle: '',
+          style: {},
+          titleFontSize: '48px',
+          subTitleFontSize: '28px',
+          id: genId(),
+        },
+      ],
+    };
+    setDeck(ensureDeckIds(newDeck));
+    setSelectedSlideIndex(0);
+    setLibraryId(null);
+    setShowSaveToLibraryPrompt(false);
+    setSongLastStagedById({});
+    setMessage('New deck created');
+  };
+
+  const addSlide = (type: SlideType = SlideType.GENERAL) => {
+    if (!deck) {
+      createNewDeck();
+      return;
+    }
+    const slides = deck.slides.slice();
+    const newSlide: any = {
+      type,
+      title: type === SlideType.TITLE ? 'Title' : 'Slide',
+      subTitle: '',
+      style: {},
+      id: genId(),
+    };
+    if (type === SlideType.SONG) {
+      newSlide.lyrics = { title: 'Song', author: '', verses: [{ number: 1, lines: [''] }] };
+    }
+    slides.push(newSlide);
+    const newDeck = { ...deck, slides };
+    setDeck(newDeck);
+    setSelectedSlideIndex(slides.length - 1);
+    syncSentSlideIfNeeded(newDeck);
+  };
+
+  const duplicateSlide = (index: number) => {
+    if (!deck) return;
+    const slides = deck.slides.slice();
+    const s = { ...(slides[index] as any) };
+    s.id = genId();
+    slides.splice(index + 1, 0, s);
+    const newDeck = { ...deck, slides };
+    setDeck(newDeck);
+    setSelectedSlideIndex(index + 1);
+    syncSentSlideIfNeeded(newDeck);
+  };
+
+  const deleteSlide = (index: number) => {
+    if (!deck) return;
+    const slides = deck.slides.slice();
+    slides.splice(index, 1);
+    const newDeck = { ...deck, slides };
+    setDeck(newDeck);
+    if (selectedSlideIndex !== null) {
+      if (selectedSlideIndex === index) setSelectedSlideIndex(null);
+      else if (selectedSlideIndex > index) setSelectedSlideIndex(selectedSlideIndex - 1);
+    }
+    if (presentSlideIndex !== null) {
+      if (presentSlideIndex === index) {
+        setPresentSlideIndex(null);
+        setPresentationBlank(true);
+        setLastSentSlideId(null);
+        handleSendClick({ slide: null, useGreenScreen: newDeck.useGreenScreen });
+      } else if (presentSlideIndex > index) {
+        setPresentSlideIndex(presentSlideIndex - 1);
+      }
+    }
+    syncSentSlideIfNeeded(newDeck);
+  };
+
+  const adjustSelectedIndexAfterReorder = (fromIndex: number, toIndex: number) => {
+    if (selectedSlideIndex === null) return;
+    let newSel = selectedSlideIndex;
+    if (selectedSlideIndex === fromIndex) {
+      newSel = toIndex;
+    } else if (fromIndex < selectedSlideIndex && toIndex >= selectedSlideIndex) {
+      newSel = selectedSlideIndex - 1;
+    } else if (fromIndex > selectedSlideIndex && toIndex <= selectedSlideIndex) {
+      newSel = selectedSlideIndex + 1;
+    }
+    setSelectedSlideIndex(newSel);
+  };
+
+  const adjustPresentIndexAfterReorder = (fromIndex: number, toIndex: number) => {
+    if (presentSlideIndex === null) return;
+    let newIdx = presentSlideIndex;
+    if (presentSlideIndex === fromIndex) {
+      newIdx = toIndex;
+    } else if (fromIndex < presentSlideIndex && toIndex >= presentSlideIndex) {
+      newIdx = presentSlideIndex - 1;
+    } else if (fromIndex > presentSlideIndex && toIndex <= presentSlideIndex) {
+      newIdx = presentSlideIndex + 1;
+    }
+    setPresentSlideIndex(newIdx);
+  };
+
+  const reorderSlide = (fromIndex: number, toIndex: number) => {
+    if (!deck || fromIndex === toIndex) return;
+    if (toIndex < 0 || toIndex >= deck.slides.length) return;
+    const slides = deck.slides.slice();
+    const [item] = slides.splice(fromIndex, 1);
+    slides.splice(toIndex, 0, item);
+    const newDeck = { ...deck, slides };
+    setDeck(newDeck);
+    adjustSelectedIndexAfterReorder(fromIndex, toIndex);
+    adjustPresentIndexAfterReorder(fromIndex, toIndex);
+    syncSentSlideIfNeeded(newDeck);
+  };
+
+  const moveSlideToTop = (index: number) => {
+    if (!deck || index <= 0) return;
+    reorderSlide(index, 0);
+  };
+
+  const moveSlideToNumber = (fromIndex: number, oneBasedTarget: number) => {
+    if (!deck) return;
+    const toIndex = oneBasedTarget - 1;
+    if (toIndex < 0 || toIndex >= deck.slides.length) return;
+    reorderSlide(fromIndex, toIndex);
+  };
+
+  const triggerDeckDownload = (label: string) => {
+    if (!deck) {
+      setMessage('No deck to save');
+      return;
+    }
+    const blob = new Blob([JSON.stringify(deck, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${deck.title || 'deck'}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    setMessage(label);
+  };
+
+  const handleExportClick = () => triggerDeckDownload('Deck downloaded');
+
+  const handleSaveToLibrary = async () => {
+    if (!deck) {
+      setMessage('No deck to save');
+      return;
+    }
+    try {
+      const wasUpdate = !!libraryId;
+      const body = libraryId ? { ...deck, id: libraryId } : deck;
+      const res = await fetch(remixDataUrl('/library/save', REMIX_ROUTE_ID.librarySave), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        setMessage(`Library save failed: ${(err as any).error || res.status}`);
+        return;
+      }
+      const data = await res.json();
+      setLibraryId(data.id);
+      setMessage(wasUpdate ? 'Library updated.' : 'Saved to library.');
+      notifyLibraryChanged();
+    } catch (e) {
+      setMessage(`Library save error: ${e instanceof Error ? e.message : 'Unknown'}`);
+    }
+  };
+
+  const openFromLibrary = async (id: string) => {
+    try {
+      const res = await fetch(remixDataUrl(`/library/open/${id}`, REMIX_ROUTE_ID.libraryOpen));
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        setMessage(`Open failed: ${(err as any).error || res.status}`);
+        return;
+      }
+      const loadedDeck = await res.json();
+      // Normalize schemaVersion for records saved before versioning was introduced.
+      const openedVersion = loadedDeck.schemaVersion ?? 1;
+      if (openedVersion > CURRENT_SCHEMA_VERSION) {
+        console.warn(
+          `Library deck has schemaVersion ${openedVersion} which is newer than the current version (${CURRENT_SCHEMA_VERSION}). ` +
+          'Some fields may not be recognized. Consider updating the app.'
+        );
+      }
+      const normalizedDeck: Deck = { ...loadedDeck, schemaVersion: openedVersion };
+      setDeck(ensureDeckIds(normalizedDeck));
+      setLibraryId(id);
+      setIsSongMode(false);
+      setCurrentSongIndex(0);
+      setSelectedSlideIndex(null);
+      setLastSentSlideId(null);
+      setPresentSlideIndex(null);
+      setPresentationBlank(false);
+      setSongLastStagedById({});
+      setShowSaveToLibraryPrompt(false);
+      setMessage('Opened from library.');
+    } catch (e) {
+      setMessage(`Open error: ${e instanceof Error ? e.message : 'Unknown'}`);
+    }
+  };
+
+  // On mount: handle ?open=<id> (open a library record) and ?focusImport=1 (trigger file picker).
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const openId = params.get('open');
+    const focusImport = params.get('focusImport');
+    if (openId) {
+      const stripped = new URLSearchParams(params);
+      stripped.delete('open');
+      const newSearch = stripped.toString();
+      window.history.replaceState(null, '', window.location.pathname + (newSearch ? '?' + newSearch : ''));
+      openFromLibrary(openId);
+    }
+    if (focusImport) {
+      const stripped = new URLSearchParams(params);
+      stripped.delete('focusImport');
+      const newSearch = stripped.toString();
+      window.history.replaceState(null, '', window.location.pathname + (newSearch ? '?' + newSearch : ''));
+      // Trigger file picker after a short delay so the component is fully mounted
+      setTimeout(() => {
+        fileInputRef.current?.click();
+      }, 100);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
+    <main className="deck-page">
+      <nav className="deck-page-nav">
+        <a href="/" className="deck-page-home-link">← Home</a>
+      </nav>
+      <h1>Deck</h1>
+      <div>
+        <input ref={fileInputRef} id="file" type="file" onChange={handleFileChange} />
+        <button id="load" onClick={() => handleUploadClick()} disabled={isLoadingSong}>{isLoadingSong ? 'Loading...' : 'Load'}</button>
+        <button id="export" onClick={handleExportClick}>Export</button>
+        <button id="save" onClick={handleSaveToLibrary} disabled={!deck}>Save</button>
+        <button onClick={createNewDeck}>New Deck</button>
+        <label style={{ marginLeft: '8px' }}>
+          Add slide:
+          <select id="add-slide-type" onChange={e => { /* handled on click */ }} defaultValue={SlideType.GENERAL}>
+            <option value={SlideType.GENERAL}>GENERAL</option>
+            <option value={SlideType.TITLE}>TITLE</option>
+            <option value={SlideType.IMAGE}>IMAGE</option>
+            <option value={SlideType.SONG}>SONG</option>
+          </select>
+        </label>
+        <button onClick={() => {
+          const sel = (document.getElementById('add-slide-type') as HTMLSelectElement | null);
+          const t = sel ? (sel.value as SlideType) : SlideType.GENERAL;
+          addSlide(t);
+        }} style={{ marginLeft: '8px' }}>Add Slide</button>
+        <button onClick={startSong} disabled={!deck || !isSongMode}>Start Song</button>
+        <button onClick={rewindSong} disabled={!deck || !isSongMode}>Prev 2 Lines</button>
+        <button onClick={advanceSong} disabled={!deck || !isSongMode}>Next 2 Lines</button>
+        <button
+          type="button"
+          data-testid="open-present"
+          disabled={!deckSessionReady}
+          onClick={() => void handleOpenPresent()}
+        >
+          Open Present
+        </button>
+        <span data-testid="deck-session-ready" data-ready={deckSessionReady ? 'true' : 'false'} hidden>
+          {deckSessionReady ? 'ready' : 'pending'}
+        </span>
+        <span data-testid="present-session-ready" data-ready={readyPresentIds.length > 0 ? 'true' : 'false'} hidden>
+          {readyPresentIds.length > 0 ? 'ready' : 'pending'}
+        </span>
+
+        <div
+          data-testid="present-targets"
+          style={{ marginTop: '12px', padding: '8px', border: '1px solid #ddd' }}
+        >
+          <h3>Present windows</h3>
+          <label>
+            Send to:{' '}
+            <select
+              data-testid="send-target"
+              aria-label="Send target"
+              value={sendTarget}
+              onChange={(e) => setSendTarget(e.target.value)}
+            >
+              <option value="all">All children of this deck</option>
+              {presentChildren.map((id) => (
+                <option key={id} value={id}>
+                  {id.slice(0, 8)}…
+                </option>
+              ))}
+            </select>
+          </label>
+          {presentChildren.length === 0 ? (
+            <p data-testid="present-list-empty">No Present windows open. Use Open Present.</p>
+          ) : (
+            <ul data-testid="present-list">
+              {presentChildren.map((id) => (
+                <li key={id}>
+                  <code>{id}</code>{' '}
+                  <button type="button" onClick={() => void handleClosePresent(id)}>
+                    Close
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        {deck && (
+          <div style={{ marginTop: '12px', padding: '8px', border: '1px solid #ddd' }}>
+            <h3>Deck metadata</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label>Title: <input type="text" value={deck.title || ''} onChange={e => setDeck({ ...deck, title: e.target.value })} /></label>
+              <label>Date: <input type="date" value={deck.date || ''} onChange={e => setDeck({ ...deck, date: e.target.value })} /></label>
+              <label>Location: <input type="text" value={deck.location || ''} onChange={e => setDeck({ ...deck, location: e.target.value })} /></label>
+              <label>Notes: <textarea className="deck-field-wide" value={deck.notes || ''} onChange={e => setDeck({ ...deck, notes: e.target.value })} style={{ verticalAlign: 'top', height: '60px' }} /></label>
+              <label><input type="checkbox" checked={!!deck.useGreenScreen} onChange={e => { const updated = { ...deck, useGreenScreen: e.target.checked }; setDeck(updated); syncSentSlideIfNeeded(updated); }} /> Green screen</label>
+            </div>
+          </div>
+        )}
+
+        <div style={{ marginTop: '12px', padding: '8px', border: '1px solid #ddd' }}>
+          <h3>Send message</h3>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <input
+              type="text"
+              placeholder="Type message to send..."
+              value={operatorMessage}
+              onChange={e => setOperatorMessage(e.target.value)}
+              disabled={!deck}
+              className="deck-field-message"
+            />
+            <button
+              disabled={!deck || operatorMessage.trim() === ''}
+              onClick={() => {
+                handleSendClick({ message: operatorMessage, useGreenScreen: deck?.useGreenScreen || false });
+                setOperatorMessage('');
+              }}
+            >Send Message</button>
+            <button
+              disabled={!deck}
+              onClick={() => handleSendClick({ message: '', useGreenScreen: deck?.useGreenScreen || false })}
+            >Clear</button>
+          </div>
+        </div>
+
+        {deck && (
+          <div className="deck-page-panel" data-testid="presentation-controls">
+            <h3>Presentation</h3>
+            <div className="deck-presentation-controls">
+              <button type="button" data-testid="presentation-start" onClick={navigatePresentationStart} disabled={deck.slides.length === 0 || readyPresentIds.length === 0} title={readyPresentIds.length === 0 ? 'Wait for Present to finish loading' : undefined}>Start</button>
+              <button type="button" onClick={navigatePresentationPrevious} disabled={deck.slides.length === 0}>Previous</button>
+              <button type="button" onClick={navigatePresentationNext} disabled={deck.slides.length === 0}>Next</button>
+              <button type="button" onClick={navigatePresentationEnd}>End</button>
+              <label>
+                Go to:
+                <input
+                  type="number"
+                  min={1}
+                  max={deck.slides.length || 1}
+                  className="deck-jump-input"
+                  value={jumpToSlideInput}
+                  onChange={e => setJumpToSlideInput(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') navigatePresentationJump(); }}
+                />
+              </label>
+              <button type="button" onClick={navigatePresentationJump} disabled={deck.slides.length === 0}>Go</button>
+              {presentSlideIndex !== null && (
+                <span style={{ fontSize: '0.85rem', opacity: 0.85 }}>On slide {presentSlideIndex + 1}</span>
+              )}
+              {presentationBlank && (
+                <span style={{ fontSize: '0.85rem', opacity: 0.85 }}>Blank</span>
+              )}
+            </div>
+            <ProgramThumbnailPanel program={programThumbnail?.program ?? null} />
+          </div>
+        )}
+
+        <div style={{ marginTop: '12px', padding: '8px', border: '1px solid #ddd' }}>
+          <h3>Deck defaults (GENERAL)</h3>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <label>Background: <input type="text" value={deck?.slideStyles?.[SlideType.GENERAL]?.backgroundColor || ''} onChange={e => updateDeckDefaultStyle('backgroundColor', e.target.value)} /></label>
+            <label>Color: <input type="text" value={deck?.slideStyles?.[SlideType.GENERAL]?.color || ''} onChange={e => updateDeckDefaultStyle('color', e.target.value)} /></label>
+            <label>Font: <input type="text" value={deck?.slideStyles?.[SlideType.GENERAL]?.fontFamily || ''} onChange={e => updateDeckDefaultStyle('fontFamily', e.target.value)} /></label>
+            <label>Font size: <input type="text" value={deck?.slideStyles?.[SlideType.GENERAL]?.fontSize || ''} onChange={e => updateDeckDefaultStyle('fontSize', e.target.value)} /></label>
+            {deck && (() => {
+              const g = deck.slideStyles?.[SlideType.GENERAL] || {};
+              const rawH = g.horizontalAlign ?? HorizontalAlign.CENTER;
+              const deckSelectH =
+                rawH === HorizontalAlign.LEFT || rawH === HorizontalAlign.CENTER || rawH === HorizontalAlign.RIGHT
+                  ? rawH
+                  : HorizontalAlign.CENTER;
+              const rawV = g.verticalAlign ?? VerticalAlign.MIDDLE;
+              const deckSelectV =
+                rawV === VerticalAlign.TOP || rawV === VerticalAlign.MIDDLE || rawV === VerticalAlign.BOTTOM
+                  ? rawV
+                  : VerticalAlign.MIDDLE;
+              return (
+                <>
+                  <label>
+                    Horizontal alignment:{' '}
+                    <select
+                      value={deckSelectH}
+                      onChange={e => updateDeckDefaultStyle('horizontalAlign', e.target.value as HorizontalAlign)}
+                    >
+                      <option value={HorizontalAlign.LEFT}>Left</option>
+                      <option value={HorizontalAlign.CENTER}>Center</option>
+                      <option value={HorizontalAlign.RIGHT}>Right</option>
+                    </select>
+                  </label>
+                  <label>
+                    Vertical alignment:{' '}
+                    <select
+                      value={deckSelectV}
+                      onChange={e => updateDeckDefaultStyle('verticalAlign', e.target.value as VerticalAlign)}
+                    >
+                      <option value={VerticalAlign.TOP}>Top</option>
+                      <option value={VerticalAlign.MIDDLE}>Middle</option>
+                      <option value={VerticalAlign.BOTTOM}>Bottom</option>
+                    </select>
+                  </label>
+                </>
+              );
+            })()}
+            <button onClick={() => resetDeckGeneralDefaults()}>Clear GENERAL defaults</button>
+          </div>
+        </div>
+      </div>
+
+      <div
+        className={`deck-slides-editor-row${isSlideEditorExpanded ? ' deck-slides-editor-row--expanded' : ''}`}
+        data-editor-expanded={isSlideEditorExpanded ? 'true' : 'false'}
+      >
+        <div className="deck-slides-list">
+          <div className="deck-slides-list-header">
+            <h2>Slides</h2>
+            {deck && deck.slides.length > 0 ? (
+              <span className="deck-slides-list-hint">Drag the handle to reorder · Top / Move still available</span>
+            ) : null}
+          </div>
+          {!deck && <p>No deck loaded yet.</p>}
+          <div id="slides">
+            <ul>
+              {deck?.slides.map((slide: any, index: number) => {
+                const slideId = (slide as any).id as string | undefined;
+                const showingSlideId = getShowingSlideId();
+                const isShowing = !!slideId && slideId === showingSlideId;
+                return (
+                <li
+                  key={slideId || index}
+                  className={`deck-slide-item${isShowing ? ' deck-slide-item--showing' : ''}${dragSlideIndex === index ? ' deck-slide-item--dragging' : ''}`}
+                  data-slide-id={slideId}
+                  data-showing={isShowing ? 'true' : undefined}
+                  onDragOver={e => {
+                    e.preventDefault();
+                    if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+                  }}
+                  onDrop={e => {
+                    e.preventDefault();
+                    const raw = e.dataTransfer?.getData('text/plain');
+                    const fromIndex = parseInt(raw, 10);
+                    if (!Number.isFinite(fromIndex) || fromIndex === index) {
+                      setDragSlideIndex(null);
+                      return;
+                    }
+                    reorderSlide(fromIndex, index);
+                    setDragSlideIndex(null);
+                  }}
+                >
+                  <div className="deck-slide-row">
+                    <span
+                      className="deck-slide-drag-handle"
+                      draggable
+                      data-testid="deck-slide-drag-handle"
+                      aria-label={`Drag slide ${index + 1} to reorder`}
+                      title="Drag to reorder"
+                      onDragStart={e => {
+                        e.dataTransfer.effectAllowed = 'move';
+                        e.dataTransfer.setData('text/plain', String(index));
+                        setDragSlideIndex(index);
+                      }}
+                      onDragEnd={() => setDragSlideIndex(null)}
+                    >
+                      ::
+                    </span>
+                    <strong>{index + 1}.</strong>
+                    <div className="deck-slide-row-title-wrap">
+                      <span className="deck-slide-row-title">{slide.title || slide.type || 'Slide'}</span>
+                      {isShowing ? (
+                        <span className="deck-slide-showing-label" data-testid="deck-slide-showing-label">SHOWING</span>
+                      ) : null}
+                    </div>
+                    <button
+                      onClick={() => {
+                        const sid = (slide as any).id as string | undefined;
+                        if (slide.type === SlideType.SONG && slide.lyrics && sid && deck) {
+                          const full = deck.slides.find((s: any) => s.id === sid) as Slide;
+                          const staged = buildStagedSongSlide(full, 0);
+                          handleSendClick({ slide: staged, useGreenScreen: deck.useGreenScreen });
+                          setSongLastStagedById(st => ({ ...st, [sid]: 0 }));
+                        } else {
+                          handleSendClick({ slide, useGreenScreen: deck?.useGreenScreen || false });
+                        }
+                        setPresentSlideIndex(index);
+                        setPresentationBlank(false);
+                      }}
+                    >
+                      Send
+                    </button>
+                    {slide.type === SlideType.SONG && slide.lyrics && (slide as any).id ? (
+                      <>
+                        <button
+                          type="button"
+                          title="Full rewind to title"
+                          onClick={() => handleSongFullRewind(slide)}
+                        >
+                          |&lt;--
+                        </button>
+                        <button
+                          type="button"
+                          disabled={
+                            songLastStagedById[(slide as any).id] === undefined ||
+                            songLastStagedById[(slide as any).id] === 0
+                          }
+                          onClick={() => handleSongStageReverse(slide)}
+                        >
+                          Reverse
+                        </button>
+                        <button type="button" onClick={() => handleSongStageAdvance(slide)}>Advance</button>
+                      </>
+                    ) : null}
+                    <button onClick={() => setSelectedSlideIndex(index)}>Edit</button>
+                    <button onClick={() => duplicateSlide(index)}>Duplicate</button>
+                    <button onClick={() => deleteSlide(index)}>Delete</button>
+                    <button type="button" onClick={() => moveSlideToTop(index)} disabled={index === 0} title="Move to top">Top</button>
+                    <input
+                      type="number"
+                      min={1}
+                      max={deck?.slides.length ?? 1}
+                      className="deck-move-to-input"
+                      aria-label={`Move slide ${index + 1} to position`}
+                      value={moveTargetByIndex[index] ?? ''}
+                      onChange={e => setMoveTargetByIndex(prev => ({ ...prev, [index]: e.target.value }))}
+                    />
+                    <button
+                      type="button"
+                      title="Move to number"
+                      onClick={() => {
+                        const n = parseInt(moveTargetByIndex[index] ?? '', 10);
+                        if (Number.isFinite(n)) moveSlideToNumber(index, n);
+                      }}
+                    >
+                      Move
+                    </button>
+                  </div>
+                </li>
+                );
+              })}
+            </ul>
+          </div>
+        </div>
+
+        {isSlideEditorExpanded ? (
+        <div className="deck-slide-editor" data-testid="deck-slide-editor-panel">
+          {typeof selectedSlideIndex === 'number' && deck && slideEditDraft ? (
+            <>
+              <div className="deck-slide-editor-header">
+                <h3>Editing slide {selectedSlideIndex + 1}</h3>
+                <button
+                  type="button"
+                  className="deck-slide-editor-save-btn"
+                  data-testid="save-slide-button"
+                  onClick={saveSlideEdits}
+                >
+                  Save slide
+                </button>
+              </div>
+              {(() => {
+                const slide = slideEditDraft as any;
+                return (
+                  <div>
+                    <div>
+                      <label>Type: 
+                        <select value={slide.type} onChange={e => updateDraftField('type', e.target.value as SlideType)}>
+                          <option value={SlideType.GENERAL}>GENERAL</option>
+                          <option value={SlideType.TITLE}>TITLE</option>
+                          <option value={SlideType.IMAGE}>IMAGE</option>
+                          <option value={SlideType.SONG}>SONG</option>
+                        </select>
+                      </label>
+                    </div>
+                    <div>
+                      <label>Title: <input type="text" value={slide.title || ''} onChange={e => updateDraftField('title', e.target.value)} /></label>
+                    </div>
+                    <div>
+                      <label>Subtitle: <input type="text" value={slide.subTitle || ''} onChange={e => updateDraftField('subTitle', e.target.value)} /></label>
+                    </div>
+
+                    {slide.type === SlideType.IMAGE && (
+                      <div>
+                        <label>Image URL/file: <input type="text" value={slide.file || slide.style?.backgroundImage || ''} onChange={e => updateDraftField('file', e.target.value)} /></label>
+                      </div>
+                    )}
+
+                    {slide.type === SlideType.SONG && (
+                      <div>
+                        <label>Lyrics (JSON):</label>
+                        <div>
+                          <textarea id="lyrics-json" style={{ width: '100%', height: '120px' }} defaultValue={slide.lyrics ? JSON.stringify(slide.lyrics, null, 2) : ''}></textarea>
+                          <div style={{ marginTop: '6px' }}>
+                            <button onClick={() => {
+                              const t = (document.getElementById('lyrics-json') as HTMLTextAreaElement | null);
+                              if (!t) return;
+                              try {
+                                const parsed = JSON.parse(t.value) as SongData;
+                                updateDraftField('lyrics', parsed);
+                                setMessage('Lyrics applied to draft — click Save slide to commit');
+                              } catch (err) {
+                                setMessage('Invalid Lyrics JSON');
+                              }
+                            }}>Apply Lyrics JSON</button>
+                            <button onClick={() => {
+                              const lyrics = slide.lyrics || { title: '', author: '', verses: [] };
+                              const nextLyrics = {
+                                ...lyrics,
+                                verses: lyrics.verses.concat([{ number: (lyrics.verses.length || 0) + 1, lines: [''] }]),
+                              };
+                              updateDraftField('lyrics', nextLyrics);
+                            }} style={{ marginLeft: '8px' }}>Add Verse</button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    <h4>Style (effective shown; overrides saved to slide.style)</h4>
+                    {(() => {
+                      const effective = resolveSlideStyle(deck, slide);
+                      const textStyleKeys: Array<'backgroundColor' | 'color' | 'fontFamily' | 'fontSize'> = [
+                        'backgroundColor',
+                        'color',
+                        'fontFamily',
+                        'fontSize',
+                      ];
+                      const rawH = slide.style?.horizontalAlign ?? effective.horizontalAlign ?? HorizontalAlign.CENTER;
+                      const selectHorizontal =
+                        rawH === HorizontalAlign.LEFT || rawH === HorizontalAlign.CENTER || rawH === HorizontalAlign.RIGHT
+                          ? rawH
+                          : HorizontalAlign.CENTER;
+                      const rawV = slide.style?.verticalAlign ?? effective.verticalAlign ?? VerticalAlign.MIDDLE;
+                      const selectVertical =
+                        rawV === VerticalAlign.TOP || rawV === VerticalAlign.MIDDLE || rawV === VerticalAlign.BOTTOM
+                          ? rawV
+                          : VerticalAlign.MIDDLE;
+                      return (
+                        <div>
+                          {textStyleKeys.map((k) => (
+                            <div key={k} style={{ marginTop: '6px' }}>
+                              <label style={{ marginRight: '8px' }}>{`${k}: `}</label>
+                              <input
+                                type="text"
+                                value={(slide.style && slide.style[k]) || (effective as any)[k] || ''}
+                                onChange={e => updateDraftStyle(k, e.target.value)}
+                              />
+                              <button type="button" onClick={() => resetDraftStyleField(k)} style={{ marginLeft: '8px' }}>Reset</button>
+                            </div>
+                          ))}
+                          <div style={{ marginTop: '6px' }}>
+                            <label style={{ marginRight: '8px' }}>Horizontal alignment: </label>
+                            <select
+                              value={selectHorizontal}
+                              onChange={e => updateDraftStyle('horizontalAlign', e.target.value)}
+                            >
+                              <option value={HorizontalAlign.LEFT}>Left</option>
+                              <option value={HorizontalAlign.CENTER}>Center</option>
+                              <option value={HorizontalAlign.RIGHT}>Right</option>
+                            </select>
+                            <button type="button" onClick={() => resetDraftStyleField('horizontalAlign')} style={{ marginLeft: '8px' }}>Reset</button>
+                          </div>
+                          <div style={{ marginTop: '6px' }}>
+                            <label style={{ marginRight: '8px' }}>Vertical alignment: </label>
+                            <select
+                              value={selectVertical}
+                              onChange={e => updateDraftStyle('verticalAlign', e.target.value)}
+                            >
+                              <option value={VerticalAlign.TOP}>Top</option>
+                              <option value={VerticalAlign.MIDDLE}>Middle</option>
+                              <option value={VerticalAlign.BOTTOM}>Bottom</option>
+                            </select>
+                            <button type="button" onClick={() => resetDraftStyleField('verticalAlign')} style={{ marginLeft: '8px' }}>Reset</button>
+                          </div>
+                          <div className="deck-slide-editor-footer-actions">
+                            {slide.type === SlideType.SONG && slide.lyrics && slide.id ? (
+                              <>
+                                <button
+                                  type="button"
+                                  title="Full rewind to title"
+                                  onClick={() => handleSongFullRewind(slide)}
+                                >
+                                  |&lt;-- Full rewind
+                                </button>
+                                <button
+                                  type="button"
+                                  disabled={
+                                    songLastStagedById[slide.id] === undefined ||
+                                    songLastStagedById[slide.id] === 0
+                                  }
+                                  onClick={() => handleSongStageReverse(slide)}
+                                >
+                                  Reverse (staged)
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleSongStageAdvance(slide)}
+                                >
+                                  Advance (staged)
+                                </button>
+                              </>
+                            ) : null}
+                            <button onClick={resetAllDraftStyleOverrides}>Reset all overrides</button>
+                            <button onClick={() => duplicateSlide(selectedSlideIndex)}>Duplicate</button>
+                            <button onClick={() => deleteSlide(selectedSlideIndex)}>Delete</button>
+                            <button type="button" onClick={collapseSlideEditor}>Close editor</button>
+                            <button
+                              type="button"
+                              className="deck-slide-editor-save-btn"
+                              data-testid="save-slide-button"
+                              onClick={saveSlideEdits}
+                            >
+                              Save slide
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                );
+              })()}
+            </>
+          ) : null}
+        </div>
+        ) : (
+          <div className="deck-slide-editor-rail" data-testid="deck-slide-editor-rail" aria-label="Edit rail">
+            <span className="deck-slide-editor-rail-label">Edit</span>
+          </div>
+        )}
+      </div>
+
+      <div id="status" style={{ marginTop: '12px' }}>{message}</div>
+      {showSaveToLibraryPrompt && (
+        <div data-testid="import-save-prompt" style={{ marginTop: '8px', padding: '8px', border: '1px solid #aaa', display: 'inline-flex', gap: '8px', alignItems: 'center' }}>
+          <span>Save this import to the library?</span>
+          <button id="import-save-to-library" onClick={async () => { setShowSaveToLibraryPrompt(false); await handleSaveToLibrary(); }}>Save to Library</button>
+          <button id="import-skip-save-to-library" onClick={() => setShowSaveToLibraryPrompt(false)}>Skip</button>
+        </div>
+      )}
+      {libraryId && <div data-testid="library-id" style={{ fontSize: '11px', color: '#888' }}>Library ID: {libraryId}</div>}
+      {/* Library panel moved to HomePage — DeckBuilder keeps Save/Load controls on /deck */}
+    </main>
+  );
+}

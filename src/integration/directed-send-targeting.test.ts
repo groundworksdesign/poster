@@ -2,8 +2,8 @@ import {
   createDeckSession,
   createPresentSession,
   resetTestSessionHub,
-} from '../Present/SessionTransport';
-import { ensureTestSessionBackend } from '../Present/testSessionHelpers';
+} from '../application/SessionTransport';
+import { ensureTestSessionBackend } from '../presentation/Present/testSessionHelpers';
 
 /**
  * Integration: multi-deck directed send isolation via SessionTransport test hub.

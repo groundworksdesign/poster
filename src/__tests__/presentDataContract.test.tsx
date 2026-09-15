@@ -22,15 +22,15 @@ import {
   PresentData,
   SlideType,
   Slide,
-} from '../Present/PresentTypes';
-import Presentation from '../Present/Present';
+} from '../domain/PresentTypes';
+import Presentation from '../presentation/Present/Present';
 import {
   ensureTestSessionBackend,
   resetTestSessionHub,
   setPresentationSearch,
   setupDeckPresentPair,
-} from '../Present/testSessionHelpers';
-import type { DeckSession } from '../Present/SessionTransport';
+} from '../presentation/Present/testSessionHelpers';
+import type { DeckSession } from '../application/SessionTransport';
 
 // ---------------------------------------------------------------------------
 // Helpers

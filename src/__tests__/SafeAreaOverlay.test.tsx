@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import SafeAreaOverlay from '../Present/SafeAreaOverlay';
+import SafeAreaOverlay from '../presentation/Present/SafeAreaOverlay';
 
 describe('SafeAreaOverlay', () => {
   it('renders null when visible is false', () => {

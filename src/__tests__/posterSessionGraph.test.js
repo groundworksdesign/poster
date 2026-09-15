@@ -1,6 +1,6 @@
 'use strict';
 
-const { PosterSessionGraph } = require('../../shared/posterSessionGraph.cjs');
+const { PosterSessionGraph } = require('../domain/posterSessionGraph.cjs');
 
 describe('PosterSessionGraph', () => {
   let graph;

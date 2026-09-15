@@ -4,12 +4,12 @@ import path from 'path';
 
 describe('library-json.server', () => {
   const tmpPath = path.join(os.tmpdir(), `poster-lib-test-${Date.now()}-${Math.random().toString(36).slice(2)}.json`);
-  let jsonLib: typeof import('../../app/utils/library-json.server');
+  let jsonLib: typeof import('../adapters/persistence/library-json.server');
 
   beforeAll(() => {
     process.env.POSTER_LIBRARY_JSON_PATH = tmpPath;
     jest.isolateModules(() => {
-      jsonLib = require('../../app/utils/library-json.server');
+      jsonLib = require('../adapters/persistence/library-json.server');
     });
   });
 
