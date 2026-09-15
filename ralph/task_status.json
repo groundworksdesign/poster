@@ -4,7 +4,7 @@
   "status": "in_progress",
   "loop": 11,
   "persona": "planning",
-  "completeEpic": false,
+  "completeEpic": true,
   "requirements": [
     {
       "id": "REQ-001",
@@ -205,9 +205,10 @@
       "content": "Fix packaged AppImage blank-deck cold Open Present + directed send after file import. Jack tip 7c947cd: Library Open\u2192Present 3/3 PASS; blank-deck Present+send after import FAIL flaky (~1/3\u20131/2). Tip Electron PASS; CI installers green. Distinct from REQ-008 Library path.",
       "requirementId": "REQ-009",
       "status": "done",
-      "passes": false,
-      "notes": "DEV fix-up @ 2026-09-15T00:40:00.000Z: QA FAIL tip 7db2047 \u2014 openPresentForRuntime awaited waitForPosterBridge on all UAs, so browser/jsdom Open Present never called window.open(about:blank) within waitFor (DeckBuilder.unit). Gate late-preload wait on isElectronUserAgent so browser path stays sync; Electron/AppImage still waits for late poster. Unit 261 green; passesQA still false.",
-      "devCompletedAt": "2026-09-15T00:28:24.000Z"
+      "passes": true,
+      "notes": "QA PASS @ tip 083bfcb (2026-09-15T00:41:52.000Z): independent review \u2014 openPresentForRuntime waits for late poster only on Electron UA (browser about:blank sync); Import CTA _blank; Start gated on Present child-ready. Unit 261 PASS; Electron import-present-send + library-present-hydrate + program-thumbnail PASS; CI Unit and integration tests green on tip. Draft PR #21 stays draft. Jack AppImage retest still residual for packaged sign-off.",
+      "devCompletedAt": "2026-09-15T00:28:24.000Z",
+      "qaVerifiedAt": "2026-09-15T00:41:52.000Z"
     }
   ],
   "acceptanceCriteria": [
@@ -283,8 +284,8 @@
     "libraryRoot": "pass",
     "home": "pass"
   },
-  "lastUpdated": "2026-09-15T00:40:00.000Z",
-  "epicCompleteNotes": "Previously marked complete after REQ-008 QA; reopened in planning loop 11 after Jack tip 7c947cd AppImage blank-deck Present+send-after-import flake. Draft PR #21 remains draft.",
+  "lastUpdated": "2026-09-15T00:41:52.000Z",
+  "epicCompleteNotes": "Epic complete after REQ-009 QA PASS @ 083bfcb. Draft PR #21 remains draft (Jack AppImage Import\u2192Present\u2192send confirmation still residual).",
   "feedback": {
     "taskId": "fix-library-open-present-hydrate",
     "content": "Epic reopened: Jack tip 7c947cd blank-deck Present+send after import flaky on AppImage.",

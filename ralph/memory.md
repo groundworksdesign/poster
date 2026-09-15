@@ -230,3 +230,9 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - QA FAIL @ 7db2047: DeckBuilder.unit Open Present (browser) — openSpy 0 calls (bridge wait before about:blank).
 - Fix: `isElectronUserAgent` gates `waitForPosterBridge` in `openPresentForRuntime`; browser/jsdom opens about:blank in click turn; Electron still waits for late poster after import.
 - Unit 261 PASS; Electron import→Present→send + library hydrate kept green. passesQA false.
+
+## Epic-006 QA (fix-appimage-blank-deck-present-send-after-import)
+
+- PASS (2026-09-15T00:41:52.000Z): tip 083bfcb — Electron-UA-gated waitForPosterBridge; browser about:blank restored; Import _blank; Start on child-ready.
+- Unit 261 PASS; Electron import→Present→send + library hydrate + program thumbnail PASS; CI Unit job green.
+- completeEpic true. Draft PR #21 stays draft. Jack AppImage READY still residual.
