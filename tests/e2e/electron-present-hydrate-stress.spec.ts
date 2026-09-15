@@ -30,14 +30,15 @@ async function assertPresentHydratedWithRealUrl(present: Page) {
   );
   expect(hasPosterBridge).toBe(true);
 
+  // Wait for client hydrate first — SSR Loading can briefly show before boot marker.
+  await expect(present.getByTestId('present-ready')).toBeVisible({ timeout: 30_000 });
+  await expect(present.getByTestId('present-loading')).toHaveCount(0);
+
   const clientBoot = await present.evaluate(
     () =>
       !!(window as Window & { __posterPresentClientBoot?: boolean }).__posterPresentClientBoot,
   );
   expect(clientBoot).toBe(true);
-
-  await expect(present.getByTestId('present-ready')).toBeVisible({ timeout: 30_000 });
-  await expect(present.getByTestId('present-loading')).toHaveCount(0);
 }
 
 test.describe('Electron: Present hydrate with real presentId URL (REQ-010)', () => {
