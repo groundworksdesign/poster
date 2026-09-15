@@ -1,8 +1,8 @@
 ---
 name: QA and harden clean-architecture restructure
 epic: epic-006-clean-architecture-harden
-status: complete
-overview: "The structural move to src rings + tests/e2e is already on this branch. Harden it: confirm layout and dependency rules, fix path/config/CI breakages from the move, make unit/integration/e2e that should pass actually pass, restore packaged Electron Present first-open hydrate reliability (Jack AppImage NOT READY), unblock On Program once Present is live, keep the Ralph loop harness under ralph/ (not .ralph/), and document residual AppImage risk for Jack. Reopened after tip 497d454: Library Open → Present hydrate FAIL (blank-deck Open Present path PASS)."
+status: in_progress
+overview: "The structural move to src rings + tests/e2e is already on this branch. Harden it: confirm layout and dependency rules, fix path/config/CI breakages from the move, make unit/integration/e2e that should pass actually pass, restore packaged Electron Present first-open hydrate reliability (Jack AppImage NOT READY), unblock On Program once Present is live, keep the Ralph loop harness under ralph/ (not .ralph/), and document residual AppImage risk for Jack. Reopened after tip 497d454 (Library Open→Present); again after tip 7c947cd: Library Open→Present 3/3 PASS but AppImage blank-deck Present+send after file import flaky."
 todos:
   - id: fix-e2e-repo-root-paths
     content: Fix tests/e2e helpers and specs that still resolve repo root as tests/ (one level up) instead of the real repository root after the e2e/ → tests/e2e move.
@@ -31,6 +31,9 @@ todos:
   - id: fix-library-open-present-hydrate
     content: Fix packaged Electron/AppImage Present first-open hydrate after Library Open into Deck (Jack tip 497d454 FAIL — SSR Loading ≥30s). Distinct from blank-deck Open Present (REQ-006 PASS on same tip).
     status: done
+  - id: fix-appimage-blank-deck-present-send-after-import
+    content: Fix packaged AppImage blank-deck cold Open Present + directed send after file import (Jack tip 7c947cd FAIL flaky ~1/3–1/2). Tip Electron PASS; CI installers green; Library Open→Present 3/3 PASS.
+    status: pending
 isProject: false
 ---
 
@@ -38,7 +41,7 @@ isProject: false
 
 ## Goal
 
-Land a trustworthy clean-architecture tree on branch `cursor/clean-architecture-restructure-018c` (draft PR #21): rings under `src/`, Playwright under `tests/e2e`, correct configs/scripts/CI, green automated tests for move-induced breakages, reliable packaged Present first-open hydrate (blank-deck **and** Library Open → Present), On Program once Present is live, and clear residual risk notes for Jack’s manual AppImage pass. Behavior stays unchanged except where the restructure regressed packaged first-open hydrate — this epic is harden/QA, not features.
+Land a trustworthy clean-architecture tree on branch `cursor/clean-architecture-restructure-018c` (draft PR #21): rings under `src/`, Playwright under `tests/e2e`, correct configs/scripts/CI, green automated tests for move-induced breakages, reliable packaged Present first-open hydrate (blank-deck **and** Library Open → Present), and reliable AppImage blank-deck Present+send after **file import**, On Program once Present is live, and clear residual risk notes for Jack’s manual AppImage pass. Behavior stays unchanged except where the restructure regressed packaged first-open hydrate — this epic is harden/QA, not features.
 
 ## Definition of Done
 
@@ -81,13 +84,27 @@ Packaged/Electron tip after REQ-006 main-owned present-session + residual doc:
 
 **Operator doc (REQ-005):** residual risk + Jack manual checklist → [`docs/appimage-residual-risk.md`](../docs/appimage-residual-risk.md) (draft PR #21 stays draft until Jack records AppImage READY).
 
-## Current Baseline (QA loop 10)
+## Jack AppImage baseline (tip `7c947cd`) — NOT READY
 
-Confirmed on tip `497d454` / planning sync (this commit):
+Packaged AppImage re-check after REQ-008:
+
+| Area | Result |
+| --- | --- |
+| **Library Open → Present** | **3/3 PASS** (REQ-008) |
+| **Blank-deck cold Present + send after file import** | **FAIL (flaky)** — ~1/3–1/2 fail on AppImage |
+| Tip unpackaged Electron | PASS |
+| CI installers | green |
+
+
+
+## Current Baseline (planning loop 11)
+
+Confirmed on tip `7c947cd` / planning sync (this commit):
 
 - Rings present; no root `app/`; no `.ralph/`
-- Prior harden/QA todos through `document-appimage-residual-risk` **done / passes true** (REQ-001..007)
-- Epic **complete**: REQ-008 `fix-library-open-present-hydrate` **done / passes true** @ tip `a4a1a18` (Electron e2e); Jack AppImage READY still pending
+- Prior harden/QA todos through `fix-library-open-present-hydrate` **done / passes true** (REQ-001..008)
+- Epic **reopened**: REQ-009 `fix-appimage-blank-deck-present-send-after-import` **pending / selected**
+- Jack AppImage tip `7c947cd`: Library Open→Present 3/3 PASS; blank-deck Present+send after file import **flaky FAIL**
 - Draft PR #21 remains draft/unmerged
 
 ## Implementation Plan (planning guidance; do not code in planning)
@@ -100,7 +117,8 @@ Confirmed on tip `497d454` / planning sync (this commit):
 6. **verify-unit-integration-green** — DONE (QA passed).
 7. **verify-remix-electron-e2e-green** — DONE (QA passed).
 8. **document-appimage-residual-risk** — DONE (QA passed).
-9. **fix-library-open-present-hydrate** — **DONE** (REQ-008 QA-passed @ a4a1a18). Library Open aligned with blank-deck; Electron e2e covers Library→Present hydrate. Jack AppImage READY still residual.
+9. **fix-library-open-present-hydrate** — **DONE** (REQ-008 QA-passed @ a4a1a18; Jack AppImage Library Open→Present 3/3 PASS @ 7c947cd).
+10. **fix-appimage-blank-deck-present-send-after-import** — **SELECTED** (REQ-009). Harden AppImage blank-deck Present+send after file import (flaky on tip 7c947cd); tip Electron already green.
 
 
 ### Functional requirements
@@ -113,6 +131,7 @@ Confirmed on tip `497d454` / planning sync (this commit):
 - **REQ-006** Present first-open hydrate (packaged): Cold blank-deck Open Present on packaged Electron/AppImage reliably leaves SSR `Loading...` and reaches client `present-ready` (restore PR #18 first-open behavior if regressed by layout move).
 - **REQ-007** On Program after Present live: Deck On Program thumbnail/state works on packaged Electron once Present hydrates.
 - **REQ-008** Library Open → Present first-open hydrate (packaged): After Library Open into Deck, first Open Present reaches `present-ready` (not stuck SSR Loading ≥30s). Distinct from blank-deck path in REQ-006.
+- **REQ-009** AppImage blank-deck Present+send after file import: On packaged AppImage, blank-deck cold Open Present + directed send after file import is reliable (not flaky ~1/3–1/2). Tip Electron PASS is not sufficient proof.
 
 ## Validation
 
@@ -123,7 +142,8 @@ Confirmed on tip `497d454` / planning sync (this commit):
 - [x] REQ-005 Residual AppImage risk doc exists (include Jack 9f124e1 baseline); draft PR #21 remains draft/unmerged.
 - [x] REQ-006 Packaged Present first-open hydrate engineering fix landed + QA-passed (main-owned present-session); Jack tip 497d454 blank-deck Open Present+send 3/3 PASS.
 - [x] REQ-007 On Program verified after Present hydrate is reliable (Electron e2e QA-passed; Jack tip 497d454 On Program PASS).
-- [x] REQ-008 Library Open → Present reaches `present-ready` (engineering + Electron e2e QA-passed @ a4a1a18; Jack AppImage retest still for packaged READY).
+- [x] REQ-008 Library Open → Present reaches `present-ready` (engineering + Electron e2e QA-passed @ a4a1a18; Jack tip 7c947cd AppImage 3/3 PASS).
+- [ ] REQ-009 AppImage blank-deck Present+send after file import reliable (Jack tip 7c947cd flaky FAIL).
 - [ ] No `.ralph/`; `ralph/` is only the loop harness for this pass.
 
 ## Out of scope
@@ -131,10 +151,12 @@ Confirmed on tip `497d454` / planning sync (this commit):
 - New product features unrelated to restructure harden / AppImage regressions
 - Opening a second PR or marking #21 ready / merging
 - Recreating `.ralph/`
-- Claiming full packaged AppImage proof without Jack’s retest after Library→Present hydrate is fixed
+- Claiming full packaged AppImage proof without Jack’s retest after blank-deck Present+send-after-import is reliable on AppImage
 
 ## Risks to manage
 
+- AppImage blank-deck Present+send after file import flaky (Jack tip 7c947cd) blocks AppImage READY even when Library Open→Present PASSes
+- AppImage/FUSE or post-import timing/session race may not reproduce on tip Electron / CI
 - Library Open → Present stuck on SSR Loading (Jack tip 497d454) blocks AppImage READY even when blank-deck Open Present PASSes
 - Library Deck `noopener` / named window / assign fallback may drop preload/`window.poster` and force `about:blank` Present path
 - Electron e2e launching against `tests/` (mitigated; re-verify CI on current tip)

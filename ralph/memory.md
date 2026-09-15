@@ -209,3 +209,10 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 
 - PASS (2026-09-14T23:52:47.000Z): tip a4a1a18 — Library Open aligned with blank-deck (no noopener); unit REQ-008 + Electron library-present-hydrate + blank-deck program-thumbnail PASS.
 - completeEpic true. Draft PR #21 stays draft (no ready/merge). Jack AppImage READY still residual.
+
+## Epic-006 planning (loop 11) — Jack tip 7c947cd blank-deck after import
+
+- Tip `7c947cd` AppImage: NOT READY. Library Open → Present 3/3 PASS (REQ-008). Blank-deck cold Present+send after file import FAIL flaky (~1/3–1/2). Tip Electron PASS; CI installers green.
+- Reopened epic (`completeEpic` false / `status` in_progress). Added REQ-009 + todo `fix-appimage-blank-deck-present-send-after-import`; selected that task (task-status id 10).
+- Hypothesis for DEV: AppImage/FUSE or post-import timing/session race tip Electron does not hit (FileReader import, named `posterDeck` window, Present/send before session ready).
+- Draft PR #21 only; no product code this persona.

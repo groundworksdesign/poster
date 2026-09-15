@@ -1,10 +1,10 @@
 {
   "epic": "epic-006-clean-architecture-harden",
   "branch": "cursor/clean-architecture-restructure-018c",
-  "status": "complete",
-  "loop": 10,
-  "persona": "qa",
-  "completeEpic": true,
+  "status": "in_progress",
+  "loop": 11,
+  "persona": "planning",
+  "completeEpic": false,
   "requirements": [
     {
       "id": "REQ-001",
@@ -78,6 +78,15 @@
         "fix-library-open-present-hydrate"
       ],
       "status": "done"
+    },
+    {
+      "id": "REQ-009",
+      "title": "AppImage blank-deck Present+send after file import",
+      "description": "On packaged AppImage, blank-deck cold Open Present + directed send after file import must be reliable (not flaky ~1/3\u20131/2). Tip Electron and CI installers already green; Jack tip 7c947cd Library Open\u2192Present 3/3 PASS (REQ-008).",
+      "status": "pending",
+      "todoIds": [
+        "fix-appimage-blank-deck-present-send-after-import"
+      ]
     }
   ],
   "todos": [
@@ -190,6 +199,14 @@
       "devCompletedAt": "2026-09-14T23:50:11.000Z",
       "qaVerifiedAt": "2026-09-14T23:52:47.000Z",
       "qaReport": "ralph/qa-report.md"
+    },
+    {
+      "id": "fix-appimage-blank-deck-present-send-after-import",
+      "content": "Fix packaged AppImage blank-deck cold Open Present + directed send after file import. Jack tip 7c947cd: Library Open\u2192Present 3/3 PASS; blank-deck Present+send after import FAIL flaky (~1/3\u20131/2). Tip Electron PASS; CI installers green. Distinct from REQ-008 Library path.",
+      "requirementId": "REQ-009",
+      "status": "pending",
+      "passes": false,
+      "notes": "Planning loop 11 selected. Hypothesis: AppImage/FUSE or post-import timing/session race that tip Electron does not hit (FileReader import, named posterDeck window, Present/send before session ready)."
     }
   ],
   "acceptanceCriteria": [
@@ -204,44 +221,45 @@
     "Library Open \u2192 Deck \u2192 Open Present on packaged Electron/AppImage reaches present-ready (not stuck SSR Loading \u226530s).",
     "On Program works on packaged Electron after Present hydrate is reliable.",
     "Residual AppImage risk + Jack checklist documented (include 9f124e1 and 497d454 baselines); draft PR #21 not marked ready or merged.",
-    "No .ralph/ directory; ralph/ is only this loop harness."
+    "No .ralph/ directory; ralph/ is only this loop harness.",
+    "Packaged AppImage blank-deck cold Open Present + send after file import is reliable (not flaky \u22651/3 fail)."
   ],
   "selected": {
-    "id": "fix-library-open-present-hydrate",
-    "reason": "QA verified PASS; last open task \u2014 epic complete (draft PR #21 stays draft)."
+    "id": "fix-appimage-blank-deck-present-send-after-import",
+    "reason": "Loop 11 @ tip 7c947cd: Jack AppImage NOT READY solely on blank-deck Present+send after file import (flaky). Library Open\u2192Present 3/3 PASS so REQ-008 is insufficient. Highest packaged-sign-off risk."
   },
-  "planningNotes": "Planning loop 10 @ 2026-09-14T23:32:00.000Z: reopened epic (completeEpic false) after Jack tip 497d454. Added REQ-008 + todo fix-library-open-present-hydrate; selected that task. No product code. Draft PR #21 only.",
+  "planningNotes": "Planning loop 11 @ 2026-09-15T00:14:31.000Z: reopened epic (completeEpic false) after Jack tip 7c947cd. Added REQ-009 + todo fix-appimage-blank-deck-present-send-after-import; selected that task. No product code. Draft PR #21 only.",
   "planningBrief": {
-    "fix-library-open-present-hydrate": {
+    "fix-appimage-blank-deck-present-send-after-import": {
       "alreadyPresent": [
-        "REQ-006 blank-deck Open Present main-owned present-session + PR #18 electron-direct (Jack 497d454: 3/3 PASS + send)",
-        "Shared Deck handleOpenPresent \u2192 openPresentForRuntime for both blank and library decks",
-        "On Program / message-only / theme / library root / Home PASS on tip 497d454",
-        "docs/appimage-residual-risk.md checklist exists (needs 497d454 note in a later doc touch if desired)"
+        "REQ-008 Library Open\u2192Present AppImage 3/3 PASS @ tip 7c947cd",
+        "REQ-006 main-owned present-session + PR #18 electron-direct (tip Electron Present path green)",
+        "CI installers green; tip unpackaged Electron PASS for blank-deck Present+send",
+        "docs/appimage-residual-risk.md checklist exists"
       ],
       "stillNeeded": [
-        "Prove why Library Open \u2192 Present sticks on SSR Loading while blank-deck does not",
-        "Check Library Deck open features (noopener, named posterDeck, location.assign) vs window.poster / preload",
-        "Confirm setWindowOpenHandler kind on failing open: present-session vs present-blank",
-        "Fix path so Library\u2192Present uses reliable hydrate (main-owned loadURL / electron-direct)",
-        "Add Electron e2e coverage for library-open \u2192 Present present-ready",
-        "Keep blank-deck Open Present green; draft PR #21 stays draft"
+        "Reproduce AppImage blank-deck: file import \u2192 Open Present \u2192 send flake (~1/3\u20131/2)",
+        "Compare named posterDeck / focusImport FileReader timing vs Library _blank path",
+        "Confirm failing opens: present-session main loadURL vs present-blank; window.poster on Deck",
+        "Harden packaged path so post-import Present+send is reliable on AppImage/FUSE",
+        "Add/extend automated coverage that fails when post-import Present+send hangs when broken",
+        "Keep Library Open\u2192Present green; draft PR #21 stays draft"
       ],
       "primaryFiles": [
         "src/presentation/HomePage.tsx",
-        "src/presentation/Deck/openPresentWindow.ts",
         "src/presentation/Deck/DeckBuilder.tsx",
+        "src/presentation/Deck/openPresentWindow.ts",
         "src/adapters/electron/main.cjs",
         "src/adapters/electron/homeWindowPolicy.cjs",
         "tests/e2e/electronHelpers.ts",
-        "ralph/specs/REQ-008.md"
+        "ralph/specs/REQ-009.md"
       ],
       "acceptanceCriteria": [
-        "Library Open \u2192 Open Present reaches present-ready on packaged Electron/AppImage",
-        "Blank-deck Open Present remains reliable (no REQ-006 regression)",
-        "Automated Electron coverage prefers library-open \u2192 Present hydrate"
+        "AppImage blank-deck import \u2192 Open Present \u2192 send reliable across cold repeats",
+        "Library Open \u2192 Present remains reliable (no REQ-008 regression)",
+        "Tip Electron / CI Electron remain green; AppImage confirmation still Jack"
       ],
-      "hypothesis": "After Library Open, Present may still use popup/about:blank (present-blank allow) or wrong URL/session vs blank-deck Open Present \u2014 e.g. Library Deck shell lacks window.poster so planPresentOpen falls back to browser-gesture-blank."
+      "hypothesis": "AppImage/FUSE or post-import timing/session race that tip Electron does not hit \u2014 e.g. Open Present/send before deck session/window.poster/Present ready after FileReader, or named Deck window reuse/policy attach vs Library _blank."
     }
   },
   "jackAppImageBaseline": {
@@ -264,11 +282,19 @@
     "libraryRoot": "pass",
     "home": "pass"
   },
-  "lastUpdated": "2026-09-14T23:52:47.000Z",
-  "epicCompleteNotes": "Epic complete @ 2026-09-14T23:52:47.000Z tip a4a1a18: all todos passes true including REQ-008. Draft PR #21 remains draft \u2014 do not mark ready or merge. Jack AppImage READY still pending manual retest.",
+  "lastUpdated": "2026-09-15T00:14:31.000Z",
+  "epicCompleteNotes": "Previously marked complete after REQ-008 QA; reopened in planning loop 11 after Jack tip 7c947cd AppImage blank-deck Present+send-after-import flake. Draft PR #21 remains draft.",
   "feedback": {
     "taskId": "fix-library-open-present-hydrate",
-    "content": "QA pass REQ-008; completeEpic true; PR #21 stays draft.",
-    "updatedAt": "2026-09-14T23:52:47.000Z"
+    "content": "Epic reopened: Jack tip 7c947cd blank-deck Present+send after import flaky on AppImage.",
+    "updatedAt": "2026-09-15T00:14:31.000Z"
+  },
+  "jackAppImageBaseline7c947cd": {
+    "tip": "7c947cd",
+    "verdict": "NOT_READY",
+    "libraryOpenPresent": "3_of_3_pass",
+    "blankDeckPresentSendAfterFileImportAppImage": "fail_flaky_approx_1_of_3_to_1_of_2",
+    "tipElectron": "pass",
+    "ciInstallers": "green"
   }
 }

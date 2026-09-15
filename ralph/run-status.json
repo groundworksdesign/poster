@@ -1,7 +1,7 @@
 {
-  "updatedAt": "2026-09-14T23:52:47.000Z",
-  "lastLog": "[ralph] QA pass fix-library-open-present-hydrate; completeEpic true; PR #21 stays draft",
-  "loopStatus": "idle",
+  "updatedAt": "2026-09-15T00:14:31.000Z",
+  "lastLog": "[ralph] planning loop 11: reopen epic; selected fix-appimage-blank-deck-present-send-after-import (REQ-009); PR #21 stays draft",
+  "loopStatus": "planning",
   "tag": "ralph",
   "elapsed": null,
   "idle": null,

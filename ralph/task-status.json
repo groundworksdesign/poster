@@ -1,7 +1,7 @@
 {
   "branchName": "cursor/clean-architecture-restructure-018c",
-  "status": "complete",
-  "completeEpic": true,
+  "status": "in_progress",
+  "completeEpic": false,
   "tasks": [
     {
       "id": 1,
@@ -85,20 +85,29 @@
       "updatedAt": "2026-09-14T23:52:47.000Z",
       "notes": "QA PASS @ tip a4a1a18 (2026-09-14T23:52:47.000Z): independent review \u2014 Library Open matches blank-deck POPUP_FEATURES/_blank (no noopener); main still owns present-session. Unit REQ-008 + Open Presentation PASS; Electron electron-library-present-hydrate + electron-program-thumbnail (blank-deck) PASS; openPresentWindow/DeckBuilder Electron Open Present unit PASS. Jack AppImage retest still residual for packaged sign-off. Draft PR #21 stays draft.",
       "qaVerifiedAt": "2026-09-14T23:52:47.000Z"
+    },
+    {
+      "id": 10,
+      "title": "Fix AppImage blank-deck Present send",
+      "description": "Fix packaged AppImage blank-deck cold Open Present + directed send reliability after file import. Jack tip 7c947cd: Library Open\u2192Present 3/3 PASS (REQ-008); blank-deck Present+send after import FAIL flaky (~1/3\u20131/2). Tip Electron PASS; CI installers green. Packaged AppImage/FUSE path only.",
+      "status": "in_progress",
+      "devIterations": 0,
+      "createdAt": "2026-09-15T00:14:31.000Z",
+      "updatedAt": "2026-09-15T00:14:31.000Z"
     }
   ],
-  "currentTaskNum": 9,
-  "totalLLMCalls": 15,
+  "currentTaskNum": 10,
+  "totalLLMCalls": 17,
   "maxLLMCalls": 400,
   "nextTask": {
-    "taskId": 9,
-    "content": "fix-library-open-present-hydrate",
-    "updatedAt": "2026-09-14T23:52:47.000Z"
+    "taskId": 10,
+    "content": "fix-appimage-blank-deck-present-send-after-import",
+    "updatedAt": "2026-09-15T00:14:31.000Z"
   },
   "feedback": {
     "taskId": 9,
-    "content": "QA pass: fix-library-open-present-hydrate (REQ-008). All tasks pass; completeEpic true. PR #21 stays draft.",
-    "updatedAt": "2026-09-14T23:52:47.000Z"
+    "content": "QA previously passed REQ-008. Epic reopened after Jack tip 7c947cd: AppImage blank-deck Present+send after file import flaky; Library Open\u2192Present 3/3 PASS.",
+    "updatedAt": "2026-09-15T00:14:31.000Z"
   },
-  "lastUpdated": "2026-09-14T23:52:47.000Z"
+  "lastUpdated": "2026-09-15T00:14:31.000Z"
 }
