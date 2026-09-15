@@ -128,6 +128,49 @@ export async function openDeckFromLibrary(
   return deck;
 }
 
+/**
+ * Open Deck via Home "Import a file" (REQ-009) — must use _blank like Open Presentation
+ * so attachWindowOpenPolicy runs (not named posterDeck).
+ * Handles focusImport's auto file-picker, then clicks Load.
+ */
+export async function openDeckFromImportFile(
+  app: ElectronApplication,
+  home: Page,
+  deckFile: { name: string; mimeType: string; buffer: Buffer },
+): Promise<Page> {
+  const deckPromise = app.waitForEvent('window');
+  await home.getByTestId('import-file').click();
+  const deck = await deckPromise;
+  // Attach before focusImport's ~100ms fileInput.click() so we do not miss the chooser.
+  const chooserPromise = deck.waitForEvent('filechooser', { timeout: 5000 });
+  await deck.waitForLoadState('domcontentloaded');
+
+  try {
+    const chooser = await chooserPromise;
+    await chooser.setFiles({
+      name: deckFile.name,
+      mimeType: deckFile.mimeType,
+      buffer: deckFile.buffer,
+    });
+  } catch {
+    // If the native chooser was missed/skipped, set the input directly.
+    await deck.setInputFiles('input#file', {
+      name: deckFile.name,
+      mimeType: deckFile.mimeType,
+      buffer: deckFile.buffer,
+    });
+  }
+
+  await expect(deck.getByTestId('deck-session-ready')).toHaveAttribute('data-ready', 'true', {
+    timeout: 15000,
+  });
+  await deck.locator('#load').click();
+  await deck.waitForSelector('#slides', { timeout: 15000 });
+  const skip = deck.getByRole('button', { name: /skip/i });
+  if (await skip.isVisible().catch(() => false)) await skip.click();
+  return deck;
+}
+
 export async function closeApp(app: ElectronApplication | undefined): Promise<void> {
   if (!app) return;
   try {

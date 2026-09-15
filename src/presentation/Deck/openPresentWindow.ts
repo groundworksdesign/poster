@@ -22,6 +22,34 @@ export function hasPosterBridge(
   return !!win.poster;
 }
 
+/**
+ * Wait briefly for Electron preload (`window.poster`) before choosing Present open mode.
+ * AppImage/FUSE can delay first preload inject after heavy FileReader import I/O; falling
+ * through to about:blank immediately recreates the SSR Loading hang on cold Open Present.
+ */
+export async function waitForPosterBridge(
+  win: { poster?: unknown } = typeof window !== 'undefined' ? window : {},
+  opts: {
+    timeoutMs?: number;
+    intervalMs?: number;
+    now?: () => number;
+    sleep?: (ms: number) => Promise<void>;
+  } = {},
+): Promise<boolean> {
+  if (hasPosterBridge(win)) return true;
+  const timeoutMs = opts.timeoutMs ?? 2000;
+  const intervalMs = opts.intervalMs ?? 50;
+  const now = opts.now ?? Date.now;
+  const sleep =
+    opts.sleep ?? ((ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms)));
+  const deadline = now() + timeoutMs;
+  while (now() < deadline) {
+    await sleep(intervalMs);
+    if (hasPosterBridge(win)) return true;
+  }
+  return hasPosterBridge(win);
+}
+
 /** Resolve spawn URL against the deck origin (required after about:blank). */
 export function toAbsolutePresentUrl(url: string, origin: string): string {
   return new URL(url, origin).href;
@@ -78,10 +106,16 @@ export async function openPresentForRuntime(opts: {
   open?: typeof window.open;
   features?: string;
   bridgeWindow?: { poster?: unknown };
+  bridgeWaitMs?: number;
 }): Promise<{ presentId: string; absoluteUrl: string; mode: OpenPresentPlan['mode'] }> {
   const open = opts.open ?? ((...args: Parameters<typeof window.open>) => window.open(...args));
   const features = opts.features ?? PRESENT_OPEN_FEATURES;
-  const plan = planPresentOpen(opts.bridgeWindow ?? window);
+  const bridgeWindow = opts.bridgeWindow ?? window;
+  // Packaged AppImage may expose preload slightly after FileReader import settles.
+  if (!hasPosterBridge(bridgeWindow)) {
+    await waitForPosterBridge(bridgeWindow, { timeoutMs: opts.bridgeWaitMs ?? 2000 });
+  }
+  const plan = planPresentOpen(bridgeWindow);
 
   if (plan.mode === 'electron-direct') {
     const { url, presentId } = await opts.spawnPresent();

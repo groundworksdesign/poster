@@ -4,6 +4,7 @@ import {
   openPresentForRuntime,
   planPresentOpen,
   toAbsolutePresentUrl,
+  waitForPosterBridge,
 } from './openPresentWindow';
 
 describe('openPresentWindow', () => {
@@ -119,6 +120,70 @@ describe('openPresentWindow', () => {
     expect(open).toHaveBeenCalledWith('about:blank', '_blank', expect.any(String));
     expect(location.href).toBe(
       'http://127.0.0.1:3000/presentation?sessionId=s1&presentId=p1',
+    );
+  });
+
+  test('waitForPosterBridge resolves true when poster appears before timeout', async () => {
+    const win: { poster?: unknown } = {};
+    let now = 0;
+    const sleeps: number[] = [];
+    const pending = waitForPosterBridge(win, {
+      timeoutMs: 500,
+      intervalMs: 50,
+      now: () => now,
+      sleep: async (ms) => {
+        sleeps.push(ms);
+        now += ms;
+        if (sleeps.length === 2) win.poster = {};
+      },
+    });
+    await expect(pending).resolves.toBe(true);
+    expect(hasPosterBridge(win)).toBe(true);
+  });
+
+  test('waitForPosterBridge returns false when poster never appears', async () => {
+    let now = 0;
+    await expect(
+      waitForPosterBridge(
+        {},
+        {
+          timeoutMs: 100,
+          intervalMs: 40,
+          now: () => now,
+          sleep: async (ms) => {
+            now += ms;
+          },
+        },
+      ),
+    ).resolves.toBe(false);
+  });
+
+  test('openPresentForRuntime waits for late poster before electron-direct (AppImage import race)', async () => {
+    const open = jest.fn().mockReturnValue({ closed: false });
+    const spawnPresent = jest.fn().mockResolvedValue({
+      url: '/presentation?sessionId=s1&presentId=p1',
+      presentId: 'p1',
+    });
+    const bridgeWindow: { poster?: unknown } = {};
+    // Expose poster after openPresentForRuntime begins waiting.
+    setTimeout(() => {
+      bridgeWindow.poster = { deckCommand: jest.fn() };
+    }, 30);
+
+    const result = await openPresentForRuntime({
+      spawnPresent,
+      origin: 'http://127.0.0.1:3000',
+      open: open as unknown as typeof window.open,
+      bridgeWindow,
+      bridgeWaitMs: 500,
+    });
+
+    expect(result.mode).toBe('electron-direct');
+    expect(open.mock.calls.some((call) => call[0] === 'about:blank')).toBe(false);
+    expect(open).toHaveBeenCalledWith(
+      'http://127.0.0.1:3000/presentation?sessionId=s1&presentId=p1',
+      '_blank',
+      expect.any(String),
     );
   });
 });

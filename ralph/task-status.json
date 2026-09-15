@@ -90,10 +90,11 @@
       "id": 10,
       "title": "Fix AppImage blank-deck Present send",
       "description": "Fix packaged AppImage blank-deck cold Open Present + directed send reliability after file import. Jack tip 7c947cd: Library Open\u2192Present 3/3 PASS (REQ-008); blank-deck Present+send after import FAIL flaky (~1/3\u20131/2). Tip Electron PASS; CI installers green. Packaged AppImage/FUSE path only.",
-      "status": "in_progress",
-      "devIterations": 0,
+      "status": "done",
+      "devIterations": 1,
       "createdAt": "2026-09-15T00:14:31.000Z",
-      "updatedAt": "2026-09-15T00:14:31.000Z"
+      "updatedAt": "2026-09-15T00:28:24.000Z",
+      "notes": "DEV: Import _blank + waitForPosterBridge + Start gated on child-ready; e2e electron-import-present-send; residual-risk tip 7c947cd. passesQA false; completeEpic false."
     }
   ],
   "currentTaskNum": 10,
@@ -109,5 +110,5 @@
     "content": "QA previously passed REQ-008. Epic reopened after Jack tip 7c947cd: AppImage blank-deck Present+send after file import flaky; Library Open\u2192Present 3/3 PASS.",
     "updatedAt": "2026-09-15T00:14:31.000Z"
   },
-  "lastUpdated": "2026-09-15T00:14:31.000Z"
+  "lastUpdated": "2026-09-15T00:28:24.000Z"
 }

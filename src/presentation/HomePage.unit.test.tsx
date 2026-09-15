@@ -68,6 +68,25 @@ test('Open Presentation opens a deck window and leaves Home put', () => {
   expect(screen.getByText(/library of saved presentations/i)).toBeInTheDocument();
 });
 
+test('REQ-009: Import a file uses _blank + POPUP_FEATURES (not named posterDeck / noopener)', () => {
+  const openSpy = jest.spyOn(window, 'open').mockReturnValue({
+    opener: null,
+    focus: jest.fn(),
+  } as unknown as Window);
+
+  render(<HomePage />);
+  fireEvent.click(screen.getByTestId('import-file'));
+
+  expect(openSpy).toHaveBeenCalled();
+  const [url, target, features] = openSpy.mock.calls[0];
+  expect(String(url)).toContain('/deck?focusImport=1');
+  expect(target).toBe('_blank');
+  expect(String(features)).toContain('width=1280');
+  expect(String(features)).not.toMatch(/noopener/);
+  expect(String(features)).not.toMatch(/noreferrer/);
+  expect(target).not.toBe('posterDeck');
+  expect(screen.getByRole('heading', { level: 1, name: 'Poster' })).toBeInTheDocument();
+});
 
 test('REQ-008: Library Open uses POPUP_FEATURES without noopener (Electron did-create-window)', async () => {
   const openSpy = jest.spyOn(window, 'open').mockReturnValue({

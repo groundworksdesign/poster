@@ -153,7 +153,8 @@ export default function HomePage() {
         <a
           className="home-page-link home-page-link--import"
           href="/deck?focusImport=1"
-          onClick={(e) => openAppWindow(e, 'posterDeck')}
+          data-testid="import-file"
+          onClick={openDeckWindow}
         >
           Import a file
         </a>

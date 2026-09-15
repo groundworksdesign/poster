@@ -29,6 +29,7 @@ export default function DeckBuilder() {
   const deckSessionRef = useRef<DeckSession | null>(null);
   const [deckSessionReady, setDeckSessionReady] = useState(false);
   const [presentChildren, setPresentChildren] = useState<string[]>([]);
+  const [readyPresentIds, setReadyPresentIds] = useState<string[]>([]);
   /** Last program snapshot reported by a Present child (directed deck-event). */
   const [programThumbnail, setProgramThumbnail] = useState<{
     presentId: string;
@@ -80,8 +81,12 @@ export default function DeckBuilder() {
           setPresentChildren((prev) =>
             prev.includes(event.presentId) ? prev : [...prev, event.presentId],
           );
+          setReadyPresentIds((prev) =>
+            prev.includes(event.presentId) ? prev : [...prev, event.presentId],
+          );
         } else if (event.type === 'child-closed') {
           setPresentChildren((prev) => prev.filter((id) => id !== event.presentId));
+          setReadyPresentIds((prev) => prev.filter((id) => id !== event.presentId));
           setSendTarget((current) => (current === event.presentId ? 'all' : current));
           setProgramThumbnail((current) =>
             current && current.presentId === event.presentId ? null : current,
@@ -973,6 +978,9 @@ export default function DeckBuilder() {
         <span data-testid="deck-session-ready" data-ready={deckSessionReady ? 'true' : 'false'} hidden>
           {deckSessionReady ? 'ready' : 'pending'}
         </span>
+        <span data-testid="present-session-ready" data-ready={readyPresentIds.length > 0 ? 'true' : 'false'} hidden>
+          {readyPresentIds.length > 0 ? 'ready' : 'pending'}
+        </span>
 
         <div
           data-testid="present-targets"
@@ -1053,7 +1061,7 @@ export default function DeckBuilder() {
           <div className="deck-page-panel" data-testid="presentation-controls">
             <h3>Presentation</h3>
             <div className="deck-presentation-controls">
-              <button type="button" onClick={navigatePresentationStart} disabled={deck.slides.length === 0}>Start</button>
+              <button type="button" data-testid="presentation-start" onClick={navigatePresentationStart} disabled={deck.slides.length === 0 || readyPresentIds.length === 0} title={readyPresentIds.length === 0 ? 'Wait for Present to finish loading' : undefined}>Start</button>
               <button type="button" onClick={navigatePresentationPrevious} disabled={deck.slides.length === 0}>Previous</button>
               <button type="button" onClick={navigatePresentationNext} disabled={deck.slides.length === 0}>Next</button>
               <button type="button" onClick={navigatePresentationEnd}>End</button>

@@ -216,3 +216,11 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - Reopened epic (`completeEpic` false / `status` in_progress). Added REQ-009 + todo `fix-appimage-blank-deck-present-send-after-import`; selected that task (task-status id 10).
 - Hypothesis for DEV: AppImage/FUSE or post-import timing/session race tip Electron does not hit (FileReader import, named `posterDeck` window, Present/send before session ready).
 - Draft PR #21 only; no product code this persona.
+
+## Epic-006 DEV (fix-appimage-blank-deck-present-send-after-import)
+
+- Root cause: AppImage/FUSE + post-import race — named `posterDeck` Import window and/or late `window.poster` after FileReader made cold Open Present fall through to about:blank SSR Loading; Start/send could fire before Present child-ready.
+- Fix: Import CTA uses `_blank`+POPUP_FEATURES; `waitForPosterBridge` before `planPresentOpen`; Start gated on Present `child-ready`.
+- Tests: HomePage REQ-009 unit; openPresentWindow late-poster unit; `tests/e2e/electron-import-present-send.spec.ts`.
+- Docs: `docs/appimage-residual-risk.md` tip `7c947cd` + Import→Present→send checklist.
+- passes left false for QA; completeEpic false; draft PR #21 only.

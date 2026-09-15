@@ -204,9 +204,10 @@
       "id": "fix-appimage-blank-deck-present-send-after-import",
       "content": "Fix packaged AppImage blank-deck cold Open Present + directed send after file import. Jack tip 7c947cd: Library Open\u2192Present 3/3 PASS; blank-deck Present+send after import FAIL flaky (~1/3\u20131/2). Tip Electron PASS; CI installers green. Distinct from REQ-008 Library path.",
       "requirementId": "REQ-009",
-      "status": "pending",
+      "status": "done",
       "passes": false,
-      "notes": "Planning loop 11 selected. Hypothesis: AppImage/FUSE or post-import timing/session race that tip Electron does not hit (FileReader import, named posterDeck window, Present/send before session ready)."
+      "notes": "DEV done @ 2026-09-15T00:28:24.000Z: Import CTA _blank (not posterDeck); waitForPosterBridge before planPresentOpen; Start gated on Present child-ready; electron-import-present-send e2e + HomePage/openPresentWindow unit. passes=false for QA/Jack AppImage. completeEpic=false. Draft PR #21 only.",
+      "devCompletedAt": "2026-09-15T00:28:24.000Z"
     }
   ],
   "acceptanceCriteria": [
@@ -282,7 +283,7 @@
     "libraryRoot": "pass",
     "home": "pass"
   },
-  "lastUpdated": "2026-09-15T00:14:31.000Z",
+  "lastUpdated": "2026-09-15T00:28:24.000Z",
   "epicCompleteNotes": "Previously marked complete after REQ-008 QA; reopened in planning loop 11 after Jack tip 7c947cd AppImage blank-deck Present+send-after-import flake. Draft PR #21 remains draft.",
   "feedback": {
     "taskId": "fix-library-open-present-hydrate",
