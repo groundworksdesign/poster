@@ -99,6 +99,17 @@ describe('src/adapters/electron/main.cjs launch safety (all Electron installers)
     );
   });
 
+  it('attaches REQ-010 hydrate watchdog on present-session (reload stuck SSR Loading)', () => {
+    expect(mainSource).toMatch(/attachPresentHydrateWatchdog/);
+    expect(mainSource).toMatch(/presentHydrateWatchdog\.cjs/);
+    const openBlock = mainSource.slice(
+      mainSource.indexOf('function openPresentSessionWindow'),
+      mainSource.indexOf('function attachWindowOpenPolicy'),
+    );
+    expect(openBlock).toMatch(/attachPresentHydrateWatchdog\(present\.webContents\)/);
+    expect(openBlock).toMatch(/backgroundThrottling:\s*false/);
+    expect(openBlock).toMatch(/present\.loadURL\(absoluteUrl\)/);
+  });
   it('fails fast when packaged node_modules/express is missing', () => {
     expect(mainSource).toMatch(/node_modules['"].*express/);
     expect(mainSource).toMatch(/missing node_modules\/express/);

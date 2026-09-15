@@ -225,7 +225,7 @@
       "requirementId": "REQ-010",
       "status": "pending",
       "passes": false,
-      "notes": "Planning loop 12 selected. Hypothesis: main-owned present-session loadURL / Remix SSR / present-ready handshake timing under AppImage FUSE; Start/send may still race; preload may not finish before first paint."
+      "notes": "DEV landed hydrate watchdog (presentHydrateWatchdog.cjs + Present __posterPresentClientBoot + backgroundThrottling false). Unit + stress e2e added. passesQA false — needs QA + Jack AppImage cold repeats."
     }
   ],
   "acceptanceCriteria": [

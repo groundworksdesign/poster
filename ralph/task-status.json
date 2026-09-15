@@ -102,9 +102,10 @@
       "title": "Fix AppImage Present hydrate real URL preload",
       "description": "Fix packaged AppImage Present client hydrate when URL already has real presentId and preload is present (SSR Loading hang/race). Jack tip c3a1642: blank-deck+import cold Present flaky 7/12 (~58%). NOT about:blank. Distinct from REQ-009.",
       "status": "in_progress",
-      "devIterations": 0,
+      "devIterations": 1,
       "createdAt": "2026-09-15T01:01:26.000Z",
-      "updatedAt": "2026-09-15T01:01:26.000Z"
+      "updatedAt": "2026-09-15T01:15:00.000Z",
+      "notes": "DEV: presentHydrateWatchdog + client boot marker + stress e2e. passesQA false."
     }
   ],
   "currentTaskNum": 11,
@@ -113,12 +114,12 @@
   "nextTask": {
     "taskId": 11,
     "content": "fix-appimage-present-hydrate-real-url-preload",
-    "updatedAt": "2026-09-15T01:01:26.000Z"
+    "updatedAt": "2026-09-15T01:15:00.000Z"
   },
   "feedback": {
     "taskId": 10,
     "content": "QA previously passed REQ-009 @ 083bfcb. Epic reopened after Jack tip c3a1642: AppImage Present still flaky Loading with preload + real presentId URL (not about:blank).",
     "updatedAt": "2026-09-15T01:01:26.000Z"
   },
-  "lastUpdated": "2026-09-15T01:01:26.000Z"
+  "lastUpdated": "2026-09-15T01:15:00.000Z"
 }

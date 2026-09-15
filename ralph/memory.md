@@ -242,4 +242,11 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - Tip `c3a1642` AppImage: NOT READY. Blank-deck+import cold Present flaky 7/12 (~58%) stuck SSR Loading with **preload + real presentId URL** (not about:blank). Library Open→Present primary 3/3 PASS, later 1/2 flake. Tip Electron blank+library PASS.
 - Reopened epic (`completeEpic` false / `status` in_progress). Added REQ-010 + todo `fix-appimage-present-hydrate-real-url-preload`; selected that task (task-status id 11).
 - Hypothesis for DEV: main-owned present-session loadURL / Remix SSR / present-ready handshake under AppImage FUSE; Start/send may still race; preload may not finish before first paint.
+
+## Epic-006 DEV (fix-appimage-present-hydrate-real-url-preload)
+
+- Root cause: under AppImage/FUSE, main-owned present-session `loadURL` can finish with preload + real presentId while Remix client never boots, leaving SSR `Loading...` forever.
+- Fix: `presentHydrateWatchdog.cjs` — after `did-finish-load`, poll for `__posterPresentClientBoot` / `present-ready`; if client never boots within grace, `webContents.reload()` once. Present sets client boot marker; present-session window uses `backgroundThrottling: false`.
+- Tests: unit watchdog + main regression; e2e `electron-present-hydrate-stress.spec.ts` (3× cold Open Present with presentId URL + preload assert).
+- passesQA false — needs QA + Jack AppImage cold repeats.
 - Draft PR #21 only; no product code this persona.

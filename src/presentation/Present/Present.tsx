@@ -14,6 +14,15 @@ import { applyPresentPayload } from '../../domain/applyPresentPayload';
 import { useTheme } from '../useTheme';
 import { buildProgramThumbnail } from '../../domain/programThumbnail';
 
+/**
+ * REQ-010: Mark that Present client JS evaluated in the browser.
+ * Main-process hydrate watchdog polls this to detect SSR-only stuck Loading
+ * under AppImage/FUSE when presentId URL + preload are already correct.
+ */
+if (typeof window !== 'undefined') {
+  (window as Window & { __posterPresentClientBoot?: boolean }).__posterPresentClientBoot = true;
+}
+
 function flexAlignFromHorizontal(h?: HorizontalAlign): React.CSSProperties['alignItems'] {
   if (h === HorizontalAlign.LEFT) return 'flex-start';
   if (h === HorizontalAlign.RIGHT) return 'flex-end';

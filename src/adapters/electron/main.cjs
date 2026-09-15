@@ -12,6 +12,7 @@ const {
   classifyOpenUrl,
   shouldCreateHomeWindow,
 } = require('./homeWindowPolicy.cjs');
+const { attachPresentHydrateWatchdog } = require('./presentHydrateWatchdog.cjs');
 const { readThemePrefs, writeThemePrefs } = require('./themePrefs.cjs');
 
 ipcMain.on('poster:read-theme-sync', (event) => {
@@ -224,6 +225,10 @@ function defaultWebPreferences() {
  * on packaged AppImage that path can still leave SSR "Loading..." with no Remix
  * client hydrate on cold first open (Jack 2/3). Main-owned loadURL matches how
  * Home opens Deck and restores PR #18 reliability under the clean-arch layout.
+ *
+ * REQ-010: even with preload + real presentId URL, AppImage/FUSE can leave Remix
+ * SSR "Loading..." without client boot. Watchdog reloads once if client boot
+ * never appears after did-finish-load (see presentHydrateWatchdog.cjs).
  */
 function openPresentSessionWindow(absoluteUrl) {
   const present = new BrowserWindow({
@@ -231,10 +236,15 @@ function openPresentSessionWindow(absoluteUrl) {
     height: 800,
     show: true,
     title: 'Poster Present',
-    webPreferences: defaultWebPreferences(),
+    webPreferences: {
+      ...defaultWebPreferences(),
+      // Avoid Chromium throttling Present while Deck stays focused (FUSE race).
+      backgroundThrottling: false,
+    },
   });
   attachWindowLifecycle(present);
   attachWindowOpenPolicy(present);
+  attachPresentHydrateWatchdog(present.webContents);
   present.loadURL(absoluteUrl);
   return present;
 }
