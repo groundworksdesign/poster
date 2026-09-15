@@ -2,9 +2,9 @@
   "epic": "epic-006-clean-architecture-harden",
   "branch": "cursor/clean-architecture-restructure-018c",
   "status": "in_progress",
-  "loop": 11,
+  "loop": 12,
   "persona": "planning",
-  "completeEpic": true,
+  "completeEpic": false,
   "requirements": [
     {
       "id": "REQ-001",
@@ -82,10 +82,19 @@
     {
       "id": "REQ-009",
       "title": "AppImage blank-deck Present+send after file import",
-      "description": "On packaged AppImage, blank-deck cold Open Present + directed send after file import must be reliable (not flaky ~1/3\u20131/2). Tip Electron and CI installers already green; Jack tip 7c947cd Library Open\u2192Present 3/3 PASS (REQ-008).",
-      "status": "pending",
+      "description": "On packaged AppImage, blank-deck cold Open Present + directed send after file import must be reliable. Tip Electron/CI green; Jack tip 7c947cd baseline. Tip c3a1642 showed remaining hydrate flake with real URL+preload \u2192 REQ-010.",
+      "status": "done",
       "todoIds": [
         "fix-appimage-blank-deck-present-send-after-import"
+      ]
+    },
+    {
+      "id": "REQ-010",
+      "title": "AppImage Present client hydrate with real presentId URL + preload",
+      "description": "On packaged AppImage, cold Open Present must leave SSR Loading and reach present-ready when the window already has preload and a real presentId Present URL (main-owned present-session loadURL \u2014 not about:blank). Jack tip c3a1642: blank-deck+import cold Present flaky 7/12 (~58%) stuck Loading with preload+real URL.",
+      "status": "pending",
+      "todoIds": [
+        "fix-appimage-present-hydrate-real-url-preload"
       ]
     }
   ],
@@ -206,9 +215,17 @@
       "requirementId": "REQ-009",
       "status": "done",
       "passes": true,
-      "notes": "QA PASS @ tip 083bfcb (2026-09-15T00:41:52.000Z): independent review \u2014 openPresentForRuntime waits for late poster only on Electron UA (browser about:blank sync); Import CTA _blank; Start gated on Present child-ready. Unit 261 PASS; Electron import-present-send + library-present-hydrate + program-thumbnail PASS; CI Unit and integration tests green on tip. Draft PR #21 stays draft. Jack AppImage retest still residual for packaged sign-off.",
+      "notes": "QA PASS @ tip 083bfcb (2026-09-15T00:41:52.000Z): independent review \u2014 openPresentForRuntime waits for late poster only on Electron UA (browser about:blank sync); Import CTA _blank; Start gated on Present child-ready. Unit 261 PASS; Electron import-present-send + library-present-hydrate + program-thumbnail PASS; CI Unit and integration tests green on tip. Draft PR #21 stays draft. Jack AppImage retest still residual for packaged sign-off. Jack recheck tip c3a1642: NOT READY \u2014 blank-deck+import cold Present still flaky 7/12 with preload+real presentId URL (about:blank path fixed but hydrate race remains). Tracked as REQ-010.",
       "devCompletedAt": "2026-09-15T00:28:24.000Z",
       "qaVerifiedAt": "2026-09-15T00:41:52.000Z"
+    },
+    {
+      "id": "fix-appimage-present-hydrate-real-url-preload",
+      "content": "Fix packaged AppImage Present client hydrate when URL is already a real presentId present-session URL and preload is present (SSR Loading hang / race). Jack tip c3a1642: blank-deck+import cold Present flaky 7/12 (~58%) \u2014 NOT about:blank. Distinct from REQ-009 about:blank/named-window fallthrough. Tip Electron PASS.",
+      "requirementId": "REQ-010",
+      "status": "pending",
+      "passes": false,
+      "notes": "Planning loop 12 selected. Hypothesis: main-owned present-session loadURL / Remix SSR / present-ready handshake timing under AppImage FUSE; Start/send may still race; preload may not finish before first paint."
     }
   ],
   "acceptanceCriteria": [
@@ -224,44 +241,43 @@
     "On Program works on packaged Electron after Present hydrate is reliable.",
     "Residual AppImage risk + Jack checklist documented (include 9f124e1 and 497d454 baselines); draft PR #21 not marked ready or merged.",
     "No .ralph/ directory; ralph/ is only this loop harness.",
-    "Packaged AppImage blank-deck cold Open Present + send after file import is reliable (not flaky \u22651/3 fail)."
+    "Packaged AppImage blank-deck cold Open Present + send after file import is reliable (not flaky \u22651/3 fail).",
+    "Packaged AppImage cold Open Present reaches present-ready when present-session URL already has presentId and preload is present (not flaky SSR Loading hang)."
   ],
   "selected": {
-    "id": "fix-appimage-blank-deck-present-send-after-import",
-    "reason": "Loop 11 @ tip 7c947cd: Jack AppImage NOT READY solely on blank-deck Present+send after file import (flaky). Library Open\u2192Present 3/3 PASS so REQ-008 is insufficient. Highest packaged-sign-off risk."
+    "id": "fix-appimage-present-hydrate-real-url-preload",
+    "reason": "Loop 12 @ tip c3a1642: Jack AppImage NOT READY. Blank-deck+import cold Present flaky 7/12 stuck Loading with preload + real presentId URL \u2014 REQ-009 about:blank harden incomplete. Highest packaged-sign-off risk; distinct failure mode from about:blank fallthrough."
   },
-  "planningNotes": "Planning loop 11 @ 2026-09-15T00:14:31.000Z: reopened epic (completeEpic false) after Jack tip 7c947cd. Added REQ-009 + todo fix-appimage-blank-deck-present-send-after-import; selected that task. No product code. Draft PR #21 only.",
+  "planningNotes": "Planning loop 12 @ 2026-09-15T01:01:26.000Z: reopened epic (completeEpic false) after Jack tip c3a1642. Added REQ-010 + todo fix-appimage-present-hydrate-real-url-preload; selected that task. No product code. Draft PR #21 only.",
   "planningBrief": {
-    "fix-appimage-blank-deck-present-send-after-import": {
+    "fix-appimage-present-hydrate-real-url-preload": {
       "alreadyPresent": [
-        "REQ-008 Library Open\u2192Present AppImage 3/3 PASS @ tip 7c947cd",
-        "REQ-006 main-owned present-session + PR #18 electron-direct (tip Electron Present path green)",
-        "CI installers green; tip unpackaged Electron PASS for blank-deck Present+send",
-        "docs/appimage-residual-risk.md checklist exists"
+        "REQ-006/009 main-owned present-session loadURL + electron-direct (tip Electron green)",
+        "REQ-009 Import _blank + Electron-UA waitForPosterBridge + Start gated on child-ready",
+        "Jack tip c3a1642: failing opens already have preload + real presentId URL (not about:blank)",
+        "Tip Electron blank+library PASS; CI installers previously green on QA tip"
       ],
       "stillNeeded": [
-        "Reproduce AppImage blank-deck: file import \u2192 Open Present \u2192 send flake (~1/3\u20131/2)",
-        "Compare named posterDeck / focusImport FileReader timing vs Library _blank path",
-        "Confirm failing opens: present-session main loadURL vs present-blank; window.poster on Deck",
-        "Harden packaged path so post-import Present+send is reliable on AppImage/FUSE",
-        "Add/extend automated coverage that fails when post-import Present+send hangs when broken",
+        "Reproduce AppImage cold Present stuck Loading with presentId URL + preload (blank-deck \u00b1 import)",
+        "Inspect main present-session loadURL / did-finish-load / Remix hydrate / present-ready handshake under FUSE",
+        "Harden so client hydrate is reliable when session URL+preload are already correct",
+        "Add/extend coverage that fails when hydrate hangs despite real URL (Electron stress if feasible)",
         "Keep Library Open\u2192Present green; draft PR #21 stays draft"
       ],
       "primaryFiles": [
-        "src/presentation/HomePage.tsx",
-        "src/presentation/Deck/DeckBuilder.tsx",
-        "src/presentation/Deck/openPresentWindow.ts",
         "src/adapters/electron/main.cjs",
         "src/adapters/electron/homeWindowPolicy.cjs",
+        "src/presentation/Deck/openPresentWindow.ts",
+        "Present route / present-ready client boot",
         "tests/e2e/electronHelpers.ts",
-        "ralph/specs/REQ-009.md"
+        "ralph/specs/REQ-010.md"
       ],
       "acceptanceCriteria": [
-        "AppImage blank-deck import \u2192 Open Present \u2192 send reliable across cold repeats",
-        "Library Open \u2192 Present remains reliable (no REQ-008 regression)",
-        "Tip Electron / CI Electron remain green; AppImage confirmation still Jack"
+        "AppImage cold Open Present reaches present-ready reliably when URL already has presentId + preload",
+        "Blank-deck \u00b1 import flake rate not ~1/2 stuck Loading",
+        "Library Open\u2192Present remains reliable; tip Electron remains green"
       ],
-      "hypothesis": "AppImage/FUSE or post-import timing/session race that tip Electron does not hit \u2014 e.g. Open Present/send before deck session/window.poster/Present ready after FileReader, or named Deck window reuse/policy attach vs Library _blank."
+      "hypothesis": "AppImage/FUSE timing: main-owned present-session loadURL + Remix SSR first paint + present-ready handshake \u2014 preload may not finish before first paint; Start/send may still race. Tip Electron rarely hits this."
     }
   },
   "jackAppImageBaseline": {
@@ -284,12 +300,12 @@
     "libraryRoot": "pass",
     "home": "pass"
   },
-  "lastUpdated": "2026-09-15T00:41:52.000Z",
-  "epicCompleteNotes": "Epic complete after REQ-009 QA PASS @ 083bfcb. Draft PR #21 remains draft (Jack AppImage Import\u2192Present\u2192send confirmation still residual).",
+  "lastUpdated": "2026-09-15T01:01:26.000Z",
+  "epicCompleteNotes": "Previously complete after REQ-009 QA @ 083bfcb; reopened in planning loop 12 after Jack tip c3a1642 AppImage Present hydrate flake with real presentId URL + preload (not about:blank). Draft PR #21 stays draft.",
   "feedback": {
-    "taskId": "fix-library-open-present-hydrate",
-    "content": "Epic reopened: Jack tip 7c947cd blank-deck Present+send after import flaky on AppImage.",
-    "updatedAt": "2026-09-15T00:14:31.000Z"
+    "taskId": "fix-appimage-blank-deck-present-send-after-import",
+    "content": "Epic reopened: Jack tip c3a1642 AppImage NOT READY. Blank-deck+import cold Present flaky 7/12 (~58%) stuck Loading with preload + real presentId URL (REQ-009 about:blank fix incomplete). Library Open\u2192Present primary 3/3 PASS, later 1/2 flake. Tip Electron PASS.",
+    "updatedAt": "2026-09-15T01:01:26.000Z"
   },
   "jackAppImageBaseline7c947cd": {
     "tip": "7c947cd",
@@ -298,5 +314,13 @@
     "blankDeckPresentSendAfterFileImportAppImage": "fail_flaky_approx_1_of_3_to_1_of_2",
     "tipElectron": "pass",
     "ciInstallers": "green"
+  },
+  "jackAppImageBaselineC3a1642": {
+    "tip": "c3a1642",
+    "verdict": "NOT_READY",
+    "blankDeckImportColdPresentAppImage": "fail_flaky_7_of_12_ssr_loading_with_preload_and_real_presentId_url",
+    "libraryOpenPresent": "primary_3_of_3_pass_later_1_of_2_flake",
+    "tipElectronBlankAndLibrary": "pass",
+    "note": "Failure mode is NOT about:blank \u2014 main-owned present-session URL + preload already present."
   }
 }

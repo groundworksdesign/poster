@@ -8,7 +8,21 @@ This note records residual risk after the `src/` rings + `tests/e2e` move, what 
 
 ---
 
-## Jack AppImage baseline (tip `7c947cd`) — NOT READY (current packaged blocker)
+## Jack AppImage baseline (tip `c3a1642`) — NOT READY (current packaged blocker)
+
+After REQ-009 engineering QA (about:blank / late-poster / Start gate), Jack retested tip `c3a1642`:
+
+| Area | Result on tip `c3a1642` |
+| --- | --- |
+| **Blank-deck + import cold Present** | **FAIL (flaky) 7/12 (~58%)** — SSR Loading with **preload + real presentId URL** (not about:blank) |
+| Library Open → Present | Primary **3/3 PASS**; later **1/2 flake** |
+| Tip unpackaged Electron (blank + library) | PASS |
+
+**REQ-010 (selected):** Harden Present **client hydrate** when main-owned present-session URL already has `presentId` and preload is present. Hypothesis: AppImage/FUSE `loadURL` / Remix SSR / `present-ready` handshake timing; Start/send may still race; preload may not finish before first paint. Tip Electron rarely hits this. **Still not AppImage proof** until Jack cold repeats are green.
+
+---
+
+## Jack AppImage baseline (tip `7c947cd`) — NOT READY (superseded by `c3a1642`) (superseded by `c3a1642`)
 
 After REQ-008 Library Open→Present landed, Jack retested tip `7c947cd`:
 

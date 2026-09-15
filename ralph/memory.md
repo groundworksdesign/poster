@@ -236,3 +236,10 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - PASS (2026-09-15T00:41:52.000Z): tip 083bfcb — Electron-UA-gated waitForPosterBridge; browser about:blank restored; Import _blank; Start on child-ready.
 - Unit 261 PASS; Electron import→Present→send + library hydrate + program thumbnail PASS; CI Unit job green.
 - completeEpic true. Draft PR #21 stays draft. Jack AppImage READY still residual.
+
+## Epic-006 planning (loop 12) — Jack tip c3a1642 Present hydrate real URL+preload
+
+- Tip `c3a1642` AppImage: NOT READY. Blank-deck+import cold Present flaky 7/12 (~58%) stuck SSR Loading with **preload + real presentId URL** (not about:blank). Library Open→Present primary 3/3 PASS, later 1/2 flake. Tip Electron blank+library PASS.
+- Reopened epic (`completeEpic` false / `status` in_progress). Added REQ-010 + todo `fix-appimage-present-hydrate-real-url-preload`; selected that task (task-status id 11).
+- Hypothesis for DEV: main-owned present-session loadURL / Remix SSR / present-ready handshake under AppImage FUSE; Start/send may still race; preload may not finish before first paint.
+- Draft PR #21 only; no product code this persona.
