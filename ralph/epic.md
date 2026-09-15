@@ -132,7 +132,7 @@ Confirmed on tip `c3a1642` / planning sync (this commit):
 8. **document-appimage-residual-risk** — DONE (QA passed).
 9. **fix-library-open-present-hydrate** — **DONE** (REQ-008 QA-passed @ a4a1a18; Jack AppImage Library Open→Present 3/3 PASS @ 7c947cd).
 10. **fix-appimage-blank-deck-present-send-after-import** — **DONE** (REQ-009 QA-passed @ 083bfcb; Jack tip `c3a1642` showed remaining hydrate race → REQ-010).
-11. **fix-appimage-present-hydrate-real-url-preload** — **SELECTED** (REQ-010). Harden AppImage Present client hydrate when presentId URL + preload already present (flaky Loading on tip `c3a1642`).
+11. **fix-appimage-present-hydrate-real-url-preload** — **DONE** (REQ-010 QA-passed @ `db1c30e`; Jack AppImage cold repeats still residual).
 
 
 ### Functional requirements
@@ -159,8 +159,8 @@ Confirmed on tip `c3a1642` / planning sync (this commit):
 - [x] REQ-007 On Program verified after Present hydrate is reliable (Electron e2e QA-passed; Jack tip 497d454 On Program PASS).
 - [x] REQ-008 Library Open → Present reaches `present-ready` (engineering + Electron e2e QA-passed @ a4a1a18; Jack tip 7c947cd AppImage 3/3 PASS).
 - [x] REQ-009 about:blank / late-poster / Start-gate harden landed + engineering QA-passed @ 083bfcb (Jack tip `c3a1642` residual → REQ-010).
-- [ ] REQ-010 AppImage Present client hydrate reliable when presentId URL + preload already present (Jack tip `c3a1642` flaky 7/12 Loading).
-- [ ] No `.ralph/`; `ralph/` is only the loop harness for this pass.
+- [x] REQ-010 AppImage Present client hydrate engineering harden landed + QA-passed @ `db1c30e` (watchdog reload-once; tip Electron stress/import/library green). Jack AppImage cold repeats still residual for packaged sign-off.
+- [x] No `.ralph/`; `ralph/` is only the loop harness for this pass.
 
 ## Out of scope
 

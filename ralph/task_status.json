@@ -1,10 +1,10 @@
 {
   "epic": "epic-006-clean-architecture-harden",
   "branch": "cursor/clean-architecture-restructure-018c",
-  "status": "in_progress",
+  "status": "complete",
   "loop": 12,
   "persona": "planning",
-  "completeEpic": false,
+  "completeEpic": true,
   "requirements": [
     {
       "id": "REQ-001",
@@ -92,7 +92,7 @@
       "id": "REQ-010",
       "title": "AppImage Present client hydrate with real presentId URL + preload",
       "description": "On packaged AppImage, cold Open Present must leave SSR Loading and reach present-ready when the window already has preload and a real presentId Present URL (main-owned present-session loadURL \u2014 not about:blank). Jack tip c3a1642: blank-deck+import cold Present flaky 7/12 (~58%) stuck Loading with preload+real URL.",
-      "status": "pending",
+      "status": "done",
       "todoIds": [
         "fix-appimage-present-hydrate-real-url-preload"
       ]
@@ -223,9 +223,12 @@
       "id": "fix-appimage-present-hydrate-real-url-preload",
       "content": "Fix packaged AppImage Present client hydrate when URL is already a real presentId present-session URL and preload is present (SSR Loading hang / race). Jack tip c3a1642: blank-deck+import cold Present flaky 7/12 (~58%) \u2014 NOT about:blank. Distinct from REQ-009 about:blank/named-window fallthrough. Tip Electron PASS.",
       "requirementId": "REQ-010",
-      "status": "pending",
-      "passes": false,
-      "notes": "DEV landed hydrate watchdog (presentHydrateWatchdog.cjs + Present __posterPresentClientBoot + backgroundThrottling false). Unit + stress e2e added. passesQA false — needs QA + Jack AppImage cold repeats."
+      "status": "done",
+      "passes": true,
+      "notes": "QA PASS @ tip db1c30e (2026-09-15T01:14:14.000Z): independent review \u2014 presentHydrateWatchdog reload-once on stuck SSR (no client boot) with real presentId URL + preload; Present __posterPresentClientBoot; backgroundThrottling false on present-session. Unit 274 PASS; Electron present-hydrate-stress + import-present-send + library-present-hydrate PASS under xvfb. Draft PR #21 stays draft. Jack AppImage cold repeats still residual for packaged sign-off.",
+      "devCompletedAt": "2026-09-15T01:12:00.000Z",
+      "qaVerifiedAt": "2026-09-15T01:14:14.000Z",
+      "qaReport": "ralph/qa-report.md"
     }
   ],
   "acceptanceCriteria": [
@@ -300,12 +303,12 @@
     "libraryRoot": "pass",
     "home": "pass"
   },
-  "lastUpdated": "2026-09-15T01:01:26.000Z",
-  "epicCompleteNotes": "Previously complete after REQ-009 QA @ 083bfcb; reopened in planning loop 12 after Jack tip c3a1642 AppImage Present hydrate flake with real presentId URL + preload (not about:blank). Draft PR #21 stays draft.",
+  "lastUpdated": "2026-09-15T01:14:14.000Z",
+  "epicCompleteNotes": "Epic complete after REQ-010 QA @ db1c30e: all todos passes true. Draft PR #21 stays draft. Jack AppImage cold Present retest still residual (engineering tip Electron green \u2260 packaged proof).",
   "feedback": {
-    "taskId": "fix-appimage-blank-deck-present-send-after-import",
-    "content": "Epic reopened: Jack tip c3a1642 AppImage NOT READY. Blank-deck+import cold Present flaky 7/12 (~58%) stuck Loading with preload + real presentId URL (REQ-009 about:blank fix incomplete). Library Open\u2192Present primary 3/3 PASS, later 1/2 flake. Tip Electron PASS.",
-    "updatedAt": "2026-09-15T01:01:26.000Z"
+    "taskId": "fix-appimage-present-hydrate-real-url-preload",
+    "content": "QA PASS @ db1c30e: hydrate watchdog + stress/import/library Electron e2e green; unit 274 PASS. completeEpic true. Draft PR #21 stays draft.",
+    "updatedAt": "2026-09-15T01:14:14.000Z"
   },
   "jackAppImageBaseline7c947cd": {
     "tip": "7c947cd",

@@ -18,7 +18,7 @@ After REQ-009 engineering QA (about:blank / late-poster / Start gate), Jack rete
 | Library Open → Present | Primary **3/3 PASS**; later **1/2 flake** |
 | Tip unpackaged Electron (blank + library) | PASS |
 
-**REQ-010 (DEV landed, QA pending):** Main-owned present-session hydrate watchdog — after `did-finish-load`, if Remix client boot marker never appears while still on SSR Loading, reload once (`presentHydrateWatchdog.cjs` + Present `__posterPresentClientBoot`). Automated: unit watchdog + `electron-present-hydrate-stress.spec.ts`. **Still not AppImage proof** until Jack cold repeats are green.
+**REQ-010 (engineering QA PASS @ `db1c30e`):** Main-owned present-session hydrate watchdog — after `did-finish-load`, if Remix client boot marker never appears while still on SSR Loading, reload once (`presentHydrateWatchdog.cjs` + Present `__posterPresentClientBoot`; `backgroundThrottling: false`). Automated: unit watchdog + `electron-present-hydrate-stress.spec.ts` + import/library Electron e2e green. **Still not AppImage proof** until Jack cold repeats on a build that includes this tip are green.
 
 ---
 

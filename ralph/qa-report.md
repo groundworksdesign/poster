@@ -1,3 +1,24 @@
+# QA Report — fix-appimage-present-hydrate-real-url-preload (REQ-010)
+
+**Verdict:** PASS  
+**Tip:** `db1c30eaad20459e28fc2fd497ced0cb15fb826b`  
+**When:** 2026-09-15T01:14:14.000Z
+
+## Evidence
+
+- Code: `presentHydrateWatchdog.cjs` reload-once when client boot missing after `did-finish-load`; Present sets `__posterPresentClientBoot`; present-session `backgroundThrottling: false`
+- Marker names consistent across Present / watchdog / unit / stress e2e
+- Unit: 42 suites / 274 tests PASS
+- Electron e2e (xvfb): `electron-present-hydrate-stress`, `electron-import-present-send`, `electron-library-present-hydrate` PASS
+
+## Epic
+
+- All todos `passes` true → `completeEpic` true
+- Draft PR #21 remains draft — not marked ready, not merged
+- Jack AppImage cold Present repeats still residual for packaged sign-off
+
+---
+
 # QA Report — fix-appimage-blank-deck-present-send-after-import (REQ-009)
 
 **Verdict:** PASS  

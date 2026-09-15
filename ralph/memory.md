@@ -250,3 +250,10 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - Tests: unit watchdog + main regression; e2e `electron-present-hydrate-stress.spec.ts` (3× cold Open Present with presentId URL + preload assert).
 - passesQA false — needs QA + Jack AppImage cold repeats.
 - Draft PR #21 only; no product code this persona.
+
+## Epic-006 QA (fix-appimage-present-hydrate-real-url-preload)
+
+- PASS (2026-09-15T01:14:14.000Z): tip `db1c30e` — independent review of presentHydrateWatchdog + `__posterPresentClientBoot` + `backgroundThrottling: false`.
+- Unit 274 PASS; Electron present-hydrate-stress + import→Present→send + library hydrate PASS (xvfb).
+- All todos passes true → `completeEpic` true. Draft PR #21 stays draft.
+- Residual: Jack AppImage cold Present repeats still required for packaged sign-off.

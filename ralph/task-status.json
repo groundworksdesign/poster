@@ -1,7 +1,7 @@
 {
   "branchName": "cursor/clean-architecture-restructure-018c",
-  "status": "in_progress",
-  "completeEpic": false,
+  "status": "complete",
+  "completeEpic": true,
   "tasks": [
     {
       "id": 1,
@@ -101,11 +101,12 @@
       "id": 11,
       "title": "Fix AppImage Present hydrate real URL preload",
       "description": "Fix packaged AppImage Present client hydrate when URL already has real presentId and preload is present (SSR Loading hang/race). Jack tip c3a1642: blank-deck+import cold Present flaky 7/12 (~58%). NOT about:blank. Distinct from REQ-009.",
-      "status": "in_progress",
+      "status": "done",
       "devIterations": 1,
       "createdAt": "2026-09-15T01:01:26.000Z",
-      "updatedAt": "2026-09-15T01:15:00.000Z",
-      "notes": "DEV: presentHydrateWatchdog + client boot marker + stress e2e. passesQA false."
+      "updatedAt": "2026-09-15T01:14:14.000Z",
+      "notes": "QA PASS @ tip db1c30e (2026-09-15T01:14:14.000Z): presentHydrateWatchdog + boot marker; unit 274 + Electron stress/import/library PASS; completeEpic=True. Draft PR #21 stays draft.",
+      "qaVerifiedAt": "2026-09-15T01:14:14.000Z"
     }
   ],
   "currentTaskNum": 11,
@@ -114,12 +115,12 @@
   "nextTask": {
     "taskId": 11,
     "content": "fix-appimage-present-hydrate-real-url-preload",
-    "updatedAt": "2026-09-15T01:15:00.000Z"
+    "updatedAt": "2026-09-15T01:14:14.000Z"
   },
   "feedback": {
-    "taskId": 10,
-    "content": "QA previously passed REQ-009 @ 083bfcb. Epic reopened after Jack tip c3a1642: AppImage Present still flaky Loading with preload + real presentId URL (not about:blank).",
-    "updatedAt": "2026-09-15T01:01:26.000Z"
+    "taskId": 11,
+    "content": "QA PASS REQ-010 @ db1c30e. completeEpic true. Draft PR #21 stays draft.",
+    "updatedAt": "2026-09-15T01:14:14.000Z"
   },
-  "lastUpdated": "2026-09-15T01:15:00.000Z"
+  "lastUpdated": "2026-09-15T01:14:14.000Z"
 }
