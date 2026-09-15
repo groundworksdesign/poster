@@ -15,11 +15,30 @@
 export const PRESENT_OPEN_FEATURES =
   'width=1280,height=720,menubar=no,toolbar=no,location=no,status=no,scrollbars=yes,resizable=yes';
 
+export type PosterBridgeWindow = {
+  poster?: unknown;
+  navigator?: { userAgent?: string };
+};
+
 /** True when the Electron preload bridge is present (packaged or `electron .`). */
 export function hasPosterBridge(
-  win: { poster?: unknown } = typeof window !== 'undefined' ? window : {},
+  win: PosterBridgeWindow = typeof window !== 'undefined' ? window : {},
 ): boolean {
   return !!win.poster;
+}
+
+/**
+ * True when the runtime looks like Electron (renderer userAgent includes "Electron").
+ * Used to decide whether a late preload wait is appropriate — browsers must open
+ * about:blank in the click turn (popup gesture); Electron does not need that gesture.
+ */
+export function isElectronUserAgent(
+  win: PosterBridgeWindow = typeof window !== 'undefined' ? window : {},
+): boolean {
+  const ua =
+    win.navigator?.userAgent ??
+    (typeof navigator !== 'undefined' ? navigator.userAgent : '');
+  return /Electron/i.test(ua);
 }
 
 /**
@@ -28,7 +47,7 @@ export function hasPosterBridge(
  * through to about:blank immediately recreates the SSR Loading hang on cold Open Present.
  */
 export async function waitForPosterBridge(
-  win: { poster?: unknown } = typeof window !== 'undefined' ? window : {},
+  win: PosterBridgeWindow = typeof window !== 'undefined' ? window : {},
   opts: {
     timeoutMs?: number;
     intervalMs?: number;
@@ -90,7 +109,7 @@ export type OpenPresentPlan =
 
 /** Choose Present open strategy from the runtime bridge. */
 export function planPresentOpen(
-  win: { poster?: unknown } = typeof window !== 'undefined' ? window : {},
+  win: PosterBridgeWindow = typeof window !== 'undefined' ? window : {},
 ): OpenPresentPlan {
   return hasPosterBridge(win) ? { mode: 'electron-direct' } : { mode: 'browser-gesture-blank' };
 }
@@ -99,20 +118,25 @@ export function planPresentOpen(
  * Open Present for the current runtime.
  * Electron: spawn first, then window.open(absolute Present URL) — no about:blank.
  * Browser: about:blank in the click turn, then absolute navigate after spawn.
+ *
+ * Late-preload wait runs only on Electron UAs (AppImage/FUSE after FileReader import).
+ * Browsers/jsdom must not await before about:blank — that loses the popup gesture and
+ * hangs DeckBuilder unit Open Present (browser) for the full bridge timeout.
  */
 export async function openPresentForRuntime(opts: {
   spawnPresent: () => Promise<{ url: string; presentId: string }>;
   origin: string;
   open?: typeof window.open;
   features?: string;
-  bridgeWindow?: { poster?: unknown };
+  bridgeWindow?: PosterBridgeWindow;
   bridgeWaitMs?: number;
 }): Promise<{ presentId: string; absoluteUrl: string; mode: OpenPresentPlan['mode'] }> {
   const open = opts.open ?? ((...args: Parameters<typeof window.open>) => window.open(...args));
   const features = opts.features ?? PRESENT_OPEN_FEATURES;
   const bridgeWindow = opts.bridgeWindow ?? window;
   // Packaged AppImage may expose preload slightly after FileReader import settles.
-  if (!hasPosterBridge(bridgeWindow)) {
+  // Only wait when the UA looks like Electron — never delay browser about:blank.
+  if (!hasPosterBridge(bridgeWindow) && isElectronUserAgent(bridgeWindow)) {
     await waitForPosterBridge(bridgeWindow, { timeoutMs: opts.bridgeWaitMs ?? 2000 });
   }
   const plan = planPresentOpen(bridgeWindow);

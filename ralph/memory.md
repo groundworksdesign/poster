@@ -224,3 +224,9 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - Tests: HomePage REQ-009 unit; openPresentWindow late-poster unit; `tests/e2e/electron-import-present-send.spec.ts`.
 - Docs: `docs/appimage-residual-risk.md` tip `7c947cd` + Import→Present→send checklist.
 - passes left false for QA; completeEpic false; draft PR #21 only.
+
+## Epic-006 DEV fix-up (fix-appimage-blank-deck-present-send-after-import)
+
+- QA FAIL @ 7db2047: DeckBuilder.unit Open Present (browser) — openSpy 0 calls (bridge wait before about:blank).
+- Fix: `isElectronUserAgent` gates `waitForPosterBridge` in `openPresentForRuntime`; browser/jsdom opens about:blank in click turn; Electron still waits for late poster after import.
+- Unit 261 PASS; Electron import→Present→send + library hydrate kept green. passesQA false.

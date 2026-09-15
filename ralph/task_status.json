@@ -206,7 +206,7 @@
       "requirementId": "REQ-009",
       "status": "done",
       "passes": false,
-      "notes": "DEV done @ 2026-09-15T00:28:24.000Z: Import CTA _blank (not posterDeck); waitForPosterBridge before planPresentOpen; Start gated on Present child-ready; electron-import-present-send e2e + HomePage/openPresentWindow unit. passes=false for QA/Jack AppImage. completeEpic=false. Draft PR #21 only.",
+      "notes": "DEV fix-up @ 2026-09-15T00:40:00.000Z: QA FAIL tip 7db2047 \u2014 openPresentForRuntime awaited waitForPosterBridge on all UAs, so browser/jsdom Open Present never called window.open(about:blank) within waitFor (DeckBuilder.unit). Gate late-preload wait on isElectronUserAgent so browser path stays sync; Electron/AppImage still waits for late poster. Unit 261 green; passesQA still false.",
       "devCompletedAt": "2026-09-15T00:28:24.000Z"
     }
   ],
@@ -283,7 +283,7 @@
     "libraryRoot": "pass",
     "home": "pass"
   },
-  "lastUpdated": "2026-09-15T00:28:24.000Z",
+  "lastUpdated": "2026-09-15T00:40:00.000Z",
   "epicCompleteNotes": "Previously marked complete after REQ-008 QA; reopened in planning loop 11 after Jack tip 7c947cd AppImage blank-deck Present+send-after-import flake. Draft PR #21 remains draft.",
   "feedback": {
     "taskId": "fix-library-open-present-hydrate",

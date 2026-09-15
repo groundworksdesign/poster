@@ -1,5 +1,6 @@
 import {
   hasPosterBridge,
+  isElectronUserAgent,
   navigatePresentAfterSpawn,
   openPresentForRuntime,
   planPresentOpen,
@@ -158,13 +159,28 @@ describe('openPresentWindow', () => {
     ).resolves.toBe(false);
   });
 
+  test('isElectronUserAgent detects Electron renderer UA', () => {
+    expect(isElectronUserAgent({ navigator: { userAgent: 'Mozilla/5.0 Electron/28.0.0' } })).toBe(
+      true,
+    );
+    expect(isElectronUserAgent({ navigator: { userAgent: 'Mozilla/5.0 jsdom/16.7.0' } })).toBe(
+      false,
+    );
+  });
+
   test('openPresentForRuntime waits for late poster before electron-direct (AppImage import race)', async () => {
     const open = jest.fn().mockReturnValue({ closed: false });
     const spawnPresent = jest.fn().mockResolvedValue({
       url: '/presentation?sessionId=s1&presentId=p1',
       presentId: 'p1',
     });
-    const bridgeWindow: { poster?: unknown } = {};
+    // Electron UA required — browsers must not await before about:blank.
+    const bridgeWindow: {
+      poster?: unknown;
+      navigator: { userAgent: string };
+    } = {
+      navigator: { userAgent: 'Mozilla/5.0 Electron/28.0.0' },
+    };
     // Expose poster after openPresentForRuntime begins waiting.
     setTimeout(() => {
       bridgeWindow.poster = { deckCommand: jest.fn() };
@@ -185,5 +201,42 @@ describe('openPresentWindow', () => {
       '_blank',
       expect.any(String),
     );
+  });
+
+  test('openPresentForRuntime browser UA opens about:blank without waiting for poster', async () => {
+    const location = { href: 'about:blank' };
+    const blank = {
+      closed: false,
+      opener: {} as Window | null,
+      focus: jest.fn(),
+      close: jest.fn(),
+      location,
+    };
+    const open = jest.fn().mockReturnValue(blank);
+    const spawnPresent = jest.fn().mockResolvedValue({
+      url: '/presentation?sessionId=s1&presentId=p1',
+      presentId: 'p1',
+    });
+
+    // Force a non-Electron UA even if the host process looks like Electron.
+    const bridgeWindow = {
+      navigator: { userAgent: 'Mozilla/5.0 (jsdom) AppleWebKit/537.36' },
+    };
+
+    const started = Date.now();
+    const result = await openPresentForRuntime({
+      spawnPresent,
+      origin: 'http://127.0.0.1:3000',
+      open: open as unknown as typeof window.open,
+      bridgeWindow,
+      // If we incorrectly waited on browser UA, this would delay ~2s.
+      bridgeWaitMs: 2000,
+    });
+    const elapsed = Date.now() - started;
+
+    expect(result.mode).toBe('browser-gesture-blank');
+    expect(open).toHaveBeenCalledWith('about:blank', '_blank', expect.any(String));
+    expect(open.mock.calls[0][0]).toBe('about:blank');
+    expect(elapsed).toBeLessThan(500);
   });
 });

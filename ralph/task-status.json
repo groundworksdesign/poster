@@ -93,8 +93,8 @@
       "status": "done",
       "devIterations": 1,
       "createdAt": "2026-09-15T00:14:31.000Z",
-      "updatedAt": "2026-09-15T00:28:24.000Z",
-      "notes": "DEV: Import _blank + waitForPosterBridge + Start gated on child-ready; e2e electron-import-present-send; residual-risk tip 7c947cd. passesQA false; completeEpic false."
+      "updatedAt": "2026-09-15T00:40:00.000Z",
+      "notes": "DEV fix-up: Electron-UA-only bridge wait (browser about:blank sync). passesQA false; completeEpic false."
     }
   ],
   "currentTaskNum": 10,
@@ -110,5 +110,5 @@
     "content": "QA previously passed REQ-008. Epic reopened after Jack tip 7c947cd: AppImage blank-deck Present+send after file import flaky; Library Open\u2192Present 3/3 PASS.",
     "updatedAt": "2026-09-15T00:14:31.000Z"
   },
-  "lastUpdated": "2026-09-15T00:28:24.000Z"
+  "lastUpdated": "2026-09-15T00:40:00.000Z"
 }
