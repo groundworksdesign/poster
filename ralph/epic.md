@@ -1,8 +1,8 @@
 ---
 name: QA and harden clean-architecture restructure
 epic: epic-006-clean-architecture-harden
-status: in_progress
-overview: "The structural move to src rings + tests/e2e is already on this branch. Harden it: confirm layout and dependency rules, fix path/config/CI breakages from the move, make unit/integration/e2e that should pass actually pass, restore packaged Electron Present first-open hydrate reliability (Jack AppImage NOT READY), unblock On Program once Present is live, keep the Ralph loop harness under ralph/ (not .ralph/), and document residual AppImage risk for Jack. Reopened after tip 497d454 (Library Open→Present); tip 7c947cd (blank-deck after import); again after tip c3a1642: Present still flaky Loading with preload + real presentId URL (not about:blank)."
+status: complete
+overview: "The structural move to src rings + tests/e2e is already on this branch. Harden it: confirm layout and dependency rules, fix path/config/CI breakages from the move, make unit/integration/e2e that should pass actually pass, restore packaged Electron Present first-open hydrate reliability (Jack AppImage NOT READY), unblock On Program once Present is live, keep the Ralph loop harness under ralph/ (not .ralph/), and document residual AppImage risk for Jack. Reopened after tip 497d454 (Library Open→Present); tip 7c947cd (blank-deck after import); again after tip c3a1642: Present still flaky Loading with preload + real presentId URL (not about:blank). REQ-010 engineering QA-passed @ db1c30e; completeEpic true; Jack AppImage cold repeats still residual. Draft PR #21 stays draft."
 todos:
   - id: fix-e2e-repo-root-paths
     content: Fix tests/e2e helpers and specs that still resolve repo root as tests/ (one level up) instead of the real repository root after the e2e/ → tests/e2e move.
@@ -36,7 +36,7 @@ todos:
     status: done
   - id: fix-appimage-present-hydrate-real-url-preload
     content: Fix packaged AppImage Present client hydrate when URL is already a real presentId present-session URL and preload is present (SSR Loading hang/race). Jack tip c3a1642 blank-deck+import cold Present flaky 7/12 (~58%) — NOT about:blank. Distinct from REQ-009.
-    status: pending
+    status: done
 isProject: false
 ---
 
@@ -110,14 +110,13 @@ After REQ-009 QA (about:blank / late-poster / Start gate), Jack retested tip `c3
 
 **Implication:** REQ-009 about:blank/named-window harden was incomplete. Next work is client hydrate / present-ready handshake when session URL + preload are already correct (REQ-010).
 
-## Current Baseline (planning loop 12)
+## Current Baseline (QA loop after REQ-010)
 
-Confirmed on tip `c3a1642` / planning sync (this commit):
+Confirmed on tip `db1c30e` (engineering QA):
 
 - Rings present; no root `app/`; no `.ralph/`
-- Prior harden/QA todos through `fix-appimage-blank-deck-present-send-after-import` **done / passes true** (REQ-001..009 engineering)
-- Epic **reopened**: REQ-010 `fix-appimage-present-hydrate-real-url-preload` **pending / selected**
-- Jack AppImage tip `c3a1642`: Present hydrate still flaky with real presentId URL + preload
+- All harden/QA todos through `fix-appimage-present-hydrate-real-url-preload` **done / passes true** (REQ-001..010 engineering)
+- Epic **completeEpic true** — Jack AppImage cold Present repeats still residual for packaged sign-off
 - Draft PR #21 remains draft/unmerged
 
 ## Implementation Plan (planning guidance; do not code in planning)
