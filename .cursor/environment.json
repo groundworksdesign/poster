@@ -1,0 +1,11 @@
+{
+  "name": "Poster",
+  "install": "pnpm install --frozen-lockfile && pnpm exec playwright install chromium",
+  "terminals": [
+    {
+      "name": "remix-dev",
+      "command": "pnpm dev"
+    }
+  ],
+  "ports": [3000]
+}
