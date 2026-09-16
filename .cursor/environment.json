@@ -1,0 +1,11 @@
+{
+  "name": "Poster",
+  "install": "bash scripts/cloud-agent-install.sh",
+  "terminals": [
+    {
+      "name": "remix-dev",
+      "command": "pnpm dev"
+    }
+  ],
+  "ports": [3000]
+}
