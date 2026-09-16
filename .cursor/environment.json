@@ -1,6 +1,6 @@
 {
   "name": "Poster",
-  "install": "pnpm install --frozen-lockfile && pnpm exec playwright install chromium",
+  "install": "bash scripts/cloud-agent-install.sh",
   "terminals": [
     {
       "name": "remix-dev",
