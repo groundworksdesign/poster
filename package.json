@@ -1,6 +1,6 @@
 {
   "name": "poster",
-  "version": "0.1.14",
+  "version": "0.1.15",
   "private": true,
   "license": "SEE LICENSE IN LICENSE",
   "description": "Live slide presentation tool with operator deck builder and presenter view.",
