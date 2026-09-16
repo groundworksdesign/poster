@@ -68,6 +68,7 @@ Aligned with [`docs/epics/epic-002-theme-install-reorg.plan.md`](docs/epics/epic
 
 - Electron **main** runs the same Node server and loads the app at **localhost**; **`contextIsolation: true`**, **`nodeIntegration: false`**; **`npmRebuild: true`** (or equivalent) so native modules match Electron.
 - **Per-OS installers** are required artifacts: **macOS DMG**, **Windows NSIS `.exe`**, **Linux `.deb` and/or AppImage** as configured (see [`electron-builder.yml`](electron-builder.yml)). Unsigned builds are acceptable unless signing secrets are added.
+- **Auto-update:** Packaged **Windows/Linux** builds may download and install newer GitHub Releases in-app; **macOS** alerts and opens the Releases download page until Developer ID + notarization exist (see [`docs/auto-update.md`](docs/auto-update.md)).
 
 ### GitHub Actions
 
