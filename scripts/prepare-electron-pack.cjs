@@ -35,6 +35,8 @@ const RUNTIME_DEP_NAMES = [
   '@remix-run/react',
   '@remix-run/serve',
   'better-sqlite3',
+  // Main-process dependency for Win/Linux in-app updates (Mac is alert-only).
+  'electron-updater',
   'express',
   'isbot',
   'react',

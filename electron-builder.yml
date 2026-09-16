@@ -26,9 +26,17 @@ asar: false
 # Output directory (kept separate from portable-zip dist/)
 directories:
   output: dist/electron
+  buildResources: build-resources
 
 # Artifact naming: semver ${version} is read from package.json by default.
 artifactName: "${productName}-${version}-${os}-${arch}.${ext}"
+
+# GitHub Releases feed for electron-updater (Win/Linux). Mac stays alert-only
+# until Developer ID + notarization exist (see docs/auto-update.md).
+publish:
+  - provider: github
+    owner: groundworksdesign
+    repo: poster
 
 # Files to include in the packaged app. Production deps come from the
 # prepare-electron-pack output (not the workspace pnpm store layout).
@@ -62,6 +70,7 @@ files:
 # ---- Per-platform targets ----
 
 mac:
+  icon: build-resources/icon.png
   target:
     - target: dmg
       arch:
@@ -75,6 +84,7 @@ dmg:
     height: 380
 
 win:
+  icon: build-resources/icon.ico
   target:
     - target: nsis
       arch:
@@ -83,11 +93,11 @@ win:
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
-  # Use existing favicon.ico if present
-  installerIcon: public/favicon.ico
-  uninstallerIcon: public/favicon.ico
+  installerIcon: build-resources/icon.ico
+  uninstallerIcon: build-resources/icon.ico
 
 linux:
+  icon: build-resources/icons
   target:
     - target: deb
       arch:

@@ -1,19 +1,33 @@
 Poster — macOS install (unsigned / PR test build)
 =================================================
 
-These CI builds are NOT notarized. After downloading the DMG (especially via a
-browser), macOS quarantine may block launch with:
+These CI builds are NOT signed with Apple Developer ID and are NOT notarized.
+After downloading the DMG (especially via a browser), macOS attaches quarantine
+and Gatekeeper blocks launch. You may see:
 
-  "Poster.app is damaged and can't be opened"
+  "Poster.app is damaged and can't be opened. You should move it to the Trash."
 
-The app is not corrupt. Clear quarantine, then open once:
+or, on some macOS versions after a failed open attempt:
+
+  System Settings → Privacy & Security → "Open Anyway"
+
+The app is not corrupt. Quarantine + an ad-hoc (or missing) signature makes
+Gatekeeper treat the download as damaged. A normal “unknown developer” first-
+open dialog requires a Developer ID signature; skipping Gatekeeper for browser
+downloads on modern macOS (Sequoia+) requires Developer ID + notarization.
+
+Clear quarantine, then open once:
 
   1. Drag Poster.app to /Applications
   2. In Terminal:
 
        xattr -cr /Applications/Poster.app
 
-  3. Right-click Poster.app → Open → Open (first launch only)
+  3. Open Poster.app (double-click). If macOS still blocks it:
+       - macOS 14 and earlier: Right-click → Open → Open
+       - macOS 15 Sequoia+: System Settings → Privacy & Security → Open Anyway
 
-A production release signed with Apple Developer ID + notarization would not
-require these steps. PR/pre-release builds are unsigned for testing.
+Production builds signed with Apple Developer ID and notarized by Apple would
+not require these steps. Until those credentials exist, PR/pre-release and
+Release Mac DMGs remain unsigned for testing. See also docs/auto-update.md
+(Mac update alerts still point here for manual DMG install).

@@ -153,8 +153,25 @@ describe('electron packaging includes production node_modules', () => {
       prepareSrc.indexOf('RUNTIME_DEP_NAMES'),
       prepareSrc.indexOf('];', prepareSrc.indexOf('RUNTIME_DEP_NAMES')) + 2,
     );
+    expect(runtimeBlock).toMatch(/electron-updater/);
     expect(runtimeBlock).not.toMatch(/react-scripts/);
     expect(runtimeBlock).not.toMatch(/@testing-library/);
+  });
+
+  it('declares GitHub publish + app icons for electron-updater / branding', () => {
+    expect(builderYml).toMatch(/provider:\s*github/);
+    expect(builderYml).toMatch(/groundworksdesign/);
+    expect(builderYml).toMatch(/repo:\s*poster/);
+    expect(builderYml).toMatch(/icon:\s*build-resources\/icon\.png/);
+    expect(builderYml).toMatch(/icon:\s*build-resources\/icon\.ico/);
+    expect(fs.existsSync(path.join(__dirname, '../../build-resources/icon.png'))).toBe(true);
+    expect(fs.existsSync(path.join(__dirname, '../../build-resources/icon.ico'))).toBe(true);
+  });
+
+  it('wires packaged auto-update from main', () => {
+    expect(mainSource).toMatch(/createAutoUpdateController/);
+    expect(mainSource).toMatch(/scheduleStartupCheck/);
+    expect(mainSource).toMatch(/registerUpdateMenu/);
   });
 
   it('ad-hoc re-signs unsigned mac builds after pack', () => {

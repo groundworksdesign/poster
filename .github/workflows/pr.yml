@@ -358,11 +358,15 @@ jobs:
           set -euo pipefail
           mkdir -p dist/electron-installers
           shopt -s nullglob
+          # Installers plus electron-updater metadata when present (Win/Linux).
           files=(
             dist/electron/*.dmg
             dist/electron/*.exe
             dist/electron/*.deb
             dist/electron/*.AppImage
+            dist/electron/*.blockmap
+            dist/electron/latest.yml
+            dist/electron/latest-linux.yml
           )
           copied=0
           for f in "${files[@]}"; do

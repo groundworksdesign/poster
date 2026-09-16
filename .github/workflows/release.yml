@@ -302,11 +302,16 @@ jobs:
           set -euo pipefail
           mkdir -p dist/electron-installers
           shopt -s nullglob
+          # Installers plus electron-updater metadata (latest.yml / blockmaps).
+          # Mac stays DMG-only (alert → Releases page); no latest-mac.yml this cycle.
           files=(
             dist/electron/*.dmg
             dist/electron/*.exe
             dist/electron/*.deb
             dist/electron/*.AppImage
+            dist/electron/*.blockmap
+            dist/electron/latest.yml
+            dist/electron/latest-linux.yml
           )
           copied=0
           for f in "${files[@]}"; do
