@@ -1,329 +1,99 @@
 {
-  "epic": "epic-006-clean-architecture-harden",
-  "branch": "cursor/clean-architecture-restructure-018c",
-  "status": "complete",
-  "loop": 12,
+  "epic": "epic-002",
+  "branch": "cursor/epic-002-first-title-font-size-7e0c",
+  "baseBranch": "fix/cloud-env-ports",
+  "status": "in_progress",
+  "loop": 1,
   "persona": "planning",
-  "completeEpic": true,
+  "completeEpic": false,
   "requirements": [
     {
       "id": "REQ-001",
-      "title": "E2E path roots",
-      "description": "Every tests/e2e helper/spec that needs the repository root or public/ resolves them correctly after the e2e/ \u2192 tests/e2e move (not tests/ as root).",
-      "todoIds": [
-        "fix-e2e-repo-root-paths"
-      ],
-      "status": "done"
+      "title": "createNewDeck does not bake title sizes",
+      "description": "createNewDeck() must not set titleFontSize or subTitleFontSize on the seeded first TITLE slide (match addSlide(TITLE)).",
+      "todoIds": ["stop-baking-createNewDeck"],
+      "status": "pending"
     },
     {
       "id": "REQ-002",
-      "title": "Layer import rule",
-      "description": "src/domain and src/application do not import Remix, Electron, or Playwright.",
-      "todoIds": [
-        "audit-layer-import-rule"
-      ],
-      "status": "done"
+      "title": "New deck Font size updates first title",
+      "description": "After creating a new deck, changing deck Font size updates that first title and subtitle in Present and the editor program thumbnail.",
+      "todoIds": ["verify-font-control-new-deck"],
+      "status": "pending"
     },
     {
       "id": "REQ-003",
-      "title": "Config CI script paths",
-      "description": "Runtime and packaging path references match the new layout; remix appDirectory, package.json main/scripts, electron-builder and portable scripts align with adapters.",
-      "todoIds": [
-        "harden-config-ci-script-paths"
-      ],
-      "status": "done"
+      "title": "Added TITLE and non-title still inherit",
+      "description": "Newly added TITLE slides and non-title slides continue to inherit GENERAL font size as they do today.",
+      "todoIds": ["automated-precedence-check"],
+      "status": "pending"
     },
     {
       "id": "REQ-004",
-      "title": "Automated suites green",
-      "description": "Unit, integration, and e2e that should pass do pass after move fixes; repair remaining move-induced failures. Re-verify CI Remix/Electron red from helpers-under-tests/ on tip 9f124e1 is gone on current tip.",
-      "todoIds": [
-        "verify-unit-integration-green",
-        "verify-remix-electron-e2e-green"
-      ],
-      "status": "done"
+      "title": "Preserve existing baked sizes",
+      "description": "Opening or editing a deck that already has baked titleFontSize / subTitleFontSize leaves those values unchanged.",
+      "todoIds": ["preserve-existing-baked"],
+      "status": "pending"
     },
     {
       "id": "REQ-005",
-      "title": "AppImage residual risk",
-      "description": "Document residual risk and a short manual AppImage regression checklist for Jack, including the 9f124e1 baseline; draft PR #21 stays draft/unmerged. Update when new Jack findings land (e.g. tip 497d454 Library Open \u2192 Present).",
-      "todoIds": [
-        "document-appimage-residual-risk"
-      ],
-      "status": "done"
-    },
-    {
-      "id": "REQ-006",
-      "title": "Present first-open hydrate (packaged)",
-      "description": "Cold Open Present on packaged Electron/AppImage reliably leaves SSR Loading and reaches client present-ready. Restore PR #18 first-open behavior if regressed by the clean-arch layout move. Covers blank-deck Open Present path (Jack tip 497d454: 3/3 PASS).",
-      "todoIds": [
-        "fix-present-first-open-hydrate"
-      ],
-      "status": "done"
-    },
-    {
-      "id": "REQ-007",
-      "title": "On Program after Present hydrate",
-      "description": "After Present first-open hydrate is reliable on packaged Electron, verify On Program thumbnail/state end-to-end (blocked while Present stays on Loading).",
-      "todoIds": [
-        "verify-on-program-after-present-hydrate"
-      ],
-      "status": "done"
-    },
-    {
-      "id": "REQ-008",
-      "title": "Library Open \u2192 Present first-open hydrate (packaged)",
-      "description": "After Library Open into Deck on packaged Electron/AppImage, first Open Present must leave SSR Loading and reach present-ready (not stuck \u226530s). Distinct from blank-deck Open Present (REQ-006); Jack tip 497d454 FAIL on this path only.",
-      "todoIds": [
-        "fix-library-open-present-hydrate"
-      ],
-      "status": "done"
-    },
-    {
-      "id": "REQ-009",
-      "title": "AppImage blank-deck Present+send after file import",
-      "description": "On packaged AppImage, blank-deck cold Open Present + directed send after file import must be reliable. Tip Electron/CI green; Jack tip 7c947cd baseline. Tip c3a1642 showed remaining hydrate flake with real URL+preload \u2192 REQ-010.",
-      "status": "done",
-      "todoIds": [
-        "fix-appimage-blank-deck-present-send-after-import"
-      ]
-    },
-    {
-      "id": "REQ-010",
-      "title": "AppImage Present client hydrate with real presentId URL + preload",
-      "description": "On packaged AppImage, cold Open Present must leave SSR Loading and reach present-ready when the window already has preload and a real presentId Present URL (main-owned present-session loadURL \u2014 not about:blank). Jack tip c3a1642: blank-deck+import cold Present flaky 7/12 (~58%) stuck Loading with preload+real URL.",
-      "status": "done",
-      "todoIds": [
-        "fix-appimage-present-hydrate-real-url-preload"
-      ]
+      "title": "Release notes bullet",
+      "description": "Release notes for the shipping version mention this fix in user-facing language.",
+      "todoIds": ["release-notes"],
+      "status": "pending"
     }
   ],
   "todos": [
     {
-      "id": "fix-e2e-repo-root-paths",
-      "content": "Fix tests/e2e helpers and specs that still resolve repo root as tests/ (one level up) instead of the real repository root after the e2e/ \u2192 tests/e2e move.",
+      "id": "stop-baking-createNewDeck",
+      "content": "In createNewDeck(), do not set titleFontSize or subTitleFontSize on the seeded first TITLE slide (match addSlide(TITLE) inheritance from GENERAL).",
       "requirementId": "REQ-001",
-      "status": "done",
-      "passes": true,
-      "notes": "QA verified: REPO_ROOT is repo root (not tests/); Electron launch + Playwright webServer cwd + sample-deck paths use it; selfcheck ok. Jack tip 9f124e1 CI Remix/Electron red from helpers-under-tests/ should be addressed; confirm on current tip via verify-remix-electron-e2e-green.",
-      "qaVerifiedAt": "2026-09-14T15:03:28.000Z",
-      "qaReport": "ralph/qa-report.md"
+      "status": "pending",
+      "passes": false
     },
     {
-      "id": "fix-present-first-open-hydrate",
-      "content": "Restore reliable Present first-open hydrate on packaged Electron/AppImage after the clean-arch move (Jack cold open 1/3 PASS, 2/3 stuck SSR Loading; possible regression of PR #18 first-open fix under new layout).",
-      "requirementId": "REQ-006",
-      "status": "done",
-      "passes": true,
-      "notes": "QA verified: main-owned present-session (openPresentSessionWindow + loadURL + deny); PR #18 electron-direct skip-about:blank + absolute URL intact; browser about:blank gesture intact; 51 focused unit/regression tests pass; electronHelpers waits present-ready. Live AppImage cold-open not re-run here \u2014 Jack retest remains for final AppImage sign-off (REQ-005). Tip 497d454: blank-deck Open Present+send 3/3 PASS; Library Open \u2192 Present still FAIL (REQ-008).",
-      "qaVerifiedAt": "2026-09-14T15:18:30.000Z",
-      "qaReport": "ralph/qa-report.md"
-    },
-    {
-      "id": "verify-on-program-after-present-hydrate",
-      "content": "After Present first-open hydrate is reliable on packaged Electron, verify On Program thumbnail/state works end-to-end (blocked while Present stays on Loading).",
-      "requirementId": "REQ-007",
-      "status": "done",
-      "passes": true,
-      "notes": "QA verified: electron-program-thumbnail.spec.ts asserts cold present-ready then Start makes Deck program-thumbnail-title/subtitle match Present and End clears thumbnail; openPresentWindow gates on present-ready. Re-ran xvfb electron e2e (1 passed) and programThumbnail unit+integration (14 passed). Packaged AppImage binary not re-run \u2014 residual for Jack/REQ-005.",
-      "qaVerifiedAt": "2026-09-14T15:25:24.000Z",
-      "qaReport": "ralph/qa-report.md"
-    },
-    {
-      "id": "audit-layer-import-rule",
-      "content": "Verify domain and application do not import Remix, Electron, or Playwright; fix any accidental coupling.",
+      "id": "verify-font-control-new-deck",
+      "content": "After creating a new deck, changing deck Font size updates the first title and subtitle in Present overlay and the editor program thumbnail.",
       "requirementId": "REQ-002",
-      "status": "done",
-      "passes": true,
-      "notes": "QA verified: independent import/require audit of src/domain+src/application (20 files) found 0 Remix/Electron/Playwright or adapters/presentation/e2e leaks; durable guard src/__tests__/layer-import-rule.test.js (3 tests) green; CRA unit-integration picks up src/__tests__.",
-      "devCompletedAt": "2026-09-14T15:31:56.000Z",
-      "qaVerifiedAt": "2026-09-14T15:33:30.000Z",
-      "qaReport": "ralph/qa-report.md"
+      "status": "pending",
+      "passes": false
     },
     {
-      "id": "harden-config-ci-script-paths",
-      "content": "Sweep remaining stale app/, electron/, server/, shared/, e2e/ path references in configs, scripts, CI comments, and operator-facing README paths that would mislead packaging or local runs.",
+      "id": "preserve-existing-baked",
+      "content": "Decks that already have baked titleFontSize / subTitleFontSize keep those values; do not strip on open or rewrite on Font size change.",
+      "requirementId": "REQ-004",
+      "status": "pending",
+      "passes": false
+    },
+    {
+      "id": "automated-precedence-check",
+      "content": "Add or extend an automated check (Jack’s precedence cases or equivalent unit test) that fails if createNewDeck again bakes sizes that override GENERAL fontSize.",
       "requirementId": "REQ-003",
-      "status": "done",
-      "passes": true,
-      "notes": "QA verified: package.json main/start, remix appDirectory, electron-builder + package-portable.mjs on adapters; README/requirements.md free of stale electron/main.cjs and server/index.js; tests/e2e Playwright paths; config-path-alignment.test.js 5/5 green. Historical docs/epics out of scope.",
-      "devCompletedAt": "2026-09-14T15:44:04.000Z",
-      "qaVerifiedAt": "2026-09-14T15:47:15.000Z",
-      "qaReport": "ralph/qa-report.md"
+      "status": "pending",
+      "passes": false
     },
     {
-      "id": "verify-unit-integration-green",
-      "content": "Run and fix unit + integration suites broken by the restructure so CI unit-integration stays green.",
-      "requirementId": "REQ-004",
-      "status": "done",
-      "passes": true,
-      "notes": "QA verified independently: pnpm exec tsc --noEmit exit 0; CI=true pnpm exec react-scripts test --watchAll=false --runInBand -> 41 suites / 254 tests passed (matches .github/workflows/pr.yml unit-integration).",
-      "devCompletedAt": "2026-09-14T15:51:03.000Z",
-      "devEvidence": {
-        "tsc": "exit 0",
-        "jest": "41 suites, 254 tests passed",
-        "commands": [
-          "pnpm exec tsc --noEmit",
-          "CI=true pnpm exec react-scripts test --watchAll=false --runInBand"
-        ]
-      },
-      "qaVerifiedAt": "2026-09-14T15:52:35.000Z",
-      "qaReport": "ralph/qa-report.md"
-    },
-    {
-      "id": "verify-remix-electron-e2e-green",
-      "content": "Run Remix and Electron Playwright suites after path fixes; repair any remaining move-induced failures that should pass. Confirm helpers-under-tests/ CI failure from tip 9f124e1 is resolved on current tip.",
-      "requirementId": "REQ-004",
-      "status": "done",
-      "passes": true,
-      "notes": "QA verified independently: repoRoot.selfcheck -> /workspace (not tests/); CI=true pnpm run test:e2e:remix -> 52 passed; after remix e2e left jsx-dev-runtime build, electron.global-setup rebuilt production; CI=true ELECTRON_DISABLE_SANDBOX=1 xvfb-run -a pnpm run test:e2e:electron -> 9 passed. helpers-under-tests CI red from tip 9f124e1 confirmed gone.",
-      "devCompletedAt": "2026-09-14T16:02:48.000Z",
-      "devEvidence": {
-        "repoRoot.selfcheck": "/workspace",
-        "test:e2e:remix": "52 passed",
-        "test:e2e:electron": "9 passed (after production remix build)",
-        "hardening": "tests/e2e/electron.global-setup.cjs"
-      },
-      "qaVerifiedAt": "2026-09-14T16:05:35.000Z",
-      "qaReport": "ralph/qa-report.md"
-    },
-    {
-      "id": "document-appimage-residual-risk",
-      "content": "Document residual risk and a short manual AppImage regression checklist for Jack, including tip 9f124e1 baseline (Present hydrate flaky, On Program blocked, Home/library/theme/layout PASS); do not claim packaged installers were fully re-proven in this loop unless evidence exists.",
+      "id": "release-notes",
+      "content": "Include a user-facing release-notes bullet for this fix on the PR (new decks’ first title now follows Font size; older decks with fixed title sizes unchanged).",
       "requirementId": "REQ-005",
-      "status": "done",
-      "passes": true,
-      "notes": "QA verified: docs/appimage-residual-risk.md has Home, library, cold Present x3, directed-send, message-only, On Program, theme; includes 9f124e1 NOT READY baseline; does not claim AppImage fully proven; linked from README + epic; draft PR #21 remains draft. Jack tip 497d454 later found Library Open \u2192 Present FAIL \u2014 tracked as REQ-008.",
-      "devCompletedAt": "2026-09-14T16:09:24.000Z",
-      "qaVerifiedAt": "2026-09-14T16:11:31.000Z",
-      "qaReport": "ralph/qa-report.md"
-    },
-    {
-      "id": "fix-library-open-present-hydrate",
-      "content": "Fix packaged Electron/AppImage Present first-open hydrate after Library Open into Deck. Jack tip 497d454: blank-deck Open Present+send 3/3 PASS; Library Open \u2192 Present FAIL (SSR Loading \u226530s, does not hydrate). Distinct from blank-deck / main-owned present-session path (REQ-006).",
-      "requirementId": "REQ-008",
-      "status": "done",
-      "passes": true,
-      "notes": "QA PASS @ tip a4a1a18 (2026-09-14T23:52:47.000Z): independent review \u2014 Library Open matches blank-deck POPUP_FEATURES/_blank (no noopener); main still owns present-session. Unit REQ-008 + Open Presentation PASS; Electron electron-library-present-hydrate + electron-program-thumbnail (blank-deck) PASS; openPresentWindow/DeckBuilder Electron Open Present unit PASS. Jack AppImage retest still residual for packaged sign-off. Draft PR #21 stays draft.",
-      "devCompletedAt": "2026-09-14T23:50:11.000Z",
-      "qaVerifiedAt": "2026-09-14T23:52:47.000Z",
-      "qaReport": "ralph/qa-report.md"
-    },
-    {
-      "id": "fix-appimage-blank-deck-present-send-after-import",
-      "content": "Fix packaged AppImage blank-deck cold Open Present + directed send after file import. Jack tip 7c947cd: Library Open\u2192Present 3/3 PASS; blank-deck Present+send after import FAIL flaky (~1/3\u20131/2). Tip Electron PASS; CI installers green. Distinct from REQ-008 Library path.",
-      "requirementId": "REQ-009",
-      "status": "done",
-      "passes": true,
-      "notes": "QA PASS @ tip 083bfcb (2026-09-15T00:41:52.000Z): independent review \u2014 openPresentForRuntime waits for late poster only on Electron UA (browser about:blank sync); Import CTA _blank; Start gated on Present child-ready. Unit 261 PASS; Electron import-present-send + library-present-hydrate + program-thumbnail PASS; CI Unit and integration tests green on tip. Draft PR #21 stays draft. Jack AppImage retest still residual for packaged sign-off. Jack recheck tip c3a1642: NOT READY \u2014 blank-deck+import cold Present still flaky 7/12 with preload+real presentId URL (about:blank path fixed but hydrate race remains). Tracked as REQ-010.",
-      "devCompletedAt": "2026-09-15T00:28:24.000Z",
-      "qaVerifiedAt": "2026-09-15T00:41:52.000Z"
-    },
-    {
-      "id": "fix-appimage-present-hydrate-real-url-preload",
-      "content": "Fix packaged AppImage Present client hydrate when URL is already a real presentId present-session URL and preload is present (SSR Loading hang / race). Jack tip c3a1642: blank-deck+import cold Present flaky 7/12 (~58%) \u2014 NOT about:blank. Distinct from REQ-009 about:blank/named-window fallthrough. Tip Electron PASS.",
-      "requirementId": "REQ-010",
-      "status": "done",
-      "passes": true,
-      "notes": "QA PASS @ tip db1c30e (2026-09-15T01:14:14.000Z): independent review \u2014 presentHydrateWatchdog reload-once on stuck SSR (no client boot) with real presentId URL + preload; Present __posterPresentClientBoot; backgroundThrottling false on present-session. Unit 274 PASS; Electron present-hydrate-stress + import-present-send + library-present-hydrate PASS under xvfb. Draft PR #21 stays draft. Jack AppImage cold repeats still residual for packaged sign-off.",
-      "devCompletedAt": "2026-09-15T01:12:00.000Z",
-      "qaVerifiedAt": "2026-09-15T01:14:14.000Z",
-      "qaReport": "ralph/qa-report.md"
+      "status": "pending",
+      "passes": false
     }
   ],
   "acceptanceCriteria": [
-    "electronHelpers and Electron theme relaunch launch the app from the repository root, not tests/.",
-    "Sample-deck and public/ asset paths from tests/e2e resolve to repo public/.",
-    "src/domain and src/application have no Remix/Electron/Playwright imports.",
-    "remix.config.js appDirectory is src/adapters/remix; package.json main and start scripts match adapters.",
-    "electron-builder and portable packaging copy/include the new adapter/domain paths.",
-    "tsc --noEmit and Jest unit/integration pass (or out-of-scope failures documented with evidence).",
-    "pnpm run test:e2e:remix and pnpm run test:e2e:electron pass on current tip after path fixes (or documented pre-existing failures).",
-    "Packaged/AppImage cold Present first-open hydrate is reliable on blank-deck Open Present (not flaky stuck on SSR Loading).",
-    "Library Open \u2192 Deck \u2192 Open Present on packaged Electron/AppImage reaches present-ready (not stuck SSR Loading \u226530s).",
-    "On Program works on packaged Electron after Present hydrate is reliable.",
-    "Residual AppImage risk + Jack checklist documented (include 9f124e1 and 497d454 baselines); draft PR #21 not marked ready or merged.",
-    "No .ralph/ directory; ralph/ is only this loop harness.",
-    "Packaged AppImage blank-deck cold Open Present + send after file import is reliable (not flaky \u22651/3 fail).",
-    "Packaged AppImage cold Open Present reaches present-ready when present-session URL already has presentId and preload is present (not flaky SSR Loading hang)."
+    "After createNewDeck, the first TITLE slide has no titleFontSize or subTitleFontSize.",
+    "After createNewDeck + GENERAL fontSize change, Present overlay title/subtitle use the GENERAL fontSize.",
+    "addSlide(TITLE) without baked sizes still follows GENERAL fontSize.",
+    "Non-title slides still follow GENERAL fontSize.",
+    "A slide with pre-existing baked titleFontSize / subTitleFontSize keeps those values after GENERAL fontSize change.",
+    "Automated precedence check is in CI (Jest) and fails if createNewDeck bakes sizes again.",
+    "PR body includes a user-facing release-notes bullet.",
+    "Do not merge; Jack is merge gate."
   ],
   "selected": {
-    "id": "fix-appimage-present-hydrate-real-url-preload",
-    "reason": "Loop 12 @ tip c3a1642: Jack AppImage NOT READY. Blank-deck+import cold Present flaky 7/12 stuck Loading with preload + real presentId URL \u2014 REQ-009 about:blank harden incomplete. Highest packaged-sign-off risk; distinct failure mode from about:blank fallthrough."
+    "id": "stop-baking-createNewDeck",
+    "reason": "Root cause: createNewDeck bakes 48px/28px which override GENERAL via titleFontSize ?? style.fontSize. Unblocks REQ-002 verification and the precedence regression test."
   },
-  "planningNotes": "Planning loop 12 @ 2026-09-15T01:01:26.000Z: reopened epic (completeEpic false) after Jack tip c3a1642. Added REQ-010 + todo fix-appimage-present-hydrate-real-url-preload; selected that task. No product code. Draft PR #21 only.",
-  "planningBrief": {
-    "fix-appimage-present-hydrate-real-url-preload": {
-      "alreadyPresent": [
-        "REQ-006/009 main-owned present-session loadURL + electron-direct (tip Electron green)",
-        "REQ-009 Import _blank + Electron-UA waitForPosterBridge + Start gated on child-ready",
-        "Jack tip c3a1642: failing opens already have preload + real presentId URL (not about:blank)",
-        "Tip Electron blank+library PASS; CI installers previously green on QA tip"
-      ],
-      "stillNeeded": [
-        "Reproduce AppImage cold Present stuck Loading with presentId URL + preload (blank-deck \u00b1 import)",
-        "Inspect main present-session loadURL / did-finish-load / Remix hydrate / present-ready handshake under FUSE",
-        "Harden so client hydrate is reliable when session URL+preload are already correct",
-        "Add/extend coverage that fails when hydrate hangs despite real URL (Electron stress if feasible)",
-        "Keep Library Open\u2192Present green; draft PR #21 stays draft"
-      ],
-      "primaryFiles": [
-        "src/adapters/electron/main.cjs",
-        "src/adapters/electron/homeWindowPolicy.cjs",
-        "src/presentation/Deck/openPresentWindow.ts",
-        "Present route / present-ready client boot",
-        "tests/e2e/electronHelpers.ts",
-        "ralph/specs/REQ-010.md"
-      ],
-      "acceptanceCriteria": [
-        "AppImage cold Open Present reaches present-ready reliably when URL already has presentId + preload",
-        "Blank-deck \u00b1 import flake rate not ~1/2 stuck Loading",
-        "Library Open\u2192Present remains reliable; tip Electron remains green"
-      ],
-      "hypothesis": "AppImage/FUSE timing: main-owned present-session loadURL + Remix SSR first paint + present-ready handshake \u2014 preload may not finish before first paint; Start/send may still race. Tip Electron rarely hits this."
-    }
-  },
-  "jackAppImageBaseline": {
-    "tip": "9f124e1",
-    "verdict": "NOT_READY",
-    "presentHydrate": "flaky_1_of_3_pass_stuck_ssr_loading",
-    "onProgram": "blocked_by_present",
-    "homeLibraryTheme": "pass",
-    "cleanArchLayout": "pass",
-    "ciOnThatTip": "unit_green_remix_e2e_and_electron_smoke_red_helpers_under_tests"
-  },
-  "jackAppImageBaseline497d454": {
-    "tip": "497d454",
-    "verdict": "NOT_READY",
-    "blankDeckOpenPresentSend": "3_of_3_pass",
-    "libraryOpenPresent": "fail_ssr_loading_ge_30s_no_hydrate",
-    "messageOnly": "pass",
-    "onProgram": "pass",
-    "theme": "pass",
-    "libraryRoot": "pass",
-    "home": "pass"
-  },
-  "lastUpdated": "2026-09-15T01:14:14.000Z",
-  "epicCompleteNotes": "Epic complete after REQ-010 QA @ db1c30e: all todos passes true. Draft PR #21 stays draft. Jack AppImage cold Present retest still residual (engineering tip Electron green \u2260 packaged proof).",
-  "feedback": {
-    "taskId": "fix-appimage-present-hydrate-real-url-preload",
-    "content": "QA PASS @ db1c30e: hydrate watchdog + stress/import/library Electron e2e green; unit 274 PASS. completeEpic true. Draft PR #21 stays draft.",
-    "updatedAt": "2026-09-15T01:14:14.000Z"
-  },
-  "jackAppImageBaseline7c947cd": {
-    "tip": "7c947cd",
-    "verdict": "NOT_READY",
-    "libraryOpenPresent": "3_of_3_pass",
-    "blankDeckPresentSendAfterFileImportAppImage": "fail_flaky_approx_1_of_3_to_1_of_2",
-    "tipElectron": "pass",
-    "ciInstallers": "green"
-  },
-  "jackAppImageBaselineC3a1642": {
-    "tip": "c3a1642",
-    "verdict": "NOT_READY",
-    "blankDeckImportColdPresentAppImage": "fail_flaky_7_of_12_ssr_loading_with_preload_and_real_presentId_url",
-    "libraryOpenPresent": "primary_3_of_3_pass_later_1_of_2_flake",
-    "tipElectronBlankAndLibrary": "pass",
-    "note": "Failure mode is NOT about:blank \u2014 main-owned present-session URL + preload already present."
-  }
+  "planningNotes": "Planning loop 1: seeded epic-002 from approved plan; base fix/cloud-env-ports; branch cursor/epic-002-first-title-font-size-7e0c. Selected stop-baking-createNewDeck first.",
+  "lastUpdated": "2026-09-24T20:40:00.000Z"
 }
