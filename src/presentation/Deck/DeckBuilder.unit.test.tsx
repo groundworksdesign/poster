@@ -260,15 +260,7 @@ test('imported JSON deck with id does not show prompt and sets libraryId', async
   expect(screen.getByTestId('library-id')).toHaveTextContent('Library ID: lib-123');
 });
 
-test('new deck includes schemaVersion 1', async () => {
-  render(<DeckBuilder />);
-
-  // Click "New Deck" to create a fresh deck
-  act(() => {
-    fireEvent.click(screen.getByRole('button', { name: /new deck/i }));
-  });
-
-  // Set up URL mocks (JSDOM does not provide URL.createObjectURL)
+async function exportDeckJson(): Promise<any> {
   let capturedBlob: Blob | undefined;
   (global.URL as any).createObjectURL = jest.fn((b: Blob) => {
     capturedBlob = b;
@@ -287,12 +279,100 @@ test('new deck includes schemaVersion 1', async () => {
     reader.onload = () => resolve(reader.result as string);
     reader.readAsText(capturedBlob!);
   });
-  const saved = JSON.parse(text);
-  expect(saved.schemaVersion).toBe(1);
-
   appendSpy.mockRestore();
   delete (global.URL as any).createObjectURL;
   delete (global.URL as any).revokeObjectURL;
+  return JSON.parse(text);
+}
+
+test('new deck includes schemaVersion 1', async () => {
+  render(<DeckBuilder />);
+
+  // Click "New Deck" to create a fresh deck
+  act(() => {
+    fireEvent.click(screen.getByRole('button', { name: /new deck/i }));
+  });
+
+  const saved = await exportDeckJson();
+  expect(saved.schemaVersion).toBe(1);
+});
+
+test('createNewDeck first TITLE does not bake titleFontSize / subTitleFontSize', async () => {
+  render(<DeckBuilder />);
+  act(() => {
+    fireEvent.click(screen.getByRole('button', { name: /new deck/i }));
+  });
+
+  const saved = await exportDeckJson();
+  expect(saved.slides[0].type).toBe('title');
+  expect(saved.slides[0].titleFontSize).toBeUndefined();
+  expect(saved.slides[0].subTitleFontSize).toBeUndefined();
+});
+
+test('new deck Font size change sends first title with GENERAL fontSize (no baked override)', async () => {
+  render(<DeckBuilder />);
+  act(() => {
+    fireEvent.click(screen.getByRole('button', { name: /new deck/i }));
+  });
+
+  const fontSizeInput = screen.getByLabelText(/^font size:/i);
+  await act(async () => {
+    fireEvent.change(fontSizeInput, { target: { value: '60px' } });
+  });
+
+  await act(async () => {
+    fireEvent.click(screen.getAllByRole('button', { name: /^send$/i })[0]);
+  });
+
+  await waitFor(() => expect(mockSend).toHaveBeenCalled());
+  const payload = mockSend.mock.calls[0][0];
+  expect(payload.slide.titleFontSize).toBeUndefined();
+  expect(payload.slide.subTitleFontSize).toBeUndefined();
+  expect(payload.slide.style.fontSize).toBe('60px');
+});
+
+test('imported deck with baked title sizes keeps them after Font size change', async () => {
+  const bakedDeck = {
+    title: 'Old Deck',
+    slides: [
+      {
+        type: 'title',
+        title: 'Title',
+        subTitle: 'Sub',
+        style: {},
+        titleFontSize: '48px',
+        subTitleFontSize: '28px',
+      },
+    ],
+    slideStyles: {
+      general: { fontSize: '24px' },
+    },
+  };
+  render(<DeckBuilder />);
+  await loadFile(makeJsonFile(bakedDeck));
+  await waitFor(() => screen.getByTestId('import-save-prompt'));
+  act(() => {
+    fireEvent.click(screen.getByRole('button', { name: /skip/i }));
+  });
+
+  const fontSizeInput = screen.getByLabelText(/^font size:/i);
+  await act(async () => {
+    fireEvent.change(fontSizeInput, { target: { value: '60px' } });
+  });
+
+  await act(async () => {
+    fireEvent.click(screen.getAllByRole('button', { name: /^send$/i })[0]);
+  });
+
+  await waitFor(() => expect(mockSend).toHaveBeenCalled());
+  const payload = mockSend.mock.calls[0][0];
+  expect(payload.slide.titleFontSize).toBe('48px');
+  expect(payload.slide.subTitleFontSize).toBe('28px');
+  expect(payload.slide.style.fontSize).toBe('60px');
+
+  const saved = await exportDeckJson();
+  expect(saved.slides[0].titleFontSize).toBe('48px');
+  expect(saved.slides[0].subTitleFontSize).toBe('28px');
 });
 
 test('imported JSON deck without schemaVersion defaults to 1', async () => {
