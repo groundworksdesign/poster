@@ -2,45 +2,46 @@
   "epic": "epic-002",
   "branch": "cursor/epic-002-first-title-font-size-7e0c",
   "baseBranch": "fix/cloud-env-ports",
-  "status": "in_progress",
-  "loop": 1,
-  "persona": "planning",
-  "completeEpic": false,
+  "status": "complete",
+  "loop": 2,
+  "persona": "qa",
+  "completeEpic": true,
+  "prUrl": "https://github.com/groundworksdesign/poster/pull/24",
   "requirements": [
     {
       "id": "REQ-001",
       "title": "createNewDeck does not bake title sizes",
       "description": "createNewDeck() must not set titleFontSize or subTitleFontSize on the seeded first TITLE slide (match addSlide(TITLE)).",
       "todoIds": ["stop-baking-createNewDeck"],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "REQ-002",
       "title": "New deck Font size updates first title",
       "description": "After creating a new deck, changing deck Font size updates that first title and subtitle in Present and the editor program thumbnail.",
       "todoIds": ["verify-font-control-new-deck"],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "REQ-003",
       "title": "Added TITLE and non-title still inherit",
       "description": "Newly added TITLE slides and non-title slides continue to inherit GENERAL font size as they do today.",
       "todoIds": ["automated-precedence-check"],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "REQ-004",
       "title": "Preserve existing baked sizes",
       "description": "Opening or editing a deck that already has baked titleFontSize / subTitleFontSize leaves those values unchanged.",
       "todoIds": ["preserve-existing-baked"],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "REQ-005",
       "title": "Release notes bullet",
       "description": "Release notes for the shipping version mention this fix in user-facing language.",
       "todoIds": ["release-notes"],
-      "status": "pending"
+      "status": "done"
     }
   ],
   "todos": [
@@ -48,36 +49,46 @@
       "id": "stop-baking-createNewDeck",
       "content": "In createNewDeck(), do not set titleFontSize or subTitleFontSize on the seeded first TITLE slide (match addSlide(TITLE) inheritance from GENERAL).",
       "requirementId": "REQ-001",
-      "status": "pending",
-      "passes": false
+      "status": "done",
+      "passes": true,
+      "notes": "QA: createNewDeck omits titleFontSize/subTitleFontSize; DeckBuilder export test asserts undefined on first TITLE.",
+      "qaVerifiedAt": "2026-09-24T20:50:00.000Z"
     },
     {
       "id": "verify-font-control-new-deck",
       "content": "After creating a new deck, changing deck Font size updates the first title and subtitle in Present overlay and the editor program thumbnail.",
       "requirementId": "REQ-002",
-      "status": "pending",
-      "passes": false
+      "status": "done",
+      "passes": true,
+      "notes": "QA: DeckBuilder send after Font size 60px → payload.slide.style.fontSize=60px, no baked title sizes; same precedence as Present/thumbnail (titleFontSize ?? style.fontSize).",
+      "qaVerifiedAt": "2026-09-24T20:50:00.000Z"
     },
     {
       "id": "preserve-existing-baked",
       "content": "Decks that already have baked titleFontSize / subTitleFontSize keep those values; do not strip on open or rewrite on Font size change.",
       "requirementId": "REQ-004",
-      "status": "pending",
-      "passes": false
+      "status": "done",
+      "passes": true,
+      "notes": "QA: import baked 48/28 → Font size 60px → send still 48/28; export retains baked fields; precedence unit documents overlay still 48/28.",
+      "qaVerifiedAt": "2026-09-24T20:50:00.000Z"
     },
     {
       "id": "automated-precedence-check",
       "content": "Add or extend an automated check (Jack’s precedence cases or equivalent unit test) that fails if createNewDeck again bakes sizes that override GENERAL fontSize.",
       "requirementId": "REQ-003",
-      "status": "pending",
-      "passes": false
+      "status": "done",
+      "passes": true,
+      "notes": "QA: src/domain/fontSizePrecedence.test.ts + DeckBuilder.unit tests green; full suite 43/284 PASS.",
+      "qaVerifiedAt": "2026-09-24T20:50:00.000Z"
     },
     {
       "id": "release-notes",
       "content": "Include a user-facing release-notes bullet for this fix on the PR (new decks’ first title now follows Font size; older decks with fixed title sizes unchanged).",
       "requirementId": "REQ-005",
-      "status": "pending",
-      "passes": false
+      "status": "done",
+      "passes": true,
+      "notes": "QA: PR #24 body includes Release notes bullet.",
+      "qaVerifiedAt": "2026-09-24T20:50:00.000Z"
     }
   ],
   "acceptanceCriteria": [
@@ -91,9 +102,22 @@
     "Do not merge; Jack is merge gate."
   ],
   "selected": {
-    "id": "stop-baking-createNewDeck",
-    "reason": "Root cause: createNewDeck bakes 48px/28px which override GENERAL via titleFontSize ?? style.fontSize. Unblocks REQ-002 verification and the precedence regression test."
+    "id": null,
+    "reason": "All epic-002 todos QA-passed; completeEpic true. Draft PR #24; Jack merge gate."
   },
-  "planningNotes": "Planning loop 1: seeded epic-002 from approved plan; base fix/cloud-env-ports; branch cursor/epic-002-first-title-font-size-7e0c. Selected stop-baking-createNewDeck first.",
-  "lastUpdated": "2026-09-24T20:40:00.000Z"
+  "lastUpdated": "2026-09-24T20:50:00.000Z",
+  "qaEvidence": {
+    "tsc": "exit 0",
+    "jest": "43 suites, 284 tests passed",
+    "commands": [
+      "pnpm exec tsc --noEmit",
+      "CI=true pnpm exec react-scripts test --watchAll=false --runInBand"
+    ],
+    "tipSha": "8221cd2"
+  },
+  "feedback": {
+    "taskId": "epic-002",
+    "content": "QA PASS: createNewDeck no longer bakes title sizes; precedence + DeckBuilder tests green; full unit 284 PASS; PR #24 draft with release-notes bullet. Do not merge — Jack is merge gate.",
+    "updatedAt": "2026-09-24T20:50:00.000Z"
+  }
 }
