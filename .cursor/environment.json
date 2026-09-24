@@ -7,5 +7,10 @@
       "command": "pnpm dev"
     }
   ],
-  "ports": [3000]
+  "ports": [
+    {
+      "name": "remix",
+      "port": 3000
+    }
+  ]
 }

@@ -710,8 +710,9 @@ export default function DeckBuilder() {
           title: 'Title',
           subTitle: '',
           style: {},
-          titleFontSize: '48px',
-          subTitleFontSize: '28px',
+          // Do not bake titleFontSize / subTitleFontSize — inherit GENERAL
+          // fontSize like addSlide(TITLE). Existing decks that already carry
+          // baked sizes keep them via titleFontSize ?? style.fontSize.
           id: genId(),
         },
       ],
