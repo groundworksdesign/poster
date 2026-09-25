@@ -16,6 +16,8 @@ on:
       - "ralph/**"
     tags:
       - "v*.*.*"
+  # Manual re-run when a squash body carried [skip ci] and Release never started.
+  workflow_dispatch:
 
 # Default: build jobs only read the repo. Publish and resolve-version elevate as needed.
 permissions:
