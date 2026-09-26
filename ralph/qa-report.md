@@ -1,24 +1,13 @@
-# QA report — epic-002
+# Feedback
 
-## Verdict
+## epic-003 QA PASS
 
-`<status>verified</status>` — all epic-002 todos pass.
+- IPC bridge: `poster:enter/exit/toggle/is-fullscreen` on sender BrowserWindow; preload APIs exposed.
+- Present Electron path: F → `toggleFullscreen`; Escape → `exitFullscreen`; never `requestFullscreen` when bridge present.
+- Fallback: native failure and darwin menu-bar heuristic → `setSimpleFullScreen`; exit clears both modes.
+- No auto-FS on `openPresentSessionWindow`; no display picker; no kiosk.
+- Browser path unchanged: HTML `requestFullscreen`.
+- Tests: tsc exit 0; Jest 45 suites / 300 tests PASS.
+- Release notes: `docs/release-notes-epic-003-mac-present-fullscreen.md`.
 
-## Tip
-
-`8221cd2` on `cursor/epic-002-first-title-font-size-7e0c` (PR #24 draft).
-
-## Evidence
-
-| Check | Result |
-|-------|--------|
-| `pnpm exec tsc --noEmit` | exit 0 |
-| `CI=true pnpm exec react-scripts test --watchAll=false --runInBand` | 43 suites / 284 tests PASS |
-| createNewDeck omits baked title sizes | PASS (export assertion) |
-| Font size → Send first title uses GENERAL | PASS (mockSend payload) |
-| Baked import keeps 48px/28px after Font size | PASS |
-| Jack precedence cases (`fontSizePrecedence.test.ts`) | PASS |
-
-## Merge gate
-
-Do **not** merge. Jack is merge gate.
+Do not merge — Jack is merge gate. Beta PR exception allows early draft PR for PR Build installers.

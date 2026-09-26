@@ -1,6 +1,6 @@
 'use strict';
 
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, screen } = require('electron');
 const { spawn } = require('child_process');
 const fs = require('fs');
 const net = require('net');
@@ -14,6 +14,12 @@ const {
 } = require('./homeWindowPolicy.cjs');
 const { attachPresentHydrateWatchdog } = require('./presentHydrateWatchdog.cjs');
 const { readThemePrefs, writeThemePrefs } = require('./themePrefs.cjs');
+const {
+  enterPresentFullscreen,
+  exitPresentFullscreen,
+  getPresentFullscreenMode,
+  togglePresentFullscreen,
+} = require('./presentFullscreen.cjs');
 
 ipcMain.on('poster:read-theme-sync', (event) => {
   event.returnValue = readThemePrefs();
@@ -40,6 +46,53 @@ ipcMain.handle('poster:pick-library-folder', async (event) => {
     return null;
   }
   return result.filePaths[0];
+});
+
+/** Resolve the sender's BrowserWindow only (no display picker / move). */
+function windowFromSender(event) {
+  return BrowserWindow.fromWebContents(event.sender);
+}
+
+function displayForWindow(win) {
+  try {
+    return screen.getDisplayMatching(win.getBounds());
+  } catch (_) {
+    return null;
+  }
+}
+
+function fullscreenOpts() {
+  return {
+    platform: process.platform,
+    getDisplay: displayForWindow,
+  };
+}
+
+// Present fullscreen: native setFullScreen with Mac setSimpleFullScreen fallback.
+// Scoped to the sender window on the display it already occupies.
+ipcMain.handle('poster:enter-fullscreen', async (event) => {
+  const win = windowFromSender(event);
+  return enterPresentFullscreen(win, fullscreenOpts());
+});
+
+ipcMain.handle('poster:exit-fullscreen', async (event) => {
+  const win = windowFromSender(event);
+  return exitPresentFullscreen(win);
+});
+
+ipcMain.handle('poster:toggle-fullscreen', async (event) => {
+  const win = windowFromSender(event);
+  return togglePresentFullscreen(win, fullscreenOpts());
+});
+
+ipcMain.handle('poster:is-fullscreen', async (event) => {
+  const win = windowFromSender(event);
+  const mode = getPresentFullscreenMode(win);
+  return {
+    fullscreen: mode !== 'windowed',
+    mode,
+    fallback: mode === 'simple',
+  };
 });
 
 const sessionIpc = registerSessionIpc();
