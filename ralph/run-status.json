@@ -1,5 +1,5 @@
 {
-  "branch": "cursor/clean-architecture-restructure-018c",
-  "lastLog": "[ralph] QA PASS REQ-010 @ db1c30e: present hydrate watchdog; completeEpic true; draft PR #21",
-  "updatedAt": "2026-09-15T01:14:14.000Z"
+  "branch": "ralph/epic-003-mac-present-fullscreen",
+  "lastLog": "[ralph] Loop 1 planning: seeded epic-003; selected ipc-fullscreen-bridge",
+  "updatedAt": "2026-09-26T13:55:00.000Z"
 }

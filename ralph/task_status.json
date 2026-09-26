@@ -1,133 +1,148 @@
 {
-  "epic": "epic-002",
-  "branch": "cursor/epic-002-first-title-font-size-7e0c",
-  "baseBranch": "fix/cloud-env-ports",
-  "status": "complete",
-  "loop": 2,
-  "persona": "qa",
-  "completeEpic": true,
-  "prUrl": "https://github.com/groundworksdesign/poster/pull/24",
+  "epic": "epic-003",
+  "branch": "ralph/epic-003-mac-present-fullscreen",
+  "baseBranch": "main",
+  "status": "in_progress",
+  "loop": 1,
+  "persona": "planning",
+  "completeEpic": false,
+  "prUrl": null,
   "requirements": [
     {
       "id": "REQ-001",
-      "title": "createNewDeck does not bake title sizes",
-      "description": "createNewDeck() must not set titleFontSize or subTitleFontSize on the seeded first TITLE slide (match addSlide(TITLE)).",
-      "todoIds": [
-        "stop-baking-createNewDeck"
-      ],
-      "status": "done"
+      "title": "Electron Present F uses native setFullScreen",
+      "description": "On Mac Electron, Present F enters/exits fullscreen via main-process BrowserWindow.setFullScreen, not HTML requestFullscreen.",
+      "todoIds": ["ipc-fullscreen-bridge", "present-f-uses-native"],
+      "status": "pending"
     },
     {
       "id": "REQ-002",
-      "title": "New deck Font size updates first title",
-      "description": "After creating a new deck, changing deck Font size updates that first title and subtitle in Present and the editor program thumbnail.",
-      "todoIds": [
-        "verify-font-control-new-deck"
-      ],
-      "status": "done"
+      "title": "Stronger setSimpleFullScreen fallback",
+      "description": "If the system menu bar still shows after native fullscreen (or native FS cannot be used), apply setSimpleFullScreen while preserving easy exit.",
+      "todoIds": ["stronger-fallback"],
+      "status": "pending"
     },
     {
       "id": "REQ-003",
-      "title": "Added TITLE and non-title still inherit",
-      "description": "Newly added TITLE slides and non-title slides continue to inherit GENERAL font size as they do today.",
-      "todoIds": [
-        "automated-precedence-check"
-      ],
-      "status": "done"
+      "title": "F and Escape always exit",
+      "description": "F and Escape always restore windowed Present; no hard kiosk that blocks easy exit.",
+      "todoIds": ["easy-exit"],
+      "status": "pending"
     },
     {
       "id": "REQ-004",
-      "title": "Preserve existing baked sizes",
-      "description": "Opening or editing a deck that already has baked titleFontSize / subTitleFontSize leaves those values unchanged.",
-      "todoIds": [
-        "preserve-existing-baked"
-      ],
-      "status": "done"
+      "title": "No auto-fullscreen on open",
+      "description": "Present does not enter fullscreen automatically when the window opens.",
+      "todoIds": ["no-auto-on-open"],
+      "status": "pending"
     },
     {
       "id": "REQ-005",
+      "title": "Window-scoped only, no display picker",
+      "description": "Only existing Present windows are fullscreened on the display they already occupy; no display-picker UI.",
+      "todoIds": ["window-scoped-only"],
+      "status": "pending"
+    },
+    {
+      "id": "REQ-006",
+      "title": "Browser Present keeps HTML fullscreen",
+      "description": "Browser / Remix Present continues to use HTML requestFullscreen / exitFullscreen only.",
+      "todoIds": ["present-f-uses-native", "automated-checks"],
+      "status": "pending"
+    },
+    {
+      "id": "REQ-007",
       "title": "Release notes bullet",
-      "description": "Release notes for the shipping version mention this fix in user-facing language.",
-      "todoIds": [
-        "release-notes"
-      ],
-      "status": "done"
+      "description": "Shipping release notes mention the Mac Present fullscreen reliability fix in user-facing language.",
+      "todoIds": ["release-notes-docs"],
+      "status": "pending"
     }
   ],
   "todos": [
     {
-      "id": "stop-baking-createNewDeck",
-      "content": "In createNewDeck(), do not set titleFontSize or subTitleFontSize on the seeded first TITLE slide (match addSlide(TITLE) inheritance from GENERAL).",
+      "id": "ipc-fullscreen-bridge",
+      "content": "Add Electron IPC + preload APIs so Present can request enter/exit fullscreen on its own BrowserWindow (macOS native setFullScreen; no HTML-only path on Electron).",
       "requirementId": "REQ-001",
-      "status": "done",
-      "passes": true,
-      "notes": "QA: createNewDeck omits titleFontSize/subTitleFontSize; DeckBuilder export test asserts undefined on first TITLE.",
-      "qaVerifiedAt": "2026-09-24T20:50:00.000Z"
+      "status": "pending",
+      "passes": false,
+      "notes": ""
     },
     {
-      "id": "verify-font-control-new-deck",
-      "content": "After creating a new deck, changing deck Font size updates the first title and subtitle in Present overlay and the editor program thumbnail.",
+      "id": "present-f-uses-native",
+      "content": "On Electron Present, F enters/exits via the bridge (native setFullScreen). Do not call requestFullscreen on Electron. Browser Present keeps HTML requestFullscreen.",
+      "requirementId": "REQ-001",
+      "status": "pending",
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "stronger-fallback",
+      "content": "If after native fullscreen the Mac menu bar still remains visible (or native FS fails), fall back to setSimpleFullScreen (or equivalent) while preserving easy exit.",
       "requirementId": "REQ-002",
-      "status": "done",
-      "passes": true,
-      "notes": "QA: DeckBuilder send after Font size 60px \u2192 payload.slide.style.fontSize=60px, no baked title sizes; same precedence as Present/thumbnail (titleFontSize ?? style.fontSize).",
-      "qaVerifiedAt": "2026-09-24T20:50:00.000Z"
+      "status": "pending",
+      "passes": false,
+      "notes": ""
     },
     {
-      "id": "preserve-existing-baked",
-      "content": "Decks that already have baked titleFontSize / subTitleFontSize keep those values; do not strip on open or rewrite on Font size change.",
-      "requirementId": "REQ-004",
-      "status": "done",
-      "passes": true,
-      "notes": "QA: import baked 48/28 \u2192 Font size 60px \u2192 send still 48/28; export retains baked fields; precedence unit documents overlay still 48/28.",
-      "qaVerifiedAt": "2026-09-24T20:50:00.000Z"
-    },
-    {
-      "id": "automated-precedence-check",
-      "content": "Add or extend an automated check (Jack\u2019s precedence cases or equivalent unit test) that fails if createNewDeck again bakes sizes that override GENERAL fontSize.",
+      "id": "easy-exit",
+      "content": "F and Escape always leave fullscreen (native or fallback) and restore the windowed Present; no hard kiosk lock.",
       "requirementId": "REQ-003",
-      "status": "done",
-      "passes": true,
-      "notes": "QA: src/domain/fontSizePrecedence.test.ts + DeckBuilder.unit tests green; full suite 43/284 PASS.",
-      "qaVerifiedAt": "2026-09-24T20:50:00.000Z"
+      "status": "pending",
+      "passes": false,
+      "notes": ""
     },
     {
-      "id": "release-notes",
-      "content": "Include a user-facing release-notes bullet for this fix on the PR (new decks\u2019 first title now follows Font size; older decks with fixed title sizes unchanged).",
+      "id": "no-auto-on-open",
+      "content": "Opening a Present window stays windowed; fullscreen only after operator F (or explicit UI that maps to the same path).",
+      "requirementId": "REQ-004",
+      "status": "pending",
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "window-scoped-only",
+      "content": "Fullscreen applies only to existing Present BrowserWindows on the display they already occupy; no display-picker UI.",
       "requirementId": "REQ-005",
-      "status": "done",
-      "passes": true,
-      "notes": "QA: PR #24 body includes Release notes bullet.",
-      "qaVerifiedAt": "2026-09-24T20:50:00.000Z"
+      "status": "pending",
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "automated-checks",
+      "content": "Add automated coverage for Electron bridge behavior (enter/exit native vs fallback routing, browser still uses HTML FS) at unit/IPC mock level Jack can extend.",
+      "requirementId": "REQ-006",
+      "status": "pending",
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "release-notes-docs",
+      "content": "Release-notes bullet for Mac Present fullscreen reliability; short note that System Settings menu-bar mode can still affect Never, with the app fallback covering stubborn cases.",
+      "requirementId": "REQ-007",
+      "status": "pending",
+      "passes": false,
+      "notes": ""
     }
   ],
   "acceptanceCriteria": [
-    "After createNewDeck, the first TITLE slide has no titleFontSize or subTitleFontSize.",
-    "After createNewDeck + GENERAL fontSize change, Present overlay title/subtitle use the GENERAL fontSize.",
-    "addSlide(TITLE) without baked sizes still follows GENERAL fontSize.",
-    "Non-title slides still follow GENERAL fontSize.",
-    "A slide with pre-existing baked titleFontSize / subTitleFontSize keeps those values after GENERAL fontSize change.",
-    "Automated precedence check is in CI (Jest) and fails if createNewDeck bakes sizes again.",
-    "PR body includes a user-facing release-notes bullet.",
-    "Do not merge; Jack is merge gate."
+    "Electron F with window.poster present never calls requestFullscreen",
+    "Electron Escape / F exit clears native and simpleFullscreen in the mock",
+    "Fallback is invoked when native path reports menu-bar still visible / failure; exit clears fallback",
+    "Browser F still uses HTML requestFullscreen",
+    "Present opens windowed (no auto-fullscreen on open)",
+    "No display-picker UI",
+    "PR / shipping release notes include a clear user-facing bullet",
+    "Do not merge; Jack is merge gate"
   ],
   "selected": {
-    "id": null,
-    "reason": "All epic-002 todos QA-passed; completeEpic true. Draft PR #24; Jack merge gate."
+    "id": "ipc-fullscreen-bridge",
+    "reason": "Unblocks all Electron Present FS work: main IPC + preload APIs must exist before Present can route F away from HTML requestFullscreen."
   },
-  "lastUpdated": "2026-09-24T20:50:00.000Z",
-  "qaEvidence": {
-    "tsc": "exit 0",
-    "jest": "43 suites, 284 tests passed",
-    "commands": [
-      "pnpm exec tsc --noEmit",
-      "CI=true pnpm exec react-scripts test --watchAll=false --runInBand"
-    ],
-    "tipSha": "84683751097ed7e8bef248ceba08bf2379b102bd"
-  },
+  "lastUpdated": "2026-09-26T13:55:00.000Z",
+  "qaEvidence": null,
   "feedback": {
-    "taskId": "epic-002",
-    "content": "QA PASS: createNewDeck no longer bakes title sizes; precedence + DeckBuilder tests green; full unit 284 PASS; PR #24 draft with release-notes bullet. Do not merge \u2014 Jack is merge gate.",
-    "updatedAt": "2026-09-24T20:50:00.000Z"
+    "taskId": "planning",
+    "content": "Loop 1 planning: seeded epic-003 from attached source; initialized todos from epic frontmatter; selected ipc-fullscreen-bridge first.",
+    "updatedAt": "2026-09-26T13:55:00.000Z"
   }
 }
