@@ -140,6 +140,10 @@ Installer files land under **`dist/electron/`** (for example `.dmg`, `.exe`, `.d
 
 Local builds and CI use `CSC_IDENTITY_AUTO_DISCOVERY=false`, so macOS and Windows artifacts are **unsigned** unless you configure signing separately.
 
+**macOS Gatekeeper:** Browser-downloaded unsigned DMGs often show “Poster.app is damaged…” (quarantine + ad-hoc signature), not a mild “unknown developer” prompt. Clear quarantine with `xattr -cr` as in [`docs/macos-install-unsigned.txt`](docs/macos-install-unsigned.txt). On macOS 15 Sequoia+, Control-click → Open no longer bypasses Gatekeeper for unsigned apps—use **System Settings → Privacy & Security → Open Anyway** after the first blocked open. A normal install dialog requires an Apple **Developer ID** certificate and **notarization** (not configured until those secrets exist).
+
+**Updates:** Packaged Windows/Linux builds can download and install newer GitHub Releases in-app. macOS shows a new-version alert and opens the Releases page (manual DMG + Gatekeeper steps above). See [`docs/auto-update.md`](docs/auto-update.md).
+
 **Packaged AppImage residual risk / Jack checklist:** see [`docs/appimage-residual-risk.md`](docs/appimage-residual-risk.md). Automated Electron Playwright smoke is not a substitute for a manual AppImage cold-open pass.
 
 ## CI: PR workflow artifacts
