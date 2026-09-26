@@ -28,6 +28,19 @@ export type DeckEvent =
       program: ProgramThumbnailState | null;
     };
 
+export type PresentFullscreenResult = {
+  ok: boolean;
+  mode: 'native' | 'simple' | 'windowed';
+  fallback: boolean;
+  reason?: string;
+};
+
+export type PresentFullscreenState = {
+  fullscreen: boolean;
+  mode: 'native' | 'simple' | 'windowed';
+  fallback: boolean;
+};
+
 declare global {
   interface Window {
     poster?: {
@@ -36,6 +49,10 @@ declare global {
       onDeckEvent: (handler: (payload: DeckEvent) => void) => () => void;
       onPresentPush: (handler: (payload: unknown) => void) => () => void;
       pickLibraryFolder: () => Promise<string | null>;
+      enterFullscreen?: () => Promise<PresentFullscreenResult>;
+      exitFullscreen?: () => Promise<PresentFullscreenResult>;
+      toggleFullscreen?: () => Promise<PresentFullscreenResult>;
+      isFullscreen?: () => Promise<PresentFullscreenState>;
     };
   }
 }

@@ -55,7 +55,7 @@ Library and other `POST` routes will not be available in CRA-only mode; use the 
 ## How to use Poster
 
 1. **Deck builder** (`/deck`): Load a slide deck (JSON), import a song (XML), or use the **library** (when the full server is running). Pick slides and send them to the presentation.
-2. **Presentation** (`/presentation`): Open this on your projector or second monitor—fullscreen it there. It shows whatever the builder last sent.
+2. **Presentation** (`/presentation`): Open this on your projector or second monitor—fullscreen it there (**F**). On the Mac Electron app, Present uses native fullscreen (with a stronger fallback if the menu bar still shows); **F** or **Escape** leaves fullscreen. It shows whatever the builder last sent.
 3. Keep both views open in the **same browser** so the live channel works. Use the on-screen controls or keyboard shortcuts in the builder to move through slides or song lyrics.
 
 Live Present behavior:

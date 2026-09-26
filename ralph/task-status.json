@@ -1,79 +1,79 @@
 {
   "branchName": "ralph/epic-003-mac-present-fullscreen",
-  "status": "in_progress",
-  "completeEpic": false,
+  "status": "complete",
+  "completeEpic": true,
   "tasks": [
     {
       "id": 1,
       "title": "IPC fullscreen bridge",
       "description": "Add Electron IPC + preload APIs so Present can request enter/exit fullscreen on its own BrowserWindow (macOS native setFullScreen).",
-      "status": "backlog",
+      "status": "done",
       "todoId": "ipc-fullscreen-bridge",
       "createdAt": "2026-09-26T13:55:00.000Z",
-      "updatedAt": "2026-09-26T13:55:00.000Z"
+      "updatedAt": "2026-09-26T14:10:00.000Z"
     },
     {
       "id": 2,
       "title": "Present F uses native",
       "description": "On Electron Present, F enters/exits via the bridge. Do not call requestFullscreen on Electron. Browser Present keeps HTML requestFullscreen.",
-      "status": "backlog",
+      "status": "done",
       "todoId": "present-f-uses-native",
       "createdAt": "2026-09-26T13:55:00.000Z",
-      "updatedAt": "2026-09-26T13:55:00.000Z"
+      "updatedAt": "2026-09-26T14:10:00.000Z"
     },
     {
       "id": 3,
       "title": "Stronger simpleFullscreen fallback",
       "description": "If after native fullscreen the Mac menu bar still remains visible or native FS fails, fall back to setSimpleFullScreen while preserving easy exit.",
-      "status": "backlog",
+      "status": "done",
       "todoId": "stronger-fallback",
       "createdAt": "2026-09-26T13:55:00.000Z",
-      "updatedAt": "2026-09-26T13:55:00.000Z"
+      "updatedAt": "2026-09-26T14:10:00.000Z"
     },
     {
       "id": 4,
       "title": "Easy F and Escape exit",
       "description": "F and Escape always leave fullscreen (native or fallback) and restore windowed Present; no hard kiosk lock.",
-      "status": "backlog",
+      "status": "done",
       "todoId": "easy-exit",
       "createdAt": "2026-09-26T13:55:00.000Z",
-      "updatedAt": "2026-09-26T13:55:00.000Z"
+      "updatedAt": "2026-09-26T14:10:00.000Z"
     },
     {
       "id": 5,
       "title": "No auto-FS on open",
       "description": "Opening a Present window stays windowed; fullscreen only after operator F.",
-      "status": "backlog",
+      "status": "done",
       "todoId": "no-auto-on-open",
       "createdAt": "2026-09-26T13:55:00.000Z",
-      "updatedAt": "2026-09-26T13:55:00.000Z"
+      "updatedAt": "2026-09-26T14:10:00.000Z"
     },
     {
       "id": 6,
       "title": "Window-scoped only",
       "description": "Fullscreen applies only to existing Present BrowserWindows on the display they already occupy; no display-picker UI.",
-      "status": "backlog",
+      "status": "done",
       "todoId": "window-scoped-only",
       "createdAt": "2026-09-26T13:55:00.000Z",
-      "updatedAt": "2026-09-26T13:55:00.000Z"
+      "updatedAt": "2026-09-26T14:10:00.000Z"
     },
     {
       "id": 7,
       "title": "Automated bridge checks",
       "description": "Add automated coverage for Electron bridge enter/exit native vs fallback routing; browser still uses HTML FS.",
-      "status": "backlog",
+      "status": "done",
       "todoId": "automated-checks",
       "createdAt": "2026-09-26T13:55:00.000Z",
-      "updatedAt": "2026-09-26T13:55:00.000Z"
+      "updatedAt": "2026-09-26T14:10:00.000Z"
     },
     {
       "id": 8,
       "title": "Release notes bullet",
       "description": "Release-notes bullet for Mac Present fullscreen reliability and System Settings / fallback note.",
-      "status": "backlog",
+      "status": "done",
       "todoId": "release-notes-docs",
       "createdAt": "2026-09-26T13:55:00.000Z",
-      "updatedAt": "2026-09-26T13:55:00.000Z"
+      "updatedAt": "2026-09-26T14:10:00.000Z"
     }
   ]
 }

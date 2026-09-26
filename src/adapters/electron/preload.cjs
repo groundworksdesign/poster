@@ -9,6 +9,10 @@ contextBridge.exposeInMainWorld('poster', {
   pickLibraryFolder: () => ipcRenderer.invoke('poster:pick-library-folder'),
   deckCommand: (command) => ipcRenderer.invoke('poster:deck-command', command),
   presentEvent: (event) => ipcRenderer.send('poster:present-event', event),
+  enterFullscreen: () => ipcRenderer.invoke('poster:enter-fullscreen'),
+  exitFullscreen: () => ipcRenderer.invoke('poster:exit-fullscreen'),
+  toggleFullscreen: () => ipcRenderer.invoke('poster:toggle-fullscreen'),
+  isFullscreen: () => ipcRenderer.invoke('poster:is-fullscreen'),
   onDeckEvent: (handler) => {
     const listener = (_event, payload) => handler(payload);
     ipcRenderer.on('poster:deck-event', listener);
