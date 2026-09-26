@@ -170,11 +170,11 @@
       "pnpm exec tsc --noEmit",
       "CI=true pnpm exec react-scripts test --watchAll=false --runInBand"
     ],
-    "tipSha": "60ce6fc67291715da2831da00b80637ed26a6b10"
+    "tipSha": "pending-push"
   },
   "feedback": {
     "taskId": "epic-003",
-    "content": "QA PASS: Mac Electron Present FS via native setFullScreen + simpleFullscreen fallback; F/Escape easy exit; browser HTML FS unchanged; automated bridge checks green; release-notes doc. Beta PR exception: open draft PR for PR Build; do not merge \u2014 Jack is merge gate.",
+    "content": "QA PASS epic-003. Early beta PR for PR Build installers; Jack merge gate. Do not merge.",
     "updatedAt": "2026-09-26T14:10:00.000Z"
   }
 }
