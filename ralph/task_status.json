@@ -170,11 +170,11 @@
       "pnpm exec tsc --noEmit",
       "CI=true pnpm exec react-scripts test --watchAll=false --runInBand"
     ],
-    "tipSha": "11ecba0693618ea7a2f6716c31099dc1760cacbb"
+    "tipSha": "95c306ab6bc242d66108253331d0e762570e1134"
   },
   "feedback": {
     "taskId": "epic-003",
-    "content": "QA PASS epic-003. Draft PR #25 for PR Build installers; Jack merge gate. Do not merge.",
+    "content": "QA PASS epic-003. Draft PR #25; PR Build queued for v0.1.16-pr.25 installers; Jack merge gate. Do not merge.",
     "updatedAt": "2026-09-26T14:10:00.000Z"
   }
 }
