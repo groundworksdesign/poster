@@ -160,7 +160,7 @@
   ],
   "selected": {
     "id": null,
-    "reason": "All epic-003 todos QA-passed; draft PR #25; Jack merge gate."
+    "reason": "All todos QA-passed; beta v0.1.16-pr.25 out; Jack merge gate."
   },
   "lastUpdated": "2026-09-26T14:10:00.000Z",
   "qaEvidence": {
@@ -170,11 +170,12 @@
       "pnpm exec tsc --noEmit",
       "CI=true pnpm exec react-scripts test --watchAll=false --runInBand"
     ],
-    "tipSha": "95c306ab6bc242d66108253331d0e762570e1134"
+    "tipSha": "95c306ab6bc242d66108253331d0e762570e1134",
+    "betaRelease": "v0.1.16-pr.25"
   },
   "feedback": {
     "taskId": "epic-003",
-    "content": "QA PASS epic-003. Draft PR #25; PR Build queued for v0.1.16-pr.25 installers; Jack merge gate. Do not merge.",
+    "content": "QA PASS epic-003. Draft PR #25; beta pre-release v0.1.16-pr.25 published (Mac DMGs + portable). Jack merge gate. Do not merge.",
     "updatedAt": "2026-09-26T14:10:00.000Z"
   }
 }
