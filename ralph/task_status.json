@@ -2,11 +2,11 @@
   "epic": "epic-003",
   "branch": "ralph/epic-003-mac-present-fullscreen",
   "baseBranch": "main",
-  "status": "in_progress",
+  "status": "complete",
   "loop": 4,
   "persona": "qa",
   "completeEpic": true,
-  "prUrl": null,
+  "prUrl": "https://github.com/groundworksdesign/poster/pull/25",
   "requirements": [
     {
       "id": "REQ-001",
@@ -160,7 +160,7 @@
   ],
   "selected": {
     "id": null,
-    "reason": "All epic-003 todos QA-passed; completeEpic true. Early beta PR for PR Build installers; Jack merge gate."
+    "reason": "All epic-003 todos QA-passed; draft PR #25; Jack merge gate."
   },
   "lastUpdated": "2026-09-26T14:10:00.000Z",
   "qaEvidence": {
@@ -170,11 +170,11 @@
       "pnpm exec tsc --noEmit",
       "CI=true pnpm exec react-scripts test --watchAll=false --runInBand"
     ],
-    "tipSha": "66462621d92b7a893e1a74a690af0292207ff5ba"
+    "tipSha": "76868abf9c1edfccc4f4c57b03b3325a981c82a9"
   },
   "feedback": {
     "taskId": "epic-003",
-    "content": "QA PASS epic-003. Early beta PR for PR Build installers; Jack merge gate. Do not merge.",
+    "content": "QA PASS epic-003. Draft PR #25 for PR Build installers; Jack merge gate. Do not merge.",
     "updatedAt": "2026-09-26T14:10:00.000Z"
   }
 }
