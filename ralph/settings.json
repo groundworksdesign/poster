@@ -14,7 +14,7 @@
   "dockerComposeFile": "",
   "dockerService": "ralph-agent",
   "epicBaseBranch": "main",
-  "dockerWorkBranch": "cursor/clean-architecture-restructure-018c",
+  "dockerWorkBranch": "ralph/epic-003-mac-present-fullscreen",
   "dockerIsolateBranch": false,
   "dockerMergeStrategy": "work-branch",
   "dockerPoolSize": 1,

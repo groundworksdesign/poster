@@ -128,6 +128,31 @@ describe('src/adapters/electron/main.cjs launch safety (all Electron installers)
     expect(preloadSource).toMatch(/pickLibraryFolder:/);
     expect(preloadSource).toMatch(/['"]poster:pick-library-folder['"]/);
   });
+
+  it('exposes Present fullscreen IPC on the sender BrowserWindow only', () => {
+    expect(mainSource).toMatch(/presentFullscreen\.cjs/);
+    expect(mainSource).toMatch(/ipcMain\.handle\(['"]poster:enter-fullscreen['"]/);
+    expect(mainSource).toMatch(/ipcMain\.handle\(['"]poster:exit-fullscreen['"]/);
+    expect(mainSource).toMatch(/ipcMain\.handle\(['"]poster:toggle-fullscreen['"]/);
+    expect(mainSource).toMatch(/ipcMain\.handle\(['"]poster:is-fullscreen['"]/);
+    expect(mainSource).toMatch(/BrowserWindow\.fromWebContents\(event\.sender\)/);
+    expect(mainSource).not.toMatch(/setKiosk\(/);
+    expect(mainSource).not.toMatch(/display-picker|showDisplayPicker|getAllDisplays\(\).*dialog/i);
+    expect(preloadSource).toMatch(/enterFullscreen:/);
+    expect(preloadSource).toMatch(/exitFullscreen:/);
+    expect(preloadSource).toMatch(/toggleFullscreen:/);
+    expect(preloadSource).toMatch(/isFullscreen:/);
+  });
+
+  it('does not auto-fullscreen Present windows on open', () => {
+    const openBlock = mainSource.slice(
+      mainSource.indexOf('function openPresentSessionWindow'),
+      mainSource.indexOf('function attachWindowOpenPolicy'),
+    );
+    expect(openBlock).not.toMatch(/setFullScreen\(/);
+    expect(openBlock).not.toMatch(/setSimpleFullScreen\(/);
+    expect(openBlock).toMatch(/present\.loadURL\(absoluteUrl\)/);
+  });
 });
 
 describe('electron packaging includes production node_modules', () => {

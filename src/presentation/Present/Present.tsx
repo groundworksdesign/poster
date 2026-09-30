@@ -118,7 +118,61 @@ export default function Presentation() {
     session.reportProgramState(program);
   }, [slide, message, songData, segmentIndex, useGreenScreen, loading, sessionError]);
 
+  const hasElectronFullscreenBridge = () =>
+    typeof window !== 'undefined' &&
+    !!window.poster &&
+    typeof window.poster.toggleFullscreen === 'function' &&
+    typeof window.poster.exitFullscreen === 'function';
+
+  const applyFullscreenChrome = (fs: boolean) => {
+    const html = document.documentElement;
+    const body = document.body;
+    setInFullscreen(fs);
+    if (fs) {
+      html.style.overflow = 'hidden';
+      html.style.overflowX = 'hidden';
+      html.style.overflowY = 'hidden';
+      body.style.overflow = 'hidden';
+      body.style.overflowX = 'hidden';
+      body.style.overflowY = 'hidden';
+      html.style.width = '100%';
+      html.style.maxWidth = '100%';
+      body.style.width = '100%';
+      body.style.maxWidth = '100%';
+      html.style.margin = '0';
+      body.style.margin = '0';
+      html.style.overscrollBehavior = 'none';
+      body.style.overscrollBehavior = 'none';
+    } else {
+      html.style.overflow = '';
+      html.style.overflowX = '';
+      html.style.overflowY = '';
+      body.style.overflow = '';
+      body.style.overflowX = '';
+      body.style.overflowY = '';
+      html.style.width = '';
+      html.style.maxWidth = '';
+      body.style.width = '';
+      body.style.maxWidth = '';
+      html.style.margin = '';
+      body.style.margin = '';
+      html.style.overscrollBehavior = '';
+      body.style.overscrollBehavior = '';
+    }
+  };
+
+  /** Electron: native/simple FS via preload. Browser: HTML requestFullscreen only. */
   const toggleFullscreen = () => {
+    if (hasElectronFullscreenBridge()) {
+      // Do not dual-enter HTML fullscreen with Electron native/simple modes.
+      window.poster!
+        .toggleFullscreen!()
+        .then((result) => {
+          applyFullscreenChrome(!!result && result.mode !== 'windowed');
+        })
+        .catch(() => {});
+      return;
+    }
     if (document.fullscreenElement) {
       if (typeof document.exitFullscreen === 'function') {
         document.exitFullscreen().catch(() => {});
@@ -128,6 +182,23 @@ export default function Presentation() {
     const el = document.documentElement;
     if (el && typeof el.requestFullscreen === 'function') {
       el.requestFullscreen().catch(() => {});
+    }
+  };
+
+  const exitFullscreenEasy = () => {
+    if (hasElectronFullscreenBridge()) {
+      window.poster!
+        .exitFullscreen!()
+        .then(() => {
+          applyFullscreenChrome(false);
+        })
+        .catch(() => {
+          applyFullscreenChrome(false);
+        });
+      return;
+    }
+    if (document.fullscreenElement && typeof document.exitFullscreen === 'function') {
+      document.exitFullscreen().catch(() => {});
     }
   };
 
@@ -141,39 +212,11 @@ export default function Presentation() {
     const html = document.documentElement;
     const body = document.body;
     const syncFullscreenChrome = () => {
-      const fs = !!document.fullscreenElement;
-      setInFullscreen(fs);
-      if (fs) {
-        html.style.overflow = 'hidden';
-        html.style.overflowX = 'hidden';
-        html.style.overflowY = 'hidden';
-        body.style.overflow = 'hidden';
-        body.style.overflowX = 'hidden';
-        body.style.overflowY = 'hidden';
-        html.style.width = '100%';
-        html.style.maxWidth = '100%';
-        body.style.width = '100%';
-        body.style.maxWidth = '100%';
-        html.style.margin = '0';
-        body.style.margin = '0';
-        html.style.overscrollBehavior = 'none';
-        body.style.overscrollBehavior = 'none';
-      } else {
-        html.style.overflow = '';
-        html.style.overflowX = '';
-        html.style.overflowY = '';
-        body.style.overflow = '';
-        body.style.overflowX = '';
-        body.style.overflowY = '';
-        html.style.width = '';
-        html.style.maxWidth = '';
-        body.style.width = '';
-        body.style.maxWidth = '';
-        html.style.margin = '';
-        body.style.margin = '';
-        html.style.overscrollBehavior = '';
-        body.style.overscrollBehavior = '';
+      if (hasElectronFullscreenBridge()) {
+        // Electron chrome is driven by IPC results, not document.fullscreenElement.
+        return;
       }
+      applyFullscreenChrome(!!document.fullscreenElement);
     };
     document.addEventListener('fullscreenchange', syncFullscreenChrome);
     syncFullscreenChrome();
@@ -198,6 +241,10 @@ export default function Presentation() {
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        exitFullscreenEasy();
+        return;
+      }
       if (e.key === 'f' || e.key === 'F') toggleFullscreen();
       // S toggles the broadcast-safe overlay (only when focus is not in an input)
       if ((e.key === 's' || e.key === 'S') && !(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)) {

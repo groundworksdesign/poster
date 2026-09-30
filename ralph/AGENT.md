@@ -72,18 +72,22 @@ No dedicated `pnpm run lint` script. ESLint is configured via `react-scripts` (`
 
 ## Loop rules
 
-- Work on the branch recorded in `ralph/task_status.json` (`cursor/clean-architecture-restructure-018c`).
+- Work on the branch recorded in `ralph/task_status.json` (`ralph/epic-003-mac-present-fullscreen`).
 - Read `ralph/epic.md` and `ralph/task_status.json` before each loop.
 - Planning loop: search the codebase before assuming something is unimplemented; set `selected` to the single most important remaining task; no product code.
-- Dev loop: implement only the selected task.
+- Dev loop: implement only the selected task. Dev never sets `passes: true`.
 - QA loop: verify against acceptance criteria; only QA sets `passes: true`; do not change product code in QA.
 - One task per loop.
-- After a task passes QA, commit on the working branch with `[skip ci]` in intermediate commit messages until release.
-- Draft PR #21 already exists — push this branch only; do not open a second PR; do not mark ready or merge.
+- After a task passes QA, commit on the working branch with `[skip ci]` in intermediate commit messages until release / beta PR.
+- **BETA PR EXCEPTION (Roy/Race):** Open a same-repo draft PR to `main` early enough that PR Build publishes pre-release `v*-pr.<N>` installers. Keep the PR open. Do NOT merge. Do not force-push after beta is out unless needed for CI green.
 - Do not overwrite `ralph/PROMPT_*.md` files once created; add missing prompts only.
 - Do not create a parallel `.ralph/` tree. `ralph/` is the loop harness for this epic.
 
-## Key paths (post clean-architecture move)
+## Epic 003 focus
+
+Reliable Mac Electron Present fullscreen: native `setFullScreen`, stronger `setSimpleFullScreen` fallback, F + Escape easy exit, no auto-FS on open, no display picker, browser Present stays HTML `requestFullscreen`.
+
+## Key paths
 
 | Area | Path |
 | --- | --- |
@@ -93,7 +97,5 @@ No dedicated `pnpm run lint` script. ESLint is configured via `react-scripts` (`
 | Application | `src/application/` |
 | Remix adapter | `src/adapters/remix/` (`appDirectory`) |
 | Electron adapter | `src/adapters/electron/main.cjs` (`package.json` main) |
-| Persistence / Express | `src/adapters/persistence/server.js` |
-| Realtime relay | `src/adapters/realtime/` |
-| Presentation UI | `src/presentation/` |
+| Present UI | `src/presentation/Present/Present.tsx` |
 | Playwright | `tests/e2e/` |

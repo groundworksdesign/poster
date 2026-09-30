@@ -1,126 +1,79 @@
 {
-  "branchName": "cursor/clean-architecture-restructure-018c",
+  "branchName": "ralph/epic-003-mac-present-fullscreen",
   "status": "complete",
   "completeEpic": true,
   "tasks": [
     {
       "id": 1,
-      "title": "Fix e2e repo root paths",
-      "description": "Fix tests/e2e helpers and specs that still resolve repo root as tests/ (one level up) instead of the real repository root after the e2e/ to tests/e2e move. Update electronHelpers, electron-theme-relaunch, and sample-deck public paths to use ../.. .",
+      "title": "IPC fullscreen bridge",
+      "description": "Add Electron IPC + preload APIs so Present can request enter/exit fullscreen on its own BrowserWindow (macOS native setFullScreen).",
       "status": "done",
-      "devIterations": 1,
-      "createdAt": "2026-09-14T14:53:39.000Z",
-      "updatedAt": "2026-09-14T15:03:28.000Z"
+      "todoId": "ipc-fullscreen-bridge",
+      "createdAt": "2026-09-26T13:55:00.000Z",
+      "updatedAt": "2026-09-26T14:10:00.000Z"
     },
     {
       "id": 2,
-      "title": "Audit layer import rule",
-      "description": "Verify src/domain and src/application do not import Remix, Electron, or Playwright; fix any accidental coupling found.",
+      "title": "Present F uses native",
+      "description": "On Electron Present, F enters/exits via the bridge. Do not call requestFullscreen on Electron. Browser Present keeps HTML requestFullscreen.",
       "status": "done",
-      "devIterations": 1,
-      "createdAt": "2026-09-14T14:53:39.000Z",
-      "updatedAt": "2026-09-14T15:33:30.000Z"
+      "todoId": "present-f-uses-native",
+      "createdAt": "2026-09-26T13:55:00.000Z",
+      "updatedAt": "2026-09-26T14:10:00.000Z"
     },
     {
       "id": 3,
-      "title": "Harden config CI script paths",
-      "description": "Sweep remaining stale app/, electron/, server/, shared/, e2e/ path references in configs, scripts, CI comments, and operator-facing README paths that would mislead packaging or local runs.",
+      "title": "Stronger simpleFullscreen fallback",
+      "description": "If after native fullscreen the Mac menu bar still remains visible or native FS fails, fall back to setSimpleFullScreen while preserving easy exit.",
       "status": "done",
-      "devIterations": 1,
-      "createdAt": "2026-09-14T14:53:39.000Z",
-      "updatedAt": "2026-09-14T15:47:15.000Z"
+      "todoId": "stronger-fallback",
+      "createdAt": "2026-09-26T13:55:00.000Z",
+      "updatedAt": "2026-09-26T14:10:00.000Z"
     },
     {
       "id": 4,
-      "title": "Verify unit integration green",
-      "description": "Run and fix unit and integration suites broken by the restructure so CI unit-integration stays green.",
+      "title": "Easy F and Escape exit",
+      "description": "F and Escape always leave fullscreen (native or fallback) and restore windowed Present; no hard kiosk lock.",
       "status": "done",
-      "devIterations": 1,
-      "createdAt": "2026-09-14T14:53:39.000Z",
-      "updatedAt": "2026-09-14T15:52:35.000Z"
+      "todoId": "easy-exit",
+      "createdAt": "2026-09-26T13:55:00.000Z",
+      "updatedAt": "2026-09-26T14:10:00.000Z"
     },
     {
       "id": 5,
-      "title": "Verify remix electron e2e green",
-      "description": "Run Remix and Electron Playwright suites after path fixes; repair any remaining move-induced failures that should pass. Confirm helpers-under-tests/ CI failure from tip 9f124e1 is resolved on current tip.",
+      "title": "No auto-FS on open",
+      "description": "Opening a Present window stays windowed; fullscreen only after operator F.",
       "status": "done",
-      "devIterations": 1,
-      "createdAt": "2026-09-14T14:53:39.000Z",
-      "updatedAt": "2026-09-14T16:05:35.000Z"
+      "todoId": "no-auto-on-open",
+      "createdAt": "2026-09-26T13:55:00.000Z",
+      "updatedAt": "2026-09-26T14:10:00.000Z"
     },
     {
       "id": 6,
-      "title": "Document AppImage residual risk",
-      "description": "Document residual risk and a short manual AppImage regression checklist for Jack, including tip 9f124e1 baseline (Present hydrate flaky, On Program blocked, Home/library/theme/layout PASS); do not claim packaged installers were fully re-proven unless evidence exists.",
+      "title": "Window-scoped only",
+      "description": "Fullscreen applies only to existing Present BrowserWindows on the display they already occupy; no display-picker UI.",
       "status": "done",
-      "devIterations": 1,
-      "createdAt": "2026-09-14T14:53:39.000Z",
-      "updatedAt": "2026-09-14T16:11:31.000Z"
+      "todoId": "window-scoped-only",
+      "createdAt": "2026-09-26T13:55:00.000Z",
+      "updatedAt": "2026-09-26T14:10:00.000Z"
     },
     {
       "id": 7,
-      "title": "Fix Present first-open hydrate",
-      "description": "Restore reliable Present first-open hydrate on packaged Electron/AppImage after the clean-arch move. Jack cold open on tip 9f124e1 was 1/3 PASS and 2/3 stuck SSR Loading; possible regression of PR #18 first-open fix under the new layout.",
+      "title": "Automated bridge checks",
+      "description": "Add automated coverage for Electron bridge enter/exit native vs fallback routing; browser still uses HTML FS.",
       "status": "done",
-      "devIterations": 1,
-      "createdAt": "2026-09-14T15:06:00.000Z",
-      "updatedAt": "2026-09-14T15:18:30.000Z"
+      "todoId": "automated-checks",
+      "createdAt": "2026-09-26T13:55:00.000Z",
+      "updatedAt": "2026-09-26T14:10:00.000Z"
     },
     {
       "id": 8,
-      "title": "Verify On Program after hydrate",
-      "description": "After Present first-open hydrate is reliable on packaged Electron, verify On Program thumbnail/state works end-to-end. Blocked while Present stays on Loading.",
+      "title": "Release notes bullet",
+      "description": "Release-notes bullet for Mac Present fullscreen reliability and System Settings / fallback note.",
       "status": "done",
-      "devIterations": 1,
-      "createdAt": "2026-09-14T15:06:00.000Z",
-      "updatedAt": "2026-09-14T15:26:32.000Z"
-    },
-    {
-      "id": 9,
-      "title": "Fix Library Open Present hydrate",
-      "description": "Fix packaged Electron/AppImage Present first-open hydrate when Present is opened after Library Open into Deck. Jack tip 497d454: blank-deck Open Present+send 3/3 PASS, but Library Open \u2192 Present FAIL (SSR Loading \u226530s, does not hydrate). Distinct from blank-deck path covered by REQ-006 / main-owned present-session.",
-      "status": "done",
-      "devIterations": 1,
-      "createdAt": "2026-09-14T23:32:00.000Z",
-      "updatedAt": "2026-09-14T23:52:47.000Z",
-      "notes": "QA PASS @ tip a4a1a18 (2026-09-14T23:52:47.000Z): independent review \u2014 Library Open matches blank-deck POPUP_FEATURES/_blank (no noopener); main still owns present-session. Unit REQ-008 + Open Presentation PASS; Electron electron-library-present-hydrate + electron-program-thumbnail (blank-deck) PASS; openPresentWindow/DeckBuilder Electron Open Present unit PASS. Jack AppImage retest still residual for packaged sign-off. Draft PR #21 stays draft.",
-      "qaVerifiedAt": "2026-09-14T23:52:47.000Z"
-    },
-    {
-      "id": 10,
-      "title": "Fix AppImage blank-deck Present send",
-      "description": "Fix packaged AppImage blank-deck cold Open Present + directed send reliability after file import. Jack tip 7c947cd: Library Open\u2192Present 3/3 PASS (REQ-008); blank-deck Present+send after import FAIL flaky (~1/3\u20131/2). Tip Electron PASS; CI installers green. Packaged AppImage/FUSE path only.",
-      "status": "done",
-      "devIterations": 1,
-      "createdAt": "2026-09-15T00:14:31.000Z",
-      "updatedAt": "2026-09-15T00:41:52.000Z",
-      "notes": "QA PASS @ tip 083bfcb (2026-09-15T00:41:52.000Z): Electron-UA-only bridge wait; unit+Electron e2e green; CI unit green. completeEpic=True. Draft PR #21 stays draft.",
-      "qaVerifiedAt": "2026-09-15T00:41:52.000Z"
-    },
-    {
-      "id": 11,
-      "title": "Fix AppImage Present hydrate real URL preload",
-      "description": "Fix packaged AppImage Present client hydrate when URL already has real presentId and preload is present (SSR Loading hang/race). Jack tip c3a1642: blank-deck+import cold Present flaky 7/12 (~58%). NOT about:blank. Distinct from REQ-009.",
-      "status": "done",
-      "devIterations": 1,
-      "createdAt": "2026-09-15T01:01:26.000Z",
-      "updatedAt": "2026-09-15T01:14:14.000Z",
-      "notes": "QA PASS @ tip db1c30e (2026-09-15T01:14:14.000Z): presentHydrateWatchdog + boot marker; unit 274 + Electron stress/import/library PASS; completeEpic=True. Draft PR #21 stays draft.",
-      "qaVerifiedAt": "2026-09-15T01:14:14.000Z"
+      "todoId": "release-notes-docs",
+      "createdAt": "2026-09-26T13:55:00.000Z",
+      "updatedAt": "2026-09-26T14:10:00.000Z"
     }
-  ],
-  "currentTaskNum": 11,
-  "totalLLMCalls": 18,
-  "maxLLMCalls": 400,
-  "nextTask": {
-    "taskId": 11,
-    "content": "fix-appimage-present-hydrate-real-url-preload",
-    "updatedAt": "2026-09-15T01:14:14.000Z"
-  },
-  "feedback": {
-    "taskId": 11,
-    "content": "QA PASS REQ-010 @ db1c30e. completeEpic true. Draft PR #21 stays draft.",
-    "updatedAt": "2026-09-15T01:14:14.000Z"
-  },
-  "lastUpdated": "2026-09-15T01:14:14.000Z"
+  ]
 }
