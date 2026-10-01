@@ -178,7 +178,11 @@ jobs:
         run: xvfb-run -a pnpm run test:e2e:electron
 
   # ---------------------------------------------------------------------------
-  # Resolve PR pre-release tag (vX.Y.Z-pr.<PR_NUMBER>) and ensure GitHub Release
+  # Resolve PR pre-release tag (vX.Y.Z-pr.<PR_NUMBER>) and ensure GitHub Release.
+  # Beta tag is next patch after max(package.json, latest non-prerelease Release)
+  # so it never collides with a shipped final (e.g. main at 0.1.17 → v0.1.18-pr.N).
+  # package.json on the PR branch is left untouched; Release-on-merge still bumps
+  # from main's package.json as today.
   # ---------------------------------------------------------------------------
   resolve-pr-release:
     name: Resolve PR pre-release
@@ -201,16 +205,64 @@ jobs:
         run: |
           set -euo pipefail
           PR_NUMBER='${{ github.event.pull_request.number }}'
-          BASE_VER=$(node -p "require('./package.json').version")
+          HEAD_SHA='${{ github.event.pull_request.head.sha }}'
+          PKG_VER=$(node -p "require('./package.json').version")
+
+          # Latest published non-draft, non-prerelease GitHub Release (ignore drafts / PR betas).
+          LATEST_REL=$(gh release list --exclude-drafts --exclude-pre-releases --limit 1 \
+            --json tagName --jq '.[0].tagName // empty' | sed 's/^v//')
+
+          # max(package.json, latest final release), then bump patch → next PR beta base.
+          BASE_VER=$(node -e "
+            const pkg = process.argv[1];
+            const rel = process.argv[2] || '';
+            function parse(v) {
+              const m = String(v).trim().match(/^(\d+)\.(\d+)\.(\d+)/);
+              if (!m) return null;
+              return [Number(m[1]), Number(m[2]), Number(m[3])];
+            }
+            function cmp(a, b) {
+              for (let i = 0; i < 3; i++) {
+                if (a[i] !== b[i]) return a[i] - b[i];
+              }
+              return 0;
+            }
+            const p = parse(pkg);
+            if (!p) throw new Error('Invalid package.json version: ' + pkg);
+            const r = rel ? parse(rel) : null;
+            const base = r && cmp(r, p) > 0 ? r : p;
+            base[2] += 1;
+            process.stdout.write(base.join('.'));
+          " "$PKG_VER" "$LATEST_REL")
+
           TAG_NAME="v${BASE_VER}-pr.${PR_NUMBER}"
-          SHORT_SHA=$(echo '${{ github.event.pull_request.head.sha }}' | cut -c1-7)
+          SHORT_SHA=$(echo "$HEAD_SHA" | cut -c1-7)
           NOTES="Pre-release installer build for PR #${PR_NUMBER} (${SHORT_SHA}). Tag ${TAG_NAME} is updated on each push. On merge, a final release is published and this pre-release is deleted. macOS unsigned install: after copying Poster.app to Applications, run: xattr -cr /Applications/Poster.app then right-click Open. See docs/macos-install-unsigned.txt."
 
+          echo "package.json=${PKG_VER} latest_release=${LATEST_REL:-<none>} → ${TAG_NAME}"
+
+          # Drop stale same-PR beta tags (e.g. v0.1.17-pr.23 after final v0.1.17 shipped)
+          # so only the computed next-patch tag remains for this PR.
+          SUFFIX="-pr.${PR_NUMBER}"
+          gh api "/repos/${{ github.repository }}/releases" --paginate \
+            --jq ".[] | select((.tag_name | endswith(\"${SUFFIX}\")) and .tag_name != \"${TAG_NAME}\") | .id" \
+            | while read -r id; do
+              [ -n "${id}" ] || continue
+              echo "Deleting stale PR pre-release id=${id}"
+              gh api -X DELETE "/repos/${{ github.repository }}/releases/${id}" || true
+            done
+          for TAG in $(git ls-remote --tags origin "v*-pr.${PR_NUMBER}" | awk '{print $2}' | sed 's|refs/tags/||'); do
+            if [ "$TAG" != "$TAG_NAME" ]; then
+              echo "Deleting stale PR tag ${TAG}"
+              gh api -X DELETE "/repos/${{ github.repository }}/git/refs/tags/${TAG}" || true
+            fi
+          done
+
           if gh release view "$TAG_NAME" >/dev/null 2>&1; then
-            gh release edit "$TAG_NAME" --notes "$NOTES" --prerelease --draft
+            gh release edit "$TAG_NAME" --notes "$NOTES" --prerelease --draft --target "$HEAD_SHA"
           else
             gh release create "$TAG_NAME" --draft --prerelease --title "$TAG_NAME" \
-              --notes "$NOTES" --target '${{ github.event.pull_request.head.sha }}'
+              --notes "$NOTES" --target "$HEAD_SHA"
           fi
 
           echo "version=$TAG_NAME" >> "$GITHUB_OUTPUT"
