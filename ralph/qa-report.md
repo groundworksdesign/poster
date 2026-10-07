@@ -1,11 +1,11 @@
 # Feedback
 
-## empty-library-schema QA PASS
+## add-song-by-hand QA PASS
 
-- AC-001 / REQ-001: Fresh `initSchema` leaves `songs` with zero rows; `listSongsWithDb` returns `[]`; JSON fallback `jsonLibraryListSongs()` returns `[]` when file absent.
-- Storage shape: columns `id`, `title`, `book`, `number`, `author`, `song_json` (lyrics); legacy tables migrate via ALTER; upsert keeps stable id and round-trips title/book/number/lyrics.
-- Wiring: `songs.server` list/get/upsert + `GET /library/songs` thin loader over `listSongs()`; no INSERT/seed on schema init.
-- Bundling: no church-book / hymn-scrape dumps under `public`, `src`, packaging trees. `public/sample-song*.xml` are small single-song import demos, not library seed.
-- Independent validation: `tsc --noEmit` exit 0; Jest 3 suites / 18 tests PASS.
+- AC-002 / REQ-002: Hand-add form at `/library/songs/add` saves title, book, number, verses via `POST /library/songs/save`; song appears in library and is findable via `GET /library/songs?q=` / Find UI.
+- Persistence: `upsertSong` + `findSongs` (SQLite and JSON); `parseVersesText` blank-line verses.
+- Reachability: Home "Add a song" link; CRA + Remix routes wired.
+- Independent validation: `tsc --noEmit` exit 0; Jest 5 suites / 27 tests PASS.
+- Status integrity: `empty-library-schema.passes` remains `true` (loop-3 QA verdict; QA owns `passes`). This commit sets loop=5, persona=qa, add-song-by-hand passes=true, selected=import-review-screen.
 
-Next selected: `add-song-by-hand`. Do not open a PR.
+Next selected: `import-review-screen`. Loops used: 5/24. Do not open a PR.
