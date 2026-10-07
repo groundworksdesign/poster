@@ -2,10 +2,10 @@
   "epic": "epic-004",
   "branch": "cursor/epic-004-song-library",
   "baseBranch": "main",
-  "status": "in_progress",
-  "loop": 18,
-  "persona": "dev",
-  "completeEpic": false,
+  "status": "done",
+  "loop": 19,
+  "persona": "qa",
+  "completeEpic": true,
   "prUrl": null,
   "canonicalStatusFile": "ralph/task_status.json",
   "sourceArtifacts": [
@@ -15,12 +15,12 @@
     "ralph/specs/20261007-ac-traceability-song-library.md"
   ],
   "codebaseFindings": {
-    "songsTable": "Exists in schema.server.ts (id, title, author, song_json, created_at, updated_at) but unused — no CRUD, routes, or repo reads/writes.",
+    "songsTable": "Exists in schema.server.ts (id, title, author, song_json, created_at, updated_at) but unused \u2014 no CRUD, routes, or repo reads/writes.",
     "songDataType": "SongData has title, author?, verses[]; no book or number fields yet.",
     "deckBuilderImport": "DeckBuilder song XML/JSON import replaces the whole deck with a one-slide deck; optional save is presentation library (/library/save), not songs table.",
     "songParser": "parseSongXML + isSongData cover Poster song XML and song-shaped JSON; gathered book JSON parser missing.",
     "presentStaging": "stagedSongSlide.ts already does title then two lyric lines; leave unchanged (REQ-013).",
-    "libraryUi": "No song library page, picker, search, or slide↔library song link field."
+    "libraryUi": "No song library page, picker, search, or slide\u2194library song link field."
   },
   "requirements": [
     {
@@ -261,7 +261,7 @@
       ],
       "status": "done",
       "passes": true,
-      "notes": "QA loop 7 PASS: AC-003/004/005/006/015/018(import)/022 + REQ-018/019. One review screen; checklist all checked; no-lyrics title_only default; title-match keep_both default with number/lyrics; single clean skips review; multi-song waits for Import; library POST only — DeckBuilder untouched. AC-018 REQ-023 edit/delete deck-prompt deferred to linked-update-decks.",
+      "notes": "QA loop 7 PASS: AC-003/004/005/006/015/018(import)/022 + REQ-018/019. One review screen; checklist all checked; no-lyrics title_only default; title-match keep_both default with number/lyrics; single clean skips review; multi-song waits for Import; library POST only \u2014 DeckBuilder untouched. AC-018 REQ-023 edit/delete deck-prompt deferred to linked-update-decks.",
       "qaVerifiedAt": "2026-10-07T23:15:00.000Z"
     },
     {
@@ -302,7 +302,7 @@
       ],
       "status": "done",
       "passes": true,
-      "notes": "QA loop 11 PASS (independent re-verify) AC-008/012/016 + REQ-009/014/015/020 (AC-007 insert/link; AC-013 link portion). Search title/book/number/lyrics; shared titles first verse inline; Enter/double-click; librarySongId set; insert after current via splice (no deck replace). Optional book filter: Pam UX review line \"plus an optional book filter\" (binding sourceArtifact) — in scope, not invented. Brief omits book filter; Pam is binding. AC-013 REQ-016 hand-edit ask deferred to linked-update-decks.",
+      "notes": "QA loop 11 PASS (independent re-verify) AC-008/012/016 + REQ-009/014/015/020 (AC-007 insert/link; AC-013 link portion). Search title/book/number/lyrics; shared titles first verse inline; Enter/double-click; librarySongId set; insert after current via splice (no deck replace). Optional book filter: Pam UX review line \"plus an optional book filter\" (binding sourceArtifact) \u2014 in scope, not invented. Brief omits book filter; Pam is binding. AC-013 REQ-016 hand-edit ask deferred to linked-update-decks.",
       "qaVerifiedAt": "2026-10-07T22:44:00.000Z"
     },
     {
@@ -402,9 +402,10 @@
         "AC-017",
         "AC-018"
       ],
-      "status": "in_progress",
-      "passes": false,
-      "notes": "DEV loop 18: AC-001..AC-018 traceability in ralph/specs/20261007-ac-traceability-song-library.md. Gap fills: AC-008 title/book/number (+AC-016) in songs.server.test; AC-018 unused delete no deck prompt. CI unit-integration: tsc 0; Jest 58 suites / 364 PASS. No lint job in pr.yml. Uncovered ACs: none. passes=false."
+      "status": "done",
+      "passes": true,
+      "notes": "QA loop 19 PASS AC-001..AC-018. Spot-checked each AC test asserts the criterion (map ralph/specs/20261007-ac-traceability-song-library.md; uncovered: none). Independent re-run: tsc 0; Jest 58/364 PASS; build:remix 0; remix e2e 52 PASS; electron e2e 12 PASS (electron install.js + xvfb + ELECTRON_DISABLE_SANDBOX). No dedicated lint job in pr.yml. Release/installer jobs not run (PR packaging).",
+      "qaVerifiedAt": "2026-10-07T23:05:53.000Z"
     }
   ],
   "acceptanceCriteria": [
@@ -428,8 +429,8 @@
     "AC-018 (REQ-022, 023): Clean multi-song one-click; problem sections only when needed; unused songs edit/delete without deck prompt"
   ],
   "selected": {
-    "id": "tests-song-library",
-    "reason": "DEV completed AC-001..018 traceability map + gap fills; full CI unit suite green. Awaiting QA."
+    "id": null,
+    "reason": "All todos pass QA; completeEpic true. Release persona may open PR to main."
   },
   "outOfScope": [
     "Bundling the three church books in the app",
@@ -439,24 +440,42 @@
   ],
   "openQuestions": [],
   "blockers": [],
-  "lastUpdated": "2026-10-07T23:05:00.000Z",
+  "lastUpdated": "2026-10-07T23:05:53.000Z",
   "qaEvidence": {
     "taskId": "tests-song-library",
-    "note": "DEV evidence only; QA must re-verify before passes:true",
+    "note": "QA loop 19 independent verify; passes:true; completeEpic:true",
     "acMap": "ralph/specs/20261007-ac-traceability-song-library.md",
     "uncoveredACs": [],
+    "spotCheck": "AC-001..AC-018 each mapped test asserts the AC (see ralph/qa-report.md)",
     "tsc": "exit 0",
     "jest": "58 suites / 364 tests PASS",
+    "buildRemix": "exit 0",
+    "e2eRemix": "52 passed",
+    "e2eElectron": "12 passed",
     "lint": "no dedicated lint job in .github/workflows/pr.yml",
+    "couldNotRun": [
+      "PR release/installer/publish jobs (resolve-pr-release, portable zip, Electron installers) \u2014 packaging only, not required for this task"
+    ],
     "commands": [
       "pnpm exec tsc --noEmit",
-      "CI=true pnpm exec react-scripts test --watchAll=false --runInBand"
+      "CI=true pnpm exec react-scripts test --watchAll=false --runInBand",
+      "pnpm run build:remix",
+      "pnpm run test:e2e:remix",
+      "node node_modules/electron/install.js",
+      "ELECTRON_DISABLE_SANDBOX=1 xvfb-run -a pnpm run test:e2e:electron"
     ],
-    "loopsUsed": 18
+    "artifacts": [
+      "/opt/cursor/artifacts/loop19-tsc-rerun.log",
+      "/opt/cursor/artifacts/loop19-jest-rerun.log",
+      "/opt/cursor/artifacts/loop19-build-remix.log",
+      "/opt/cursor/artifacts/loop19-e2e-remix.log",
+      "/opt/cursor/artifacts/loop19-e2e-electron.log"
+    ],
+    "loopsUsed": 19
   },
   "feedback": {
     "taskId": "tests-song-library",
-    "content": "DEV complete tests-song-library. Awaiting QA. Loops used: 18/24. No PR.",
-    "updatedAt": "2026-10-07T23:05:00.000Z"
+    "content": "QA PASS tests-song-library. completeEpic true. Loops used: 19/24. No PR.",
+    "updatedAt": "2026-10-07T23:05:53.000Z"
   }
 }
