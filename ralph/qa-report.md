@@ -1,16 +1,20 @@
 # Feedback
 
-## fix-remix-song-library-outlets DEV (fix loop 4 / epic loop 24)
+## fix-remix-song-library-outlets QA (fix loop 5) — PASS
 
-Isolated prod song-library e2e from remix-dev. `passes:false`.
+`<status>verified</status>`
 
-### Changes
+### Checks
 
-- `playwright.remix.config.ts`: `testIgnore` remix-song-library
-- `playwright.remix.song-library.config.ts` + `scripts/e2e-song-library-webserver.cjs` (build once + server.js)
-- `package.json`: `test:e2e:remix` = dev then song-library; pr.yml uses combined script
-- Spec no longer rebuilds mid-suite
+| Check | Result |
+| --- | --- |
+| `pnpm run test:e2e:remix` remix-dev | 52 passed |
+| `pnpm run test:e2e:remix` song-library prod | 2 passed |
+| `pr.yml` remix-e2e runs `pnpm run test:e2e:remix` | yes |
+| Spec asserts Add / Import / Edit real UI + chooser link | yes |
+| `Present/` vs main | NO DIFF |
+| `stagedSongSlide.ts` vs main | NO DIFF |
 
-### Validation
+### Next
 
-- `pnpm run test:e2e:remix` → remix-dev **52 passed**, song-library prod **2 passed**
+`fix-add-slide-import-review`
