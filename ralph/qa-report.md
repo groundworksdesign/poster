@@ -1,50 +1,38 @@
 # Feedback
 
-## tests-song-library QA (loop 19) — PASS
+## Epic-004 release (loop 20)
 
-`<status>verified</status>`
+Epic complete. All todos passed QA (loops 3–19). Release persona opens one PR to `main`.
 
-### AC traceability spot-check (each AC asserts the criterion)
+### Summary
 
-| AC | Spot-check |
-| --- | --- |
-| AC-001 | `listSongsWithDb` / JSON / schema fresh → `[]`; no church-book seed |
-| AC-002 | Hand-add then find by title; AddSongByHand posts + finds |
-| AC-003 | `songImport` parses gathered JSON + Poster song JSON/XML |
-| AC-004 | Multi-song `needsReview`; empty selections import nothing until confirm |
-| AC-005 | No-lyrics group: skip vs title_only; nothing auto-imports |
-| AC-006 | Title match shows number/lyrics; default `keep_both`; replace/skip |
-| AC-007 | DeckBuilder insert without replacing other slides; chooser pick/import |
-| AC-008 | Independent find by title, book, number (`songs.server` + picker `q=`) |
-| AC-009 | Also-save unchecked → no `/library/songs/save` POST |
-| AC-010 | Edit/delete UI; used edit shows deck checkboxes; apply only selected |
-| AC-011 | `stagedSongSlide` library-linked + linked-update → title then two lines |
-| AC-012 | Shared titles show first verse inline |
-| AC-013 | Hand-edit detect + second confirm; linked updates keep `librarySongId` |
-| AC-014 | Also save checkbox default checked; save follows box |
-| AC-015 | Title-only empty verses; keep_both default (with AC-005/006) |
-| AC-016 | Lyric phrase `on thy side` finds song |
-| AC-017 | Home + Add song slide + page chrome link to `/library/songs` |
-| AC-018 | Clean multi-song one confirm; unused edit/delete no deck prompt |
+Local song library: empty on install, hand add, one-screen import review, search/pick onto a linked slide, library manage page, linked edit/delete with deck-update confirms. Present two-line staging unchanged. AC-001..AC-018 covered; map in `ralph/specs/20261007-ac-traceability-song-library.md`.
 
-Map: `ralph/specs/20261007-ac-traceability-song-library.md`. Uncovered ACs: none.
+### Task QA SHAs
 
-### CI / build / e2e (independent re-run)
+| Task | QA loop | Commit |
+| --- | --- | --- |
+| empty-library-schema | 3 | `8f75aedb1edd3aa9677906b3a30037a1c4d8ec09` |
+| add-song-by-hand | 5 | `57bf00456ed57c6980cfbb26130dc3d61e3eed7f` |
+| import-review-screen | 7 | `c0f8c5e565273c35decb09afaf0e58d620bd6d09` |
+| add-slide-chooser | 9 | `fa420d8a25fb3c4929af18a9de62a59ab9d0bc50` |
+| library-search-pick | 11 | `fa0eb34e385408d731147617c67af1e2a0689ffc` |
+| library-page | 13 | `5cc9d7bee244e594e3100cc5b60c06f11f5f8d8a` |
+| linked-update-decks | 15 | `0bf8b3071c37971c027b7efe21f589d2aac023ff` |
+| present-unchanged | 17 | `1d4f75b0038457b25ed6792e092ad0c812d98c65` |
+| tests-song-library | 19 | `95c80e12c172b470fcbe52787ef661f5112d7c5f` |
 
-| Check | Result |
-| --- | --- |
-| `pnpm exec tsc --noEmit` | exit 0 |
-| `CI=true pnpm exec react-scripts test --watchAll=false --runInBand` | 58 suites / 364 PASS |
-| `pnpm run build:remix` | exit 0 |
-| `pnpm run test:e2e:remix` | 52 passed |
-| `ELECTRON_DISABLE_SANDBOX=1 xvfb-run -a pnpm run test:e2e:electron` | 12 passed (after `node node_modules/electron/install.js`) |
-| Lint | no dedicated lint job in `pr.yml` |
+### Final QA evidence (loop 19)
 
-### Could not run / N/A
+- tsc exit 0; Jest 58/364 PASS; build:remix exit 0
+- remix e2e 52 PASS; electron e2e 12 PASS
+- Uncovered ACs: none
 
-- None of the pr.yml unit / remix-e2e / electron-smoke jobs were skipped; all three ran green on this VM.
-- Release/installer jobs (`resolve-pr-release`, portable zip, Electron installers, publish) are PR-gated packaging and were not required for this QA task.
+### Out of scope (unchanged)
 
-### Verdict
+- Bundling the three church books
+- Transcribing the five copyright-held songs
+- Changing Present two-line staging
+- Replacing the open deck on import
 
-`passes:true`. All epic todos pass → `completeEpic:true`. Loops used: 19/24. No PR (release persona opens PR).
+Iris gates before Roy decides; do not merge.
