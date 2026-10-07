@@ -415,3 +415,53 @@ test('imported JSON deck with future schemaVersion emits console warning', async
   expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('schemaVersion 999'));
   warnSpy.mockRestore();
 });
+
+test('AC-007: add song slide from library inserts without replacing other slides', async () => {
+  (global.fetch as jest.Mock).mockImplementation(async (input: RequestInfo) => {
+    const url = String(input);
+    if (url.includes('/library/songs')) {
+      return {
+        ok: true,
+        json: async () => [
+          {
+            id: 'lib-song-1',
+            title: 'Picked Song',
+            book: 'Hymns',
+            number: '9',
+            lyrics: {
+              title: 'Picked Song',
+              verses: [{ number: 1, lines: ['Verse line'] }],
+            },
+          },
+        ],
+      } as Response;
+    }
+    return { ok: true, json: async () => [] } as Response;
+  });
+
+  render(<DeckBuilder />);
+  const twoSlideDeck = {
+    title: 'Keep Me',
+    slides: [
+      { type: 'general', title: 'Stay One', id: 'a' },
+      { type: 'general', title: 'Stay Two', id: 'b' },
+    ],
+  };
+  await loadFile(makeJsonFile(twoSlideDeck));
+  await waitFor(() => expect(screen.getByText('Stay One')).toBeInTheDocument());
+
+  const typeSelect = document.getElementById('add-slide-type') as HTMLSelectElement;
+  fireEvent.change(typeSelect, { target: { value: 'song' } });
+  fireEvent.click(screen.getByTestId('add-slide-button'));
+
+  await waitFor(() => expect(screen.getByTestId('add-song-slide-chooser')).toBeInTheDocument());
+  expect(screen.getByTestId('add-song-mode-pick')).toBeChecked();
+  await waitFor(() => expect(screen.getByTestId('add-song-pick-lib-song-1')).toBeInTheDocument());
+  fireEvent.click(screen.getByTestId('add-song-pick-lib-song-1'));
+
+  await waitFor(() => expect(screen.queryByTestId('add-song-slide-chooser')).not.toBeInTheDocument());
+  expect(screen.getByText('Stay One')).toBeInTheDocument();
+  expect(screen.getByText('Stay Two')).toBeInTheDocument();
+  expect(screen.getByText('Picked Song')).toBeInTheDocument();
+});
+

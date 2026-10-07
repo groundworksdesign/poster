@@ -20,6 +20,7 @@ import { CURRENT_SCHEMA_VERSION } from '../../domain/schema';
 import { remixDataUrl, REMIX_ROUTE_ID } from '../remixDataUrl';
 import { notifyLibraryChanged } from '../libraryRefresh';
 import { openPresentForRuntime } from './openPresentWindow';
+import AddSongSlideChooser, { type SongSlideChoice } from './AddSongSlideChooser';
 
 export default function DeckBuilder() {
   useTheme();
@@ -59,6 +60,8 @@ export default function DeckBuilder() {
   const [songLastStagedById, setSongLastStagedById] = useState<Record<string, number>>({});
   /** Slide list index being dragged (visual feedback only; drop uses dataTransfer). */
   const [dragSlideIndex, setDragSlideIndex] = useState<number | null>(null);
+  /** When true, show Pick from library / Import chooser instead of a blank song slide. */
+  const [showAddSongChooser, setShowAddSongChooser] = useState(false);
 
   const genId = () => (typeof (globalThis as any).crypto !== 'undefined' && typeof (globalThis as any).crypto.randomUUID === 'function') ? (globalThis as any).crypto.randomUUID() : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 
@@ -728,6 +731,13 @@ export default function DeckBuilder() {
   const addSlide = (type: SlideType = SlideType.GENERAL) => {
     if (!deck) {
       createNewDeck();
+      if (type === SlideType.SONG) {
+        setShowAddSongChooser(true);
+      }
+      return;
+    }
+    if (type === SlideType.SONG) {
+      setShowAddSongChooser(true);
       return;
     }
     const slides = deck.slides.slice();
@@ -738,13 +748,44 @@ export default function DeckBuilder() {
       style: {},
       id: genId(),
     };
-    if (type === SlideType.SONG) {
-      newSlide.lyrics = { title: 'Song', author: '', verses: [{ number: 1, lines: [''] }] };
-    }
     slides.push(newSlide);
     const newDeck = { ...deck, slides };
     setDeck(newDeck);
     setSelectedSlideIndex(slides.length - 1);
+    syncSentSlideIfNeeded(newDeck);
+  };
+
+  /** Insert a song slide after the current selection (append if none). Never replaces the deck. */
+  const insertSongSlideChoice = (choice: SongSlideChoice) => {
+    if (!deck) {
+      setMessage('Open or create a deck before adding a song slide.');
+      setShowAddSongChooser(false);
+      return;
+    }
+    const baseStyle = deck.slideStyles?.[SlideType.SONG] ?? {
+      backgroundColor: '#000000',
+      color: '#ffffff',
+      fontFamily: 'Arial, sans-serif',
+      fontSize: '28px',
+      height: '100%',
+      width: '100%',
+    };
+    const songSlide = createSongSlide(choice.lyrics, baseStyle) as Slide;
+    (songSlide as any).id = genId();
+    if (choice.librarySongId) {
+      songSlide.librarySongId = choice.librarySongId;
+    }
+    const slides = deck.slides.slice();
+    const insertAt =
+      selectedSlideIndex !== null && selectedSlideIndex >= 0
+        ? selectedSlideIndex + 1
+        : slides.length;
+    slides.splice(insertAt, 0, songSlide);
+    const newDeck = { ...deck, slides };
+    setDeck(newDeck);
+    setSelectedSlideIndex(insertAt);
+    setShowAddSongChooser(false);
+    setMessage(`Added song slide: ${choice.lyrics.title}`);
     syncSentSlideIfNeeded(newDeck);
   };
 
@@ -945,6 +986,12 @@ export default function DeckBuilder() {
         <a href="/" className="deck-page-home-link">← Home</a>
       </nav>
       <h1>Deck</h1>
+      {showAddSongChooser ? (
+        <AddSongSlideChooser
+          onCancel={() => setShowAddSongChooser(false)}
+          onChoose={insertSongSlideChoice}
+        />
+      ) : null}
       <div>
         <input ref={fileInputRef} id="file" type="file" onChange={handleFileChange} />
         <button id="load" onClick={() => handleUploadClick()} disabled={isLoadingSong}>{isLoadingSong ? 'Loading...' : 'Load'}</button>
@@ -960,7 +1007,9 @@ export default function DeckBuilder() {
             <option value={SlideType.SONG}>SONG</option>
           </select>
         </label>
-        <button onClick={() => {
+        <button
+          data-testid="add-slide-button"
+          onClick={() => {
           const sel = (document.getElementById('add-slide-type') as HTMLSelectElement | null);
           const t = sel ? (sel.value as SlideType) : SlideType.GENERAL;
           addSlide(t);

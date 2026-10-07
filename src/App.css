@@ -539,6 +539,51 @@ ul {
 }
 
 /* Deck builder page */
+/* Add song slide chooser (deck) */
+.add-song-chooser {
+  margin: 0.75rem 0 1rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-surface);
+  text-align: left;
+  max-width: 40rem;
+}
+
+.add-song-chooser h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1.15rem;
+}
+
+.add-song-chooser-modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  margin: 0.75rem 0;
+}
+
+.add-song-pick-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0;
+}
+
+.add-song-pick-list li {
+  margin: 0.35rem 0;
+}
+
+.add-song-pick-list button {
+  text-align: left;
+}
+
+.add-song-also-save {
+  display: block;
+  margin: 0.75rem 0;
+}
+
+.add-song-chooser-error {
+  color: var(--color-danger);
+}
+
 .deck-page {
   max-width: var(--page-content-max);
   margin: 0 auto;

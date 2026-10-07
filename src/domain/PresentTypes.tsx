@@ -56,6 +56,8 @@ export type Slide = {
   subTitleFontSize?: string;
   // SongData for SONG slides
   lyrics?: SongData;
+  /** When set, this slide was added from the song library and stays linked. */
+  librarySongId?: string;
   // Optional segment helpers (backwards-compat)
   lines?: string[];
   firstVerse?: number;

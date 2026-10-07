@@ -303,3 +303,10 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 
 - PASS AC-003/004/005/006/015/018(import)/022. Defaults: all checked, title_only, keep_both. No deck replace.
 - Selected next: add-slide-chooser. Loops used: 7/24.
+
+## Epic-004 DEV (loop 8) — add-slide-chooser
+
+- AddSongSlideChooser: Pick from library (default) / Import a file; empty library -> Import or Add by hand.
+- Also save to my library checkbox default checked; save only when checked (POST /library/songs/save).
+- Inserts song slide after current selection; other slides remain; optional librarySongId on Slide.
+- Tests: AddSongSlideChooser + DeckBuilder AC-007. passes=false.
