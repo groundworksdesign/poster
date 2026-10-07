@@ -386,3 +386,8 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - library.songs.tsx: Outlet layout; loader in library.songs.loader.server.ts.
 - SongLibraryPage on library.songs._index.tsx; REMIX_ROUTE_ID.librarySongs kept for _data.
 - Prod e2e: tests/e2e/remix-song-library.spec.ts (server.js) 2 passed. passes=false. Fix 2/14.
+
+## Epic-004 FIX LOOP 3 QA — fix-remix-song-library-outlets FAIL
+
+- server.js UI/_data/Edit/chooser PASS; Present/stagedSongSlide NO DIFF; song-library e2e 2/2.
+- Full remix e2e FAIL: mid-suite build:remix vs remix-dev hashes. Same task → DEV. Fix 3/14.
