@@ -7,14 +7,33 @@ import {
   shouldShowFirstVerse,
   uniqueBooks,
 } from '../../domain/librarySongPicker';
+import type { SongData } from '../../domain/PresentTypes';
 import { remixDataUrl, REMIX_ROUTE_ID } from '../remixDataUrl';
+import UpdateDecksPrompt, { type DeckUsageOption } from './UpdateDecksPrompt';
 
 export type LibrarySongRow = LibrarySong & { usedInDeckCount?: number };
 
+type PendingDeckPrompt = {
+  mode: 'edit' | 'delete';
+  songId: string;
+  songTitle: string;
+  baselineLyrics: SongData;
+  decks: DeckUsageOption[];
+  /** For delete: finish library delete after prompt. */
+  deleteAfter?: boolean;
+};
+
+function songBaseline(song: LibrarySongRow): SongData {
+  return {
+    title: song.lyrics?.title || song.title,
+    author: song.lyrics?.author ?? song.author ?? undefined,
+    verses: song.lyrics?.verses ?? [],
+  };
+}
+
 /**
- * Manage song library: search (same as picker), Add / Edit / Delete / Import,
- * and used-in-N-decks count (Pam). Edit/delete update the library only;
- * linked deck-update confirms are deferred to linked-update-decks.
+ * Manage song library: search, Add / Edit / Delete / Import, used-in-N-decks,
+ * and linked deck-update confirms (REQ-012, 015, 016, 023).
  */
 export default function SongLibraryPage() {
   const [query, setQuery] = useState('');
@@ -30,6 +49,7 @@ export default function SongLibraryPage() {
   const [editNumber, setEditNumber] = useState('');
   const [editVerses, setEditVerses] = useState('');
   const [busy, setBusy] = useState(false);
+  const [deckPrompt, setDeckPrompt] = useState<PendingDeckPrompt | null>(null);
 
   useEffect(() => {
     const t = window.setTimeout(() => setDebouncedQuery(query), 150);
@@ -68,9 +88,108 @@ export default function SongLibraryPage() {
     [results, bookFilter],
   );
 
+  const fetchDeckUsage = async (
+    songId: string,
+    baselineLyrics: SongData,
+  ): Promise<DeckUsageOption[]> => {
+    const res = await fetch(
+      remixDataUrl(`/library/songs/${songId}/decks`, REMIX_ROUTE_ID.librarySongsDecks),
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ baselineLyrics }),
+      },
+    );
+    const data = (await res.json().catch(() => ({}))) as {
+      decks?: DeckUsageOption[];
+      error?: string;
+    };
+    if (!res.ok) throw new Error(data.error || `Failed to load deck usage (${res.status})`);
+    return Array.isArray(data.decks) ? data.decks : [];
+  };
+
+  const finishLibraryDelete = async (songId: string, songTitle: string) => {
+    const res = await fetch(
+      remixDataUrl(`/library/songs/delete/${songId}`, REMIX_ROUTE_ID.librarySongsDelete),
+      { method: 'POST' },
+    );
+    const data = (await res.json().catch(() => ({}))) as { error?: string };
+    if (!res.ok) throw new Error(data.error || `Delete failed (${res.status})`);
+    setStatus(`Deleted "${songTitle}" from the library.`);
+    if (editing?.id === songId) setEditing(null);
+    await fetchSongs(debouncedQuery);
+  };
+
+  const applyDeckUpdates = async (
+    prompt: PendingDeckPrompt,
+    deckIds: string[],
+    overwriteHandEdited: boolean,
+  ) => {
+    setBusy(true);
+    setError(null);
+    try {
+      if (deckIds.length > 0) {
+        const res = await fetch(
+          remixDataUrl(
+            `/library/songs/${prompt.songId}/apply-decks`,
+            REMIX_ROUTE_ID.librarySongsApplyDecks,
+          ),
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: prompt.mode,
+              deckIds,
+              baselineLyrics: prompt.baselineLyrics,
+              overwriteHandEdited,
+            }),
+          },
+        );
+        const data = (await res.json().catch(() => ({}))) as {
+          error?: string;
+          decksUpdated?: number;
+          slidesChanged?: number;
+        };
+        if (!res.ok) throw new Error(data.error || `Deck update failed (${res.status})`);
+        const verb = prompt.mode === 'edit' ? 'Updated' : 'Removed slides in';
+        setStatus(
+          `${verb} ${data.decksUpdated ?? 0} deck(s) (${data.slidesChanged ?? 0} slide(s)) for "${prompt.songTitle}".`,
+        );
+      }
+      if (prompt.deleteAfter) {
+        await finishLibraryDelete(prompt.songId, prompt.songTitle);
+      }
+      setDeckPrompt(null);
+      await fetchSongs(debouncedQuery);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Deck update failed.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const skipDeckUpdates = async (prompt: PendingDeckPrompt) => {
+    setBusy(true);
+    setError(null);
+    try {
+      if (prompt.deleteAfter) {
+        await finishLibraryDelete(prompt.songId, prompt.songTitle);
+      } else {
+        setStatus(`Library updated. Decks left unchanged for "${prompt.songTitle}".`);
+      }
+      setDeckPrompt(null);
+      await fetchSongs(debouncedQuery);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Operation failed.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const startEdit = (song: LibrarySongRow) => {
     setStatus(null);
     setError(null);
+    setDeckPrompt(null);
     setEditing(song);
     setEditTitle(song.title);
     setEditBook(song.book ?? '');
@@ -90,6 +209,8 @@ export default function SongLibraryPage() {
       setError('Title is required.');
       return;
     }
+    const baselineLyrics = songBaseline(editing);
+    const songId = editing.id;
     setBusy(true);
     setError(null);
     setStatus(null);
@@ -99,7 +220,7 @@ export default function SongLibraryPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          id: editing.id,
+          id: songId,
           title: trimmed,
           book: editBook.trim() || null,
           number: editNumber.trim() || null,
@@ -111,9 +232,22 @@ export default function SongLibraryPage() {
         setError(data.error || `Save failed (${res.status})`);
         return;
       }
-      // Seam: linked-update-decks will prompt about decks using this song after edit.
-      setStatus(`Updated "${trimmed}" in the library.`);
       setEditing(null);
+      const decks = await fetchDeckUsage(songId, baselineLyrics);
+      if (decks.length === 0) {
+        // AC-018: unused songs edit without a deck prompt.
+        setStatus(`Updated "${trimmed}" in the library.`);
+        await fetchSongs(debouncedQuery);
+        return;
+      }
+      setStatus(`Updated "${trimmed}" in the library.`);
+      setDeckPrompt({
+        mode: 'edit',
+        songId,
+        songTitle: trimmed,
+        baselineLyrics,
+        decks,
+      });
       await fetchSongs(debouncedQuery);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Network error saving song.');
@@ -124,30 +258,44 @@ export default function SongLibraryPage() {
 
   const deleteSong = async (song: LibrarySongRow) => {
     const used = song.usedInDeckCount ?? 0;
-    const confirmMsg =
-      used > 0
-        ? `Delete "${song.title}" from the library? It is used in ${used} deck${used === 1 ? '' : 's'}. Decks are not updated yet (confirm flow comes later).`
-        : `Delete "${song.title}" from the library?`;
-    if (!window.confirm(confirmMsg)) return;
+    if (used === 0) {
+      // AC-018: unused songs delete without a deck prompt.
+      if (!window.confirm(`Delete "${song.title}" from the library?`)) return;
+      setBusy(true);
+      setError(null);
+      setStatus(null);
+      try {
+        await finishLibraryDelete(song.id, song.title);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Network error deleting song.');
+      } finally {
+        setBusy(false);
+      }
+      return;
+    }
+
+    if (!window.confirm(`Delete "${song.title}" from the library?`)) return;
+
     setBusy(true);
     setError(null);
     setStatus(null);
     try {
-      const res = await fetch(
-        remixDataUrl(`/library/songs/delete/${song.id}`, REMIX_ROUTE_ID.librarySongsDelete),
-        { method: 'POST' },
-      );
-      const data = (await res.json().catch(() => ({}))) as { error?: string };
-      if (!res.ok) {
-        setError(data.error || `Delete failed (${res.status})`);
+      const baselineLyrics = songBaseline(song);
+      const decks = await fetchDeckUsage(song.id, baselineLyrics);
+      if (decks.length === 0) {
+        await finishLibraryDelete(song.id, song.title);
         return;
       }
-      // Seam: linked-update-decks will offer to update/remove linked slides after delete.
-      setStatus(`Deleted "${song.title}" from the library.`);
-      if (editing?.id === song.id) setEditing(null);
-      await fetchSongs(debouncedQuery);
+      setDeckPrompt({
+        mode: 'delete',
+        songId: song.id,
+        songTitle: song.title,
+        baselineLyrics,
+        decks,
+        deleteAfter: true,
+      });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Network error deleting song.');
+      setError(err instanceof Error ? err.message : 'Network error preparing delete.');
     } finally {
       setBusy(false);
     }
@@ -213,6 +361,21 @@ export default function SongLibraryPage() {
         </p>
       ) : null}
 
+      {deckPrompt ? (
+        <UpdateDecksPrompt
+          mode={deckPrompt.mode}
+          songTitle={deckPrompt.songTitle}
+          decks={deckPrompt.decks}
+          busy={busy}
+          onConfirm={(deckIds, overwriteHandEdited) => {
+            void applyDeckUpdates(deckPrompt, deckIds, overwriteHandEdited);
+          }}
+          onSkip={() => {
+            void skipDeckUpdates(deckPrompt);
+          }}
+        />
+      ) : null}
+
       {editing ? (
         <form
           className="add-song-form song-library-edit-form"
@@ -258,10 +421,15 @@ export default function SongLibraryPage() {
             />
           </label>
           <div className="song-library-edit-buttons">
-            <button type="submit" disabled={busy} data-testid="song-library-edit-save">
+            <button type="submit" disabled={busy || Boolean(deckPrompt)} data-testid="song-library-edit-save">
               {busy ? 'Saving…' : 'Save changes'}
             </button>
-            <button type="button" onClick={cancelEdit} disabled={busy} data-testid="song-library-edit-cancel">
+            <button
+              type="button"
+              onClick={cancelEdit}
+              disabled={busy || Boolean(deckPrompt)}
+              data-testid="song-library-edit-cancel"
+            >
               Cancel
             </button>
           </div>
@@ -312,7 +480,7 @@ export default function SongLibraryPage() {
                     <button
                       type="button"
                       onClick={() => startEdit(song)}
-                      disabled={busy}
+                      disabled={busy || Boolean(deckPrompt)}
                       data-testid={`song-library-edit-${song.id}`}
                     >
                       Edit
@@ -320,7 +488,7 @@ export default function SongLibraryPage() {
                     <button
                       type="button"
                       onClick={() => void deleteSong(song)}
-                      disabled={busy}
+                      disabled={busy || Boolean(deckPrompt)}
                       data-testid={`song-library-delete-${song.id}`}
                     >
                       Delete
