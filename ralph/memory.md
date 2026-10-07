@@ -413,3 +413,8 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 
 - Shared ImportReviewScreen + domain helpers PASS; e2e 52+3 PASS.
 - Jest FAIL: config-path-alignment vs compound test:e2e:remix. Same task → DEV. Fix 7/14.
+
+## Epic-004 FIX LOOP 8 DEV — path-alignment + budget 16
+
+- config-path-alignment asserts compound test:e2e:remix → both Playwright configs under tests/e2e/.
+- Full Jest 58/365 PASS. Budget raised to 16. passes=false. Fix 8/16.

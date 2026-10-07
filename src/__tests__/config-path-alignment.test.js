@@ -37,8 +37,26 @@ describe('config/CI/script path alignment (REQ-003)', () => {
 
   it('wires e2e scripts to tests/e2e Playwright configs', () => {
     expect(pkg.scripts['test:e2e']).toMatch(/tests\/e2e\//);
-    expect(pkg.scripts['test:e2e:remix']).toMatch(/tests\/e2e\//);
     expect(pkg.scripts['test:e2e:electron']).toMatch(/tests\/e2e\//);
+
+    // Compound umbrella: runs remix-dev suite then song-library prod suite.
+    expect(pkg.scripts['test:e2e:remix']).toMatch(/test:e2e:remix:dev/);
+    expect(pkg.scripts['test:e2e:remix']).toMatch(/test:e2e:remix:song-library/);
+
+    const remixDev = pkg.scripts['test:e2e:remix:dev'];
+    const remixSongLibrary = pkg.scripts['test:e2e:remix:song-library'];
+    expect(remixDev).toMatch(/tests\/e2e\/playwright\.remix\.config\.ts/);
+    expect(remixSongLibrary).toMatch(
+      /tests\/e2e\/playwright\.remix\.song-library\.config\.ts/,
+    );
+    expect(
+      fs.existsSync(path.join(ROOT, 'tests/e2e/playwright.remix.config.ts')),
+    ).toBe(true);
+    expect(
+      fs.existsSync(
+        path.join(ROOT, 'tests/e2e/playwright.remix.song-library.config.ts'),
+      ),
+    ).toBe(true);
   });
 
   it('packages Electron/portable entries from adapter paths', () => {
