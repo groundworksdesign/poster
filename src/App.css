@@ -707,6 +707,41 @@ ul {
   margin-top: 0.5rem;
 }
 
+.update-decks-prompt {
+  margin: 1rem 0;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-elevated, var(--color-bg));
+  text-align: left;
+}
+
+.update-decks-prompt h2 {
+  margin: 0 0 0.4rem;
+  font-size: 1.15rem;
+}
+
+.update-decks-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.75rem 0;
+}
+
+.update-decks-list li {
+  margin: 0.35rem 0;
+}
+
+.update-decks-meta {
+  color: var(--color-fg-muted);
+  font-size: 0.9rem;
+}
+
+.update-decks-prompt-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+  margin-top: 0.75rem;
+}
+
 .deck-page {
   max-width: var(--page-content-max);
   margin: 0 auto;

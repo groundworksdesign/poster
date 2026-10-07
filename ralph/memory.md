@@ -339,3 +339,9 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - PASS AC-017 + REQ-011/021. Main menu nav + Home + Add song slide. Search parity with picker.
 - usedInDeckCount accurate once-per-deck. Delete does not touch deck slides (REQ-016 safety).
 - Selected linked-update-decks. Loops 13/24.
+
+## Epic-004 DEV (loop 14) — linked-update-decks
+
+- UpdateDecksPrompt: deck checkboxes after edit/delete when used; hand-edit second confirm.
+- apply-decks + domain applyLibraryEdit/DeleteToDeck; unused skips prompt; unlinked untouched.
+- passes=false. Awaiting QA. Loops 14/24.

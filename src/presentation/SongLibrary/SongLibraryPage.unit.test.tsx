@@ -134,4 +134,101 @@ describe('SongLibraryPage (AC-017, REQ-011, used-in-N-decks)', () => {
     );
     expect(urls.some(u => u.includes('q=still') && u.includes('usage=1'))).toBe(true);
   });
+
+  it('AC-018: unused song edit does not show deck prompt', async () => {
+    mockFetch((url, init) => {
+      if (url.includes('/library/songs/save') && init?.method === 'POST') {
+        return { ok: true, id: 's2' };
+      }
+      if (url.includes('/decks') && init?.method === 'POST') {
+        return { ok: true, decks: [] };
+      }
+      if (url.includes('usage=1')) return SONGS;
+      return {};
+    });
+
+    render(<SongLibraryPage />);
+    await waitFor(() => expect(screen.getByTestId('song-library-edit-s2')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('song-library-edit-s2'));
+    fireEvent.click(screen.getByTestId('song-library-edit-save'));
+    await waitFor(() =>
+      expect(screen.getByTestId('song-library-status')).toHaveTextContent(/Updated/),
+    );
+    expect(screen.queryByTestId('update-decks-prompt')).not.toBeInTheDocument();
+  });
+
+  it('REQ-012/023: used song edit shows deck checkboxes; apply calls apply-decks', async () => {
+    const applies: unknown[] = [];
+    mockFetch((url, init) => {
+      if (url.includes('/library/songs/save') && init?.method === 'POST') {
+        return { ok: true, id: 's1' };
+      }
+      if (url.includes('/decks') && init?.method === 'POST' && !url.includes('apply-decks')) {
+        return {
+          ok: true,
+          decks: [
+            { id: 'd1', title: 'Sunday', linkedSlideCount: 1, handEditedSlideCount: 0 },
+          ],
+        };
+      }
+      if (url.includes('/apply-decks') && init?.method === 'POST') {
+        applies.push(JSON.parse(String(init.body)));
+        return { ok: true, decksUpdated: 1, slidesChanged: 1 };
+      }
+      if (url.includes('usage=1')) return SONGS;
+      return {};
+    });
+
+    render(<SongLibraryPage />);
+    await waitFor(() => expect(screen.getByTestId('song-library-edit-s1')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('song-library-edit-s1'));
+    fireEvent.click(screen.getByTestId('song-library-edit-save'));
+    await waitFor(() => expect(screen.getByTestId('update-decks-prompt')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('update-decks-check-d1'));
+    fireEvent.click(screen.getByTestId('update-decks-apply'));
+    await waitFor(() => expect(applies.length).toBe(1));
+    expect(applies[0]).toEqual(
+      expect.objectContaining({
+        action: 'edit',
+        deckIds: ['d1'],
+        overwriteHandEdited: false,
+      }),
+    );
+  });
+
+  it('REQ-012: used song delete prompts decks and does not remove slides until selected', async () => {
+    const deletes: string[] = [];
+    const applies: unknown[] = [];
+    jest.spyOn(window, 'confirm').mockReturnValue(true);
+    mockFetch((url, init) => {
+      if (url.includes('/decks') && init?.method === 'POST' && !url.includes('apply-decks')) {
+        return {
+          ok: true,
+          decks: [
+            { id: 'd1', title: 'Sunday', linkedSlideCount: 1, handEditedSlideCount: 0 },
+          ],
+        };
+      }
+      if (url.includes('/apply-decks') && init?.method === 'POST') {
+        applies.push(JSON.parse(String(init.body)));
+        return { ok: true, decksUpdated: 1, slidesChanged: 1 };
+      }
+      if (url.includes('/library/songs/delete/') && init?.method === 'POST') {
+        deletes.push(url);
+        return { ok: true, id: 's1' };
+      }
+      if (url.includes('usage=1')) return SONGS;
+      return {};
+    });
+
+    render(<SongLibraryPage />);
+    await waitFor(() => expect(screen.getByTestId('song-library-delete-s1')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('song-library-delete-s1'));
+    await waitFor(() => expect(screen.getByTestId('update-decks-prompt')).toBeInTheDocument());
+    expect(deletes).toHaveLength(0);
+    // Skip deck updates: library delete still happens; slides untouched (no apply).
+    fireEvent.click(screen.getByTestId('update-decks-skip'));
+    await waitFor(() => expect(deletes.length).toBe(1));
+    expect(applies).toHaveLength(0);
+  });
 });
