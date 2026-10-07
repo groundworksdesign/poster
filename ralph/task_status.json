@@ -3,8 +3,8 @@
   "branch": "cursor/epic-004-song-library",
   "baseBranch": "main",
   "status": "in_progress",
-  "loop": 6,
-  "persona": "dev",
+  "loop": 7,
+  "persona": "qa",
   "completeEpic": false,
   "prUrl": null,
   "canonicalStatusFile": "ralph/task_status.json",
@@ -44,7 +44,7 @@
       "todoIds": [
         "import-review-screen"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "REQ-004",
@@ -52,7 +52,7 @@
       "todoIds": [
         "import-review-screen"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "REQ-005",
@@ -60,7 +60,7 @@
       "todoIds": [
         "import-review-screen"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "REQ-006",
@@ -68,7 +68,7 @@
       "todoIds": [
         "import-review-screen"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "REQ-007",
@@ -166,7 +166,7 @@
       "todoIds": [
         "import-review-screen"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "REQ-019",
@@ -174,7 +174,7 @@
       "todoIds": [
         "import-review-screen"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "REQ-020",
@@ -198,7 +198,7 @@
       "todoIds": [
         "import-review-screen"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "REQ-023",
@@ -258,9 +258,10 @@
         "AC-015",
         "AC-018"
       ],
-      "status": "pending",
-      "passes": false,
-      "notes": "DEV loop 6: songImport parse/review/resolve; ImportSongsReview UI; POST /library/songs/import into song library only (no deck replace). AC-003/004/005/006/015/018/022 tests green. passes=false for QA."
+      "status": "done",
+      "passes": true,
+      "notes": "QA loop 7 PASS: AC-003/004/005/006/015/018(import)/022 + REQ-018/019. One review screen; checklist all checked; no-lyrics title_only default; title-match keep_both default with number/lyrics; single clean skips review; multi-song waits for Import; library POST only \u2014 DeckBuilder untouched. AC-018 REQ-023 edit/delete deck-prompt deferred to linked-update-decks.",
+      "qaVerifiedAt": "2026-10-07T23:15:00.000Z"
     },
     {
       "id": "add-slide-chooser",
@@ -421,8 +422,8 @@
     "AC-018 (REQ-022, 023): Clean multi-song one-click; problem sections only when needed; unused songs edit/delete without deck prompt"
   ],
   "selected": {
-    "id": "import-review-screen",
-    "reason": "add-song-by-hand QA-passed. Next: one-screen import review for gathered JSON + Poster song XML/JSON (REQ-003-006, 018-019, 022) \u2014 highest remaining risk and unblocks add-slide import path."
+    "id": "add-slide-chooser",
+    "reason": "import-review-screen QA-passed. Next: Add song slide chooser (Pick from library / Import a file) that appends a slide without replacing the deck (REQ-007, 008, 010, 017)."
   },
   "outOfScope": [
     "Bundling the three church books in the app",
@@ -432,23 +433,32 @@
   ],
   "openQuestions": [],
   "blockers": [],
-  "lastUpdated": "2026-10-07T23:05:00.000Z",
+  "lastUpdated": "2026-10-07T23:15:00.000Z",
   "qaEvidence": {
-    "taskId": "add-song-by-hand",
+    "taskId": "import-review-screen",
     "tsc": "exit 0",
-    "jest": "5 suites / 27 tests PASS (librarySong, songs.server, library-json, AddSongByHand, HomePage.unit)",
+    "jest": "2 suites / 11 tests PASS (songImport, ImportSongsReview)",
     "commands": [
       "pnpm exec tsc --noEmit",
-      "CI=true pnpm exec react-scripts test --watchAll=false --runInBand --testPathPattern='(librarySong|songs\\.server|library-json\\.server|AddSongByHand|HomePage\\.unit)'"
+      "CI=true pnpm exec react-scripts test --watchAll=false --runInBand --testPathPattern='(songImport|ImportSongsReview)'"
     ],
-    "wiring": "AddSongByHand + library.songs.save + library.songs?q= + Home add-song-by-hand-link + App route",
-    "tipSha": "c77255cfabf07b98c25a4e6ed3d9af652e7296b7",
-    "emptyLibrarySchemaPasses": true,
-    "loopsUsed": 5
+    "deckReplace": "DeckBuilder not modified; import path has no setDeck/upsertPresentation",
+    "defaults": {
+      "checklist": "all checked",
+      "noLyrics": "title_only",
+      "titleMatch": "keep_both",
+      "singleCleanSkipsReview": true
+    },
+    "tipSha": "d09573af2f3174cd3ef60fd71a597e4561cd7613",
+    "loopsUsed": 7,
+    "priorPasses": {
+      "empty-library-schema": true,
+      "add-song-by-hand": true
+    }
   },
   "feedback": {
     "taskId": "import-review-screen",
-    "content": "DEV loop 6 implemented import-review-screen. passes=false for QA. No PR.",
-    "updatedAt": "2026-10-07T23:05:00.000Z"
+    "content": "QA PASS import-review-screen. Selected next: add-slide-chooser. Loops used: 7/24. No PR.",
+    "updatedAt": "2026-10-07T23:15:00.000Z"
   }
 }

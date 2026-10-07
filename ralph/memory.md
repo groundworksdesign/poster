@@ -298,3 +298,8 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - UI `/library/songs/import` + POST import API writes song library only; does not touch open deck / DeckBuilder.
 - Single clean song skips review; multi-song checklist all checked; problem sections only when needed.
 - Tests: songImport + ImportSongsReview ACs. passes=false.
+
+## Epic-004 QA (loop 7) — import-review-screen
+
+- PASS AC-003/004/005/006/015/018(import)/022. Defaults: all checked, title_only, keep_both. No deck replace.
+- Selected next: add-slide-chooser. Loops used: 7/24.
