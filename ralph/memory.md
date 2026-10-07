@@ -273,3 +273,8 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - `songs.server.ts`: list/get/upsert (SQLite) + JSON fallback in `library-json.server.ts`.
 - Domain `LibrarySong` / `LibrarySongInput`; Remix `GET /library/songs` returns [] when empty.
 - No church-book seed. Tests: schema + songs.server + library-json AC-001 / store fields. passes=false.
+
+## Epic-004 QA (loop 3) — empty-library-schema
+
+- PASS AC-001/REQ-001. Independent tsc + Jest 18 PASS; no bundled church books.
+- passes=true for empty-library-schema only. Selected next: add-song-by-hand.
