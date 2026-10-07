@@ -372,3 +372,10 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 
 - PASS: spot-checked AC-001..018 assertions; tsc 0; Jest 58/364; build:remix; remix e2e 52; electron e2e 12.
 - All todos pass → completeEpic true. Loops 19/24. No PR (release persona).
+
+## Epic-004 FIX LOOP 1 planning — Iris FAIL PR#26
+
+- Gate: ralph/specs/20261007-iris-gate-pr26-fail.md @ 15ee17d.
+- Blocker: library.tsx no Outlet → song routes show coming soon in prod.
+- Also: chooser import skips review; JSON restore wipes songs; client process; Apply flake.
+- Selected: fix-remix-song-library-outlets. Prior passes kept. completeEpic false. Fix 1/14.
