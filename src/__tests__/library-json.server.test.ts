@@ -68,4 +68,28 @@ describe('library-json.server', () => {
     expect(jsonLib.jsonLibraryDelete(id)).toBe(true);
     expect(jsonLib.jsonLibraryGetDeckJson(id)).toBeNull();
   });
+
+  it('lists zero songs on a fresh JSON library (AC-001)', () => {
+    expect(jsonLib.jsonLibraryListSongs()).toEqual([]);
+  });
+
+  it('upserts a song with title, book, number, and lyrics', () => {
+    const id = jsonLib.jsonLibraryUpsertSong({
+      title: 'I Am a Child of God',
+      book: 'Children’s Songbook',
+      number: '2',
+      lyrics: {
+        title: 'I Am a Child of God',
+        verses: [{ number: 1, lines: ['I am a child of God'] }],
+      },
+    });
+    expect(id.length).toBeGreaterThan(0);
+    const list = jsonLib.jsonLibraryListSongs();
+    expect(list).toHaveLength(1);
+    expect(list[0].title).toBe('I Am a Child of God');
+    expect(list[0].book).toBe('Children’s Songbook');
+    expect(list[0].number).toBe('2');
+    expect(list[0].lyrics.verses[0].lines[0]).toContain('child of God');
+  });
 });
+
