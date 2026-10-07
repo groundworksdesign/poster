@@ -110,7 +110,9 @@ jobs:
           echo "Falling back to browser-only install (no apt --with-deps)"
           pnpm exec playwright install chromium
 
-      - name: Run Remix E2E
+      # remix-dev suite first, then prod song-library suite (isolated server.js +
+      # its own build). Combined via `pnpm run test:e2e:remix`.
+      - name: Run Remix E2E (dev + song-library prod)
         run: pnpm run test:e2e:remix
 
   # ---------------------------------------------------------------------------

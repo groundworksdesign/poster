@@ -391,3 +391,9 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 
 - server.js UI/_data/Edit/chooser PASS; Present/stagedSongSlide NO DIFF; song-library e2e 2/2.
 - Full remix e2e FAIL: mid-suite build:remix vs remix-dev hashes. Same task → DEV. Fix 3/14.
+
+## Epic-004 FIX LOOP 4 DEV — outlets e2e isolation
+
+- Separate playwright.remix.song-library.config.ts + e2e-song-library-webserver.cjs.
+- remix-dev config ignores remix-song-library; `test:e2e:remix` runs both sequentially.
+- Combined green: 52 + 2. pr.yml uses combined script. passes=false. Fix 4/14.
