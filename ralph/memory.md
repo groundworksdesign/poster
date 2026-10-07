@@ -333,3 +333,9 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - Links from Home, layout nav, Add song slide chooser. DELETE via /library/songs/delete/:id.
 - Edit/delete library-only; seam listDecksUsingSongId for linked-update-decks. passes=false.
 - tsc + Jest green. Awaiting QA. Loops 12/24.
+
+## Epic-004 QA (loop 13) — library-page
+
+- PASS AC-017 + REQ-011/021. Main menu nav + Home + Add song slide. Search parity with picker.
+- usedInDeckCount accurate once-per-deck. Delete does not touch deck slides (REQ-016 safety).
+- Selected linked-update-decks. Loops 13/24.
