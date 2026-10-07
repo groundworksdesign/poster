@@ -224,6 +224,21 @@ export function jsonLibraryListSongs(): LibrarySong[] {
     });
 }
 
+export function jsonLibraryFindSongs(query: string): LibrarySong[] {
+  const songs = jsonLibraryListSongs();
+  const q = query.trim().toLowerCase();
+  if (!q) return songs;
+  return songs.filter(song => {
+    if (song.title.toLowerCase().includes(q)) return true;
+    if ((song.book ?? '').toLowerCase().includes(q)) return true;
+    if ((song.number ?? '').toLowerCase().includes(q)) return true;
+    if ((song.author ?? '').toLowerCase().includes(q)) return true;
+    return song.lyrics.verses.some(verse =>
+      verse.lines.some(line => line.toLowerCase().includes(q)),
+    );
+  });
+}
+
 export function jsonLibraryGetSong(id: string): LibrarySong | null {
   const { songs = [] } = readAll();
   const row = songs.find(s => s.id === id);

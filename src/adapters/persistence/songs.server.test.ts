@@ -1,5 +1,6 @@
 import { initSchema } from './schema.server';
 import {
+  findSongsWithDb,
   getSongWithDb,
   listSongsWithDb,
   upsertSongWithDb,
@@ -107,3 +108,34 @@ describeSqlite('song library persistence (empty-library-schema / AC-001)', () =>
     expect(getSongWithDb(db, 'stable-song-1')?.book).toBe('Children’s Songbook');
   });
 });
+
+describeSqlite('hand-add then find (AC-002 / REQ-002)', () => {
+  let db: SqliteTestDb;
+
+  beforeEach(() => {
+    db = makeDb();
+  });
+
+  afterEach(() => {
+    db.close();
+  });
+
+  it('finds a hand-added song by title, book, number, and lyric phrase', () => {
+    upsertSongWithDb(db, {
+      title: 'Be Still, My Soul',
+      book: 'Hymns',
+      number: '124',
+      lyrics: {
+        title: 'Be Still, My Soul',
+        verses: [{ number: 1, lines: ['Be still, my soul: The Lord is on thy side'] }],
+      },
+    });
+
+    expect(findSongsWithDb(db, 'Be Still').map(s => s.title)).toContain('Be Still, My Soul');
+    expect(findSongsWithDb(db, 'Hymns').map(s => s.number)).toContain('124');
+    expect(findSongsWithDb(db, '124')[0]?.title).toBe('Be Still, My Soul');
+    expect(findSongsWithDb(db, 'on thy side')[0]?.book).toBe('Hymns');
+    expect(findSongsWithDb(db, 'no-such-song')).toEqual([]);
+  });
+});
+

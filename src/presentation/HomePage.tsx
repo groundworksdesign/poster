@@ -158,6 +158,13 @@ export default function HomePage() {
         >
           Import a file
         </a>
+        <a
+          className="home-page-link home-page-link--songs"
+          href="/library/songs/add"
+          data-testid="add-song-by-hand-link"
+        >
+          Add a song
+        </a>
       </div>
 
       <div className="home-page-library">

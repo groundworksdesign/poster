@@ -278,3 +278,10 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 
 - PASS AC-001/REQ-001. Independent tsc + Jest 18 PASS; no bundled church books.
 - passes=true for empty-library-schema only. Selected next: add-song-by-hand.
+
+## Epic-004 DEV (loop 4) — add-song-by-hand
+
+- Form at `/library/songs/add` (title, book, number, verses); Home "Add a song" link.
+- POST `/library/songs/save`; GET `/library/songs?q=` find; `parseVersesText` + `findSongs`.
+- AC-002 unit tests (persist find + UI save/find). passes=false.
+- Status note: loop-3 QA commit under-wrote task_status; corrected empty-library passes/selected in this commit (not a scope change).

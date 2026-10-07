@@ -1,5 +1,5 @@
 {
   "branch": "cursor/epic-004-song-library",
-  "lastLog": "[ralph] epic-004 loop 3 QA PASS empty-library-schema; selected add-song-by-hand; no PR",
-  "updatedAt": "2026-10-07T22:35:00.000Z"
+  "lastLog": "[ralph] epic-004 loop 4 dev: add-song-by-hand implemented; AC-002 tests green; passes=false for QA; no PR",
+  "updatedAt": "2026-10-07T22:45:00.000Z"
 }

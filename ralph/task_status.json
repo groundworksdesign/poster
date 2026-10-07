@@ -3,8 +3,8 @@
   "branch": "cursor/epic-004-song-library",
   "baseBranch": "main",
   "status": "in_progress",
-  "loop": 3,
-  "persona": "qa",
+  "loop": 4,
+  "persona": "dev",
   "completeEpic": false,
   "prUrl": null,
   "canonicalStatusFile": "ralph/task_status.json",
@@ -26,7 +26,7 @@
       "id": "REQ-001",
       "title": "Empty song library ships; books not bundled",
       "todoIds": ["empty-library-schema"],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "REQ-002",
@@ -167,9 +167,10 @@
       "content": "Wire the unused local songs table (or equivalent) so a fresh install has an empty library; store title, book, number, lyrics, and a stable song id; do not bundle the three church books.",
       "requirementIds": ["REQ-001"],
       "acceptanceCriteria": ["AC-001"],
-      "status": "pending",
-      "passes": false,
-      "notes": "DEV loop 2: songs table has book/number + migration; songs.server list/get/upsert (SQLite + JSON fallback); GET /library/songs; no seed/bundle. AC-001 unit tests green. passes remains false for QA."
+      "status": "done",
+      "passes": true,
+      "notes": "QA loop 3 PASS: AC-001 verified — fresh schema/JSON list empty; book/number/lyrics/stable id store+migrate; no church-book bundle in public/src/packaging. sample-song*.xml are import demos only, not library seed.",
+      "qaVerifiedAt": "2026-10-07T22:35:00.000Z"
     },
     {
       "id": "add-song-by-hand",
@@ -274,8 +275,8 @@
     "AC-018 (REQ-022, 023): Clean multi-song one-click; problem sections only when needed; unused songs edit/delete without deck prompt"
   ],
   "selected": {
-    "id": "empty-library-schema",
-    "reason": "Foundation: songs table exists but is unused and lacks book/number (or equivalent song_json contract). Every UI, import, search, and link task depends on a real empty library with stable ids. Highest unblock / lowest risk first slice."
+    "id": "add-song-by-hand",
+    "reason": "empty-library-schema QA-passed. Next: hand-add form (REQ-002 / AC-002) so a song can be created and found — unblocks search/picker and library page flows."
   },
   "outOfScope": [
     "Bundling the three church books in the app",
@@ -285,10 +286,21 @@
   ],
   "openQuestions": [],
   "blockers": [],
-  "lastUpdated": "2026-10-07T22:30:00.000Z",
+  "lastUpdated": "2026-10-07T22:35:00.000Z",
+  "qaEvidence": {
+    "taskId": "empty-library-schema",
+    "tsc": "exit 0",
+    "jest": "3 suites / 18 tests PASS (schema.server, songs.server, library-json.server)",
+    "commands": [
+      "pnpm exec tsc --noEmit",
+      "CI=true pnpm exec react-scripts test --watchAll=false --runInBand --testPathPattern='(schema\\.server|songs\\.server|library-json\\.server)'"
+    ],
+    "bundleScan": "no gathered-book / hymn-scrape assets under public, src, build, dist, electron",
+    "tipSha": "ea29284831c12638541bafe39309760ce81677f0"
+  },
   "feedback": {
     "taskId": "empty-library-schema",
-    "content": "DEV loop 2 implemented empty-library-schema. passes=false for QA. No PR.",
-    "updatedAt": "2026-10-07T22:30:00.000Z"
+    "content": "QA PASS empty-library-schema (AC-001 / REQ-001). Selected next: add-song-by-hand. No PR.",
+    "updatedAt": "2026-10-07T22:35:00.000Z"
   }
 }

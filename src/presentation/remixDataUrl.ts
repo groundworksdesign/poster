@@ -10,6 +10,9 @@ export const REMIX_ROUTE_ID = {
   librarySave: 'routes/library.save',
   libraryRestore: 'routes/library.restore',
   librarySettings: 'routes/library.settings',
+  librarySongs: 'routes/library.songs',
+  librarySongsSave: 'routes/library.songs.save',
+  librarySongsAdd: 'routes/library.songs.add',
 } as const;
 
 export function remixDataUrl(path: string, routeId: string): string {
