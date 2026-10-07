@@ -70,6 +70,22 @@ export function listSongsWithDb(database: SqliteDb): LibrarySong[] {
   return rows.map(rowToLibrarySong);
 }
 
+/** Match title, book, number, or lyric lines (case-insensitive substring). Empty query lists all. */
+export function findSongsWithDb(database: SqliteDb, query: string): LibrarySong[] {
+  const songs = listSongsWithDb(database);
+  const q = query.trim().toLowerCase();
+  if (!q) return songs;
+  return songs.filter(song => {
+    if (song.title.toLowerCase().includes(q)) return true;
+    if ((song.book ?? '').toLowerCase().includes(q)) return true;
+    if ((song.number ?? '').toLowerCase().includes(q)) return true;
+    if ((song.author ?? '').toLowerCase().includes(q)) return true;
+    return song.lyrics.verses.some(verse =>
+      verse.lines.some(line => line.toLowerCase().includes(q)),
+    );
+  });
+}
+
 export function getSongWithDb(database: SqliteDb, id: string): LibrarySong | null {
   const row = database
     .prepare(
@@ -126,6 +142,14 @@ export function listSongs(): LibrarySong[] {
     return listSongsWithDb(sqlite);
   }
   return jsonLibrary.jsonLibraryListSongs();
+}
+
+export function findSongs(query: string): LibrarySong[] {
+  const sqlite = tryGetSqliteDb();
+  if (sqlite) {
+    return findSongsWithDb(sqlite, query);
+  }
+  return jsonLibrary.jsonLibraryFindSongs(query);
 }
 
 export function getSong(id: string): LibrarySong | null {

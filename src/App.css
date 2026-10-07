@@ -245,10 +245,101 @@ ul {
   color: var(--color-fg-muted);
 }
 
+.home-page-link--songs {
+  border-color: var(--color-accent);
+  color: var(--color-link);
+}
+
 .home-page-library {
   margin-top: 1.75rem;
   padding-top: 1.25rem;
   border-top: 1px solid var(--color-border);
+}
+
+/* Add song by hand */
+.add-song-page {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+  text-align: left;
+}
+
+.add-song-page h1 {
+  margin: 0 0 0.5rem;
+  font-size: 1.75rem;
+}
+
+.add-song-page-lead {
+  color: var(--color-fg-muted);
+  margin: 0 0 1.25rem;
+}
+
+.add-song-form,
+.add-song-find-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.add-song-form label,
+.add-song-find-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-weight: 500;
+}
+
+.add-song-form input,
+.add-song-form textarea,
+.add-song-find-form input {
+  font: inherit;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-bg);
+  color: var(--color-fg);
+}
+
+.add-song-form button,
+.add-song-find-form button {
+  align-self: flex-start;
+  font: inherit;
+  padding: 0.45rem 0.9rem;
+  border: 1px solid var(--color-accent);
+  border-radius: 4px;
+  background: var(--color-bg-surface);
+  color: var(--color-link);
+  cursor: pointer;
+}
+
+.add-song-form button:disabled,
+.add-song-find-form button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.add-song-error {
+  color: var(--color-danger);
+}
+
+.add-song-status {
+  color: var(--color-success);
+}
+
+.add-song-find {
+  margin-top: 2rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.add-song-find h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.15rem;
+}
+
+.add-song-find ul {
+  margin: 0.75rem 0 0;
+  padding-left: 1.25rem;
 }
 
 /* Library panel (home and deck) */

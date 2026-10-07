@@ -91,5 +91,20 @@ describe('library-json.server', () => {
     expect(list[0].number).toBe('2');
     expect(list[0].lyrics.verses[0].lines[0]).toContain('child of God');
   });
+
+  it('finds a hand-added song later (AC-002)', () => {
+    jsonLib.jsonLibraryUpsertSong({
+      title: 'Hand Song',
+      book: 'Hymns',
+      number: '9',
+      lyrics: {
+        title: 'Hand Song',
+        verses: [{ number: 1, lines: ['Unique lyric phrase xyz'] }],
+      },
+    });
+    expect(jsonLib.jsonLibraryFindSongs('Hand Song')).toHaveLength(1);
+    expect(jsonLib.jsonLibraryFindSongs('Unique lyric phrase xyz')[0]?.number).toBe('9');
+  });
 });
+
 

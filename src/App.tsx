@@ -3,6 +3,7 @@ import './App.css';
 import DeckBuilder from './presentation/Deck/DeckBuilder';
 import HomePage from './presentation/HomePage';
 import Presentation from './presentation/Present/Present';
+import AddSongByHand from './presentation/SongLibrary/AddSongByHand';
 
 import { Routes, Route, Outlet, Link } from 'react-router-dom';
 
@@ -14,6 +15,7 @@ export default function App() {
           <Route path="/" element={<Layout />}>
             <Route index element={<HomePage />} />
             <Route path="deck" element={<DeckBuilder />} />
+            <Route path="library/songs/add" element={<AddSongByHand />} />
           </Route>
           <Route path="presentation" element={<Presentation />} />
         </Routes>
