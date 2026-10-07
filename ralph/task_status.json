@@ -2,17 +2,18 @@
   "epic": "epic-004",
   "branch": "cursor/epic-004-song-library",
   "baseBranch": "main",
-  "status": "done",
-  "loop": 20,
-  "persona": "release",
-  "completeEpic": true,
-  "prUrl": null,
+  "status": "in_progress",
+  "loop": 21,
+  "persona": "planning",
+  "completeEpic": false,
+  "prUrl": "https://github.com/groundworksdesign/poster/pull/26",
   "canonicalStatusFile": "ralph/task_status.json",
   "sourceArtifacts": [
     "ralph/specs/20261004-feature-brief-song-library.md",
     "ralph/specs/20261004-song-library-ux-review-pam.md",
     "ralph/epic.md",
-    "ralph/specs/20261007-ac-traceability-song-library.md"
+    "ralph/specs/20261007-ac-traceability-song-library.md",
+    "ralph/specs/20261007-iris-gate-pr26-fail.md"
   ],
   "codebaseFindings": {
     "songsTable": "Exists in schema.server.ts (id, title, author, song_json, created_at, updated_at) but unused \u2014 no CRUD, routes, or repo reads/writes.",
@@ -20,7 +21,11 @@
     "deckBuilderImport": "DeckBuilder song XML/JSON import replaces the whole deck with a one-slide deck; optional save is presentation library (/library/save), not songs table.",
     "songParser": "parseSongXML + isSongData cover Poster song XML and song-shaped JSON; gathered book JSON parser missing.",
     "presentStaging": "stagedSongSlide.ts already does title then two lyric lines; leave unchanged (REQ-013).",
-    "libraryUi": "No song library page, picker, search, or slide\u2194library song link field."
+    "libraryUi": "No song library page, picker, search, or slide\u2194library song link field.",
+    "irisLibraryOutlet": "library.tsx default is coming-soon div with no Outlet; library.songs*.tsx are nested children \u2014 verified FIX LOOP 1 planning.",
+    "irisChooserImport": "AddSongSlideChooser.confirmImport POSTs save directly; skips ImportSongsReview.",
+    "irisJsonRestoreSongs": "replaceLibraryFromJsonText writes songs=[] when backup omits songs key.",
+    "irisApplyFlake": "saveEdit awaits fetchSongs while busy=true after setDeckPrompt; Apply disabled until finally."
   },
   "requirements": [
     {
@@ -406,6 +411,92 @@
       "passes": true,
       "notes": "QA loop 19 PASS AC-001..AC-018. Spot-checked each AC test asserts the criterion (map ralph/specs/20261007-ac-traceability-song-library.md; uncovered: none). Independent re-run: tsc 0; Jest 58/364 PASS; build:remix 0; remix e2e 52 PASS; electron e2e 12 PASS (electron install.js + xvfb + ELECTRON_DISABLE_SANDBOX). No dedicated lint job in pr.yml. Release/installer jobs not run (PR packaging).",
       "qaVerifiedAt": "2026-10-07T23:05:53.000Z"
+    },
+    {
+      "id": "fix-remix-song-library-outlets",
+      "content": "Fix Remix v2 flat-route nesting so /library/songs, /library/songs/add, and /library/songs/import render real UI (not Library coming soon): library.tsx useOutlet() fallback; library.songs.tsx loader+Outlet layout; SongLibraryPage on library.songs._index (update REMIX_ROUTE_ID if needed; keep _data loaders/actions). Add Playwright remix e2e against production build: Home>Song library Add/Import/Edit real UI; chooser library link opens real manage UI.",
+      "requirementIds": [
+        "REQ-002",
+        "REQ-011",
+        "REQ-021"
+      ],
+      "acceptanceCriteria": [
+        "AC-002",
+        "AC-010",
+        "AC-017"
+      ],
+      "status": "pending",
+      "passes": false,
+      "notes": "Iris gate blocker PR#26 @ 15ee17d. Parent library.tsx has no Outlet."
+    },
+    {
+      "id": "fix-add-slide-import-review",
+      "content": "AddSongSlideChooser import must use the same import review screen as library import (no-lyrics title_only/skip; title-match keep_both/replace/skip; REQ-005/006/018/019/022). Do not silently save duplicate titles. Keep AC-007 insert without replacing open deck; Also-save checkbox still respected.",
+      "requirementIds": [
+        "REQ-005",
+        "REQ-006",
+        "REQ-018",
+        "REQ-019",
+        "REQ-022",
+        "REQ-007",
+        "REQ-008",
+        "REQ-010",
+        "REQ-017"
+      ],
+      "acceptanceCriteria": [
+        "AC-004",
+        "AC-005",
+        "AC-006",
+        "AC-007",
+        "AC-009",
+        "AC-014",
+        "AC-015",
+        "AC-018"
+      ],
+      "status": "pending",
+      "passes": false,
+      "notes": "confirmImport currently POSTs /library/songs/save directly."
+    },
+    {
+      "id": "fix-json-restore-preserve-songs",
+      "content": "When restoring a pre-epic-004 JSON library backup with no songs key, keep existing song library rows (do not wipe to []). Add a unit/integration test covering backup-without-songs preserves songs.",
+      "requirementIds": [
+        "REQ-001"
+      ],
+      "acceptanceCriteria": [
+        "AC-001"
+      ],
+      "status": "pending",
+      "passes": false,
+      "notes": "replaceLibraryFromJsonText uses songs=[] when file.songs missing."
+    },
+    {
+      "id": "fix-client-process-reference",
+      "content": "Remove client-side process usage that throws ReferenceError: process is not defined on /library/songs. Keep Node process only on server modules. Remix e2e asserts no page errors on song-library navigation.",
+      "requirementIds": [
+        "REQ-021"
+      ],
+      "acceptanceCriteria": [
+        "AC-017"
+      ],
+      "status": "pending",
+      "passes": false,
+      "notes": "Iris: browser console error on /library/songs."
+    },
+    {
+      "id": "fix-song-library-apply-flake",
+      "content": "Stabilize SongLibraryPage unit test REQ-012/023 used song edit apply-decks (~2/8 flake: applies.length 0). Apply busy-disabled while fetchSongs after setDeckPrompt \u2014 wait for Apply enabled and/or clear busy before prompt interaction. QA runs that test 10x in isolation all green.",
+      "requirementIds": [
+        "REQ-012",
+        "REQ-023"
+      ],
+      "acceptanceCriteria": [
+        "AC-010",
+        "AC-013"
+      ],
+      "status": "pending",
+      "passes": false,
+      "notes": "Flaky while busy held across fetchSongs after setDeckPrompt."
     }
   ],
   "acceptanceCriteria": [
@@ -429,8 +520,8 @@
     "AC-018 (REQ-022, 023): Clean multi-song one-click; problem sections only when needed; unused songs edit/delete without deck prompt"
   ],
   "selected": {
-    "id": null,
-    "reason": "All todos pass QA; completeEpic true. Release persona may open PR to main."
+    "id": "fix-remix-song-library-outlets",
+    "reason": "Iris blocker: nested library.tsx without Outlet hides all song-library UI in prod/Electron; unblocks AC-002/004/005/006/010/013/015/017/018 at runtime and e2e."
   },
   "outOfScope": [
     "Bundling the three church books in the app",
@@ -439,43 +530,28 @@
     "Replacing the open deck on import"
   ],
   "openQuestions": [],
-  "blockers": [],
-  "lastUpdated": "2026-10-07T23:07:48.000Z",
+  "blockers": [
+    "Iris FAIL PR#26: /library/songs* render Library (coming soon) \u2014 no Outlet in library.tsx / library.songs layout"
+  ],
+  "lastUpdated": "2026-10-07T23:24:52.000Z",
   "qaEvidence": {
-    "taskId": "tests-song-library",
-    "note": "QA loop 19 independent verify; passes:true; completeEpic:true",
-    "acMap": "ralph/specs/20261007-ac-traceability-song-library.md",
-    "uncoveredACs": [],
-    "spotCheck": "AC-001..AC-018 each mapped test asserts the AC (see ralph/qa-report.md)",
-    "tsc": "exit 0",
-    "jest": "58 suites / 364 tests PASS",
-    "buildRemix": "exit 0",
-    "e2eRemix": "52 passed",
-    "e2eElectron": "12 passed",
-    "lint": "no dedicated lint job in .github/workflows/pr.yml",
-    "couldNotRun": [
-      "PR release/installer/publish jobs (resolve-pr-release, portable zip, Electron installers) \u2014 packaging only, not required for this task"
-    ],
-    "commands": [
-      "pnpm exec tsc --noEmit",
-      "CI=true pnpm exec react-scripts test --watchAll=false --runInBand",
-      "pnpm run build:remix",
-      "pnpm run test:e2e:remix",
-      "node node_modules/electron/install.js",
-      "ELECTRON_DISABLE_SANDBOX=1 xvfb-run -a pnpm run test:e2e:electron"
-    ],
-    "artifacts": [
-      "/opt/cursor/artifacts/loop19-tsc-rerun.log",
-      "/opt/cursor/artifacts/loop19-jest-rerun.log",
-      "/opt/cursor/artifacts/loop19-build-remix.log",
-      "/opt/cursor/artifacts/loop19-e2e-remix.log",
-      "/opt/cursor/artifacts/loop19-e2e-electron.log"
-    ],
-    "loopsUsed": 19
+    "note": "Prior epic QA evidence retained under completed todos; fix-pass awaits new QA per task.",
+    "irisGate": "ralph/specs/20261007-iris-gate-pr26-fail.md",
+    "loopsUsed": 21,
+    "fixPassLoop": 1
   },
   "feedback": {
-    "taskId": null,
-    "content": "RELEASE loop 20: tip commit for CI; open one PR to main. Loops used: 20/24. Do not merge.",
-    "updatedAt": "2026-10-07T23:07:48.000Z"
+    "taskId": "fix-remix-song-library-outlets",
+    "content": "FIX LOOP 1 planning: Iris gate saved; 5 fix tasks appended; selected fix-remix-song-library-outlets. Existing epic passes kept. completeEpic false. Loops fix 1/14 (epic loop 21). No merge.",
+    "updatedAt": "2026-10-07T23:24:52.000Z"
+  },
+  "fixPass": {
+    "irisGate": "ralph/specs/20261007-iris-gate-pr26-fail.md",
+    "prUrl": "https://github.com/groundworksdesign/poster/pull/26",
+    "headShaAtFail": "15ee17d0c8b523d0f34b9b6d31ed9bde7f0784ef",
+    "budget": 14,
+    "loop": 1,
+    "loopsUsed": 1,
+    "maxLoop": 14
   }
 }
