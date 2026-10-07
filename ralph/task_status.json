@@ -3,8 +3,8 @@
   "branch": "cursor/epic-004-song-library",
   "baseBranch": "main",
   "status": "in_progress",
-  "loop": 4,
-  "persona": "dev",
+  "loop": 5,
+  "persona": "qa",
   "completeEpic": false,
   "prUrl": null,
   "canonicalStatusFile": "ralph/task_status.json",
@@ -14,150 +14,198 @@
     "ralph/epic.md"
   ],
   "codebaseFindings": {
-    "songsTable": "Exists in schema.server.ts (id, title, author, song_json, created_at, updated_at) but unused — no CRUD, routes, or repo reads/writes.",
+    "songsTable": "Exists in schema.server.ts (id, title, author, song_json, created_at, updated_at) but unused \u2014 no CRUD, routes, or repo reads/writes.",
     "songDataType": "SongData has title, author?, verses[]; no book or number fields yet.",
     "deckBuilderImport": "DeckBuilder song XML/JSON import replaces the whole deck with a one-slide deck; optional save is presentation library (/library/save), not songs table.",
     "songParser": "parseSongXML + isSongData cover Poster song XML and song-shaped JSON; gathered book JSON parser missing.",
     "presentStaging": "stagedSongSlide.ts already does title then two lyric lines; leave unchanged (REQ-013).",
-    "libraryUi": "No song library page, picker, search, or slide↔library song link field."
+    "libraryUi": "No song library page, picker, search, or slide\u2194library song link field."
   },
   "requirements": [
     {
       "id": "REQ-001",
       "title": "Empty song library ships; books not bundled",
-      "todoIds": ["empty-library-schema"],
+      "todoIds": [
+        "empty-library-schema"
+      ],
       "status": "done"
     },
     {
       "id": "REQ-002",
       "title": "Add one song by hand",
-      "todoIds": ["add-song-by-hand"],
-      "status": "pending"
+      "todoIds": [
+        "add-song-by-hand"
+      ],
+      "status": "done"
     },
     {
       "id": "REQ-003",
       "title": "Import gathered JSON and Poster song XML/JSON",
-      "todoIds": ["import-review-screen"],
+      "todoIds": [
+        "import-review-screen"
+      ],
       "status": "pending"
     },
     {
       "id": "REQ-004",
       "title": "Multi-song import asks whole book or subset",
-      "todoIds": ["import-review-screen"],
+      "todoIds": [
+        "import-review-screen"
+      ],
       "status": "pending"
     },
     {
       "id": "REQ-005",
       "title": "No-lyrics import asks what to do",
-      "todoIds": ["import-review-screen"],
+      "todoIds": [
+        "import-review-screen"
+      ],
       "status": "pending"
     },
     {
       "id": "REQ-006",
       "title": "Title-match prompt shows number and lyrics",
-      "todoIds": ["import-review-screen"],
+      "todoIds": [
+        "import-review-screen"
+      ],
       "status": "pending"
     },
     {
       "id": "REQ-007",
       "title": "Add song slide: import or pick from library",
-      "todoIds": ["add-slide-chooser"],
+      "todoIds": [
+        "add-slide-chooser"
+      ],
       "status": "pending"
     },
     {
       "id": "REQ-008",
       "title": "Pick inserts new slide; does not replace deck",
-      "todoIds": ["add-slide-chooser", "library-search-pick"],
+      "todoIds": [
+        "add-slide-chooser",
+        "library-search-pick"
+      ],
       "status": "pending"
     },
     {
       "id": "REQ-009",
       "title": "Find by title, book, or number",
-      "todoIds": ["library-search-pick"],
+      "todoIds": [
+        "library-search-pick"
+      ],
       "status": "pending"
     },
     {
       "id": "REQ-010",
       "title": "Import-while-adding asks save to library",
-      "todoIds": ["add-slide-chooser"],
+      "todoIds": [
+        "add-slide-chooser"
+      ],
       "status": "pending"
     },
     {
       "id": "REQ-011",
       "title": "Edit and delete library songs",
-      "todoIds": ["library-page"],
+      "todoIds": [
+        "library-page"
+      ],
       "status": "pending"
     },
     {
       "id": "REQ-012",
       "title": "Edit/delete asks about updating decks that use the song",
-      "todoIds": ["linked-update-decks"],
+      "todoIds": [
+        "linked-update-decks"
+      ],
       "status": "pending"
     },
     {
       "id": "REQ-013",
       "title": "Present keeps title then two lyric lines",
-      "todoIds": ["present-unchanged"],
+      "todoIds": [
+        "present-unchanged"
+      ],
       "status": "pending"
     },
     {
       "id": "REQ-014",
       "title": "Shared titles can show first verse when picking",
-      "todoIds": ["library-search-pick"],
+      "todoIds": [
+        "library-search-pick"
+      ],
       "status": "pending"
     },
     {
       "id": "REQ-015",
       "title": "Slide stays linked to library song",
-      "todoIds": ["library-search-pick", "linked-update-decks"],
+      "todoIds": [
+        "library-search-pick",
+        "linked-update-decks"
+      ],
       "status": "pending"
     },
     {
       "id": "REQ-016",
       "title": "Ask before overwriting hand-edited linked slides",
-      "todoIds": ["linked-update-decks"],
+      "todoIds": [
+        "linked-update-decks"
+      ],
       "status": "pending"
     },
     {
       "id": "REQ-017",
       "title": "Also save to my library checkbox, default checked",
-      "todoIds": ["add-slide-chooser"],
+      "todoIds": [
+        "add-slide-chooser"
+      ],
       "status": "pending"
     },
     {
       "id": "REQ-018",
       "title": "No-lyrics: title only or skip",
-      "todoIds": ["import-review-screen"],
+      "todoIds": [
+        "import-review-screen"
+      ],
       "status": "pending"
     },
     {
       "id": "REQ-019",
       "title": "Title match: keep both (default), replace, skip",
-      "todoIds": ["import-review-screen"],
+      "todoIds": [
+        "import-review-screen"
+      ],
       "status": "pending"
     },
     {
       "id": "REQ-020",
       "title": "Search matches lyrics too",
-      "todoIds": ["library-search-pick"],
+      "todoIds": [
+        "library-search-pick"
+      ],
       "status": "pending"
     },
     {
       "id": "REQ-021",
       "title": "Library page from main menu and Add song slide",
-      "todoIds": ["library-page"],
+      "todoIds": [
+        "library-page"
+      ],
       "status": "pending"
     },
     {
       "id": "REQ-022",
       "title": "One review screen; skip for single clean song",
-      "todoIds": ["import-review-screen"],
+      "todoIds": [
+        "import-review-screen"
+      ],
       "status": "pending"
     },
     {
       "id": "REQ-023",
       "title": "Deck-update prompt only when song is used; list decks",
-      "todoIds": ["linked-update-decks"],
+      "todoIds": [
+        "linked-update-decks"
+      ],
       "status": "pending"
     }
   ],
@@ -165,27 +213,51 @@
     {
       "id": "empty-library-schema",
       "content": "Wire the unused local songs table (or equivalent) so a fresh install has an empty library; store title, book, number, lyrics, and a stable song id; do not bundle the three church books.",
-      "requirementIds": ["REQ-001"],
-      "acceptanceCriteria": ["AC-001"],
+      "requirementIds": [
+        "REQ-001"
+      ],
+      "acceptanceCriteria": [
+        "AC-001"
+      ],
       "status": "done",
       "passes": true,
-      "notes": "QA loop 3 PASS: AC-001 verified — fresh schema/JSON list empty; book/number/lyrics/stable id store+migrate; no church-book bundle in public/src/packaging. sample-song*.xml are import demos only, not library seed.",
+      "notes": "QA loop 3 PASS (AC-001/REQ-001). Loop 5 QA reaffirms passes:true (dev restored under-written loop-3 fields; QA owns this field).",
       "qaVerifiedAt": "2026-10-07T22:35:00.000Z"
     },
     {
       "id": "add-song-by-hand",
       "content": "Add a form to create one library song at a time (title, book, number, verses) so it appears in search afterward.",
-      "requirementIds": ["REQ-002"],
-      "acceptanceCriteria": ["AC-002"],
-      "status": "pending",
-      "passes": false,
-      "notes": ""
+      "requirementIds": [
+        "REQ-002"
+      ],
+      "acceptanceCriteria": [
+        "AC-002"
+      ],
+      "status": "done",
+      "passes": true,
+      "notes": "QA loop 5 PASS AC-002/REQ-002: form title/book/number/verses; POST /library/songs/save; find via GET ?q=; Home link; independent tsc+Jest green.",
+      "qaVerifiedAt": "2026-10-07T22:50:00.000Z"
     },
     {
       "id": "import-review-screen",
       "content": "Import Doug's gathered JSON plus existing Poster song XML/JSON through one review screen: checklist all checked by default; no-lyrics group (title only or skip); title-match rows with keep both (default) / replace / skip. Skip review for a single clean song file.",
-      "requirementIds": ["REQ-003", "REQ-004", "REQ-005", "REQ-006", "REQ-018", "REQ-019", "REQ-022"],
-      "acceptanceCriteria": ["AC-003", "AC-004", "AC-005", "AC-006", "AC-015", "AC-018"],
+      "requirementIds": [
+        "REQ-003",
+        "REQ-004",
+        "REQ-005",
+        "REQ-006",
+        "REQ-018",
+        "REQ-019",
+        "REQ-022"
+      ],
+      "acceptanceCriteria": [
+        "AC-003",
+        "AC-004",
+        "AC-005",
+        "AC-006",
+        "AC-015",
+        "AC-018"
+      ],
       "status": "pending",
       "passes": false,
       "notes": "Today import replaces the whole deck; gathered book JSON parser is missing."
@@ -193,8 +265,17 @@
     {
       "id": "add-slide-chooser",
       "content": "When adding a song slide, offer Pick from library (default) and Import a file. Importing while adding a slide shows Also save to my library checked by default on the same screen. Chosen song becomes a new slide in the open deck and does not replace the deck.",
-      "requirementIds": ["REQ-007", "REQ-008", "REQ-010", "REQ-017"],
-      "acceptanceCriteria": ["AC-007", "AC-009", "AC-014"],
+      "requirementIds": [
+        "REQ-007",
+        "REQ-008",
+        "REQ-010",
+        "REQ-017"
+      ],
+      "acceptanceCriteria": [
+        "AC-007",
+        "AC-009",
+        "AC-014"
+      ],
       "status": "pending",
       "passes": false,
       "notes": "Pam: empty library message points to Import or Add by hand."
@@ -202,8 +283,20 @@
     {
       "id": "library-search-pick",
       "content": "Library search matches title, book, number, and lyrics. Results show title, book, and number. Shared titles show the first verse inline. Enter or double-click inserts a linked slide after the current slide.",
-      "requirementIds": ["REQ-008", "REQ-009", "REQ-014", "REQ-015", "REQ-020"],
-      "acceptanceCriteria": ["AC-007", "AC-008", "AC-012", "AC-013", "AC-016"],
+      "requirementIds": [
+        "REQ-008",
+        "REQ-009",
+        "REQ-014",
+        "REQ-015",
+        "REQ-020"
+      ],
+      "acceptanceCriteria": [
+        "AC-007",
+        "AC-008",
+        "AC-012",
+        "AC-013",
+        "AC-016"
+      ],
       "status": "pending",
       "passes": false,
       "notes": "Slide type needs a library song id link field (currently only embedded lyrics)."
@@ -211,8 +304,14 @@
     {
       "id": "library-page",
       "content": "Add a library page reachable from the main menu and from Add song slide, with the same search list plus Add, Edit, Delete, Import, and a used-in-N-decks count.",
-      "requirementIds": ["REQ-011", "REQ-021"],
-      "acceptanceCriteria": ["AC-010", "AC-017"],
+      "requirementIds": [
+        "REQ-011",
+        "REQ-021"
+      ],
+      "acceptanceCriteria": [
+        "AC-010",
+        "AC-017"
+      ],
       "status": "pending",
       "passes": false,
       "notes": ""
@@ -220,8 +319,17 @@
     {
       "id": "linked-update-decks",
       "content": "Keep slides linked to their library song. On edit or delete, ask about updating decks only when the song is used, list those decks with checkboxes, and ask again before overwriting slides that were edited by hand. Deleting never removes slides unless the user selects those decks.",
-      "requirementIds": ["REQ-012", "REQ-015", "REQ-016", "REQ-023"],
-      "acceptanceCriteria": ["AC-010", "AC-013", "AC-018"],
+      "requirementIds": [
+        "REQ-012",
+        "REQ-015",
+        "REQ-016",
+        "REQ-023"
+      ],
+      "acceptanceCriteria": [
+        "AC-010",
+        "AC-013",
+        "AC-018"
+      ],
       "status": "pending",
       "passes": false,
       "notes": "Existing decks without library links must keep working."
@@ -229,8 +337,12 @@
     {
       "id": "present-unchanged",
       "content": "Leave Present song staging as title then two lyric lines per stage. Do not change that layout in this epic.",
-      "requirementIds": ["REQ-013"],
-      "acceptanceCriteria": ["AC-011"],
+      "requirementIds": [
+        "REQ-013"
+      ],
+      "acceptanceCriteria": [
+        "AC-011"
+      ],
       "status": "pending",
       "passes": false,
       "notes": "stagedSongSlide.ts already implements the contract; task is verify-and-keep-green, not redesign."
@@ -239,15 +351,49 @@
       "id": "tests-song-library",
       "content": "Add tests covering AC-001 through AC-018: empty library, hand add, import formats and review defaults, pick-to-slide without replacing the deck, search including lyrics and first-verse for duplicate titles, save checkbox default, title-only empty lyrics, keep-both default, linked updates with hand-edit ask, and Present two-line staging still green.",
       "requirementIds": [
-        "REQ-001", "REQ-002", "REQ-003", "REQ-004", "REQ-005", "REQ-006",
-        "REQ-007", "REQ-008", "REQ-009", "REQ-010", "REQ-011", "REQ-012",
-        "REQ-013", "REQ-014", "REQ-015", "REQ-016", "REQ-017", "REQ-018",
-        "REQ-019", "REQ-020", "REQ-021", "REQ-022", "REQ-023"
+        "REQ-001",
+        "REQ-002",
+        "REQ-003",
+        "REQ-004",
+        "REQ-005",
+        "REQ-006",
+        "REQ-007",
+        "REQ-008",
+        "REQ-009",
+        "REQ-010",
+        "REQ-011",
+        "REQ-012",
+        "REQ-013",
+        "REQ-014",
+        "REQ-015",
+        "REQ-016",
+        "REQ-017",
+        "REQ-018",
+        "REQ-019",
+        "REQ-020",
+        "REQ-021",
+        "REQ-022",
+        "REQ-023"
       ],
       "acceptanceCriteria": [
-        "AC-001", "AC-002", "AC-003", "AC-004", "AC-005", "AC-006",
-        "AC-007", "AC-008", "AC-009", "AC-010", "AC-011", "AC-012",
-        "AC-013", "AC-014", "AC-015", "AC-016", "AC-017", "AC-018"
+        "AC-001",
+        "AC-002",
+        "AC-003",
+        "AC-004",
+        "AC-005",
+        "AC-006",
+        "AC-007",
+        "AC-008",
+        "AC-009",
+        "AC-010",
+        "AC-011",
+        "AC-012",
+        "AC-013",
+        "AC-014",
+        "AC-015",
+        "AC-016",
+        "AC-017",
+        "AC-018"
       ],
       "status": "pending",
       "passes": false,
@@ -275,8 +421,8 @@
     "AC-018 (REQ-022, 023): Clean multi-song one-click; problem sections only when needed; unused songs edit/delete without deck prompt"
   ],
   "selected": {
-    "id": "add-song-by-hand",
-    "reason": "empty-library-schema QA-passed. Next: hand-add form (REQ-002 / AC-002) so a song can be created and found — unblocks search/picker and library page flows."
+    "id": "import-review-screen",
+    "reason": "add-song-by-hand QA-passed. Next: one-screen import review for gathered JSON + Poster song XML/JSON (REQ-003-006, 018-019, 022) \u2014 highest remaining risk and unblocks add-slide import path."
   },
   "outOfScope": [
     "Bundling the three church books in the app",
@@ -286,21 +432,23 @@
   ],
   "openQuestions": [],
   "blockers": [],
-  "lastUpdated": "2026-10-07T22:35:00.000Z",
+  "lastUpdated": "2026-10-07T22:50:00.000Z",
   "qaEvidence": {
-    "taskId": "empty-library-schema",
+    "taskId": "add-song-by-hand",
     "tsc": "exit 0",
-    "jest": "3 suites / 18 tests PASS (schema.server, songs.server, library-json.server)",
+    "jest": "5 suites / 27 tests PASS (librarySong, songs.server, library-json, AddSongByHand, HomePage.unit)",
     "commands": [
       "pnpm exec tsc --noEmit",
-      "CI=true pnpm exec react-scripts test --watchAll=false --runInBand --testPathPattern='(schema\\.server|songs\\.server|library-json\\.server)'"
+      "CI=true pnpm exec react-scripts test --watchAll=false --runInBand --testPathPattern='(librarySong|songs\\.server|library-json\\.server|AddSongByHand|HomePage\\.unit)'"
     ],
-    "bundleScan": "no gathered-book / hymn-scrape assets under public, src, build, dist, electron",
-    "tipSha": "ea29284831c12638541bafe39309760ce81677f0"
+    "wiring": "AddSongByHand + library.songs.save + library.songs?q= + Home add-song-by-hand-link + App route",
+    "tipSha": "c77255cfabf07b98c25a4e6ed3d9af652e7296b7",
+    "emptyLibrarySchemaPasses": true,
+    "loopsUsed": 5
   },
   "feedback": {
-    "taskId": "empty-library-schema",
-    "content": "QA PASS empty-library-schema (AC-001 / REQ-001). Selected next: add-song-by-hand. No PR.",
-    "updatedAt": "2026-10-07T22:35:00.000Z"
+    "taskId": "add-song-by-hand",
+    "content": "QA PASS add-song-by-hand (AC-002/REQ-002). empty-library-schema remains passes:true (loop-3 verdict, QA-owned). Selected next: import-review-screen. Loops used: 5/24. No PR.",
+    "updatedAt": "2026-10-07T22:50:00.000Z"
   }
 }

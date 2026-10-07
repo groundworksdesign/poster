@@ -285,3 +285,9 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - POST `/library/songs/save`; GET `/library/songs?q=` find; `parseVersesText` + `findSongs`.
 - AC-002 unit tests (persist find + UI save/find). passes=false.
 - Status note: loop-3 QA commit under-wrote task_status; corrected empty-library passes/selected in this commit (not a scope change).
+
+## Epic-004 QA (loop 5) — add-song-by-hand
+
+- PASS AC-002/REQ-002. Independent tsc + Jest 27 PASS.
+- Affirmed empty-library-schema passes:true (loop-3; QA-owned).
+- Selected next: import-review-screen. Loops used: 5/24.
