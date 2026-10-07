@@ -367,3 +367,8 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - AC-001..018 map in ralph/specs/20261007-ac-traceability-song-library.md; uncovered: none.
 - Gap fills: AC-008 dimensions + AC-018 unused delete. CI: tsc + Jest 58/364 PASS.
 - passes=false. Awaiting QA. Loops 18/24.
+
+## Epic-004 QA (loop 19) — tests-song-library
+
+- PASS: spot-checked AC-001..018 assertions; tsc 0; Jest 58/364; build:remix; remix e2e 52; electron e2e 12.
+- All todos pass → completeEpic true. Loops 19/24. No PR (release persona).
