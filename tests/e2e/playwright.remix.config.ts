@@ -8,10 +8,13 @@ const ensureRemixPublicIndex = path.join(repoRoot, 'scripts', 'ensure-remix-publ
 
 /**
  * E2E against `remix dev` (not CRA). Root playwright.config.ts uses start:cra on 3001.
+ * Song-library production-build specs live in playwright.remix.song-library.config.ts
+ * so their build:remix never races this remix-dev webServer's hashed assets.
  */
 export default defineConfig({
   testDir: '.',
   testMatch: /remix-.*\.spec\.ts/,
+  testIgnore: [/remix-song-library\.spec\.ts/],
   timeout: 90 * 1000,
   expect: { timeout: 15000 },
   fullyParallel: false,
