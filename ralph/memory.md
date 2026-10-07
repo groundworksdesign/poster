@@ -350,3 +350,9 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 
 - PASS AC-010/013/018 + REQ-012/015/016/023. Persist/open/Present probe green.
 - Selected present-unchanged. Loops 15/24.
+
+## Epic-004 DEV (loop 16) — present-unchanged
+
+- Present/ + stagedSongSlide.ts: NO DIFF vs main. PresentTypes: optional librarySongId only.
+- AC-011 regression: library-linked + linked-update slides still title then two lines.
+- passes=false. Awaiting QA. Loops 16/24.
