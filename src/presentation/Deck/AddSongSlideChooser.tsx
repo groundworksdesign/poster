@@ -1,8 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
-import type { LibrarySong } from '../../domain/librarySong';
+import React, { useRef, useState } from 'react';
 import type { SongData } from '../../domain/PresentTypes';
 import { parseImportFileContent, type ImportCandidate } from '../../domain/songImport';
 import { remixDataUrl, REMIX_ROUTE_ID } from '../remixDataUrl';
+import LibrarySongPicker from './LibrarySongPicker';
 
 export type SongSlideChoice = {
   lyrics: SongData;
@@ -25,47 +25,12 @@ type Props = {
  */
 export default function AddSongSlideChooser({ onCancel, onChoose }: Props) {
   const [mode, setMode] = useState<Mode>('pick');
-  const [songs, setSongs] = useState<LibrarySong[] | null>(null);
-  const [loadError, setLoadError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [alsoSave, setAlsoSave] = useState(true);
   const [importCandidates, setImportCandidates] = useState<ImportCandidate[] | null>(null);
   const [selectedImportKey, setSelectedImportKey] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch(remixDataUrl('/library/songs', REMIX_ROUTE_ID.librarySongs));
-        if (!res.ok) throw new Error(`Failed to load library (${res.status})`);
-        const data = (await res.json()) as LibrarySong[];
-        if (!cancelled) setSongs(data);
-      } catch (err) {
-        if (!cancelled) {
-          setLoadError(err instanceof Error ? err.message : 'Failed to load library');
-          setSongs([]);
-        }
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const pickSong = (song: LibrarySong) => {
-    onChoose({
-      lyrics: {
-        title: song.lyrics.title || song.title,
-        author: song.lyrics.author ?? song.author ?? undefined,
-        verses: song.lyrics.verses,
-      },
-      librarySongId: song.id,
-      book: song.book,
-      number: song.number,
-    });
-  };
 
   const handleImportFile = async (file: File | null) => {
     setError(null);
@@ -137,8 +102,6 @@ export default function AddSongSlideChooser({ onCancel, onChoose }: Props) {
     }
   };
 
-  const emptyLibrary = songs !== null && songs.length === 0;
-
   return (
     <section className="add-song-chooser" data-testid="add-song-slide-chooser">
       <h2>Add song slide</h2>
@@ -169,44 +132,7 @@ export default function AddSongSlideChooser({ onCancel, onChoose }: Props) {
 
       {mode === 'pick' ? (
         <div data-testid="add-song-pick-panel">
-          {songs === null ? <p>Loading library...</p> : null}
-          {loadError ? (
-            <p className="add-song-chooser-error" role="alert">
-              {loadError}
-            </p>
-          ) : null}
-          {emptyLibrary ? (
-            <div data-testid="add-song-library-empty">
-              <p>Your song library is empty.</p>
-              <p>
-                <button type="button" onClick={() => setMode('import')} data-testid="add-song-go-import">
-                  Import a file
-                </button>
-                {' or '}
-                <a href="/library/songs/add" data-testid="add-song-go-hand">
-                  Add by hand
-                </a>
-              </p>
-            </div>
-          ) : null}
-          {songs && songs.length > 0 ? (
-            <ul className="add-song-pick-list" data-testid="add-song-pick-list">
-              {songs.map(song => (
-                <li key={song.id}>
-                  <button
-                    type="button"
-                    onClick={() => pickSong(song)}
-                    data-testid={`add-song-pick-${song.id}`}
-                  >
-                    <strong>{song.title}</strong>
-                    {song.book || song.number
-                      ? ` — ${[song.book, song.number].filter(Boolean).join(' ')}`
-                      : ''}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          ) : null}
+          <LibrarySongPicker onPick={onChoose} onSwitchToImport={() => setMode('import')} />
         </div>
       ) : (
         <div data-testid="add-song-import-panel">
