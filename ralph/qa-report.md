@@ -1,15 +1,18 @@
 # Feedback
 
-## import-review-screen QA PASS
+## add-slide-chooser QA PASS
 
-- AC-003 / REQ-003: Gathered book JSON + Poster song XML/JSON parse into import candidates.
-- AC-004 / REQ-004: Multi-song opens review checklist; nothing POSTs until Import confirm (select all/none = whole book or subset).
-- AC-005 / REQ-005 / REQ-018 / AC-015: No-lyrics section only when needed; group choice title only (default) or skip; no silent import of empty verses.
-- AC-006 / REQ-006 / REQ-019 / AC-015: Title match shows existing/incoming number + lyrics; default keep both; replace and skip offered; keep both creates sibling (two same titles can exist).
-- AC-022 / REQ-022 / AC-018 (import): Single clean song skips review and imports; clean multi-song one Import click; problem sections only when they apply. (AC-018 REQ-023 unused-song deck prompt deferred to linked-update-decks.)
-- Pam: one review screen, checklist all checked, one Import button, defaults as above.
-- Open deck: DeckBuilder untouched; import API writes song library only.
+- REQ-007 / AC-007: Add SONG opens chooser with Pick from library (default) and Import a file; pick or import inserts one song slide; other slides remain (splice after selection).
+- REQ-008: Picking a library song adds a new slide; does not replace the deck.
+- REQ-010 / REQ-017 / AC-009 / AC-014: Import panel shows Also save to my library on the same screen, checked by default; POST /library/songs/save only when checked.
+- Pam: empty library message points to Import or Add by hand.
+- Optional `librarySongId` on Slide when picked/saved; existing slides without it remain valid.
 
-Independent: tsc exit 0; Jest 2 suites / 11 PASS.
+### Regression (outside chooser)
+- Top-level Load still builds a one-slide deck for song XML/JSON (existing behavior; not the add-slide path).
+- Present two-line staging (`stagedSongSlide`) and presentDataContract tests green.
+- DeckBuilder import-save prompt tests for Load path still green.
 
-Next selected: `add-slide-chooser`. Loops used: 7/24. Do not open a PR.
+Independent: tsc exit 0; Jest 5 suites / 70 PASS.
+
+Next selected: `library-search-pick`. Loops used: 9/24. Do not open a PR.

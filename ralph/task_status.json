@@ -3,8 +3,8 @@
   "branch": "cursor/epic-004-song-library",
   "baseBranch": "main",
   "status": "in_progress",
-  "loop": 8,
-  "persona": "dev",
+  "loop": 9,
+  "persona": "qa",
   "completeEpic": false,
   "prUrl": null,
   "canonicalStatusFile": "ralph/task_status.json",
@@ -76,7 +76,7 @@
       "todoIds": [
         "add-slide-chooser"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "REQ-008",
@@ -85,7 +85,7 @@
         "add-slide-chooser",
         "library-search-pick"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "REQ-009",
@@ -101,7 +101,7 @@
       "todoIds": [
         "add-slide-chooser"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "REQ-011",
@@ -158,7 +158,7 @@
       "todoIds": [
         "add-slide-chooser"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "REQ-018",
@@ -277,9 +277,10 @@
         "AC-009",
         "AC-014"
       ],
-      "status": "pending",
-      "passes": false,
-      "notes": "DEV loop 8: AddSongSlideChooser Pick (default)/Import; Also save checkbox default on; inserts after current slide without replacing deck; librarySongId on pick/save. AC-007/009/014 tests green. passes=false for QA."
+      "status": "done",
+      "passes": true,
+      "notes": "QA loop 9 PASS AC-007/009/014 + REQ-007/008/010/017. Pick default; Import + Also save default checked and save follows box; insert splice keeps other slides; empty library points to Import/Add by hand. Regression: top-level Load still replaces for song files; stagedSongSlide/Present + import-save prompt tests green; librarySongId optional.",
+      "qaVerifiedAt": "2026-10-07T23:35:00.000Z"
     },
     {
       "id": "library-search-pick",
@@ -422,8 +423,8 @@
     "AC-018 (REQ-022, 023): Clean multi-song one-click; problem sections only when needed; unused songs edit/delete without deck prompt"
   ],
   "selected": {
-    "id": "add-slide-chooser",
-    "reason": "import-review-screen QA-passed. Next: Add song slide chooser (Pick from library / Import a file) that appends a slide without replacing the deck (REQ-007, 008, 010, 017)."
+    "id": "library-search-pick",
+    "reason": "add-slide-chooser QA-passed. Next: library search/pick UX (title/book/number/lyrics, first verse for shared titles, Enter/double-click insert) (REQ-009, 014, 015, 020)."
   },
   "outOfScope": [
     "Bundling the three church books in the app",
@@ -433,32 +434,31 @@
   ],
   "openQuestions": [],
   "blockers": [],
-  "lastUpdated": "2026-10-07T23:25:00.000Z",
+  "lastUpdated": "2026-10-07T23:35:00.000Z",
   "qaEvidence": {
-    "taskId": "import-review-screen",
+    "taskId": "add-slide-chooser",
     "tsc": "exit 0",
-    "jest": "2 suites / 11 tests PASS (songImport, ImportSongsReview)",
+    "jest": "5 suites / 70 tests PASS (AddSongSlideChooser, DeckBuilder.unit, stagedSongSlide, songParser.test, presentDataContract)",
     "commands": [
       "pnpm exec tsc --noEmit",
-      "CI=true pnpm exec react-scripts test --watchAll=false --runInBand --testPathPattern='(songImport|ImportSongsReview)'"
+      "CI=true pnpm exec react-scripts test --watchAll=false --runInBand --testPathPattern='(AddSongSlideChooser|DeckBuilder\\.unit|stagedSongSlide|songParser\\.test|presentDataContract)'"
     ],
-    "deckReplace": "DeckBuilder not modified; import path has no setDeck/upsertPresentation",
-    "defaults": {
-      "checklist": "all checked",
-      "noLyrics": "title_only",
-      "titleMatch": "keep_both",
-      "singleCleanSkipsReview": true
+    "regression": {
+      "topLevelLoadSongStillReplacesDeck": true,
+      "presentStagingUntouched": true,
+      "librarySongIdOptionalOnSlide": true
     },
-    "tipSha": "d09573af2f3174cd3ef60fd71a597e4561cd7613",
-    "loopsUsed": 7,
+    "tipSha": "2f8f959c8a3e75b467159d6a5399f1e04f9f53d8",
+    "loopsUsed": 9,
     "priorPasses": {
       "empty-library-schema": true,
-      "add-song-by-hand": true
+      "add-song-by-hand": true,
+      "import-review-screen": true
     }
   },
   "feedback": {
     "taskId": "add-slide-chooser",
-    "content": "DEV loop 8 implemented add-slide-chooser. passes=false for QA. No PR.",
-    "updatedAt": "2026-10-07T23:25:00.000Z"
+    "content": "QA PASS add-slide-chooser. Selected next: library-search-pick. Loops used: 9/24. No PR.",
+    "updatedAt": "2026-10-07T23:35:00.000Z"
   }
 }

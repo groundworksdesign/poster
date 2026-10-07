@@ -310,3 +310,8 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - Also save to my library checkbox default checked; save only when checked (POST /library/songs/save).
 - Inserts song slide after current selection; other slides remain; optional librarySongId on Slide.
 - Tests: AddSongSlideChooser + DeckBuilder AC-007. passes=false.
+
+## Epic-004 QA (loop 9) — add-slide-chooser
+
+- PASS AC-007/009/014. Pick default; Also save default on; insert keeps slides.
+- Regression: Load song still replaces; Present staging green. Selected library-search-pick. Loops 9/24.
