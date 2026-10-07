@@ -3,15 +3,16 @@
   "branch": "cursor/epic-004-song-library",
   "baseBranch": "main",
   "status": "in_progress",
-  "loop": 17,
-  "persona": "qa",
+  "loop": 18,
+  "persona": "dev",
   "completeEpic": false,
   "prUrl": null,
   "canonicalStatusFile": "ralph/task_status.json",
   "sourceArtifacts": [
     "ralph/specs/20261004-feature-brief-song-library.md",
     "ralph/specs/20261004-song-library-ux-review-pam.md",
-    "ralph/epic.md"
+    "ralph/epic.md",
+    "ralph/specs/20261007-ac-traceability-song-library.md"
   ],
   "codebaseFindings": {
     "songsTable": "Exists in schema.server.ts (id, title, author, song_json, created_at, updated_at) but unused — no CRUD, routes, or repo reads/writes.",
@@ -401,9 +402,9 @@
         "AC-017",
         "AC-018"
       ],
-      "status": "pending",
+      "status": "in_progress",
       "passes": false,
-      "notes": "May accumulate coverage alongside feature tasks; final pass confirms full AC matrix."
+      "notes": "DEV loop 18: AC-001..AC-018 traceability in ralph/specs/20261007-ac-traceability-song-library.md. Gap fills: AC-008 title/book/number (+AC-016) in songs.server.test; AC-018 unused delete no deck prompt. CI unit-integration: tsc 0; Jest 58 suites / 364 PASS. No lint job in pr.yml. Uncovered ACs: none. passes=false."
     }
   ],
   "acceptanceCriteria": [
@@ -428,7 +429,7 @@
   ],
   "selected": {
     "id": "tests-song-library",
-    "reason": "present-unchanged QA-passed. Next: final AC-001..AC-018 test matrix coverage for the song library epic."
+    "reason": "DEV completed AC-001..018 traceability map + gap fills; full CI unit suite green. Awaiting QA."
   },
   "outOfScope": [
     "Bundling the three church books in the app",
@@ -438,30 +439,24 @@
   ],
   "openQuestions": [],
   "blockers": [],
-  "lastUpdated": "2026-10-07T22:59:30.000Z",
+  "lastUpdated": "2026-10-07T23:05:00.000Z",
   "qaEvidence": {
-    "taskId": "present-unchanged",
+    "taskId": "tests-song-library",
+    "note": "DEV evidence only; QA must re-verify before passes:true",
+    "acMap": "ralph/specs/20261007-ac-traceability-song-library.md",
+    "uncoveredACs": [],
     "tsc": "exit 0",
-    "jest": "4 suites / 17 tests PASS (stagedSongSlide, Present.theme, Present.fullscreen, applyPresentPayload)",
-    "presentVsMain": {
-      "src/presentation/Present/": "NO DIFF (0 bytes)",
-      "src/domain/stagedSongSlide.ts": "NO DIFF (0 bytes)",
-      "src/domain/applyPresentPayload.ts": "NO DIFF",
-      "src/domain/PresentTypes.tsx": "additive optional librarySongId only (no staging change)",
-      "src/domain/stagedSongSlide.test.ts": "tests only (+AC-011 library-linked + linked-update cases)"
-    },
+    "jest": "58 suites / 364 tests PASS",
+    "lint": "no dedicated lint job in .github/workflows/pr.yml",
     "commands": [
-      "git fetch origin main",
-      "git diff origin/main...HEAD -- src/presentation/Present/ src/domain/stagedSongSlide.ts src/domain/PresentTypes.tsx",
       "pnpm exec tsc --noEmit",
-      "CI=true pnpm exec react-scripts test --watchAll=false --runInBand --testPathPattern='(stagedSongSlide|Present\\.(theme|fullscreen)|applyPresentPayload)'"
+      "CI=true pnpm exec react-scripts test --watchAll=false --runInBand"
     ],
-    "productTipSha": "3a0bc089c69e5ecbb6bb60e40b7cefe585a845e3",
-    "loopsUsed": 17
+    "loopsUsed": 18
   },
   "feedback": {
-    "taskId": "present-unchanged",
-    "content": "QA PASS present-unchanged. Selected next: tests-song-library. Loops used: 17/24. No PR.",
-    "updatedAt": "2026-10-07T22:59:30.000Z"
+    "taskId": "tests-song-library",
+    "content": "DEV complete tests-song-library. Awaiting QA. Loops used: 18/24. No PR.",
+    "updatedAt": "2026-10-07T23:05:00.000Z"
   }
 }

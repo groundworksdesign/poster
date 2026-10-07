@@ -124,7 +124,7 @@ describeSqlite('hand-add then find (AC-002 / REQ-002)', () => {
     db.close();
   });
 
-  it('finds a hand-added song by title, book, number, and lyric phrase', () => {
+  it('AC-002 / AC-008 / AC-016: finds by title, by book, by number, and by lyric phrase each', () => {
     upsertSongWithDb(db, {
       title: 'Be Still, My Soul',
       book: 'Hymns',
@@ -134,11 +134,19 @@ describeSqlite('hand-add then find (AC-002 / REQ-002)', () => {
         verses: [{ number: 1, lines: ['Be still, my soul: The Lord is on thy side'] }],
       },
     });
+    upsertSongWithDb(db, {
+      title: 'Other',
+      book: 'Children’s Songbook',
+      number: '2',
+      lyrics: { title: 'Other', verses: [{ number: 1, lines: ['Unrelated'] }] },
+    });
 
-    expect(findSongsWithDb(db, 'Be Still').map(s => s.title)).toContain('Be Still, My Soul');
-    expect(findSongsWithDb(db, 'Hymns').map(s => s.number)).toContain('124');
-    expect(findSongsWithDb(db, '124')[0]?.title).toBe('Be Still, My Soul');
-    expect(findSongsWithDb(db, 'on thy side')[0]?.book).toBe('Hymns');
+    // AC-008: each search dimension returns matches independently
+    expect(findSongsWithDb(db, 'Be Still').map(s => s.title)).toEqual(['Be Still, My Soul']);
+    expect(findSongsWithDb(db, 'Hymns').map(s => s.number)).toEqual(['124']);
+    expect(findSongsWithDb(db, '124').map(s => s.title)).toEqual(['Be Still, My Soul']);
+    // AC-016: lyric phrase
+    expect(findSongsWithDb(db, 'on thy side').map(s => s.book)).toEqual(['Hymns']);
     expect(findSongsWithDb(db, 'no-such-song')).toEqual([]);
   });
 });
