@@ -418,3 +418,8 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 
 - config-path-alignment asserts compound test:e2e:remix → both Playwright configs under tests/e2e/.
 - Full Jest 58/365 PASS. Budget raised to 16. passes=false. Fix 8/16.
+
+## Epic-004 FIX LOOP 9 QA — fix-add-slide-import-review PASS
+
+- tsc/Jest 365/e2e 52+3 PASS. Chooser suite 5/5 counted (net +1 explained).
+- Next: fix-json-restore-preserve-songs. Fix 9/16.
