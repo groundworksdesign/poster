@@ -3,8 +3,8 @@
   "branch": "cursor/epic-004-song-library",
   "baseBranch": "main",
   "status": "done",
-  "loop": 19,
-  "persona": "qa",
+  "loop": 20,
+  "persona": "release",
   "completeEpic": true,
   "prUrl": null,
   "canonicalStatusFile": "ralph/task_status.json",
@@ -440,7 +440,7 @@
   ],
   "openQuestions": [],
   "blockers": [],
-  "lastUpdated": "2026-10-07T23:05:53.000Z",
+  "lastUpdated": "2026-10-07T23:07:48.000Z",
   "qaEvidence": {
     "taskId": "tests-song-library",
     "note": "QA loop 19 independent verify; passes:true; completeEpic:true",
@@ -474,8 +474,8 @@
     "loopsUsed": 19
   },
   "feedback": {
-    "taskId": "tests-song-library",
-    "content": "QA PASS tests-song-library. completeEpic true. Loops used: 19/24. No PR.",
-    "updatedAt": "2026-10-07T23:05:53.000Z"
+    "taskId": null,
+    "content": "RELEASE loop 20: tip commit for CI; open one PR to main. Loops used: 20/24. Do not merge.",
+    "updatedAt": "2026-10-07T23:07:48.000Z"
   }
 }
