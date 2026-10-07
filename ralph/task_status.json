@@ -3,8 +3,8 @@
   "branch": "cursor/epic-004-song-library",
   "baseBranch": "main",
   "status": "in_progress",
-  "loop": 21,
-  "persona": "planning",
+  "loop": 22,
+  "persona": "dev",
   "completeEpic": false,
   "prUrl": "https://github.com/groundworksdesign/poster/pull/26",
   "canonicalStatusFile": "ralph/task_status.json",
@@ -425,9 +425,9 @@
         "AC-010",
         "AC-017"
       ],
-      "status": "pending",
+      "status": "in_progress",
       "passes": false,
-      "notes": "Iris gate blocker PR#26 @ 15ee17d. Parent library.tsx has no Outlet."
+      "notes": "DEV loop 22 / fix 2: library.tsx useOutlet; library.songs Outlet layout; SongLibraryPage on library.songs._index; loaders moved to *.loader.server.ts so client chunks do not pull better-sqlite3/process. REMIX_ROUTE_ID.librarySongs unchanged for _data; added librarySongsIndex. Prod e2e remix-song-library.spec.ts 2 passed. passes=false."
     },
     {
       "id": "fix-add-slide-import-review",
@@ -521,7 +521,7 @@
   ],
   "selected": {
     "id": "fix-remix-song-library-outlets",
-    "reason": "Iris blocker: nested library.tsx without Outlet hides all song-library UI in prod/Electron; unblocks AC-002/004/005/006/010/013/015/017/018 at runtime and e2e."
+    "reason": "DEV complete for outlets; awaiting QA."
   },
   "outOfScope": [
     "Bundling the three church books in the app",
@@ -530,10 +530,8 @@
     "Replacing the open deck on import"
   ],
   "openQuestions": [],
-  "blockers": [
-    "Iris FAIL PR#26: /library/songs* render Library (coming soon) \u2014 no Outlet in library.tsx / library.songs layout"
-  ],
-  "lastUpdated": "2026-10-07T23:24:52.000Z",
+  "blockers": [],
+  "lastUpdated": "2026-10-07T23:33:11.000Z",
   "qaEvidence": {
     "note": "Prior epic QA evidence retained under completed todos; fix-pass awaits new QA per task.",
     "irisGate": "ralph/specs/20261007-iris-gate-pr26-fail.md",
@@ -542,16 +540,16 @@
   },
   "feedback": {
     "taskId": "fix-remix-song-library-outlets",
-    "content": "FIX LOOP 1 planning: Iris gate saved; 5 fix tasks appended; selected fix-remix-song-library-outlets. Existing epic passes kept. completeEpic false. Loops fix 1/14 (epic loop 21). No merge.",
-    "updatedAt": "2026-10-07T23:24:52.000Z"
+    "content": "DEV done fix-remix-song-library-outlets. Awaiting QA. Fix 2/14. No merge.",
+    "updatedAt": "2026-10-07T23:33:11.000Z"
   },
   "fixPass": {
     "irisGate": "ralph/specs/20261007-iris-gate-pr26-fail.md",
     "prUrl": "https://github.com/groundworksdesign/poster/pull/26",
     "headShaAtFail": "15ee17d0c8b523d0f34b9b6d31ed9bde7f0784ef",
     "budget": 14,
-    "loop": 1,
-    "loopsUsed": 1,
+    "loop": 2,
+    "loopsUsed": 2,
     "maxLoop": 14
   }
 }

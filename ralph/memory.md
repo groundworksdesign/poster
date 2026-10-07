@@ -379,3 +379,10 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - Blocker: library.tsx no Outlet → song routes show coming soon in prod.
 - Also: chooser import skips review; JSON restore wipes songs; client process; Apply flake.
 - Selected: fix-remix-song-library-outlets. Prior passes kept. completeEpic false. Fix 1/14.
+
+## Epic-004 FIX LOOP 2 DEV — fix-remix-song-library-outlets
+
+- library.tsx: useOutlet() ?? coming soon; loader in library.loader.server.ts.
+- library.songs.tsx: Outlet layout; loader in library.songs.loader.server.ts.
+- SongLibraryPage on library.songs._index.tsx; REMIX_ROUTE_ID.librarySongs kept for _data.
+- Prod e2e: tests/e2e/remix-song-library.spec.ts (server.js) 2 passed. passes=false. Fix 2/14.

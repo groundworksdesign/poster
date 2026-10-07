@@ -10,7 +10,10 @@ export const REMIX_ROUTE_ID = {
   librarySave: 'routes/library.save',
   libraryRestore: 'routes/library.restore',
   librarySettings: 'routes/library.settings',
+  /** Parent layout + list/search loader for /library/songs. */
   librarySongs: 'routes/library.songs',
+  /** Index UI route id (document navigation); loaders still use librarySongs. */
+  librarySongsIndex: 'routes/library.songs._index',
   librarySongsSave: 'routes/library.songs.save',
   librarySongsAdd: 'routes/library.songs.add',
   librarySongsImport: 'routes/library.songs.import',
