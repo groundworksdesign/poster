@@ -3,8 +3,8 @@
   "branch": "cursor/epic-004-song-library",
   "baseBranch": "main",
   "status": "in_progress",
-  "loop": 22,
-  "persona": "dev",
+  "loop": 23,
+  "persona": "qa",
   "completeEpic": false,
   "prUrl": "https://github.com/groundworksdesign/poster/pull/26",
   "canonicalStatusFile": "ralph/task_status.json",
@@ -427,7 +427,7 @@
       ],
       "status": "in_progress",
       "passes": false,
-      "notes": "DEV loop 22 / fix 2: library.tsx useOutlet; library.songs Outlet layout; SongLibraryPage on library.songs._index; loaders moved to *.loader.server.ts so client chunks do not pull better-sqlite3/process. REMIX_ROUTE_ID.librarySongs unchanged for _data; added librarySongsIndex. Prod e2e remix-song-library.spec.ts 2 passed. passes=false."
+      "notes": "QA loop 23 / fix 3 FAIL. Outlet + server.js UI/_data/Edit/chooser PASS; Present/stagedSongSlide NO DIFF vs main; song-library e2e 2/2 PASS. Full remix e2e FAIL 14 (theme+visual): remix-song-library beforeAll build:remix races remix-dev hashed assets mid-suite. Isolated theme+visual PASS. passes=false."
     },
     {
       "id": "fix-add-slide-import-review",
@@ -521,7 +521,7 @@
   ],
   "selected": {
     "id": "fix-remix-song-library-outlets",
-    "reason": "DEV complete for outlets; awaiting QA."
+    "reason": "QA FAIL: full Remix e2e broken by mid-suite build:remix in remix-song-library.spec.ts; same task back to DEV."
   },
   "outOfScope": [
     "Bundling the three church books in the app",
@@ -530,8 +530,10 @@
     "Replacing the open deck on import"
   ],
   "openQuestions": [],
-  "blockers": [],
-  "lastUpdated": "2026-10-07T23:33:11.000Z",
+  "blockers": [
+    "remix-song-library.spec.ts beforeAll pnpm run build:remix races playwright.remix.config remix-dev webServer assets"
+  ],
+  "lastUpdated": "2026-10-07T23:42:00.000Z",
   "qaEvidence": {
     "note": "Prior epic QA evidence retained under completed todos; fix-pass awaits new QA per task.",
     "irisGate": "ralph/specs/20261007-iris-gate-pr26-fail.md",
@@ -540,16 +542,16 @@
   },
   "feedback": {
     "taskId": "fix-remix-song-library-outlets",
-    "content": "DEV done fix-remix-song-library-outlets. Awaiting QA. Fix 2/14. No merge.",
-    "updatedAt": "2026-10-07T23:33:11.000Z"
+    "content": "QA FAIL fix-remix-song-library-outlets. Full remix e2e 40/54: song-library beforeAll rebuild invalidates remix-dev public/build hashes; theme-persist + visual-regression stuck on Loading. Fix e2e rebuild strategy; re-QA. Fix 3/14.",
+    "updatedAt": "2026-10-07T23:42:00.000Z"
   },
   "fixPass": {
     "irisGate": "ralph/specs/20261007-iris-gate-pr26-fail.md",
     "prUrl": "https://github.com/groundworksdesign/poster/pull/26",
     "headShaAtFail": "15ee17d0c8b523d0f34b9b6d31ed9bde7f0784ef",
     "budget": 14,
-    "loop": 2,
-    "loopsUsed": 2,
+    "loop": 3,
+    "loopsUsed": 3,
     "maxLoop": 14
   }
 }
