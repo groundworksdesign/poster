@@ -132,12 +132,91 @@ const dbProxy = new Proxy({} as BetterSqliteDatabase, {
   },
 });
 
+type SongRowSnapshot = {
+  id: string;
+  title: string;
+  book: string | null;
+  number: string | null;
+  author: string | null;
+  song_json: string;
+  created_at: string;
+  updated_at: string;
+};
+
+function snapshotSongs(database: SqliteDatabaseHandle | null): SongRowSnapshot[] {
+  if (!database) return [];
+  try {
+    return database
+      .prepare(
+        `SELECT id, title, book, number, author, song_json, created_at, updated_at FROM songs`,
+      )
+      .all() as SongRowSnapshot[];
+  } catch {
+    return [];
+  }
+}
+
+/** Songs currently on disk / in the live connection (before a restore swap). */
+function snapshotLiveSongs(): SongRowSnapshot[] {
+  if (sqliteDb) return snapshotSongs(sqliteDb);
+  if (sqliteLoadFailed) return [];
+  if (!fs.existsSync(currentDbPath)) return [];
+  try {
+    const temp = openDb(currentDbPath);
+    try {
+      return snapshotSongs(temp);
+    } finally {
+      try {
+        temp.close();
+      } catch {
+        /* ignore */
+      }
+    }
+  } catch {
+    return [];
+  }
+}
+
+function songCount(database: SqliteDatabaseHandle): number {
+  try {
+    const row = database.prepare(`SELECT COUNT(*) AS c FROM songs`).get() as { c: number | bigint };
+    return Number(row?.c ?? 0);
+  } catch {
+    return 0;
+  }
+}
+
+function reinsertPreservedSongs(database: SqliteDatabaseHandle, songs: SongRowSnapshot[]): void {
+  const insert = database.prepare(
+    `INSERT INTO songs (id, title, book, number, author, song_json, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+  );
+  for (const s of songs) {
+    insert.run(
+      s.id,
+      s.title,
+      s.book,
+      s.number,
+      s.author,
+      s.song_json,
+      s.created_at,
+      s.updated_at,
+    );
+  }
+}
+
 /**
  * Atomically replace the live database with a file at newFilePath.
  * Closes the current connection, moves the file into place, then
  * reopens so subsequent queries go to the restored database.
+ *
+ * Pre-epic-004 backups have an empty songs table: when the restored file
+ * has zero songs, keep the songs that were already in the live library.
+ * Backups that include song rows keep current replace behavior.
  */
 export function replaceDb(newFilePath: string): void {
+  const preservedSongs = snapshotLiveSongs();
+
   const dir = path.dirname(currentDbPath);
   let candidatePath = newFilePath;
   let copiedTempPath: string | null = null;
@@ -170,6 +249,10 @@ export function replaceDb(newFilePath: string): void {
     }
 
     sqliteDb = openDb(currentDbPath);
+
+    if (preservedSongs.length > 0 && songCount(sqliteDb) === 0) {
+      reinsertPreservedSongs(sqliteDb, preservedSongs);
+    }
   } catch (err) {
     try {
       sqliteLoadFailed = false;
