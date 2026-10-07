@@ -397,3 +397,8 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - Separate playwright.remix.song-library.config.ts + e2e-song-library-webserver.cjs.
 - remix-dev config ignores remix-song-library; `test:e2e:remix` runs both sequentially.
 - Combined green: 52 + 2. pr.yml uses combined script. passes=false. Fix 4/14.
+
+## Epic-004 FIX LOOP 5 QA — fix-remix-song-library-outlets PASS
+
+- Combined e2e 52+2; pr.yml wired; Present/stagedSongSlide NO DIFF.
+- Next: fix-add-slide-import-review. Fix 5/14.
