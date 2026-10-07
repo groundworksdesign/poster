@@ -213,6 +213,12 @@ export default function AddSongSlideChooser({ onCancel, onChoose }: Props) {
         </p>
       ) : null}
 
+      <p className="add-song-chooser-library-link">
+        <a href="/library/songs" data-testid="add-song-open-library">
+          Open song library
+        </a>
+      </p>
+
       <button type="button" onClick={onCancel} data-testid="add-song-chooser-cancel">
         Cancel
       </button>

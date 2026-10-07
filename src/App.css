@@ -638,6 +638,75 @@ ul {
   color: var(--color-danger);
 }
 
+.add-song-chooser-library-link {
+  margin: 0.75rem 0 0.5rem;
+}
+
+/* Manage song library page */
+.song-library-page {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+  text-align: left;
+}
+
+.song-library-page h1 {
+  margin: 0 0 0.5rem;
+  font-size: 1.75rem;
+}
+
+.song-library-page-lead {
+  color: var(--color-fg-muted);
+  margin: 0 0 1rem;
+}
+
+.song-library-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.song-library-list {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0;
+}
+
+.song-library-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.song-library-row-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.song-library-usage {
+  font-size: 0.85rem;
+  color: var(--color-fg-muted);
+}
+
+.song-library-row-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.song-library-edit-buttons {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
 .deck-page {
   max-width: var(--page-content-max);
   margin: 0 auto;

@@ -13,6 +13,11 @@ describe('AddSongSlideChooser (AC-007, AC-009, AC-014)', () => {
     jest.restoreAllMocks();
   });
 
+  it('AC-017: links to song library manage page', () => {
+    render(<AddSongSlideChooser onCancel={jest.fn()} onChoose={jest.fn()} />);
+    expect(screen.getByTestId('add-song-open-library')).toHaveAttribute('href', '/library/songs');
+  });
+
   it('defaults to Pick from library and lists songs', async () => {
     jest.spyOn(global, 'fetch').mockResolvedValue({
       ok: true,

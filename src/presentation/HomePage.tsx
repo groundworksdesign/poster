@@ -160,6 +160,13 @@ export default function HomePage() {
         </a>
         <a
           className="home-page-link home-page-link--songs"
+          href="/library/songs"
+          data-testid="song-library-link"
+        >
+          Song library
+        </a>
+        <a
+          className="home-page-link home-page-link--songs"
           href="/library/songs/add"
           data-testid="add-song-by-hand-link"
         >

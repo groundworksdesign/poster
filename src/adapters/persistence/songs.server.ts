@@ -2,6 +2,7 @@ import { tryGetSqliteDb } from './db.server';
 import * as jsonLibrary from './library-json.server';
 import type { LibrarySong, LibrarySongInput } from '../../domain/librarySong';
 import type { SongData } from '../../domain/PresentTypes';
+import { countUsageBySongId } from '../../domain/librarySongUsage';
 
 /** `better-sqlite3` or Node `node:sqlite` DatabaseSync — same prepare/run/get API. */
 type SqliteDb = {
@@ -166,4 +167,43 @@ export function upsertSong(body: LibrarySongInput): string {
     return upsertSongWithDb(sqlite, body);
   }
   return jsonLibrary.jsonLibraryUpsertSong(body);
+}
+
+export function deleteSongWithDb(database: SqliteDb, id: string): boolean {
+  const result = database.prepare('DELETE FROM songs WHERE id = ?').run(id);
+  return (result?.changes ?? 0) > 0;
+}
+
+/** Delete a library song only (does not update decks — linked-update-decks owns that confirm). */
+export function deleteSong(id: string): boolean {
+  const sqlite = tryGetSqliteDb();
+  if (sqlite) {
+    return deleteSongWithDb(sqlite, id);
+  }
+  return jsonLibrary.jsonLibraryDeleteSong(id);
+}
+
+export type PresentationDeckRow = {
+  id: string;
+  title: string;
+  deck_json: string;
+};
+
+export function listPresentationDeckRowsWithDb(database: SqliteDb): PresentationDeckRow[] {
+  return database
+    .prepare(`SELECT id, title, deck_json FROM presentations`)
+    .all() as PresentationDeckRow[];
+}
+
+export function listPresentationDeckRows(): PresentationDeckRow[] {
+  const sqlite = tryGetSqliteDb();
+  if (sqlite) {
+    return listPresentationDeckRowsWithDb(sqlite);
+  }
+  return jsonLibrary.jsonLibraryListPresentationDeckRows();
+}
+
+/** usedInDeckCount per song id (seam: listDecksUsingSongId for linked-update-decks). */
+export function usageCountsForSongs(songIds: string[]): Record<string, number> {
+  return countUsageBySongId(listPresentationDeckRows(), songIds);
 }

@@ -245,6 +245,30 @@ export function jsonLibraryGetSong(id: string): LibrarySong | null {
   return row ? storedSongToLibrarySong(row) : null;
 }
 
+export function jsonLibraryDeleteSong(id: string): boolean {
+  const data = readAll();
+  if (!Array.isArray(data.songs)) return false;
+  const before = data.songs.length;
+  data.songs = data.songs.filter(s => s.id !== id);
+  if (data.songs.length === before) return false;
+  writeAll(data);
+  return true;
+}
+
+/** Rows needed to compute used-in-N-decks (and later linked-update-decks confirms). */
+export function jsonLibraryListPresentationDeckRows(): Array<{
+  id: string;
+  title: string;
+  deck_json: string;
+}> {
+  const { presentations } = readAll();
+  return presentations.map(p => ({
+    id: p.id,
+    title: p.title,
+    deck_json: p.deck_json,
+  }));
+}
+
 export function jsonLibraryUpsertSong(body: LibrarySongInput): string {
   const now = new Date().toISOString();
   const data = readAll();
