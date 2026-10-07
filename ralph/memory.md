@@ -345,3 +345,8 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - UpdateDecksPrompt: deck checkboxes after edit/delete when used; hand-edit second confirm.
 - apply-decks + domain applyLibraryEdit/DeleteToDeck; unused skips prompt; unlinked untouched.
 - passes=false. Awaiting QA. Loops 14/24.
+
+## Epic-004 QA (loop 15) — linked-update-decks
+
+- PASS AC-010/013/018 + REQ-012/015/016/023. Persist/open/Present probe green.
+- Selected present-unchanged. Loops 15/24.
