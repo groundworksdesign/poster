@@ -3,8 +3,8 @@
   "branch": "cursor/epic-004-song-library",
   "baseBranch": "main",
   "status": "in_progress",
-  "loop": 10,
-  "persona": "dev",
+  "loop": 11,
+  "persona": "qa",
   "completeEpic": false,
   "prUrl": null,
   "canonicalStatusFile": "ralph/task_status.json",
@@ -93,7 +93,7 @@
       "todoIds": [
         "library-search-pick"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "REQ-010",
@@ -133,7 +133,7 @@
       "todoIds": [
         "library-search-pick"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "REQ-015",
@@ -142,7 +142,7 @@
         "library-search-pick",
         "linked-update-decks"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "REQ-016",
@@ -182,7 +182,7 @@
       "todoIds": [
         "library-search-pick"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "REQ-021",
@@ -299,9 +299,10 @@
         "AC-013",
         "AC-016"
       ],
-      "status": "pending",
-      "passes": false,
-      "notes": "DEV loop 10: LibrarySongPicker search (title/book/number/lyrics), book filter, shared-title first verse inline, Enter/double-click pick with librarySongId. AC-008/012/016 + link tests green. passes=false for QA."
+      "status": "done",
+      "passes": true,
+      "notes": "QA loop 11 PASS AC-008/012/016 + REQ-009/014/015/020 (AC-007 insert/link; AC-013 link portion). Search title/book/number/lyrics; shared titles first verse inline; Enter/double-click; librarySongId set; insert after current via splice (no deck replace). Optional book filter backed by Pam UX review (binding). AC-013 REQ-016 hand-edit ask deferred to linked-update-decks.",
+      "qaVerifiedAt": "2026-10-07T23:55:00.000Z"
     },
     {
       "id": "library-page",
@@ -423,8 +424,8 @@
     "AC-018 (REQ-022, 023): Clean multi-song one-click; problem sections only when needed; unused songs edit/delete without deck prompt"
   ],
   "selected": {
-    "id": "library-search-pick",
-    "reason": "add-slide-chooser QA-passed. Next: library search/pick UX (title/book/number/lyrics, first verse for shared titles, Enter/double-click insert) (REQ-009, 014, 015, 020)."
+    "id": "library-page",
+    "reason": "library-search-pick QA-passed. Next: manage library page from main menu and Add song slide (search, Add/Edit/Delete/Import, used-in-N-decks) (REQ-011, 021)."
   },
   "outOfScope": [
     "Bundling the three church books in the app",
@@ -434,31 +435,24 @@
   ],
   "openQuestions": [],
   "blockers": [],
-  "lastUpdated": "2026-10-07T23:50:00.000Z",
+  "lastUpdated": "2026-10-07T23:55:00.000Z",
   "qaEvidence": {
-    "taskId": "add-slide-chooser",
+    "taskId": "library-search-pick",
     "tsc": "exit 0",
-    "jest": "5 suites / 70 tests PASS (AddSongSlideChooser, DeckBuilder.unit, stagedSongSlide, songParser.test, presentDataContract)",
+    "jest": "5 suites / 37 tests PASS (librarySongPicker, LibrarySongPicker, AddSongSlideChooser, DeckBuilder.unit, songs.server)",
     "commands": [
       "pnpm exec tsc --noEmit",
-      "CI=true pnpm exec react-scripts test --watchAll=false --runInBand --testPathPattern='(AddSongSlideChooser|DeckBuilder\\.unit|stagedSongSlide|songParser\\.test|presentDataContract)'"
+      "CI=true pnpm exec react-scripts test --watchAll=false --runInBand --testPathPattern='(librarySongPicker|LibrarySongPicker|AddSongSlideChooser|DeckBuilder\\.unit|songs\\.server)'"
     ],
-    "regression": {
-      "topLevelLoadSongStillReplacesDeck": true,
-      "presentStagingUntouched": true,
-      "librarySongIdOptionalOnSlide": true
-    },
-    "tipSha": "2f8f959c8a3e75b467159d6a5399f1e04f9f53d8",
-    "loopsUsed": 9,
-    "priorPasses": {
-      "empty-library-schema": true,
-      "add-song-by-hand": true,
-      "import-review-screen": true
-    }
+    "bookFilter": "Pam UX review: \"plus an optional book filter\" \u2014 in scope, not invented",
+    "insertAfterCurrent": "DeckBuilder insertSongSlideChoice splices at selectedSlideIndex+1",
+    "noDeckReplace": true,
+    "tipSha": "6c497798b9620d8fbbf6ac6af3f3cf483802ea20",
+    "loopsUsed": 11
   },
   "feedback": {
     "taskId": "library-search-pick",
-    "content": "DEV loop 10 implemented library-search-pick. passes=false for QA. No PR.",
-    "updatedAt": "2026-10-07T23:50:00.000Z"
+    "content": "QA PASS library-search-pick. Book filter confirmed via Pam. Selected next: library-page. Loops used: 11/24. No PR.",
+    "updatedAt": "2026-10-07T23:55:00.000Z"
   }
 }

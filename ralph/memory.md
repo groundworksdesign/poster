@@ -321,3 +321,8 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - LibrarySongPicker: search box + optional book filter; GET /library/songs?q=.
 - Shared titles show first verse inline; Enter / double-click pick with librarySongId.
 - Wired into AddSongSlideChooser pick panel. Tests green. passes=false.
+
+## Epic-004 QA (loop 11) — library-search-pick
+
+- PASS AC-008/012/016 + link. Book filter confirmed in Pam review (not invented).
+- Insert after current; no deck replace. Selected library-page. Loops 11/24.

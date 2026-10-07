@@ -1,18 +1,15 @@
 # Feedback
 
-## add-slide-chooser QA PASS
+## library-search-pick QA PASS
 
-- REQ-007 / AC-007: Add SONG opens chooser with Pick from library (default) and Import a file; pick or import inserts one song slide; other slides remain (splice after selection).
-- REQ-008: Picking a library song adds a new slide; does not replace the deck.
-- REQ-010 / REQ-017 / AC-009 / AC-014: Import panel shows Also save to my library on the same screen, checked by default; POST /library/songs/save only when checked.
-- Pam: empty library message points to Import or Add by hand.
-- Optional `librarySongId` on Slide when picked/saved; existing slides without it remain valid.
+- AC-008 / REQ-009: Search by title, book, and number returns matches (`GET /library/songs?q=` + findSongs).
+- AC-016 / REQ-020: Lyric phrase search finds the song.
+- AC-012 / REQ-014: Shared titles show first verse line inline in results.
+- REQ-015 / AC-013 (link): Pick sets `librarySongId` on the new slide (REQ-016 hand-edit ask deferred to linked-update-decks).
+- AC-007 / insert-after-current: `insertSongSlideChoice` splices after `selectedSlideIndex`; other slides remain; no deck replace.
+- Pam: Enter or double-click; rows show title, book, number.
+- Optional book filter: **not invented** — Pam UX review explicitly requires "plus an optional book filter" (binding with brief).
 
-### Regression (outside chooser)
-- Top-level Load still builds a one-slide deck for song XML/JSON (existing behavior; not the add-slide path).
-- Present two-line staging (`stagedSongSlide`) and presentDataContract tests green.
-- DeckBuilder import-save prompt tests for Load path still green.
+Independent: tsc exit 0; Jest 5 suites / 37 PASS.
 
-Independent: tsc exit 0; Jest 5 suites / 70 PASS.
-
-Next selected: `library-search-pick`. Loops used: 9/24. Do not open a PR.
+Next selected: `library-page`. Loops used: 11/24. Do not open a PR.
