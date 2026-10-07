@@ -324,5 +324,5 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 
 ## Epic-004 QA (loop 11) — library-search-pick
 
-- PASS AC-008/012/016 + link. Book filter confirmed in Pam review (not invented).
-- Insert after current; no deck replace. Selected library-page. Loops 11/24.
+- PASS (independent) AC-008/012/016 + REQ-009/014/015/020. Book filter Pam-backed (not invented).
+- Insert after current via splice; no deck replace. tsc+Jest green. Selected library-page. Loops 11/24.

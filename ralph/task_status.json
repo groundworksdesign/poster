@@ -14,12 +14,12 @@
     "ralph/epic.md"
   ],
   "codebaseFindings": {
-    "songsTable": "Exists in schema.server.ts (id, title, author, song_json, created_at, updated_at) but unused \u2014 no CRUD, routes, or repo reads/writes.",
+    "songsTable": "Exists in schema.server.ts (id, title, author, song_json, created_at, updated_at) but unused — no CRUD, routes, or repo reads/writes.",
     "songDataType": "SongData has title, author?, verses[]; no book or number fields yet.",
     "deckBuilderImport": "DeckBuilder song XML/JSON import replaces the whole deck with a one-slide deck; optional save is presentation library (/library/save), not songs table.",
     "songParser": "parseSongXML + isSongData cover Poster song XML and song-shaped JSON; gathered book JSON parser missing.",
     "presentStaging": "stagedSongSlide.ts already does title then two lyric lines; leave unchanged (REQ-013).",
-    "libraryUi": "No song library page, picker, search, or slide\u2194library song link field."
+    "libraryUi": "No song library page, picker, search, or slide↔library song link field."
   },
   "requirements": [
     {
@@ -260,7 +260,7 @@
       ],
       "status": "done",
       "passes": true,
-      "notes": "QA loop 7 PASS: AC-003/004/005/006/015/018(import)/022 + REQ-018/019. One review screen; checklist all checked; no-lyrics title_only default; title-match keep_both default with number/lyrics; single clean skips review; multi-song waits for Import; library POST only \u2014 DeckBuilder untouched. AC-018 REQ-023 edit/delete deck-prompt deferred to linked-update-decks.",
+      "notes": "QA loop 7 PASS: AC-003/004/005/006/015/018(import)/022 + REQ-018/019. One review screen; checklist all checked; no-lyrics title_only default; title-match keep_both default with number/lyrics; single clean skips review; multi-song waits for Import; library POST only — DeckBuilder untouched. AC-018 REQ-023 edit/delete deck-prompt deferred to linked-update-decks.",
       "qaVerifiedAt": "2026-10-07T23:15:00.000Z"
     },
     {
@@ -301,8 +301,8 @@
       ],
       "status": "done",
       "passes": true,
-      "notes": "QA loop 11 PASS AC-008/012/016 + REQ-009/014/015/020 (AC-007 insert/link; AC-013 link portion). Search title/book/number/lyrics; shared titles first verse inline; Enter/double-click; librarySongId set; insert after current via splice (no deck replace). Optional book filter backed by Pam UX review (binding). AC-013 REQ-016 hand-edit ask deferred to linked-update-decks.",
-      "qaVerifiedAt": "2026-10-07T23:55:00.000Z"
+      "notes": "QA loop 11 PASS (independent re-verify) AC-008/012/016 + REQ-009/014/015/020 (AC-007 insert/link; AC-013 link portion). Search title/book/number/lyrics; shared titles first verse inline; Enter/double-click; librarySongId set; insert after current via splice (no deck replace). Optional book filter: Pam UX review line \"plus an optional book filter\" (binding sourceArtifact) — in scope, not invented. Brief omits book filter; Pam is binding. AC-013 REQ-016 hand-edit ask deferred to linked-update-decks.",
+      "qaVerifiedAt": "2026-10-07T22:44:00.000Z"
     },
     {
       "id": "library-page",
@@ -435,7 +435,7 @@
   ],
   "openQuestions": [],
   "blockers": [],
-  "lastUpdated": "2026-10-07T23:55:00.000Z",
+  "lastUpdated": "2026-10-07T22:44:00.000Z",
   "qaEvidence": {
     "taskId": "library-search-pick",
     "tsc": "exit 0",
@@ -444,15 +444,16 @@
       "pnpm exec tsc --noEmit",
       "CI=true pnpm exec react-scripts test --watchAll=false --runInBand --testPathPattern='(librarySongPicker|LibrarySongPicker|AddSongSlideChooser|DeckBuilder\\.unit|songs\\.server)'"
     ],
-    "bookFilter": "Pam UX review: \"plus an optional book filter\" \u2014 in scope, not invented",
-    "insertAfterCurrent": "DeckBuilder insertSongSlideChoice splices at selectedSlideIndex+1",
+    "bookFilter": "Pam UX review (ralph/specs/20261004-song-library-ux-review-pam.md): \"plus an optional book filter\" — in scope, not invented. Feature brief has no book-filter REQ; Pam is a binding sourceArtifact.",
+    "insertAfterCurrent": "DeckBuilder.insertSongSlideChoice splices at selectedSlideIndex+1 (append if none selected)",
     "noDeckReplace": true,
-    "tipSha": "6c497798b9620d8fbbf6ac6af3f3cf483802ea20",
+    "ac007Evidence": "DeckBuilder.unit AC-007: pick keeps Stay One / Stay Two and adds Picked Song",
+    "productTipSha": "6c497798b9620d8fbbf6ac6af3f3cf483802ea20",
     "loopsUsed": 11
   },
   "feedback": {
     "taskId": "library-search-pick",
-    "content": "QA PASS library-search-pick. Book filter confirmed via Pam. Selected next: library-page. Loops used: 11/24. No PR.",
-    "updatedAt": "2026-10-07T23:55:00.000Z"
+    "content": "QA PASS library-search-pick (independent). Book filter Pam-backed. Selected next: library-page. Loops used: 11/24. No PR.",
+    "updatedAt": "2026-10-07T22:44:00.000Z"
   }
 }
