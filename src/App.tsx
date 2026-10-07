@@ -5,6 +5,7 @@ import HomePage from './presentation/HomePage';
 import Presentation from './presentation/Present/Present';
 import AddSongByHand from './presentation/SongLibrary/AddSongByHand';
 import ImportSongsReview from './presentation/SongLibrary/ImportSongsReview';
+import SongLibraryPage from './presentation/SongLibrary/SongLibraryPage';
 
 import { Routes, Route, Outlet, Link } from 'react-router-dom';
 
@@ -16,6 +17,7 @@ export default function App() {
           <Route path="/" element={<Layout />}>
             <Route index element={<HomePage />} />
             <Route path="deck" element={<DeckBuilder />} />
+            <Route path="library/songs" element={<SongLibraryPage />} />
             <Route path="library/songs/add" element={<AddSongByHand />} />
             <Route path="library/songs/import" element={<ImportSongsReview />} />
           </Route>
@@ -35,6 +37,11 @@ function Layout() {
         <ul>
           <li>
             <Link to="/deck">Deck</Link>
+          </li>
+          <li>
+            <Link to="/library/songs" data-testid="nav-song-library">
+              Song library
+            </Link>
           </li>
           <li>
             <Link to="/presentation" target="_new">

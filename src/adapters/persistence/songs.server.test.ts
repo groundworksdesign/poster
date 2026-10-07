@@ -1,10 +1,14 @@
 import { initSchema } from './schema.server';
+import { upsertPresentationWithDb } from './library.server';
 import {
+  deleteSongWithDb,
   findSongsWithDb,
   getSongWithDb,
+  listPresentationDeckRowsWithDb,
   listSongsWithDb,
   upsertSongWithDb,
 } from './songs.server';
+import { countUsageBySongId } from '../../domain/librarySongUsage';
 import {
   createInMemorySqliteDb,
   sqliteDriversAvailable,
@@ -136,6 +140,57 @@ describeSqlite('hand-add then find (AC-002 / REQ-002)', () => {
     expect(findSongsWithDb(db, '124')[0]?.title).toBe('Be Still, My Soul');
     expect(findSongsWithDb(db, 'on thy side')[0]?.book).toBe('Hymns');
     expect(findSongsWithDb(db, 'no-such-song')).toEqual([]);
+  });
+});
+
+describeSqlite('song delete and used-in-N-decks (library-page / REQ-011)', () => {
+  let db: SqliteTestDb;
+
+  beforeEach(() => {
+    db = makeDb();
+  });
+
+  afterEach(() => {
+    db.close();
+  });
+
+  it('deletes a library song without touching presentations', () => {
+    const songId = upsertSongWithDb(db, {
+      title: 'Temp',
+      lyrics: { title: 'Temp', verses: [{ number: 1, lines: ['Line'] }] },
+    });
+    upsertPresentationWithDb(db, {
+      title: 'Keep Me',
+      slides: [{ type: 'song', title: 'Temp', librarySongId: songId, style: {} as any }],
+    } as any);
+
+    expect(deleteSongWithDb(db, songId)).toBe(true);
+    expect(getSongWithDb(db, songId)).toBeNull();
+    expect(listPresentationDeckRowsWithDb(db)).toHaveLength(1);
+  });
+
+  it('counts decks that link to a song via librarySongId', () => {
+    const songId = upsertSongWithDb(db, {
+      id: 'linked-1',
+      title: 'Linked',
+      lyrics: { title: 'Linked', verses: [] },
+    });
+    upsertPresentationWithDb(db, {
+      title: 'A',
+      slides: [{ type: 'song', title: 'Linked', librarySongId: songId, style: {} as any }],
+    } as any);
+    upsertPresentationWithDb(db, {
+      title: 'B',
+      slides: [{ type: 'song', title: 'Linked', librarySongId: songId, style: {} as any }],
+    } as any);
+    upsertPresentationWithDb(db, {
+      title: 'C',
+      slides: [{ type: 'general', title: 'Other', style: {} as any }],
+    } as any);
+
+    const counts = countUsageBySongId(listPresentationDeckRowsWithDb(db), [songId, 'unused']);
+    expect(counts[songId]).toBe(2);
+    expect(counts.unused).toBe(0);
   });
 });
 

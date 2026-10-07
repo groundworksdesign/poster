@@ -39,3 +39,9 @@ export function parseVersesText(text: string): SongVerse[] {
       .filter(Boolean),
   }));
 }
+
+/** Inverse of parseVersesText for edit forms. */
+export function versesToText(verses: SongVerse[] | null | undefined): string {
+  if (!Array.isArray(verses) || verses.length === 0) return '';
+  return verses.map(v => (v.lines ?? []).join('\n')).join('\n\n');
+}

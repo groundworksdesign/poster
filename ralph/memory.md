@@ -326,3 +326,10 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 
 - PASS (independent) AC-008/012/016 + REQ-009/014/015/020. Book filter Pam-backed (not invented).
 - Insert after current via splice; no deck replace. tsc+Jest green. Selected library-page. Loops 11/24.
+
+## Epic-004 DEV (loop 12) — library-page
+
+- SongLibraryPage at /library/songs: search, book filter, Add/Edit/Delete/Import, used-in-N-decks.
+- Links from Home, layout nav, Add song slide chooser. DELETE via /library/songs/delete/:id.
+- Edit/delete library-only; seam listDecksUsingSongId for linked-update-decks. passes=false.
+- tsc + Jest green. Awaiting QA. Loops 12/24.

@@ -39,7 +39,10 @@ export function uniqueBooks(songs: LibrarySong[]): string[] {
   return Array.from(books).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
 }
 
-export function filterSongsByBook(songs: LibrarySong[], bookFilter: string): LibrarySong[] {
+export function filterSongsByBook<T extends LibrarySong>(
+  songs: T[],
+  bookFilter: string,
+): T[] {
   const book = bookFilter.trim();
   if (!book) return songs;
   return songs.filter(s => (s.book ?? '').trim() === book);
