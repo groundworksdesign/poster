@@ -61,7 +61,7 @@ describeSqlite('initSchema', () => {
     );
   });
 
-  it('songs table has expected columns', () => {
+  it('songs table has expected columns including book and number', () => {
     initSchema(db);
 
     const cols = db
@@ -70,8 +70,44 @@ describeSqlite('initSchema', () => {
 
     const colNames = cols.map(c => c.name);
     expect(colNames).toEqual(
-      expect.arrayContaining(['id', 'title', 'author', 'song_json', 'created_at', 'updated_at']),
+      expect.arrayContaining([
+        'id',
+        'title',
+        'book',
+        'number',
+        'author',
+        'song_json',
+        'created_at',
+        'updated_at',
+      ]),
     );
+  });
+
+  it('migrates legacy songs table by adding book and number columns', () => {
+    db.exec(`
+      CREATE TABLE songs (
+        id TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
+        author TEXT,
+        song_json TEXT NOT NULL,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+      );
+    `);
+
+    initSchema(db);
+
+    const cols = db
+      .prepare(`PRAGMA table_info(songs)`)
+      .all() as { name: string }[];
+    const colNames = cols.map(c => c.name);
+    expect(colNames).toEqual(expect.arrayContaining(['book', 'number']));
+  });
+
+  it('fresh songs table has zero rows (AC-001)', () => {
+    initSchema(db);
+    const rows = db.prepare(`SELECT COUNT(*) AS n FROM songs`).get() as { n: number };
+    expect(Number(rows.n)).toBe(0);
   });
 
   it('assets table has expected columns', () => {

@@ -266,3 +266,10 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - Codebase: `songs` table stub unused (no book/number); DeckBuilder song import replaces whole deck; songParser has XML + song JSON only (no gathered book JSON); Present staging already title+2 lines — leave alone; no song library UI or slide songId.
 - Selected for loop 2 dev: `empty-library-schema`.
 - Standing: one task/loop; no PR until completeEpic; max 24 loops; out of scope = bundle books, transcribe copyright songs, change Present staging, replace deck on import.
+
+## Epic-004 DEV (loop 2) — empty-library-schema
+
+- Extended `songs` table with `book` + `number`; migrates legacy tables via ALTER.
+- `songs.server.ts`: list/get/upsert (SQLite) + JSON fallback in `library-json.server.ts`.
+- Domain `LibrarySong` / `LibrarySongInput`; Remix `GET /library/songs` returns [] when empty.
+- No church-book seed. Tests: schema + songs.server + library-json AC-001 / store fields. passes=false.
