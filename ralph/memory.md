@@ -315,3 +315,9 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 
 - PASS AC-007/009/014. Pick default; Also save default on; insert keeps slides.
 - Regression: Load song still replaces; Present staging green. Selected library-search-pick. Loops 9/24.
+
+## Epic-004 DEV (loop 10) — library-search-pick
+
+- LibrarySongPicker: search box + optional book filter; GET /library/songs?q=.
+- Shared titles show first verse inline; Enter / double-click pick with librarySongId.
+- Wired into AddSongSlideChooser pick panel. Tests green. passes=false.
