@@ -193,6 +193,8 @@ export default function AddSongByHand() {
       </section>
 
       <p>
+        <a href="/library/songs/import">Import songs from a file</a>
+        {' · '}
         <a href="/">Back to Home</a>
       </p>
     </main>

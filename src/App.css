@@ -342,6 +342,114 @@ ul {
   padding-left: 1.25rem;
 }
 
+/* Import songs review */
+.import-songs-page {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+  text-align: left;
+}
+
+.import-songs-page h1 {
+  margin: 0 0 0.5rem;
+  font-size: 1.75rem;
+}
+
+.import-songs-lead {
+  color: var(--color-fg-muted);
+  margin: 0 0 1.25rem;
+}
+
+.import-songs-file {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+}
+
+.import-songs-error {
+  color: var(--color-danger);
+}
+
+.import-songs-status {
+  color: var(--color-success);
+}
+
+.import-review {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.import-review-checklist ul {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 0;
+}
+
+.import-review-checklist li {
+  margin: 0.35rem 0;
+}
+
+.import-review-checklist-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.import-review-section {
+  margin-top: 1.25rem;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-surface);
+}
+
+.import-review-section label {
+  display: block;
+  margin: 0.35rem 0;
+}
+
+.import-title-match {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.import-title-match-compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin: 0.5rem 0;
+}
+
+.import-title-match-compare h4 {
+  margin: 0 0 0.25rem;
+  font-size: 0.95rem;
+}
+
+.import-confirm {
+  margin-top: 1rem;
+  font: inherit;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-accent);
+  border-radius: 4px;
+  background: var(--color-bg-surface);
+  color: var(--color-link);
+  cursor: pointer;
+}
+
+.import-confirm:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+@media (max-width: 640px) {
+  .import-title-match-compare {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Library panel (home and deck) */
 .library-panel {
   margin-top: 12px;

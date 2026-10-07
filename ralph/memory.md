@@ -291,3 +291,10 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - PASS AC-002/REQ-002. Independent tsc + Jest 27 PASS.
 - Affirmed empty-library-schema passes:true (loop-3; QA-owned).
 - Selected next: import-review-screen. Loops used: 5/24.
+
+## Epic-004 DEV (loop 6) — import-review-screen
+
+- Domain `songImport`: gathered book JSON + Poster song XML/JSON; review plan; resolve keep_both/replace/skip + no-lyrics title_only/skip.
+- UI `/library/songs/import` + POST import API writes song library only; does not touch open deck / DeckBuilder.
+- Single clean song skips review; multi-song checklist all checked; problem sections only when needed.
+- Tests: songImport + ImportSongsReview ACs. passes=false.
