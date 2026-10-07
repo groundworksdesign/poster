@@ -408,3 +408,8 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - Shared ImportReviewScreen; chooser import uses review + Also-save via /import.
 - DeckBuilder inserts one or many slides after selection. Unit + prod e2e 3 PASS.
 - passes=false. Fix 6/14.
+
+## Epic-004 FIX LOOP 7 QA — fix-add-slide-import-review FAIL
+
+- Shared ImportReviewScreen + domain helpers PASS; e2e 52+3 PASS.
+- Jest FAIL: config-path-alignment vs compound test:e2e:remix. Same task → DEV. Fix 7/14.
