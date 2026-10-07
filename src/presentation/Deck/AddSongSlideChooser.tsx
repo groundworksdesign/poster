@@ -1,6 +1,15 @@
 import React, { useRef, useState } from 'react';
+import type { LibrarySong, LibrarySongInput } from '../../domain/librarySong';
 import type { SongData } from '../../domain/PresentTypes';
-import { parseImportFileContent, type ImportCandidate } from '../../domain/songImport';
+import {
+  buildImportReviewPlan,
+  defaultImportSelections,
+  parseImportFileContent,
+  resolveImportSelections,
+  type ImportReviewPlan,
+  type ImportSelections,
+} from '../../domain/songImport';
+import ImportReviewScreen from '../SongLibrary/ImportReviewScreen';
 import { remixDataUrl, REMIX_ROUTE_ID } from '../remixDataUrl';
 import LibrarySongPicker from './LibrarySongPicker';
 
@@ -15,27 +24,79 @@ type Mode = 'pick' | 'import';
 
 type Props = {
   onCancel: () => void;
-  /** Append this song as a new slide; must not replace the deck. */
-  onChoose: (choice: SongSlideChoice) => void;
+  /** Insert song slide(s); must not replace the deck. Accepts one or many. */
+  onChoose: (choice: SongSlideChoice | SongSlideChoice[]) => void;
 };
+
+function payloadsToChoices(
+  payloads: LibrarySongInput[],
+  ids?: string[],
+): SongSlideChoice[] {
+  return payloads.map((p, i) => ({
+    lyrics: {
+      title: p.lyrics.title || p.title,
+      author: p.lyrics.author,
+      verses: p.lyrics.verses ?? [],
+    },
+    librarySongId: ids?.[i],
+    book: p.book,
+    number: p.number,
+  }));
+}
 
 /**
  * Add song slide chooser: Pick from library (default) or Import a file.
- * Import shows "Also save to my library" checked by default on the same screen.
+ * Import uses the same review screen as library import (no-lyrics / title-match).
+ * "Also save to my library" is checked by default.
  */
 export default function AddSongSlideChooser({ onCancel, onChoose }: Props) {
   const [mode, setMode] = useState<Mode>('pick');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [alsoSave, setAlsoSave] = useState(true);
-  const [importCandidates, setImportCandidates] = useState<ImportCandidate[] | null>(null);
-  const [selectedImportKey, setSelectedImportKey] = useState<string | null>(null);
+  const [plan, setPlan] = useState<ImportReviewPlan | null>(null);
+  const [selections, setSelections] = useState<ImportSelections | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const loadLibrarySongs = async (): Promise<LibrarySong[]> => {
+    const res = await fetch(remixDataUrl('/library/songs', REMIX_ROUTE_ID.librarySongs));
+    if (!res.ok) throw new Error(`Failed to load library (${res.status})`);
+    return (await res.json()) as LibrarySong[];
+  };
+
+  const savePayloads = async (payloads: LibrarySongInput[]): Promise<string[]> => {
+    const res = await fetch(
+      remixDataUrl('/library/songs/import', REMIX_ROUTE_ID.librarySongsImport),
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ songs: payloads }),
+      },
+    );
+    const data = (await res.json().catch(() => ({}))) as {
+      error?: string;
+      ids?: string[];
+    };
+    if (!res.ok) throw new Error(data.error || `Library save failed (${res.status})`);
+    return Array.isArray(data.ids) ? data.ids : [];
+  };
+
+  const finishWithPayloads = async (payloads: LibrarySongInput[]) => {
+    if (payloads.length === 0) {
+      setError('Nothing to add. Check songs or change skip choices.');
+      return;
+    }
+    let ids: string[] | undefined;
+    if (alsoSave) {
+      ids = await savePayloads(payloads);
+    }
+    onChoose(payloadsToChoices(payloads, ids));
+  };
 
   const handleImportFile = async (file: File | null) => {
     setError(null);
-    setImportCandidates(null);
-    setSelectedImportKey(null);
+    setPlan(null);
+    setSelections(null);
     if (!file) return;
     setBusy(true);
     try {
@@ -45,8 +106,16 @@ export default function AddSongSlideChooser({ onCancel, onChoose }: Props) {
         setError('No songs found in that file.');
         return;
       }
-      setImportCandidates(candidates);
-      setSelectedImportKey(candidates[0].key);
+      const existing = await loadLibrarySongs();
+      const nextPlan = buildImportReviewPlan(candidates, existing, file.name);
+      const nextSelections = defaultImportSelections(nextPlan);
+      if (!nextPlan.needsReview) {
+        const payloads = resolveImportSelections(nextPlan, nextSelections);
+        await finishWithPayloads(payloads);
+        return;
+      }
+      setPlan(nextPlan);
+      setSelections(nextSelections);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not read file.');
     } finally {
@@ -54,47 +123,13 @@ export default function AddSongSlideChooser({ onCancel, onChoose }: Props) {
     }
   };
 
-  const confirmImport = async () => {
-    if (!importCandidates || !selectedImportKey) return;
-    const chosen = importCandidates.find(c => c.key === selectedImportKey);
-    if (!chosen) return;
+  const confirmReview = async () => {
+    if (!plan || !selections) return;
     setError(null);
     setBusy(true);
     try {
-      let librarySongId: string | undefined;
-      if (alsoSave) {
-        const res = await fetch(remixDataUrl('/library/songs/save', REMIX_ROUTE_ID.librarySongsSave), {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            title: chosen.title,
-            book: chosen.book,
-            number: chosen.number,
-            author: chosen.author,
-            lyrics: {
-              title: chosen.title,
-              author: chosen.author ?? undefined,
-              verses: chosen.verses,
-            },
-          }),
-        });
-        const data = (await res.json().catch(() => ({}))) as { id?: string; error?: string };
-        if (!res.ok) {
-          setError(data.error || `Library save failed (${res.status})`);
-          return;
-        }
-        librarySongId = data.id;
-      }
-      onChoose({
-        lyrics: {
-          title: chosen.title,
-          author: chosen.author ?? undefined,
-          verses: chosen.verses,
-        },
-        librarySongId,
-        book: chosen.book,
-        number: chosen.number,
-      });
+      const payloads = resolveImportSelections(plan, selections);
+      await finishWithPayloads(payloads);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Import failed.');
     } finally {
@@ -170,39 +205,16 @@ export default function AddSongSlideChooser({ onCancel, onChoose }: Props) {
             Also save to my library
           </label>
 
-          {importCandidates ? (
-            <div data-testid="add-song-import-candidates">
-              {importCandidates.length > 1 ? (
-                <p>Choose which song to add as a slide:</p>
-              ) : null}
-              <ul>
-                {importCandidates.map(c => (
-                  <li key={c.key}>
-                    <label>
-                      <input
-                        type="radio"
-                        name="import-song"
-                        checked={selectedImportKey === c.key}
-                        onChange={() => setSelectedImportKey(c.key)}
-                        data-testid={`add-song-import-pick-${c.key}`}
-                      />{' '}
-                      <strong>{c.title}</strong>
-                      {c.book || c.number
-                        ? ` — ${[c.book, c.number].filter(Boolean).join(' ')}`
-                        : ''}
-                    </label>
-                  </li>
-                ))}
-              </ul>
-              <button
-                type="button"
-                disabled={busy || !selectedImportKey}
-                onClick={() => void confirmImport()}
-                data-testid="add-song-import-confirm"
-              >
-                {busy ? 'Adding...' : 'Add song slide'}
-              </button>
-            </div>
+          {plan && selections ? (
+            <ImportReviewScreen
+              plan={plan}
+              selections={selections}
+              busy={busy}
+              confirmLabel="Add song slide"
+              busyLabel="Adding..."
+              onChange={setSelections}
+              onConfirm={() => void confirmReview()}
+            />
           ) : null}
         </div>
       )}

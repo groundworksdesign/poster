@@ -86,4 +86,71 @@ test.describe('Song library (production Remix build)', () => {
     await expect(page.getByTestId('song-library-page')).toBeVisible({ timeout: 15000 });
     await expect(page.getByTestId('song-library-search')).toBeVisible();
   });
+
+  test('Chooser import shows review for duplicate title and no-lyrics; inserts without replacing deck', async ({
+    page,
+    baseURL,
+  }) => {
+    const base = baseURL || 'http://127.0.0.1:3010';
+
+    // Seed an existing library song so import hits title-match.
+    const seed = await page.request.post(
+      `${base}/library/songs/save?_data=routes%2Flibrary.songs.save`,
+      {
+        data: {
+          title: 'Amazing Grace',
+          book: 'Hymns',
+          number: '1',
+          lyrics: {
+            title: 'Amazing Grace',
+            verses: [{ number: 1, lines: ['Amazing grace how sweet'] }],
+          },
+        },
+      },
+    );
+    expect(seed.ok(), await seed.text()).toBeTruthy();
+
+    await page.goto('/deck', { waitUntil: 'domcontentloaded' });
+    await page.getByRole('button', { name: 'New Deck' }).click();
+    // Keep a non-song slide so we can prove import does not replace the deck.
+    await page.locator('#add-slide-type').selectOption('title');
+    await page.getByTestId('add-slide-button').click();
+    await expect(page.locator('#slides')).toContainText(/Title/i);
+
+    await page.locator('#add-slide-type').selectOption('song');
+    await page.getByTestId('add-slide-button').click();
+    await expect(page.getByTestId('add-song-slide-chooser')).toBeVisible({ timeout: 15000 });
+    await page.getByTestId('add-song-mode-import').check();
+    await expect(page.getByTestId('add-song-also-save')).toBeChecked();
+
+    const importBody = JSON.stringify({
+      book: 'Hymns',
+      songs: [
+        {
+          title: 'Amazing Grace',
+          number: '301',
+          verses: [{ number: 1, lines: ['Different lyrics here'] }],
+        },
+        { title: 'No Lyrics Song', number: '9', verses: [] },
+      ],
+    });
+    await page.setInputFiles('[data-testid="add-song-import-file"]', {
+      name: 'book.json',
+      mimeType: 'application/json',
+      buffer: Buffer.from(importBody),
+    });
+
+    await expect(page.getByTestId('import-review-screen')).toBeVisible({ timeout: 15000 });
+    await expect(page.getByTestId('import-title-match-section')).toBeVisible();
+    await expect(page.getByTestId('import-match-song-0-keep_both')).toBeChecked();
+    await expect(page.getByTestId('import-no-lyrics-section')).toBeVisible();
+    await expect(page.getByTestId('import-no-lyrics-title-only')).toBeChecked();
+
+    await page.getByTestId('import-confirm').click();
+    await expect(page.getByTestId('add-song-slide-chooser')).toHaveCount(0, { timeout: 15000 });
+    // Original title slide remains (AC-007: no deck replace).
+    await expect(page.locator('#slides')).toContainText(/Title/i);
+    await expect(page.locator('#slides')).toContainText(/Amazing Grace/i);
+    await expect(page.locator('#slides')).toContainText(/No Lyrics Song/i);
+  });
 });

@@ -1,20 +1,17 @@
 # Feedback
 
-## fix-remix-song-library-outlets QA (fix loop 5) — PASS
+## fix-add-slide-import-review DEV (fix loop 6)
 
-`<status>verified</status>`
+Chooser import goes through shared review screen. `passes:false`.
 
-### Checks
+### Changes
 
-| Check | Result |
-| --- | --- |
-| `pnpm run test:e2e:remix` remix-dev | 52 passed |
-| `pnpm run test:e2e:remix` song-library prod | 2 passed |
-| `pr.yml` remix-e2e runs `pnpm run test:e2e:remix` | yes |
-| Spec asserts Add / Import / Edit real UI + chooser link | yes |
-| `Present/` vs main | NO DIFF |
-| `stagedSongSlide.ts` vs main | NO DIFF |
+- `ImportReviewScreen` shared by library import + AddSongSlideChooser
+- Chooser: no-lyrics / title-match / keep_both; Also-save POSTs `/library/songs/import`
+- DeckBuilder inserts one or many slides after selection (AC-007)
+- Unit tests + prod e2e for duplicate title + no-lyrics
 
-### Next
+### Validation
 
-`fix-add-slide-import-review`
+- tsc 0; AddSongSlideChooser/ImportSongsReview/DeckBuilder unit PASS
+- `test:e2e:remix:song-library` 3 passed

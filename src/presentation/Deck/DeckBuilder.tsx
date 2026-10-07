@@ -755,10 +755,15 @@ export default function DeckBuilder() {
     syncSentSlideIfNeeded(newDeck);
   };
 
-  /** Insert a song slide after the current selection (append if none). Never replaces the deck. */
-  const insertSongSlideChoice = (choice: SongSlideChoice) => {
+  /** Insert song slide(s) after the current selection (append if none). Never replaces the deck. */
+  const insertSongSlideChoice = (choiceOrMany: SongSlideChoice | SongSlideChoice[]) => {
+    const choices = Array.isArray(choiceOrMany) ? choiceOrMany : [choiceOrMany];
     if (!deck) {
       setMessage('Open or create a deck before adding a song slide.');
+      setShowAddSongChooser(false);
+      return;
+    }
+    if (choices.length === 0) {
       setShowAddSongChooser(false);
       return;
     }
@@ -770,22 +775,30 @@ export default function DeckBuilder() {
       height: '100%',
       width: '100%',
     };
-    const songSlide = createSongSlide(choice.lyrics, baseStyle) as Slide;
-    (songSlide as any).id = genId();
-    if (choice.librarySongId) {
-      songSlide.librarySongId = choice.librarySongId;
-    }
     const slides = deck.slides.slice();
-    const insertAt =
+    let insertAt =
       selectedSlideIndex !== null && selectedSlideIndex >= 0
         ? selectedSlideIndex + 1
         : slides.length;
-    slides.splice(insertAt, 0, songSlide);
+    for (const choice of choices) {
+      const songSlide = createSongSlide(choice.lyrics, baseStyle) as Slide;
+      (songSlide as any).id = genId();
+      if (choice.librarySongId) {
+        songSlide.librarySongId = choice.librarySongId;
+      }
+      slides.splice(insertAt, 0, songSlide);
+      insertAt += 1;
+    }
     const newDeck = { ...deck, slides };
     setDeck(newDeck);
-    setSelectedSlideIndex(insertAt);
+    setSelectedSlideIndex(insertAt - 1);
     setShowAddSongChooser(false);
-    setMessage(`Added song slide: ${choice.lyrics.title}`);
+    const titles = choices.map(c => c.lyrics.title).join(', ');
+    setMessage(
+      choices.length === 1
+        ? `Added song slide: ${titles}`
+        : `Added ${choices.length} song slides: ${titles}`,
+    );
     syncSentSlideIfNeeded(newDeck);
   };
 

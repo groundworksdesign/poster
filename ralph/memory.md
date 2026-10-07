@@ -402,3 +402,9 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 
 - Combined e2e 52+2; pr.yml wired; Present/stagedSongSlide NO DIFF.
 - Next: fix-add-slide-import-review. Fix 5/14.
+
+## Epic-004 FIX LOOP 6 DEV — fix-add-slide-import-review
+
+- Shared ImportReviewScreen; chooser import uses review + Also-save via /import.
+- DeckBuilder inserts one or many slides after selection. Unit + prod e2e 3 PASS.
+- passes=false. Fix 6/14.
