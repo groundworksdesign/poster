@@ -356,3 +356,8 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - Present/ + stagedSongSlide.ts: NO DIFF vs main. PresentTypes: optional librarySongId only.
 - AC-011 regression: library-linked + linked-update slides still title then two lines.
 - passes=false. Awaiting QA. Loops 16/24.
+
+## Epic-004 QA (loop 17) — present-unchanged
+
+- PASS AC-011 / REQ-013. Independent Present vs main: staging NO DIFF.
+- Selected tests-song-library. Loops 17/24.
