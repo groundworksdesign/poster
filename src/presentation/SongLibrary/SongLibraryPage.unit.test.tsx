@@ -157,6 +157,30 @@ describe('SongLibraryPage (AC-017, REQ-011, used-in-N-decks)', () => {
     expect(screen.queryByTestId('update-decks-prompt')).not.toBeInTheDocument();
   });
 
+  it('AC-018 / REQ-023: unused song delete has no deck prompt', async () => {
+    const deletes: string[] = [];
+    jest.spyOn(window, 'confirm').mockReturnValue(true);
+    mockFetch((url, init) => {
+      if (url.includes('/library/songs/delete/') && init?.method === 'POST') {
+        deletes.push(url);
+        return { ok: true, id: 's2' };
+      }
+      if (url.includes('/decks')) {
+        throw new Error('unused delete must not fetch deck usage');
+      }
+      if (url.includes('usage=1')) {
+        return deletes.length ? SONGS.filter(s => s.id !== 's2') : SONGS;
+      }
+      return {};
+    });
+
+    render(<SongLibraryPage />);
+    await waitFor(() => expect(screen.getByTestId('song-library-delete-s2')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('song-library-delete-s2'));
+    await waitFor(() => expect(deletes.length).toBe(1));
+    expect(screen.queryByTestId('update-decks-prompt')).not.toBeInTheDocument();
+  });
+
   it('REQ-012/023: used song edit shows deck checkboxes; apply calls apply-decks', async () => {
     const applies: unknown[] = [];
     mockFetch((url, init) => {

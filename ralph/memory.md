@@ -361,3 +361,9 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 
 - PASS AC-011 / REQ-013. Independent Present vs main: staging NO DIFF.
 - Selected tests-song-library. Loops 17/24.
+
+## Epic-004 DEV (loop 18) — tests-song-library
+
+- AC-001..018 map in ralph/specs/20261007-ac-traceability-song-library.md; uncovered: none.
+- Gap fills: AC-008 dimensions + AC-018 unused delete. CI: tsc + Jest 58/364 PASS.
+- passes=false. Awaiting QA. Loops 18/24.
