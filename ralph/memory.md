@@ -423,3 +423,9 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 
 - tsc/Jest 365/e2e 52+3 PASS. Chooser suite 5/5 counted (net +1 explained).
 - Next: fix-json-restore-preserve-songs. Fix 9/16.
+
+## Epic-004 FIX LOOP 10 DEV — fix-json-restore-preserve-songs
+
+- JSON restore: omit `songs` → keep existing; key present → replace.
+- SQLite `replaceDb`: empty restored songs → re-insert preserved.
+- Tests: library-json + db-restore-songs (pre-epic keep + with-songs replace). passes=false. Fix 10/16.

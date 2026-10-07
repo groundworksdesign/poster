@@ -1,20 +1,22 @@
 # Feedback
 
-## fix-add-slide-import-review QA (fix loop 9) — PASS
+## fix-json-restore-preserve-songs DEV (fix loop 10) — awaiting QA
 
-`<status>verified</status>`
+`<status>pending</status>`
 
-### Checks
+### Changes
+
+- JSON: `replaceLibraryFromJsonText` keeps on-disk songs when backup omits `songs` key; present key (incl. `[]`) replaces.
+- SQLite: `replaceDb` snapshots live songs; if restored DB has zero songs, re-inserts preserved rows.
+- Tests: pre-epic backup keeps songs + restores decks; backup with songs replaces (JSON + SQLite).
+
+### Checks (DEV)
 
 | Check | Result |
 | --- | --- |
-| Shared `ImportReviewScreen` + domain helpers | PASS |
-| Chooser review / Also-save / AC-007 | PASS |
-| `AddSongSlideChooser.unit.test.tsx` in full Jest | **5/5 PASS** (net +1 to 365: AC-014 rewritten for `/import`, +1 review case) |
 | `tsc --noEmit` | exit 0 |
-| Full Jest | 58 / 365 PASS |
-| `pnpm test:e2e:remix` | 52 + 3 PASS |
+| `library-json.server` + `db-restore-songs` | 11/11 PASS |
 
 ### Next
 
-`fix-json-restore-preserve-songs`
+QA on `fix-json-restore-preserve-songs` (do not set passes until QA).

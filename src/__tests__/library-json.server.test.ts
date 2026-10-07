@@ -105,6 +105,92 @@ describe('library-json.server', () => {
     expect(jsonLib.jsonLibraryFindSongs('Hand Song')).toHaveLength(1);
     expect(jsonLib.jsonLibraryFindSongs('Unique lyric phrase xyz')[0]?.number).toBe('9');
   });
+
+  it('restore of pre-epic JSON (no songs key) keeps existing songs and restores decks', () => {
+    const songId = jsonLib.jsonLibraryUpsertSong({
+      title: 'Keep Me',
+      book: 'Hymns',
+      number: '1',
+      lyrics: { title: 'Keep Me', verses: [{ number: 1, lines: ['stay'] }] },
+    });
+    jsonLib.jsonLibraryUpsert({ ...baseDeck, title: 'Old Deck' });
+
+    const preEpicBackup = JSON.stringify({
+      presentations: [
+        {
+          id: 'restored-deck-1',
+          title: 'Restored Deck',
+          date: null,
+          location: null,
+          notes: null,
+          use_green_screen: 0,
+          deck_json: JSON.stringify({ ...baseDeck, title: 'Restored Deck' }),
+          created_at: '2026-01-01T00:00:00.000Z',
+          updated_at: '2026-01-01T00:00:00.000Z',
+        },
+      ],
+    });
+
+    jsonLib.replaceLibraryFromJsonText(preEpicBackup);
+
+    const songs = jsonLib.jsonLibraryListSongs();
+    expect(songs).toHaveLength(1);
+    expect(songs[0].id).toBe(songId);
+    expect(songs[0].title).toBe('Keep Me');
+
+    const decks = jsonLib.jsonLibraryList();
+    expect(decks).toHaveLength(1);
+    expect(decks[0].id).toBe('restored-deck-1');
+    expect(decks[0].title).toBe('Restored Deck');
+  });
+
+  it('restore of JSON backup that includes songs replaces the song library', () => {
+    jsonLib.jsonLibraryUpsertSong({
+      title: 'Old Song',
+      book: 'Hymns',
+      number: '1',
+      lyrics: { title: 'Old Song', verses: [{ number: 1, lines: ['old'] }] },
+    });
+
+    const backupWithSongs = JSON.stringify({
+      presentations: [
+        {
+          id: 'deck-with-songs',
+          title: 'Deck B',
+          date: null,
+          location: null,
+          notes: null,
+          use_green_screen: 0,
+          deck_json: JSON.stringify({ ...baseDeck, title: 'Deck B' }),
+          created_at: '2026-01-02T00:00:00.000Z',
+          updated_at: '2026-01-02T00:00:00.000Z',
+        },
+      ],
+      songs: [
+        {
+          id: 'backup-song-1',
+          title: 'From Backup',
+          book: 'Hymns',
+          number: '42',
+          author: null,
+          song_json: JSON.stringify({
+            title: 'From Backup',
+            verses: [{ number: 1, lines: ['new'] }],
+          }),
+          created_at: '2026-01-02T00:00:00.000Z',
+          updated_at: '2026-01-02T00:00:00.000Z',
+        },
+      ],
+    });
+
+    jsonLib.replaceLibraryFromJsonText(backupWithSongs);
+
+    const songs = jsonLib.jsonLibraryListSongs();
+    expect(songs).toHaveLength(1);
+    expect(songs[0].id).toBe('backup-song-1');
+    expect(songs[0].title).toBe('From Backup');
+    expect(jsonLib.jsonLibraryList()[0]?.title).toBe('Deck B');
+  });
 });
 
 

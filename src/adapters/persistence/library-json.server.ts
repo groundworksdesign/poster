@@ -200,7 +200,14 @@ export function replaceLibraryFromJsonText(text: string): void {
       throw new Error('Invalid presentation row: deck_json');
     }
   }
-  const songs = Array.isArray(file.songs) ? file.songs : [];
+  // Pre-epic-004 backups omit `songs`; keep the on-disk song library.
+  // When the key is present (including []), use the backup as-is.
+  const hasSongsKey = Object.prototype.hasOwnProperty.call(file, 'songs');
+  const songs = hasSongsKey
+    ? Array.isArray(file.songs)
+      ? file.songs
+      : []
+    : (readAll().songs ?? []);
   for (const s of songs) {
     if (!s || typeof s !== 'object' || typeof (s as StoredSong).id !== 'string') {
       throw new Error('Invalid song row');
