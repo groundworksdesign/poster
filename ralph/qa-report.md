@@ -1,14 +1,15 @@
 # Feedback
 
-## linked-update-decks QA PASS
+## present-unchanged QA PASS
 
-- AC-018 / REQ-023: Unused songs edit or delete without a deck prompt; used songs list decks with checkboxes.
-- AC-010 / REQ-012: Decks change only after the user applies a selection (skip leaves slides; apply only selected deck ids).
-- AC-013 / REQ-015: Edit sync updates linked slides and keeps `librarySongId`.
-- AC-013 / REQ-016: Hand-edited linked slides need a second yes before overwrite (edit) or remove (delete).
-- Delete never removes slides unless those decks are selected; unlinked/legacy slides untouched.
-- Persist / open / Present: after apply, `deck_json` reloads via the same path as `/library/open/:id`; `buildStagedSongSlide` stages updated lyrics (probe PASS). Present two-line staging code unchanged.
+- AC-011 / REQ-013: Song slides still stage title, then two lyric lines per stage, then blank end.
+- Independent vs `origin/main`:
+  - `src/presentation/Present/`: **NO DIFF**
+  - `src/domain/stagedSongSlide.ts`: **NO DIFF**
+  - `src/domain/applyPresentPayload.ts`: **NO DIFF**
+  - `src/domain/PresentTypes.tsx`: additive optional `librarySongId` only (link field; does not change staging)
+- Regression coverage: library-linked slide and slide after `applyLibraryEditToDeck` both keep title-then-two-lines staging (`stagedSongSlide.test.ts`).
 
-Independent evidence: `tsc --noEmit` exit 0; Jest 8 suites / 31 PASS; persist-open-Present probe PASS. Product tip: `f226bdadbe7124f381646208bf5f7a9722c3dadf`.
+Independent evidence: `tsc --noEmit` exit 0; Jest 4 suites / 17 PASS. Product tip: `3a0bc089c69e5ecbb6bb60e40b7cefe585a845e3`.
 
-Next selected: `present-unchanged`. Loops used: 15/24. Do not open a PR.
+Next selected: `tests-song-library`. Loops used: 17/24. Do not open a PR.
