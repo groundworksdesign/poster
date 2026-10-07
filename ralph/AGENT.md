@@ -72,20 +72,22 @@ No dedicated `pnpm run lint` script. ESLint is configured via `react-scripts` (`
 
 ## Loop rules
 
-- Work on the branch recorded in `ralph/task_status.json` (`ralph/epic-003-mac-present-fullscreen`).
-- Read `ralph/epic.md` and `ralph/task_status.json` before each loop.
+- Work on the branch recorded in `ralph/task_status.json` (`cursor/epic-004-song-library`).
+- Canonical status file is `ralph/task_status.json` (do not revive `ralph/task-status.json`).
+- Read `ralph/epic.md`, `ralph/task_status.json`, and binding specs under `ralph/specs/` before each loop.
 - Planning loop: search the codebase before assuming something is unimplemented; set `selected` to the single most important remaining task; no product code.
 - Dev loop: implement only the selected task. Dev never sets `passes: true`.
 - QA loop: verify against acceptance criteria; only QA sets `passes: true`; do not change product code in QA.
-- One task per loop.
-- After a task passes QA, commit on the working branch with `[skip ci]` in intermediate commit messages until release / beta PR.
-- **BETA PR EXCEPTION (Roy/Race):** Open a same-repo draft PR to `main` early enough that PR Build publishes pre-release `v*-pr.<N>` installers. Keep the PR open. Do NOT merge. Do not force-push after beta is out unless needed for CI green.
+- One task per loop. Max 24 loops for this epic.
+- After a task passes QA, commit that task on the working branch; intermediate commits use `[skip ci]`.
+- **Do not open a PR until every task passes and `completeEpic` is true.** If the platform auto-opens a PR, close it. Release persona opens one PR to `main`; Iris gates, Roy decides. Do not merge. PR title/body must not contain `[skip ci]`.
 - Do not overwrite `ralph/PROMPT_*.md` files once created; add missing prompts only.
 - Do not create a parallel `.ralph/` tree. `ralph/` is the loop harness for this epic.
+- Keep run logs/transcripts out of commits.
 
-## Epic 003 focus
+## Epic 004 focus
 
-Reliable Mac Electron Present fullscreen: native `setFullScreen`, stronger `setSimpleFullScreen` fallback, F + Escape easy exit, no auto-FS on open, no display picker, browser Present stays HTML `requestFullscreen`.
+Local song library that ships empty: hand add, one-screen file import (gathered JSON + Poster song XML/JSON), search/pick onto a new linked slide, library manage page, linked edit/delete with deck-update confirms. Present two-line staging stays unchanged. Do not bundle church books or replace the open deck on import.
 
 ## Key paths
 

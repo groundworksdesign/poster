@@ -257,3 +257,12 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - Unit 274 PASS; Electron present-hydrate-stress + import→Present→send + library hydrate PASS (xvfb).
 - All todos passes true → `completeEpic` true. Draft PR #21 stays draft.
 - Residual: Jack AppImage cold Present repeats still required for packaged sign-off.
+
+## Epic-004 planning (loop 1)
+
+- Working branch: `cursor/epic-004-song-library` (from main; not gatekeeper PR #23).
+- Canonical status: `ralph/task_status.json`. Epic-003 status + qa-report + REQ stubs archived under `ralph/archive/epic-003/`.
+- Binding specs: brief Approved v1.2 + Pam UX review under `ralph/specs/`. Brief open questions: none (Pam's listed questions answered in v1.2).
+- Codebase: `songs` table stub unused (no book/number); DeckBuilder song import replaces whole deck; songParser has XML + song JSON only (no gathered book JSON); Present staging already title+2 lines — leave alone; no song library UI or slide songId.
+- Selected for loop 2 dev: `empty-library-schema`.
+- Standing: one task/loop; no PR until completeEpic; max 24 loops; out of scope = bundle books, transcribe copyright songs, change Present staging, replace deck on import.

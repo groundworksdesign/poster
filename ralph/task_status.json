@@ -1,181 +1,294 @@
 {
-  "epic": "epic-003",
-  "branch": "ralph/epic-003-mac-present-fullscreen",
+  "epic": "epic-004",
+  "branch": "cursor/epic-004-song-library",
   "baseBranch": "main",
-  "status": "complete",
-  "loop": 4,
-  "persona": "qa",
-  "completeEpic": true,
-  "prUrl": "https://github.com/groundworksdesign/poster/pull/25",
+  "status": "in_progress",
+  "loop": 1,
+  "persona": "planning",
+  "completeEpic": false,
+  "prUrl": null,
+  "canonicalStatusFile": "ralph/task_status.json",
+  "sourceArtifacts": [
+    "ralph/specs/20261004-feature-brief-song-library.md",
+    "ralph/specs/20261004-song-library-ux-review-pam.md",
+    "ralph/epic.md"
+  ],
+  "codebaseFindings": {
+    "songsTable": "Exists in schema.server.ts (id, title, author, song_json, created_at, updated_at) but unused — no CRUD, routes, or repo reads/writes.",
+    "songDataType": "SongData has title, author?, verses[]; no book or number fields yet.",
+    "deckBuilderImport": "DeckBuilder song XML/JSON import replaces the whole deck with a one-slide deck; optional save is presentation library (/library/save), not songs table.",
+    "songParser": "parseSongXML + isSongData cover Poster song XML and song-shaped JSON; gathered book JSON parser missing.",
+    "presentStaging": "stagedSongSlide.ts already does title then two lyric lines; leave unchanged (REQ-013).",
+    "libraryUi": "No song library page, picker, search, or slide↔library song link field."
+  },
   "requirements": [
     {
       "id": "REQ-001",
-      "title": "Electron Present F uses native setFullScreen",
-      "description": "On Mac Electron, Present F enters/exits fullscreen via main-process BrowserWindow.setFullScreen, not HTML requestFullscreen.",
-      "todoIds": [
-        "ipc-fullscreen-bridge",
-        "present-f-uses-native"
-      ],
-      "status": "done"
+      "title": "Empty song library ships; books not bundled",
+      "todoIds": ["empty-library-schema"],
+      "status": "pending"
     },
     {
       "id": "REQ-002",
-      "title": "Stronger setSimpleFullScreen fallback",
-      "description": "If the system menu bar still shows after native fullscreen (or native FS cannot be used), apply setSimpleFullScreen while preserving easy exit.",
-      "todoIds": [
-        "stronger-fallback"
-      ],
-      "status": "done"
+      "title": "Add one song by hand",
+      "todoIds": ["add-song-by-hand"],
+      "status": "pending"
     },
     {
       "id": "REQ-003",
-      "title": "F and Escape always exit",
-      "description": "F and Escape always restore windowed Present; no hard kiosk that blocks easy exit.",
-      "todoIds": [
-        "easy-exit"
-      ],
-      "status": "done"
+      "title": "Import gathered JSON and Poster song XML/JSON",
+      "todoIds": ["import-review-screen"],
+      "status": "pending"
     },
     {
       "id": "REQ-004",
-      "title": "No auto-fullscreen on open",
-      "description": "Present does not enter fullscreen automatically when the window opens.",
-      "todoIds": [
-        "no-auto-on-open"
-      ],
-      "status": "done"
+      "title": "Multi-song import asks whole book or subset",
+      "todoIds": ["import-review-screen"],
+      "status": "pending"
     },
     {
       "id": "REQ-005",
-      "title": "Window-scoped only, no display picker",
-      "description": "Only existing Present windows are fullscreened on the display they already occupy; no display-picker UI.",
-      "todoIds": [
-        "window-scoped-only"
-      ],
-      "status": "done"
+      "title": "No-lyrics import asks what to do",
+      "todoIds": ["import-review-screen"],
+      "status": "pending"
     },
     {
       "id": "REQ-006",
-      "title": "Browser Present keeps HTML fullscreen",
-      "description": "Browser / Remix Present continues to use HTML requestFullscreen / exitFullscreen only.",
-      "todoIds": [
-        "present-f-uses-native",
-        "automated-checks"
-      ],
-      "status": "done"
+      "title": "Title-match prompt shows number and lyrics",
+      "todoIds": ["import-review-screen"],
+      "status": "pending"
     },
     {
       "id": "REQ-007",
-      "title": "Release notes bullet",
-      "description": "Shipping release notes mention the Mac Present fullscreen reliability fix in user-facing language.",
-      "todoIds": [
-        "release-notes-docs"
-      ],
-      "status": "done"
+      "title": "Add song slide: import or pick from library",
+      "todoIds": ["add-slide-chooser"],
+      "status": "pending"
+    },
+    {
+      "id": "REQ-008",
+      "title": "Pick inserts new slide; does not replace deck",
+      "todoIds": ["add-slide-chooser", "library-search-pick"],
+      "status": "pending"
+    },
+    {
+      "id": "REQ-009",
+      "title": "Find by title, book, or number",
+      "todoIds": ["library-search-pick"],
+      "status": "pending"
+    },
+    {
+      "id": "REQ-010",
+      "title": "Import-while-adding asks save to library",
+      "todoIds": ["add-slide-chooser"],
+      "status": "pending"
+    },
+    {
+      "id": "REQ-011",
+      "title": "Edit and delete library songs",
+      "todoIds": ["library-page"],
+      "status": "pending"
+    },
+    {
+      "id": "REQ-012",
+      "title": "Edit/delete asks about updating decks that use the song",
+      "todoIds": ["linked-update-decks"],
+      "status": "pending"
+    },
+    {
+      "id": "REQ-013",
+      "title": "Present keeps title then two lyric lines",
+      "todoIds": ["present-unchanged"],
+      "status": "pending"
+    },
+    {
+      "id": "REQ-014",
+      "title": "Shared titles can show first verse when picking",
+      "todoIds": ["library-search-pick"],
+      "status": "pending"
+    },
+    {
+      "id": "REQ-015",
+      "title": "Slide stays linked to library song",
+      "todoIds": ["library-search-pick", "linked-update-decks"],
+      "status": "pending"
+    },
+    {
+      "id": "REQ-016",
+      "title": "Ask before overwriting hand-edited linked slides",
+      "todoIds": ["linked-update-decks"],
+      "status": "pending"
+    },
+    {
+      "id": "REQ-017",
+      "title": "Also save to my library checkbox, default checked",
+      "todoIds": ["add-slide-chooser"],
+      "status": "pending"
+    },
+    {
+      "id": "REQ-018",
+      "title": "No-lyrics: title only or skip",
+      "todoIds": ["import-review-screen"],
+      "status": "pending"
+    },
+    {
+      "id": "REQ-019",
+      "title": "Title match: keep both (default), replace, skip",
+      "todoIds": ["import-review-screen"],
+      "status": "pending"
+    },
+    {
+      "id": "REQ-020",
+      "title": "Search matches lyrics too",
+      "todoIds": ["library-search-pick"],
+      "status": "pending"
+    },
+    {
+      "id": "REQ-021",
+      "title": "Library page from main menu and Add song slide",
+      "todoIds": ["library-page"],
+      "status": "pending"
+    },
+    {
+      "id": "REQ-022",
+      "title": "One review screen; skip for single clean song",
+      "todoIds": ["import-review-screen"],
+      "status": "pending"
+    },
+    {
+      "id": "REQ-023",
+      "title": "Deck-update prompt only when song is used; list decks",
+      "todoIds": ["linked-update-decks"],
+      "status": "pending"
     }
   ],
   "todos": [
     {
-      "id": "ipc-fullscreen-bridge",
-      "content": "Add Electron IPC + preload APIs so Present can request enter/exit fullscreen on its own BrowserWindow (macOS native setFullScreen; no HTML-only path on Electron).",
-      "requirementId": "REQ-001",
-      "status": "done",
-      "passes": true,
-      "notes": "QA: presentFullscreen.cjs + main IPC enter/exit/toggle/is + preload APIs; electron-main.regression asserts sender-scoped handlers.",
-      "qaVerifiedAt": "2026-09-26T14:10:00.000Z"
+      "id": "empty-library-schema",
+      "content": "Wire the unused local songs table (or equivalent) so a fresh install has an empty library; store title, book, number, lyrics, and a stable song id; do not bundle the three church books.",
+      "requirementIds": ["REQ-001"],
+      "acceptanceCriteria": ["AC-001"],
+      "status": "pending",
+      "passes": false,
+      "notes": "Schema stub exists but lacks book/number columns (or song_json contract). No song CRUD APIs yet. Unblocks every later task."
     },
     {
-      "id": "present-f-uses-native",
-      "content": "On Electron Present, F enters/exits via the bridge (native setFullScreen). Do not call requestFullscreen on Electron. Browser Present keeps HTML requestFullscreen.",
-      "requirementId": "REQ-001",
-      "status": "done",
-      "passes": true,
-      "notes": "QA: Present.fullscreen.test \u2014 Electron F \u2192 toggleFullscreen, never requestFullscreen; browser F still requestFullscreen.",
-      "qaVerifiedAt": "2026-09-26T14:10:00.000Z"
+      "id": "add-song-by-hand",
+      "content": "Add a form to create one library song at a time (title, book, number, verses) so it appears in search afterward.",
+      "requirementIds": ["REQ-002"],
+      "acceptanceCriteria": ["AC-002"],
+      "status": "pending",
+      "passes": false,
+      "notes": ""
     },
     {
-      "id": "stronger-fallback",
-      "content": "If after native fullscreen the Mac menu bar still remains visible (or native FS fails), fall back to setSimpleFullScreen (or equivalent) while preserving easy exit.",
-      "requirementId": "REQ-002",
-      "status": "done",
-      "passes": true,
-      "notes": "QA: presentFullscreen.test \u2014 native-failed and menu-bar-visible paths call setSimpleFullScreen; exit clears both.",
-      "qaVerifiedAt": "2026-09-26T14:10:00.000Z"
+      "id": "import-review-screen",
+      "content": "Import Doug's gathered JSON plus existing Poster song XML/JSON through one review screen: checklist all checked by default; no-lyrics group (title only or skip); title-match rows with keep both (default) / replace / skip. Skip review for a single clean song file.",
+      "requirementIds": ["REQ-003", "REQ-004", "REQ-005", "REQ-006", "REQ-018", "REQ-019", "REQ-022"],
+      "acceptanceCriteria": ["AC-003", "AC-004", "AC-005", "AC-006", "AC-015", "AC-018"],
+      "status": "pending",
+      "passes": false,
+      "notes": "Today import replaces the whole deck; gathered book JSON parser is missing."
     },
     {
-      "id": "easy-exit",
-      "content": "F and Escape always leave fullscreen (native or fallback) and restore the windowed Present; no hard kiosk lock.",
-      "requirementId": "REQ-003",
-      "status": "done",
-      "passes": true,
-      "notes": "QA: Escape \u2192 exitFullscreen bridge; exitPresentFullscreen clears native+simple; no setKiosk in main.",
-      "qaVerifiedAt": "2026-09-26T14:10:00.000Z"
+      "id": "add-slide-chooser",
+      "content": "When adding a song slide, offer Pick from library (default) and Import a file. Importing while adding a slide shows Also save to my library checked by default on the same screen. Chosen song becomes a new slide in the open deck and does not replace the deck.",
+      "requirementIds": ["REQ-007", "REQ-008", "REQ-010", "REQ-017"],
+      "acceptanceCriteria": ["AC-007", "AC-009", "AC-014"],
+      "status": "pending",
+      "passes": false,
+      "notes": "Pam: empty library message points to Import or Add by hand."
     },
     {
-      "id": "no-auto-on-open",
-      "content": "Opening a Present window stays windowed; fullscreen only after operator F (or explicit UI that maps to the same path).",
-      "requirementId": "REQ-004",
-      "status": "done",
-      "passes": true,
-      "notes": "QA: openPresentSessionWindow block has no setFullScreen/setSimpleFullScreen; regression test asserts.",
-      "qaVerifiedAt": "2026-09-26T14:10:00.000Z"
+      "id": "library-search-pick",
+      "content": "Library search matches title, book, number, and lyrics. Results show title, book, and number. Shared titles show the first verse inline. Enter or double-click inserts a linked slide after the current slide.",
+      "requirementIds": ["REQ-008", "REQ-009", "REQ-014", "REQ-015", "REQ-020"],
+      "acceptanceCriteria": ["AC-007", "AC-008", "AC-012", "AC-013", "AC-016"],
+      "status": "pending",
+      "passes": false,
+      "notes": "Slide type needs a library song id link field (currently only embedded lyrics)."
     },
     {
-      "id": "window-scoped-only",
-      "content": "Fullscreen applies only to existing Present BrowserWindows on the display they already occupy; no display-picker UI.",
-      "requirementId": "REQ-005",
-      "status": "done",
-      "passes": true,
-      "notes": "QA: IPC uses BrowserWindow.fromWebContents(event.sender) only; no display-picker UI.",
-      "qaVerifiedAt": "2026-09-26T14:10:00.000Z"
+      "id": "library-page",
+      "content": "Add a library page reachable from the main menu and from Add song slide, with the same search list plus Add, Edit, Delete, Import, and a used-in-N-decks count.",
+      "requirementIds": ["REQ-011", "REQ-021"],
+      "acceptanceCriteria": ["AC-010", "AC-017"],
+      "status": "pending",
+      "passes": false,
+      "notes": ""
     },
     {
-      "id": "automated-checks",
-      "content": "Add automated coverage for Electron bridge behavior (enter/exit native vs fallback routing, browser still uses HTML FS) at unit/IPC mock level Jack can extend.",
-      "requirementId": "REQ-006",
-      "status": "done",
-      "passes": true,
-      "notes": "QA: presentFullscreen.test.js + Present.fullscreen.test.tsx + electron-main.regression; full suite 45/300 PASS.",
-      "qaVerifiedAt": "2026-09-26T14:10:00.000Z"
+      "id": "linked-update-decks",
+      "content": "Keep slides linked to their library song. On edit or delete, ask about updating decks only when the song is used, list those decks with checkboxes, and ask again before overwriting slides that were edited by hand. Deleting never removes slides unless the user selects those decks.",
+      "requirementIds": ["REQ-012", "REQ-015", "REQ-016", "REQ-023"],
+      "acceptanceCriteria": ["AC-010", "AC-013", "AC-018"],
+      "status": "pending",
+      "passes": false,
+      "notes": "Existing decks without library links must keep working."
     },
     {
-      "id": "release-notes-docs",
-      "content": "Release-notes bullet for Mac Present fullscreen reliability; short note that System Settings menu-bar mode can still affect Never, with the app fallback covering stubborn cases.",
-      "requirementId": "REQ-007",
-      "status": "done",
-      "passes": true,
-      "notes": "QA: docs/release-notes-epic-003-mac-present-fullscreen.md + README Present bullet.",
-      "qaVerifiedAt": "2026-09-26T14:10:00.000Z"
+      "id": "present-unchanged",
+      "content": "Leave Present song staging as title then two lyric lines per stage. Do not change that layout in this epic.",
+      "requirementIds": ["REQ-013"],
+      "acceptanceCriteria": ["AC-011"],
+      "status": "pending",
+      "passes": false,
+      "notes": "stagedSongSlide.ts already implements the contract; task is verify-and-keep-green, not redesign."
+    },
+    {
+      "id": "tests-song-library",
+      "content": "Add tests covering AC-001 through AC-018: empty library, hand add, import formats and review defaults, pick-to-slide without replacing the deck, search including lyrics and first-verse for duplicate titles, save checkbox default, title-only empty lyrics, keep-both default, linked updates with hand-edit ask, and Present two-line staging still green.",
+      "requirementIds": [
+        "REQ-001", "REQ-002", "REQ-003", "REQ-004", "REQ-005", "REQ-006",
+        "REQ-007", "REQ-008", "REQ-009", "REQ-010", "REQ-011", "REQ-012",
+        "REQ-013", "REQ-014", "REQ-015", "REQ-016", "REQ-017", "REQ-018",
+        "REQ-019", "REQ-020", "REQ-021", "REQ-022", "REQ-023"
+      ],
+      "acceptanceCriteria": [
+        "AC-001", "AC-002", "AC-003", "AC-004", "AC-005", "AC-006",
+        "AC-007", "AC-008", "AC-009", "AC-010", "AC-011", "AC-012",
+        "AC-013", "AC-014", "AC-015", "AC-016", "AC-017", "AC-018"
+      ],
+      "status": "pending",
+      "passes": false,
+      "notes": "May accumulate coverage alongside feature tasks; final pass confirms full AC matrix."
     }
   ],
   "acceptanceCriteria": [
-    "Electron F with window.poster present never calls requestFullscreen",
-    "Electron Escape / F exit clears native and simpleFullscreen in the mock",
-    "Fallback is invoked when native path reports menu-bar still visible / failure; exit clears fallback",
-    "Browser F still uses HTML requestFullscreen",
-    "Present opens windowed (no auto-fullscreen on open)",
-    "No display-picker UI",
-    "PR / shipping release notes include a clear user-facing bullet",
-    "Do not merge; Jack is merge gate"
+    "AC-001 (REQ-001): Fresh install has zero library songs",
+    "AC-002 (REQ-002): Hand-added song is findable later",
+    "AC-003 (REQ-003): Import accepts gathered book JSON and Poster song XML/JSON",
+    "AC-004 (REQ-004, 022): Multi-song file does not import until review checklist is confirmed",
+    "AC-005 (REQ-005, 018): No-lyrics songs offer title only or skip; nothing auto-imports",
+    "AC-006 (REQ-006, 019): Title match shows number and lyrics; default keep both; also replace and skip",
+    "AC-007 (REQ-007, 008): Add song slide can import or insert without replacing other slides",
+    "AC-008 (REQ-009): Search by title, book, and number each returns matches",
+    "AC-009 (REQ-010): Saving an imported song into the library happens only after the user says yes",
+    "AC-010 (REQ-011, 012): Edit/delete available; decks update only after confirm",
+    "AC-011 (REQ-013): Present still title then two lines",
+    "AC-012 (REQ-014): Shared titles can show first verse before add",
+    "AC-013 (REQ-015, 016): Linked updates; hand-edited slides need an extra yes",
+    "AC-014 (REQ-017): Also save checkbox checked by default and saving follows the box",
+    "AC-015 (REQ-018, 019): Title-only empty lyrics; keep-both default on title match",
+    "AC-016 (REQ-020): Searching a lyric phrase finds the song",
+    "AC-017 (REQ-021): Library opens from main menu and Add song slide",
+    "AC-018 (REQ-022, 023): Clean multi-song one-click; problem sections only when needed; unused songs edit/delete without deck prompt"
   ],
   "selected": {
-    "id": null,
-    "reason": "All todos QA-passed; beta v0.1.16-pr.25 out; Jack merge gate."
+    "id": "empty-library-schema",
+    "reason": "Foundation: songs table exists but is unused and lacks book/number (or equivalent song_json contract). Every UI, import, search, and link task depends on a real empty library with stable ids. Highest unblock / lowest risk first slice."
   },
-  "lastUpdated": "2026-09-26T14:10:00.000Z",
-  "qaEvidence": {
-    "tsc": "exit 0",
-    "jest": "45 suites, 300 tests passed",
-    "commands": [
-      "pnpm exec tsc --noEmit",
-      "CI=true pnpm exec react-scripts test --watchAll=false --runInBand"
-    ],
-    "tipSha": "95c306ab6bc242d66108253331d0e762570e1134",
-    "betaRelease": "v0.1.16-pr.25"
-  },
+  "outOfScope": [
+    "Bundling the three church books in the app",
+    "Transcribing the five copyright-held songs",
+    "Changing Present two-line staging",
+    "Replacing the open deck on import"
+  ],
+  "openQuestions": [],
+  "blockers": [],
+  "lastUpdated": "2026-10-07T22:21:00.000Z",
   "feedback": {
-    "taskId": "epic-003",
-    "content": "QA PASS epic-003. Draft PR #25; beta pre-release v0.1.16-pr.25 published (Mac DMGs + portable). Jack merge gate. Do not merge.",
-    "updatedAt": "2026-09-26T14:10:00.000Z"
+    "taskId": "epic-004-planning-loop-1",
+    "content": "Loop 1 planning only. Archived epic-003 status under ralph/archive/epic-003/. Canonical status is ralph/task_status.json. Selected empty-library-schema for loop 2 dev. No PR.",
+    "updatedAt": "2026-10-07T22:21:00.000Z"
   }
 }
