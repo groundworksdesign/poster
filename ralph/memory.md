@@ -479,3 +479,8 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 
 - Iris re-gate bc4320e: apply-decks flake (UpdateDecksPrompt effect reset) + move routes/*.server.ts to remix/server/.
 - completeEpic false; passes false. 45f10ff CI noted/ignored.
+
+## Epic-004 LOOP 19 DEV amendment — hand-edit vs out-of-date
+
+- `librarySongSyncedFingerprint`: out-of-date = "Not updated to the latest library version"; hand-edit wins when both.
+- Budget max 21. passes false. Present/staged untouched.

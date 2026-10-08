@@ -3,7 +3,10 @@ import {
   applyLibraryDeleteToDeck,
   applyLibraryEditToDeck,
   countHandEditedLinkedSlides,
+  countOutOfDateLinkedSlides,
   isHandEditedLinkedSlide,
+  isOutOfDateLinkedSlide,
+  linkedSlideStatusLabel,
   linkedSlidesInDeck,
   lyricsFingerprint,
 } from './linkedSongUpdate';
@@ -22,6 +25,8 @@ const newLibrary: SongData = {
   title: 'Amazing Grace',
   verses: [{ number: 1, lines: ['Library new line'] }],
 };
+
+const baseFp = () => lyricsFingerprint(baseLyrics);
 
 function deck(slides: Deck['slides']): Deck {
   return {
@@ -213,11 +218,100 @@ describe('linkedSongUpdate (AC-010, AC-013, REQ-016)', () => {
         style: {},
         lyrics: baseLyrics,
         librarySongId: 's1',
+        librarySongSyncedFingerprint: baseFp(),
       },
     ]);
     expect(linkedSlidesInDeck(afterLink, 's1')).toHaveLength(1);
     const included = applyLibraryEditToDeck(afterLink, 's1', newLibrary, baseLyrics, true);
     expect(included.updatedCount).toBe(1);
     expect(included.deck.slides[0].lyrics?.verses[0].lines[0]).toBe('Library new line');
+    expect(included.deck.slides[0].librarySongSyncedFingerprint).toBe(
+      lyricsFingerprint(newLibrary),
+    );
+  });
+
+  it('out-of-date (skipped prior update) is not labelled edited by hand', () => {
+    // Synced to base; still showing base lyrics; library baseline has moved to newLibrary.
+    const outOfDate = {
+      type: SlideType.SONG,
+      title: 'Amazing Grace',
+      style: {},
+      lyrics: baseLyrics,
+      librarySongId: 's1',
+      librarySongSyncedFingerprint: baseFp(),
+    };
+    expect(isOutOfDateLinkedSlide(outOfDate, 's1', newLibrary)).toBe(true);
+    expect(isHandEditedLinkedSlide(outOfDate, 's1', newLibrary)).toBe(false);
+    expect(linkedSlideStatusLabel(outOfDate, 's1', newLibrary)).toBe(
+      'Not updated to the latest library version',
+    );
+    expect(countOutOfDateLinkedSlides(deck([outOfDate]), 's1', newLibrary)).toBe(1);
+    expect(countHandEditedLinkedSlides(deck([outOfDate]), 's1', newLibrary)).toBe(0);
+  });
+
+  it('hand-edited label when slide text differs from synced fingerprint', () => {
+    const hand = {
+      type: SlideType.SONG,
+      title: 'Amazing Grace',
+      style: {},
+      lyrics: editedLyrics,
+      librarySongId: 's1',
+      librarySongSyncedFingerprint: baseFp(),
+    };
+    expect(isHandEditedLinkedSlide(hand, 's1', newLibrary)).toBe(true);
+    expect(linkedSlideStatusLabel(hand, 's1', newLibrary)).toBe('edited by hand');
+  });
+
+  it('both hand-edited and out-of-date → label edited by hand', () => {
+    const both = {
+      type: SlideType.SONG,
+      title: 'Amazing Grace',
+      style: {},
+      lyrics: editedLyrics,
+      librarySongId: 's1',
+      librarySongSyncedFingerprint: baseFp(),
+    };
+    expect(isHandEditedLinkedSlide(both, 's1', newLibrary)).toBe(true);
+    expect(isOutOfDateLinkedSlide(both, 's1', newLibrary)).toBe(true);
+    expect(linkedSlideStatusLabel(both, 's1', newLibrary)).toBe('edited by hand');
+    // out-of-date count excludes hand-edited so the prompt can show both buckets
+    expect(countOutOfDateLinkedSlides(deck([both]), 's1', newLibrary)).toBe(0);
+    expect(countHandEditedLinkedSlides(deck([both]), 's1', newLibrary)).toBe(1);
+  });
+
+  it('skipping overwrite leaves out-of-date slides alone; overwrite updates them', () => {
+    const outOfDate = {
+      type: SlideType.SONG,
+      title: 'Amazing Grace',
+      style: {},
+      lyrics: baseLyrics,
+      librarySongId: 's1',
+      librarySongSyncedFingerprint: baseFp(),
+    };
+    const soft = applyLibraryEditToDeck(deck([outOfDate]), 's1', newLibrary, newLibrary, false);
+    expect(soft.updatedCount).toBe(0);
+    expect(soft.skippedHandEditedCount).toBe(1);
+    expect(soft.deck.slides[0].lyrics?.verses[0].lines[0]).toBe('Amazing grace how sweet');
+
+    const hard = applyLibraryEditToDeck(deck([outOfDate]), 's1', newLibrary, newLibrary, true);
+    expect(hard.updatedCount).toBe(1);
+    expect(hard.deck.slides[0].lyrics?.verses[0].lines[0]).toBe('Library new line');
+    expect(hard.deck.slides[0].librarySongSyncedFingerprint).toBe(lyricsFingerprint(newLibrary));
+  });
+
+  it('legacy slides without synced fingerprint still open and use baseline hand-edit check', () => {
+    const legacy = {
+      type: SlideType.SONG,
+      title: 'Amazing Grace',
+      style: {},
+      lyrics: editedLyrics,
+      librarySongId: 's1',
+    };
+    expect(isOutOfDateLinkedSlide(legacy, 's1', baseLyrics)).toBe(false);
+    expect(isHandEditedLinkedSlide(legacy, 's1', baseLyrics)).toBe(true);
+    expect(linkedSlideStatusLabel(legacy, 's1', baseLyrics)).toBe('edited by hand');
+    const result = applyLibraryEditToDeck(deck([legacy]), 's1', newLibrary, baseLyrics, true);
+    expect(result.updatedCount).toBe(1);
+    expect(result.deck.slides[0].librarySongSyncedFingerprint).toBe(lyricsFingerprint(newLibrary));
   });
 });

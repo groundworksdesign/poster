@@ -39,7 +39,7 @@ todos:
     content: "Add tests covering AC-001 through AC-018: empty library, hand add, import formats and review defaults, pick-to-slide without replacing the deck, search including lyrics and first-verse for duplicate titles, save checkbox default, title-only empty lyrics, keep-both default, linked updates with hand-edit ask, and Present two-line staging still green."
     status: completed
   - id: fix-iris-regate-followups
-    content: "Iris re-gate follow-ups: fix UpdateDecksPrompt apply-decks selection reset (MUST-FIX); move routes/*.server.ts helpers out of routes so /library/loader/server is 404 (REQ-012/023)."
+    content: "Iris re-gate follow-ups: fix UpdateDecksPrompt apply-decks selection reset (MUST-FIX); move routes/*.server.ts helpers out of routes so /library/loader/server is 404; hand-edited vs out-of-date labels (Not updated to the latest library version) via librarySongSyncedFingerprint (REQ-012/023)."
     status: pending
 isProject: false
 ---

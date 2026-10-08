@@ -17,6 +17,7 @@ import { buildStagedSongSlide, getSongStageCount } from '../../domain/stagedSong
 import { parseSongXML, createSongSlide, isSongData } from '../../domain/songParser';
 import { validateDeck } from '../../domain/deckValidator';
 import { CURRENT_SCHEMA_VERSION } from '../../domain/schema';
+import { lyricsFingerprint } from '../../domain/linkedSongUpdate';
 import { remixDataUrl, REMIX_ROUTE_ID } from '../remixDataUrl';
 import { notifyLibraryChanged } from '../libraryRefresh';
 import { openPresentForRuntime } from './openPresentWindow';
@@ -794,18 +795,20 @@ export default function DeckBuilder() {
     const slides = deck.slides.slice();
     const prev = slides[selectedSlideIndex] as any;
     if (!prev || prev.type !== SlideType.SONG) return;
+    const nextLyrics = {
+      title: lyrics.title,
+      author: lyrics.author,
+      verses: Array.isArray(lyrics.verses) ? lyrics.verses : [],
+    };
     const next = {
       ...prev,
       ...(slideEditDraft && slideEditDraft.id === prev.id ? slideEditDraft : {}),
       type: SlideType.SONG,
       title: lyrics.title || prev.title,
       subTitle: lyrics.author ? `by ${lyrics.author}` : prev.subTitle,
-      lyrics: {
-        title: lyrics.title,
-        author: lyrics.author,
-        verses: Array.isArray(lyrics.verses) ? lyrics.verses : [],
-      },
+      lyrics: nextLyrics,
       librarySongId,
+      librarySongSyncedFingerprint: lyricsFingerprint(nextLyrics),
     };
     slides[selectedSlideIndex] = next;
     const newDeck = { ...deck, slides };
@@ -845,6 +848,7 @@ export default function DeckBuilder() {
       (songSlide as any).id = genId();
       if (choice.librarySongId) {
         songSlide.librarySongId = choice.librarySongId;
+        songSlide.librarySongSyncedFingerprint = lyricsFingerprint(choice.lyrics);
       }
       slides.splice(insertAt, 0, songSlide);
       insertAt += 1;

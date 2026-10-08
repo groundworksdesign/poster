@@ -1,7 +1,7 @@
 import type { Deck, Slide, SongData } from './PresentTypes';
 import { SlideType } from './PresentTypes';
 
-/** Stable string for comparing song lyrics (hand-edit detection). */
+/** Stable string for comparing song lyrics (hand-edit / sync detection). */
 export function lyricsFingerprint(lyrics: SongData | null | undefined): string {
   if (!lyrics || typeof lyrics !== 'object') return '';
   const title = (lyrics.title ?? '').trim().toLowerCase();
@@ -15,9 +15,23 @@ export function lyricsFingerprint(lyrics: SongData | null | undefined): string {
   return JSON.stringify({ title, author, verses });
 }
 
+function slideLyrics(slide: Slide): SongData {
+  return (
+    slide.lyrics ?? {
+      title: slide.title ?? '',
+      verses: [],
+    }
+  );
+}
+
+function syncedFingerprint(slide: Slide): string | undefined {
+  const raw = slide.librarySongSyncedFingerprint;
+  return typeof raw === 'string' && raw.length > 0 ? raw : undefined;
+}
+
 /**
- * A linked slide is hand-edited when its lyrics differ from the library baseline
- * (the library song content before this edit, or current content before delete).
+ * Real user edit: slide text differs from the lyrics last synced from the library.
+ * Legacy slides (no synced fingerprint): differ from baseline (previous behavior).
  */
 export function isHandEditedLinkedSlide(
   slide: Slide | null | undefined,
@@ -25,11 +39,58 @@ export function isHandEditedLinkedSlide(
   baselineLyrics: SongData,
 ): boolean {
   if (!slide || slide.librarySongId !== songId) return false;
-  const slideLyrics = slide.lyrics ?? {
-    title: slide.title ?? '',
-    verses: [],
-  };
-  return lyricsFingerprint(slideLyrics) !== lyricsFingerprint(baselineLyrics);
+  const slideFp = lyricsFingerprint(slideLyrics(slide));
+  const synced = syncedFingerprint(slide);
+  if (synced !== undefined) {
+    return slideFp !== synced;
+  }
+  return slideFp !== lyricsFingerprint(baselineLyrics);
+}
+
+/**
+ * Declined/skipped a library update: last sync fingerprint is behind the current baseline.
+ * Independent of hand-edit (a slide can be both).
+ */
+export function isOutOfDateLinkedSlide(
+  slide: Slide | null | undefined,
+  songId: string,
+  baselineLyrics: SongData,
+): boolean {
+  if (!slide || slide.librarySongId !== songId) return false;
+  const synced = syncedFingerprint(slide);
+  if (synced === undefined) return false;
+  return synced !== lyricsFingerprint(baselineLyrics);
+}
+
+/** Slides that need an extra yes before overwrite/remove. */
+export function needsOverwriteConfirmLinkedSlide(
+  slide: Slide | null | undefined,
+  songId: string,
+  baselineLyrics: SongData,
+): boolean {
+  return (
+    isHandEditedLinkedSlide(slide, songId, baselineLyrics) ||
+    isOutOfDateLinkedSlide(slide, songId, baselineLyrics)
+  );
+}
+
+export type LinkedSlideStatusLabel =
+  | 'edited by hand'
+  | 'Not updated to the latest library version';
+
+/**
+ * Prompt label for a linked slide. Hand-edit wins when both apply.
+ */
+export function linkedSlideStatusLabel(
+  slide: Slide | null | undefined,
+  songId: string,
+  baselineLyrics: SongData,
+): LinkedSlideStatusLabel | null {
+  if (isHandEditedLinkedSlide(slide, songId, baselineLyrics)) return 'edited by hand';
+  if (isOutOfDateLinkedSlide(slide, songId, baselineLyrics)) {
+    return 'Not updated to the latest library version';
+  }
+  return null;
 }
 
 export function linkedSlidesInDeck(deck: Deck, songId: string): Slide[] {
@@ -47,13 +108,53 @@ export function countHandEditedLinkedSlides(
   ).length;
 }
 
+export function countOutOfDateLinkedSlides(
+  deck: Deck,
+  songId: string,
+  baselineLyrics: SongData,
+): number {
+  return linkedSlidesInDeck(deck, songId).filter(
+    s =>
+      isOutOfDateLinkedSlide(s, songId, baselineLyrics) &&
+      !isHandEditedLinkedSlide(s, songId, baselineLyrics),
+  ).length;
+}
+
+export function countOverwriteConfirmLinkedSlides(
+  deck: Deck,
+  songId: string,
+  baselineLyrics: SongData,
+): number {
+  return linkedSlidesInDeck(deck, songId).filter(s =>
+    needsOverwriteConfirmLinkedSlide(s, songId, baselineLyrics),
+  ).length;
+}
+
 export type ApplyEditResult = {
   deck: Deck;
   updatedCount: number;
+  /** Slides left alone because hand-edited and/or out-of-date (overwrite=false). */
   skippedHandEditedCount: number;
 };
 
-/** Sync linked slides to new library lyrics; skip hand-edited unless overwriteHandEdited. */
+function syncedSlideFromLibrary(slide: Slide, songId: string, newLyrics: SongData): Slide {
+  const lyrics: SongData = {
+    title: newLyrics.title,
+    author: newLyrics.author,
+    verses: Array.isArray(newLyrics.verses) ? newLyrics.verses : [],
+  };
+  return {
+    ...slide,
+    type: SlideType.SONG,
+    title: newLyrics.title,
+    subTitle: newLyrics.author ? `by ${newLyrics.author}` : undefined,
+    lyrics,
+    librarySongId: songId,
+    librarySongSyncedFingerprint: lyricsFingerprint(lyrics),
+  };
+}
+
+/** Sync linked slides to new library lyrics; skip hand-edited/out-of-date unless overwrite. */
 export function applyLibraryEditToDeck(
   deck: Deck,
   songId: string,
@@ -68,24 +169,11 @@ export function applyLibraryEditToDeck(
   for (let i = 0; i < slides.length; i++) {
     const slide = slides[i];
     if (!slide || slide.librarySongId !== songId) continue;
-    // Unlinked / other songs untouched (also covers legacy slides without librarySongId).
-    if (isHandEditedLinkedSlide(slide, songId, baselineLyrics) && !overwriteHandEdited) {
+    if (needsOverwriteConfirmLinkedSlide(slide, songId, baselineLyrics) && !overwriteHandEdited) {
       skippedHandEditedCount += 1;
       continue;
     }
-    const next: Slide = {
-      ...slide,
-      type: SlideType.SONG,
-      title: newLyrics.title,
-      subTitle: newLyrics.author ? `by ${newLyrics.author}` : undefined,
-      lyrics: {
-        title: newLyrics.title,
-        author: newLyrics.author,
-        verses: Array.isArray(newLyrics.verses) ? newLyrics.verses : [],
-      },
-      librarySongId: songId,
-    };
-    slides[i] = next;
+    slides[i] = syncedSlideFromLibrary(slide, songId, newLyrics);
     updatedCount += 1;
   }
 
@@ -104,7 +192,7 @@ export type ApplyDeleteResult = {
 
 /**
  * Remove linked slides for songId from the deck.
- * Hand-edited linked slides are kept unless overwriteHandEdited (user confirmed).
+ * Hand-edited / out-of-date linked slides are kept unless overwriteHandEdited.
  * Unlinked/legacy slides are never removed.
  */
 export function applyLibraryDeleteToDeck(
@@ -123,7 +211,7 @@ export function applyLibraryDeleteToDeck(
       next.push(slide);
       continue;
     }
-    if (isHandEditedLinkedSlide(slide, songId, baselineLyrics) && !overwriteHandEdited) {
+    if (needsOverwriteConfirmLinkedSlide(slide, songId, baselineLyrics) && !overwriteHandEdited) {
       skippedHandEditedCount += 1;
       next.push(slide);
       continue;

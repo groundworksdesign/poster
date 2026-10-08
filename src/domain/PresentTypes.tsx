@@ -58,6 +58,12 @@ export type Slide = {
   lyrics?: SongData;
   /** When set, this slide was added from the song library and stays linked. */
   librarySongId?: string;
+  /**
+   * Fingerprint of library lyrics when this slide was last synced (linked or updated).
+   * Used to distinguish hand-edits from skipped/out-of-date library updates.
+   * Absent on older decks — those still validate and open.
+   */
+  librarySongSyncedFingerprint?: string;
   // Optional segment helpers (backwards-compat)
   lines?: string[];
   firstVerse?: number;

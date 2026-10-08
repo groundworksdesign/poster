@@ -1,6 +1,21 @@
 import { validateDeck } from './deckValidator';
 
 describe('validateDeck', () => {
+  it('accepts older linked slides without librarySongSyncedFingerprint', () => {
+    const deck = {
+      title: 'Legacy',
+      slides: [
+        {
+          type: 'song',
+          title: 'Old link',
+          librarySongId: 's1',
+          lyrics: { title: 'Old link', verses: [{ number: 1, lines: ['a'] }] },
+        },
+      ],
+    };
+    expect(validateDeck(deck)).toBeNull();
+  });
+
   const validDeck = {
     title: 'Test Deck',
     slides: [{ type: 'general', title: 'Slide 1' }],

@@ -544,7 +544,7 @@
     },
     {
       "id": "fix-iris-regate-followups",
-      "content": "Iris re-gate follow-ups: (1) MUST-FIX apply-decks flake \u2014 UpdateDecksPrompt must not reset checkbox selection in a mount effect (useState initializer + key); SongLibraryPage test waits for checkbox checked before Apply; QA runs full SongLibraryPage.unit.test 10x + single test 10x. (2) Non-blocking: move routes/*.server.ts helpers out of routes (e.g. remix/server/) so /library/loader/server is 404; keep route ids and ?_data paths; add 404 test/e2e.",
+      "content": "Iris re-gate follow-ups: (1) MUST-FIX apply-decks flake \u2014 UpdateDecksPrompt must not reset checkbox selection in a mount effect (useState initializer + key); SongLibraryPage test waits for checkbox checked before Apply; QA runs full SongLibraryPage.unit.test 10x + single test 10x. (2) Non-blocking: move routes/*.server.ts helpers out of routes (e.g. remix/server/) so /library/loader/server is 404; keep route ids and ?_data paths; add 404 test/e2e. (3) Amendment: linked slides that only skipped a prior library update are labelled \"Not updated to the latest library version\" (not \"edited by hand\"); track hand-edited vs out-of-date separately; both still ask before overwrite; both+hand-edit shows edited by hand; legacy decks without the field still validate/open; Present/stagedSongSlide untouched.",
       "requirementIds": [
         "REQ-012",
         "REQ-023"
@@ -552,11 +552,14 @@
       "acceptanceCriteria": [
         "AC-010",
         "AC-013",
-        "AC-018"
+        "AC-018",
+        "Iris-regate-apply-flake",
+        "Iris-regate-server-route-404",
+        "Iris-regate-handedit-vs-outofdate"
       ],
       "status": "pending",
       "passes": false,
-      "notes": "DEV loop 19: UpdateDecksPrompt selection at mount + key; SongLibraryPage test waits checked; moved *.server.ts to src/adapters/remix/server/; song-library e2e asserts /library/loader/server 404. passes false for QA. Note: 45f10ff CI ignored except noted."
+      "notes": "DEV loop 19 (+ amendment): UpdateDecksPrompt selection fix; remix/server move + 404 e2e; librarySongSyncedFingerprint separates hand-edited vs out-of-date labels. passes false for QA (loops 20\u201321). Present/stagedSongSlide untouched."
     }
   ],
   "acceptanceCriteria": [
@@ -578,11 +581,12 @@
     "AC-016 (REQ-020): Searching a lyric phrase finds the song",
     "AC-017 (REQ-021): Library opens from main menu and Add song slide",
     "AC-018 (REQ-022, 023): Clean multi-song one-click; problem sections only when needed; unused songs edit/delete without deck prompt",
-    "AC-019 (REQ-024): Add slide > SONG offers scratch (blank, unlinked, no chooser) and linked (chooser); scratch Save to library via ImportReviewScreen (cancel keeps scratch; confirm links); scratch excluded from library update prompts until linked; never changed by library edit while scratch"
+    "AC-019 (REQ-024): Add slide > SONG offers scratch (blank, unlinked, no chooser) and linked (chooser); scratch Save to library via ImportReviewScreen (cancel keeps scratch; confirm links); scratch excluded from library update prompts until linked; never changed by library edit while scratch",
+    "Iris-regate: linked slide that only skipped a prior library update is labelled \"Not updated to the latest library version\" (not edited by hand); both states ask before overwrite; hand-edit wins when both"
   ],
   "selected": {
     "id": "fix-iris-regate-followups",
-    "reason": "Iris re-gate bc4320e: MUST-FIX apply-decks flake before final gate; also hide *.server route helpers."
+    "reason": "Iris re-gate follow-ups + amendment (hand-edit vs out-of-date). Loop 19 DEV amendment."
   },
   "outOfScope": [
     "Bundling the three church books in the app",
@@ -592,7 +596,7 @@
   ],
   "openQuestions": [],
   "blockers": [],
-  "lastUpdated": "2026-10-08T01:45:00.000Z",
+  "lastUpdated": "2026-10-08T02:00:00.000Z",
   "qaEvidence": {
     "taskId": "add-slide-song-scratch-or-linked",
     "tsc": "exit 0",
@@ -612,8 +616,8 @@
   },
   "feedback": {
     "taskId": "fix-iris-regate-followups",
-    "content": "Loop 19 DEV: Iris re-gate follow-ups. completeEpic false. passes false. 45f10ff CI noted/ignored. Budget continues loop 19.",
-    "updatedAt": "2026-10-08T01:45:00.000Z"
+    "content": "Loop 19 DEV amendment: hand-edited vs out-of-date wording. completeEpic false. passes false. Budget max loop 21 (20=QA+push, 21=spare).",
+    "updatedAt": "2026-10-08T02:00:00.000Z"
   },
   "fixPass": {
     "irisGate": "ralph/specs/20261007-iris-gate-pr26-fail.md",
@@ -633,8 +637,9 @@
     "loop": 19,
     "loopsUsed": 4,
     "minLoop": 16,
-    "maxLoop": 19,
+    "maxLoop": 21,
     "status": "in_progress",
-    "note45f10ffCi": "ignored except noted (Iris reopened before final gate)"
+    "note45f10ffCi": "ignored except noted (Iris reopened before final gate)",
+    "amendment": "hand-edited vs out-of-date labels (librarySongSyncedFingerprint)"
   }
 }

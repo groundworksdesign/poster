@@ -5,6 +5,8 @@ export type DeckUsageOption = {
   title: string;
   linkedSlideCount: number;
   handEditedSlideCount: number;
+  /** Skipped prior library update — not a user text edit. */
+  outOfDateSlideCount?: number;
 };
 
 type Props = {
@@ -22,9 +24,25 @@ function initialSelection(decks: DeckUsageOption[]): Record<string, boolean> {
   return init;
 }
 
+function deckStatusBits(d: DeckUsageOption): string[] {
+  const bits: string[] = [];
+  if (d.handEditedSlideCount > 0) {
+    bits.push(
+      `${d.handEditedSlideCount} edited by hand`,
+    );
+  }
+  const outOfDate = d.outOfDateSlideCount ?? 0;
+  if (outOfDate > 0) {
+    bits.push(
+      `${outOfDate} Not updated to the latest library version`,
+    );
+  }
+  return bits;
+}
+
 /**
  * REQ-012 / REQ-023: ask about updating decks only when the song is used;
- * list decks with checkboxes. REQ-016: extra confirm for hand-edited slides.
+ * list decks with checkboxes. REQ-016: extra confirm for hand-edited / out-of-date slides.
  *
  * Selection is initialized once at mount (parent should remount via `key` when
  * the prompt target changes). Do not reset selection in an effect — that races
@@ -56,6 +74,16 @@ export default function UpdateDecksPrompt({
     [decks, selected],
   );
 
+  const outOfDateInSelection = useMemo(
+    () =>
+      decks
+        .filter(d => selected[d.id])
+        .reduce((sum, d) => sum + (d.outOfDateSlideCount || 0), 0),
+    [decks, selected],
+  );
+
+  const confirmCount = handEditedInSelection + outOfDateInSelection;
+
   const toggle = (id: string) => {
     setSelected(prev => ({ ...prev, [id]: !prev[id] }));
   };
@@ -71,6 +99,17 @@ export default function UpdateDecksPrompt({
       : 'The song will be deleted from the library. Choose decks where linked slides should be removed. Unchecked decks keep their slides.';
 
   if (phase === 'hand-edit') {
+    const parts: string[] = [];
+    if (handEditedInSelection > 0) {
+      parts.push(
+        `${handEditedInSelection} edited by hand`,
+      );
+    }
+    if (outOfDateInSelection > 0) {
+      parts.push(
+        `${outOfDateInSelection} not updated to the latest library version`,
+      );
+    }
     return (
       <section
         className="update-decks-prompt"
@@ -78,11 +117,10 @@ export default function UpdateDecksPrompt({
         role="dialog"
         aria-labelledby="update-decks-hand-edit-title"
       >
-        <h2 id="update-decks-hand-edit-title">Overwrite hand-edited slides?</h2>
+        <h2 id="update-decks-hand-edit-title">Overwrite protected slides?</h2>
         <p>
-          {handEditedInSelection} linked slide
-          {handEditedInSelection === 1 ? '' : 's'} in the selected deck
-          {selectedIds.length === 1 ? '' : 's'} were edited by hand. Overwrite
+          {parts.join('; ')} in the selected deck
+          {selectedIds.length === 1 ? '' : 's'}. Overwrite
           {mode === 'delete' ? ' / remove' : ''} them too?
         </p>
         <div className="update-decks-prompt-actions">
@@ -92,7 +130,7 @@ export default function UpdateDecksPrompt({
             onClick={() => onConfirm(selectedIds, true)}
             data-testid="update-decks-overwrite-yes"
           >
-            Yes, include hand-edited
+            Yes, include them
           </button>
           <button
             type="button"
@@ -100,7 +138,7 @@ export default function UpdateDecksPrompt({
             onClick={() => onConfirm(selectedIds, false)}
             data-testid="update-decks-overwrite-no"
           >
-            No, leave hand-edited alone
+            No, leave them alone
           </button>
           <button
             type="button"
@@ -125,27 +163,33 @@ export default function UpdateDecksPrompt({
       <h2 id="update-decks-title">{heading}</h2>
       <p>{lead}</p>
       <ul className="update-decks-list" data-testid="update-decks-list">
-        {decks.map(d => (
-          <li key={d.id}>
-            <label data-testid={`update-decks-option-${d.id}`}>
-              <input
-                type="checkbox"
-                checked={Boolean(selected[d.id])}
-                onChange={() => toggle(d.id)}
-                data-testid={`update-decks-check-${d.id}`}
-              />{' '}
-              <strong>{d.title}</strong>
-              <span className="update-decks-meta">
-                {' '}
-                — {d.linkedSlideCount} linked slide
-                {d.linkedSlideCount === 1 ? '' : 's'}
-                {d.handEditedSlideCount > 0
-                  ? ` (${d.handEditedSlideCount} hand-edited)`
-                  : ''}
-              </span>
-            </label>
-          </li>
-        ))}
+        {decks.map(d => {
+          const bits = deckStatusBits(d);
+          return (
+            <li key={d.id}>
+              <label data-testid={`update-decks-option-${d.id}`}>
+                <input
+                  type="checkbox"
+                  checked={Boolean(selected[d.id])}
+                  onChange={() => toggle(d.id)}
+                  data-testid={`update-decks-check-${d.id}`}
+                />{' '}
+                <strong>{d.title}</strong>
+                <span className="update-decks-meta">
+                  {' '}
+                  — {d.linkedSlideCount} linked slide
+                  {d.linkedSlideCount === 1 ? '' : 's'}
+                  {bits.length > 0 ? (
+                    <span data-testid={`update-decks-status-${d.id}`}>
+                      {' '}
+                      ({bits.join('; ')})
+                    </span>
+                  ) : null}
+                </span>
+              </label>
+            </li>
+          );
+        })}
       </ul>
       <div className="update-decks-prompt-actions">
         <button
@@ -156,7 +200,7 @@ export default function UpdateDecksPrompt({
               onSkip();
               return;
             }
-            if (handEditedInSelection > 0) {
+            if (confirmCount > 0) {
               setPhase('hand-edit');
               return;
             }

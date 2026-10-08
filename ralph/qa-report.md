@@ -1,5 +1,12 @@
 # Feedback
 
+## LOOP 19 DEV amendment — hand-edit vs out-of-date labels
+
+`<status>pending</status>`
+
+Same task `fix-iris-regate-followups` (no new loop). Track hand-edited vs out-of-date via `librarySongSyncedFingerprint`. Prompt wording: "edited by hand" vs "Not updated to the latest library version". Both ask before overwrite; both → hand-edit label. Legacy decks without the field still validate/open. Present/stagedSongSlide untouched. Budget max loop 21. `passes` false.
+
+
 ## LOOP 19 DEV — fix-iris-regate-followups
 
 `<status>pending</status>`

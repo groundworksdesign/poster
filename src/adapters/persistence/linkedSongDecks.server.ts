@@ -3,6 +3,7 @@ import {
   applyLibraryDeleteToDeck,
   applyLibraryEditToDeck,
   countHandEditedLinkedSlides,
+  countOutOfDateLinkedSlides,
   linkedSlidesInDeck,
 } from '../../domain/linkedSongUpdate';
 import { tryGetSqliteDb } from './db.server';
@@ -19,6 +20,8 @@ export type DeckUsageDetail = {
   title: string;
   linkedSlideCount: number;
   handEditedSlideCount: number;
+  /** Behind library, not a user text edit (skipped prior update). */
+  outOfDateSlideCount: number;
 };
 
 type StoredDeck = Deck & { id?: string };
@@ -58,6 +61,7 @@ export function listDeckUsageForSong(
       title: row.title || 'Untitled',
       linkedSlideCount: linked.length,
       handEditedSlideCount: countHandEditedLinkedSlides(deck, songId, baselineLyrics),
+      outOfDateSlideCount: countOutOfDateLinkedSlides(deck, songId, baselineLyrics),
     });
   }
   return out;
