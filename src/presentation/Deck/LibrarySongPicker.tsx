@@ -12,6 +12,8 @@ import type { SongSlideChoice } from './AddSongSlideChooser';
 type Props = {
   onPick: (choice: SongSlideChoice) => void;
   onSwitchToImport?: () => void;
+  /** Empty-library / no-match: stay in panel and open scratch editor. */
+  onTypeNewSong?: () => void;
 };
 
 /**
@@ -19,7 +21,7 @@ type Props = {
  * Search matches title, book, number, and lyrics. Shared titles show first verse inline.
  * Enter or double-click inserts the focused/chosen song (linked via librarySongId).
  */
-export default function LibrarySongPicker({ onPick, onSwitchToImport }: Props) {
+export default function LibrarySongPicker({ onPick, onSwitchToImport, onTypeNewSong }: Props) {
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [bookFilter, setBookFilter] = useState('');
@@ -143,15 +145,30 @@ export default function LibrarySongPicker({ onPick, onSwitchToImport }: Props) {
       {emptyLibrary ? (
         <div data-testid="add-song-library-empty">
           <p>Your song library is empty.</p>
-          <p>
+          <p style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
             {onSwitchToImport ? (
               <button type="button" onClick={onSwitchToImport} data-testid="add-song-go-import">
-                Import a file
+                Import a song file
               </button>
             ) : null}
-            {onSwitchToImport ? ' or ' : null}
-            <a href="/library/songs/add" data-testid="add-song-go-hand">
-              Add by hand
+            {onTypeNewSong ? (
+              <button type="button" onClick={onTypeNewSong} data-testid="add-song-go-hand">
+                Type a new song
+              </button>
+            ) : (
+              <a href="/library/songs/add" data-testid="add-song-go-hand">
+                Type a new song
+              </a>
+            )}
+            <a
+              href="/library/songs"
+              data-testid="add-song-open-library"
+              onClick={e => {
+                e.preventDefault();
+                window.open('/library/songs', 'posterSongLibrary', 'width=1280,height=720');
+              }}
+            >
+              Open song library ↗
             </a>
           </p>
         </div>

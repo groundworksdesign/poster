@@ -3,7 +3,7 @@ import type { LibrarySong } from '../../domain/librarySong';
 import { parseVersesText, versesToText } from '../../domain/librarySong';
 import {
   filterSongsByBook,
-  firstVerseLine,
+  firstVerseText,
   shouldShowFirstVerse,
   uniqueBooks,
 } from '../../domain/librarySongPicker';
@@ -454,7 +454,7 @@ export default function SongLibraryPage() {
           ) : (
             visible.map(song => {
               const showVerse = shouldShowFirstVerse(song, visible);
-              const verse = showVerse ? firstVerseLine(song) : null;
+              const verse = showVerse ? firstVerseText(song) : null;
               const used = song.usedInDeckCount ?? 0;
               return (
                 <li

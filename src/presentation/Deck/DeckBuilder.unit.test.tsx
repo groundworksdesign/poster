@@ -565,12 +565,12 @@ test('AC-019: scratch Also save + title-match links via ImportReviewScreen on Sa
   await waitFor(() => expect(screen.getByTestId('import-review-screen')).toBeInTheDocument());
   expect(screen.getByTestId('import-match-scratch-save-keep_both')).toBeChecked();
   fireEvent.click(screen.getByTestId('import-confirm'));
-  await waitFor(() =>
-    expect(screen.getByTestId('slide-library-song-id')).toHaveAttribute(
-      'data-library-song-id',
-      'saved-scratch-1',
-    ),
-  );
+  // Confirm stages only — no library id until Save slide.
+  await waitFor(() => expect(screen.getByTestId('song-will-link-on-save')).toBeInTheDocument());
+  expect(screen.queryByTestId('slide-library-song-id')).not.toBeInTheDocument();
+  fireEvent.click(screen.getByTestId('save-slide-button'));
+  await waitFor(() => expect(screen.queryByTestId('pending-song-slide')).not.toBeInTheDocument());
+  expect(document.getElementById('slides')).toHaveTextContent('Amazing Grace');
 });
 
 test('REQ-026: ArrowRight does not move Present while focus is in the slide list', async () => {

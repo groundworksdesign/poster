@@ -286,14 +286,32 @@ test.describe('Song library (production Remix build)', () => {
     await page.getByTestId('song-also-save-scratch').check();
     await page.getByTestId('save-slide-button').click();
     await expect(page.getByTestId('import-review-screen')).toBeVisible({ timeout: 15000 });
+    await expect(page.getByTestId('import-title-match-section')).toBeVisible();
     await expect(page.getByTestId('import-match-scratch-save-keep_both')).toBeChecked();
+    // Confirm stages the link; library write waits for Save slide.
+    const beforeConfirmLib = await page.request.get(
+      `${base}/library/songs?_data=routes%2Flibrary.songs`,
+    );
+    const beforeConfirmCount = ((await beforeConfirmLib.json()) as unknown[]).length;
     await page.getByTestId('import-confirm').click();
-    await expect(page.getByTestId('slide-library-song-id')).toBeVisible({ timeout: 15000 });
-    const linkedId = await page.getByTestId('slide-library-song-id').getAttribute('data-library-song-id');
-    expect(linkedId).toBeTruthy();
-    expect(linkedId).not.toBe(existingId);
+    await expect(page.getByTestId('song-will-link-on-save')).toBeVisible({ timeout: 15000 });
+    const afterConfirmLib = await page.request.get(
+      `${base}/library/songs?_data=routes%2Flibrary.songs`,
+    );
+    expect(((await afterConfirmLib.json()) as unknown[]).length).toBe(beforeConfirmCount);
     await page.getByTestId('save-slide-button').click();
     await expect(page.locator('#slides')).toContainText(/Scratch Dup Title/i);
+    // Slide is linked (no longer unlinked scratch-only).
+    await expect(page.getByTestId('pending-song-slide')).toHaveCount(0);
+    const afterSaveLib = await page.request.get(
+      `${base}/library/songs?_data=routes%2Flibrary.songs`,
+    );
+    const afterSaveSongs = (await afterSaveLib.json()) as { id: string; title: string }[];
+    expect(afterSaveSongs.length).toBe(beforeConfirmCount + 1);
+    const linked = afterSaveSongs.find(
+      s => s.title === 'Scratch Dup Title' && s.id !== existingId,
+    );
+    expect(linked).toBeTruthy();
     errors.assertClean();
 
     // Linked path: pick then Save slide.
@@ -305,6 +323,59 @@ test.describe('Song library (production Remix build)', () => {
     await page.getByTestId('save-slide-button').click();
     await expect(page.locator('#slides')).toContainText(/Linked Pick Song/i);
     await expect(page.locator('#slides')).toContainText(/Scratch Dup Title/i);
+    errors.assertClean();
+    errors.detach();
+  });
+
+  test('AC-009/014: single clean file shows Also save; Cancel leaves library unchanged', async ({
+    page,
+    baseURL,
+  }) => {
+    const base = baseURL || 'http://127.0.0.1:3010';
+    const errors = attachClientErrorGuards(page);
+
+    await page.goto('/deck', { waitUntil: 'domcontentloaded' });
+    await page.getByRole('button', { name: 'New Deck' }).click();
+
+    const beforeRes = await page.request.get(
+      `${base}/library/songs?_data=routes%2Flibrary.songs`,
+    );
+    const beforeCount = ((await beforeRes.json()) as unknown[]).length;
+
+    await page.getByTestId('add-slide-button').click();
+    await page.getByTestId('add-slide-song').click();
+    await page.getByTestId('song-type-linked').click();
+    await expect(page.getByTestId('song-panel-import-file')).toBeAttached();
+
+    await page.setInputFiles('[data-testid="song-panel-import-file"]', {
+      name: 'solo.json',
+      mimeType: 'application/json',
+      buffer: Buffer.from(
+        JSON.stringify({
+          book: 'Hymns',
+          songs: [
+            {
+              title: 'Solo Clean Import',
+              number: '7',
+              verses: [{ number: 1, lines: ['Only line'] }],
+            },
+          ],
+        }),
+      ),
+    });
+
+    await expect(page.getByTestId('song-linked-card')).toBeVisible({ timeout: 15000 });
+    await expect(page.getByTestId('song-also-save-import')).toBeChecked();
+    await expect(page.getByTestId('song-will-link-on-save')).toBeVisible();
+
+    const midRes = await page.request.get(`${base}/library/songs?_data=routes%2Flibrary.songs`);
+    expect(((await midRes.json()) as unknown[]).length).toBe(beforeCount);
+
+    await page.getByTestId('slide-editor-cancel').click();
+    await expect(page.getByTestId('pending-song-slide')).toHaveCount(0);
+
+    const afterRes = await page.request.get(`${base}/library/songs?_data=routes%2Flibrary.songs`);
+    expect(((await afterRes.json()) as unknown[]).length).toBe(beforeCount);
     errors.assertClean();
     errors.detach();
   });

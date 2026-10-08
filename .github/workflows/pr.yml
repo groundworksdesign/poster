@@ -199,6 +199,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Resolve PR pre-release tag
         id: resolve
@@ -265,6 +268,19 @@ jobs:
           else
             gh release create "$TAG_NAME" --draft --prerelease --title "$TAG_NAME" \
               --notes "$NOTES" --target "$HEAD_SHA"
+          fi
+
+          # F5: force-move the git tag ref to the PR head so the tag matches
+          # release target_commitish (gh release edit --target alone leaves an old tag SHA).
+          if git rev-parse -q --verify "refs/tags/${TAG_NAME}" >/dev/null 2>&1 || \
+             git ls-remote --tags origin "refs/tags/${TAG_NAME}" | grep -q .; then
+            echo "Force-moving tag ${TAG_NAME} → ${HEAD_SHA}"
+            git tag -f "$TAG_NAME" "$HEAD_SHA"
+            git push -f origin "refs/tags/${TAG_NAME}"
+          else
+            echo "Creating tag ${TAG_NAME} → ${HEAD_SHA}"
+            git tag "$TAG_NAME" "$HEAD_SHA"
+            git push origin "refs/tags/${TAG_NAME}"
           fi
 
           echo "version=$TAG_NAME" >> "$GITHUB_OUTPUT"

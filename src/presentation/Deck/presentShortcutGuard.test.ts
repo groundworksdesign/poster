@@ -1,8 +1,13 @@
-import { shouldIgnorePresentShortcuts } from './presentShortcutGuard';
+import {
+  clearPresentShortcutPointerTarget,
+  notePresentShortcutPointerTarget,
+  shouldIgnorePresentShortcuts,
+} from './presentShortcutGuard';
 
-describe('shouldIgnorePresentShortcuts (REQ-026)', () => {
+describe('shouldIgnorePresentShortcuts (REQ-026 / N1)', () => {
   afterEach(() => {
     document.body.innerHTML = '';
+    clearPresentShortcutPointerTarget();
   });
 
   it('ignores typing fields', () => {
@@ -42,6 +47,38 @@ describe('shouldIgnorePresentShortcuts (REQ-026)', () => {
       <div data-testid="deck-slide-editor-panel"><button type="button">Save</button></div>
       <button type="button" id="outside">Open Present</button>
     `;
+    expect(shouldIgnorePresentShortcuts(document.getElementById('outside'))).toBe(false);
+  });
+
+  it('N1: ignores after pointerdown on non-focusable panel background even if activeElement is body', () => {
+    document.body.innerHTML = `
+      <div data-testid="deck-slide-editor-panel">
+        <p id="panel-bg">panel chrome</p>
+      </div>
+    `;
+    const bg = document.getElementById('panel-bg');
+    notePresentShortcutPointerTarget(bg);
+    // Simulate focus leaving the panel (click on non-focusable text).
+    expect(shouldIgnorePresentShortcuts(document.body)).toBe(true);
+  });
+
+  it('N1: ignores after pointerdown on non-focusable slide-row text', () => {
+    document.body.innerHTML = `
+      <div data-testid="deck-slides-list">
+        <span id="row-title">Amazing Grace</span>
+      </div>
+    `;
+    notePresentShortcutPointerTarget(document.getElementById('row-title'));
+    expect(shouldIgnorePresentShortcuts(document.body)).toBe(true);
+  });
+
+  it('N1: click outside clears the deck-ui latch', () => {
+    document.body.innerHTML = `
+      <div data-testid="deck-slide-editor-panel"><p id="panel-bg">x</p></div>
+      <button type="button" id="outside">Open Present</button>
+    `;
+    notePresentShortcutPointerTarget(document.getElementById('panel-bg'));
+    notePresentShortcutPointerTarget(document.getElementById('outside'));
     expect(shouldIgnorePresentShortcuts(document.getElementById('outside'))).toBe(false);
   });
 });

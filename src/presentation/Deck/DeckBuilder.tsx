@@ -23,7 +23,10 @@ import { notifyLibraryChanged } from '../libraryRefresh';
 import { openPresentForRuntime } from './openPresentWindow';
 import type { SongSlideChoice } from './AddSongSlideChooser';
 import SongSlideEditPanel, { type SongPanelCommit } from './SongSlideEditPanel';
-import { shouldIgnorePresentShortcuts } from './presentShortcutGuard';
+import {
+  notePresentShortcutPointerTarget,
+  shouldIgnorePresentShortcuts,
+} from './presentShortcutGuard';
 import { versesToText } from '../../domain/librarySong';
 
 export default function DeckBuilder() {
@@ -130,9 +133,34 @@ export default function DeckBuilder() {
 
   // Keyboard shortcut handler ref -- always reflects latest state without stale closures
   const keyHandlerRef = useRef<(e: KeyboardEvent) => void>();
+  const saveSlideEditsRef = useRef<() => Promise<void>>(async () => {});
   keyHandlerRef.current = (e: KeyboardEvent) => {
-    // Never steer Present while focus is in the slide list or slide edit panel (REQ-026).
-    if (shouldIgnorePresentShortcuts(document.activeElement)) return;
+    // Never steer Present while focus/click is in the slide list or edit panel (REQ-026 / N1).
+    if (shouldIgnorePresentShortcuts(e.target) || shouldIgnorePresentShortcuts(document.activeElement)) {
+      // Still allow Ctrl/Cmd+Enter Save when the ignore is only for Present arrows.
+      if (!((e.ctrlKey || e.metaKey) && e.key === 'Enter')) return;
+    }
+
+    // Panel Save slide: Ctrl/Cmd+Enter (search results handled inside the panel / picker).
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      const inPanel =
+        e.target instanceof Element &&
+        Boolean(e.target.closest('[data-testid="deck-slide-editor-panel"]'));
+      const inSearch =
+        e.target instanceof Element &&
+        Boolean(e.target.closest('[data-testid="library-song-picker"]'));
+      if (inSearch) return; // Roy decision 5: stop on card only
+      if (inPanel && slideEditDraft) {
+        e.preventDefault();
+        void saveSlideEditsRef.current();
+        return;
+      }
+      return;
+    }
+
+    if (shouldIgnorePresentShortcuts(e.target) || shouldIgnorePresentShortcuts(document.activeElement)) {
+      return;
+    }
 
     if (!deck) return;
     if (e.key === 'ArrowRight' || e.key === 'PageDown') {
@@ -152,8 +180,13 @@ export default function DeckBuilder() {
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => keyHandlerRef.current?.(e);
+    const onPointerDown = (e: PointerEvent) => notePresentShortcutPointerTarget(e.target);
     window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
+    window.addEventListener('pointerdown', onPointerDown, true);
+    return () => {
+      window.removeEventListener('keydown', handler);
+      window.removeEventListener('pointerdown', onPointerDown, true);
+    };
   }, []);
 
   // Previously the builder auto-sent status messages to the presenter when the local `message` state
@@ -338,6 +371,21 @@ export default function DeckBuilder() {
     setSlideEditDraft((prev: any) => (prev ? { ...prev, style: {} } : prev));
   };
 
+  const applySongCommitToDraft = (draft: any, commit: SongPanelCommit) => ({
+    ...draft,
+    title: commit.lyrics.title || draft.title,
+    subTitle: commit.lyrics.author ? `by ${commit.lyrics.author}` : draft.subTitle,
+    lyrics: commit.lyrics,
+    librarySongId: commit.librarySongId,
+    book: commit.book ?? draft.book,
+    number: commit.number ?? draft.number,
+    librarySongSyncedFingerprint: commit.librarySongId
+      ? lyricsFingerprint(commit.lyrics)
+      : commit.librarySongId === undefined && !commit.alsoSavedToLibrary
+        ? undefined
+        : draft.librarySongSyncedFingerprint,
+  });
+
   const saveSlideEdits = async () => {
     if (!deck || !slideEditDraft) return;
 
@@ -349,7 +397,8 @@ export default function DeckBuilder() {
       }
       const commit = await songCommitRef.current();
       if (!commit) {
-        setMessage('Song slide is not ready to save yet');
+        // Review required or not ready — keep panel open; do not insert.
+        setMessage('Resolve library save choices, then Save slide again.');
         return;
       }
       setPendingSongId(null);
@@ -362,18 +411,56 @@ export default function DeckBuilder() {
     let draft = slideEditDraft;
     if (draft.type === SlideType.SONG && songCommitRef.current) {
       const commit = await songCommitRef.current();
-      if (commit && !Array.isArray(commit)) {
-        draft = {
-          ...draft,
-          title: commit.lyrics.title || draft.title,
-          subTitle: commit.lyrics.author ? `by ${commit.lyrics.author}` : draft.subTitle,
-          lyrics: commit.lyrics,
-          librarySongId: commit.librarySongId,
-          librarySongSyncedFingerprint: commit.librarySongId
-            ? lyricsFingerprint(commit.lyrics)
-            : draft.librarySongSyncedFingerprint,
-        };
+      // null = panel opened inline review; stay open and do NOT write the old draft.
+      if (commit === null) {
+        setMessage('Resolve library save choices, then Save slide again.');
+        return;
       }
+      if (Array.isArray(commit)) {
+        // Multi-song import on an existing slide: replace current with first, insert rest after.
+        if (commit.length === 0) return;
+        draft = applySongCommitToDraft(draft, commit[0]);
+        const slides = deck.slides.slice();
+        const prevSlide = slides[selectedSlideIndex] as any;
+        slides[selectedSlideIndex] = draft;
+        let insertAt = selectedSlideIndex + 1;
+        const baseStyle = deck.slideStyles?.[SlideType.SONG] ?? {
+          backgroundColor: '#000000',
+          color: '#ffffff',
+          fontFamily: 'Arial, sans-serif',
+          fontSize: '28px',
+          height: '100%',
+          width: '100%',
+        };
+        for (const extra of commit.slice(1)) {
+          const songSlide = createSongSlide(extra.lyrics, baseStyle) as Slide;
+          (songSlide as any).id = genId();
+          if (extra.librarySongId) {
+            songSlide.librarySongId = extra.librarySongId;
+            songSlide.librarySongSyncedFingerprint = lyricsFingerprint(extra.lyrics);
+          }
+          slides.splice(insertAt, 0, songSlide);
+          insertAt += 1;
+        }
+        const newDeck = { ...deck, slides };
+        setDeck(newDeck);
+        setSelectedSlideIndex(selectedSlideIndex);
+        const slideId = draft.id as string | undefined;
+        if (slideId && draft.lyrics !== prevSlide?.lyrics) {
+          setSongLastStagedById(s => {
+            const next = { ...s };
+            delete next[slideId];
+            return next;
+          });
+        }
+        syncSentSlideIfNeeded(newDeck);
+        setMessage(
+          commit.length === 1 ? 'Slide saved' : `Slide saved; added ${commit.length - 1} more song slide(s)`,
+        );
+        collapseSlideEditor();
+        return;
+      }
+      draft = applySongCommitToDraft(draft, commit);
     }
     const slides = deck.slides.slice();
     const prevSlide = slides[selectedSlideIndex] as any;
@@ -392,6 +479,7 @@ export default function DeckBuilder() {
     setMessage('Slide saved');
     collapseSlideEditor();
   };
+  saveSlideEditsRef.current = saveSlideEdits;
 
   const getResolvedPresentIndex = (): number => {
     if (!deck) return -1;
@@ -696,7 +784,7 @@ export default function DeckBuilder() {
     }
     const id = genId();
     setPendingSongId(id);
-    setSelectedSlideIndex(null);
+    // Keep selectedSlideIndex so the pending row inserts after the selection.
     setSlideEditDraft({
       id,
       type: SlideType.SONG,
@@ -1050,9 +1138,6 @@ export default function DeckBuilder() {
         <button id="export" onClick={handleExportClick}>Export</button>
         <button id="save" onClick={handleSaveToLibrary} disabled={!deck}>Save</button>
         <button onClick={createNewDeck}>New Deck</button>
-        <button onClick={startSong} disabled={!deck || !isSongMode}>Start Song</button>
-        <button onClick={rewindSong} disabled={!deck || !isSongMode}>Prev 2 Lines</button>
-        <button onClick={advanceSong} disabled={!deck || !isSongMode}>Next 2 Lines</button>
         <button
           type="button"
           data-testid="open-present"
@@ -1242,6 +1327,7 @@ export default function DeckBuilder() {
               type="button"
               data-testid="add-slide-button"
               aria-expanded={addSlideMenuOpen}
+              aria-haspopup="menu"
               onClick={() => {
                 const sel = document.getElementById('add-slide-type') as HTMLSelectElement | null;
                 // Older tests set #add-slide-type then click this button.
@@ -1252,15 +1338,60 @@ export default function DeckBuilder() {
                 }
                 setAddSlideMenuOpen(o => !o);
               }}
+              onKeyDown={e => {
+                if (!addSlideMenuOpen) return;
+                const map: Record<string, SlideType> = {
+                  s: SlideType.SONG,
+                  S: SlideType.SONG,
+                  t: SlideType.TITLE,
+                  T: SlideType.TITLE,
+                  g: SlideType.GENERAL,
+                  G: SlideType.GENERAL,
+                  i: SlideType.IMAGE,
+                  I: SlideType.IMAGE,
+                };
+                if (map[e.key]) {
+                  e.preventDefault();
+                  addSlide(map[e.key]);
+                }
+              }}
             >
-              + Add slide
+              + Add slide ▾
             </button>
             {addSlideMenuOpen ? (
-              <div data-testid="add-slide-menu" role="menu" style={{ display: 'flex', gap: 6, marginTop: 4 }}>
-                <button type="button" role="menuitem" data-testid="add-slide-song" onClick={() => addSlide(SlideType.SONG)}>Song</button>
-                <button type="button" role="menuitem" data-testid="add-slide-title" onClick={() => addSlide(SlideType.TITLE)}>Title</button>
-                <button type="button" role="menuitem" data-testid="add-slide-general" onClick={() => addSlide(SlideType.GENERAL)}>General</button>
-                <button type="button" role="menuitem" data-testid="add-slide-image" onClick={() => addSlide(SlideType.IMAGE)}>Image</button>
+              <div
+                data-testid="add-slide-menu"
+                role="menu"
+                style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 4, alignItems: 'stretch' }}
+                onKeyDown={e => {
+                  const map: Record<string, SlideType> = {
+                    s: SlideType.SONG,
+                    S: SlideType.SONG,
+                    t: SlideType.TITLE,
+                    T: SlideType.TITLE,
+                    g: SlideType.GENERAL,
+                    G: SlideType.GENERAL,
+                    i: SlideType.IMAGE,
+                    I: SlideType.IMAGE,
+                  };
+                  if (map[e.key]) {
+                    e.preventDefault();
+                    addSlide(map[e.key]);
+                  }
+                }}
+              >
+                <button type="button" role="menuitem" data-testid="add-slide-song" onClick={() => addSlide(SlideType.SONG)}>
+                  ♪ Song <kbd>S</kbd>
+                </button>
+                <button type="button" role="menuitem" data-testid="add-slide-title" onClick={() => addSlide(SlideType.TITLE)}>
+                  Title <kbd>T</kbd>
+                </button>
+                <button type="button" role="menuitem" data-testid="add-slide-general" onClick={() => addSlide(SlideType.GENERAL)}>
+                  General <kbd>G</kbd>
+                </button>
+                <button type="button" role="menuitem" data-testid="add-slide-image" onClick={() => addSlide(SlideType.IMAGE)}>
+                  Image <kbd>I</kbd>
+                </button>
               </div>
             ) : null}
             {/* Compat for older tests that set #add-slide-type then click Add Slide */}
@@ -1283,22 +1414,24 @@ export default function DeckBuilder() {
           {!deck && <p>No deck loaded yet.</p>}
           <div id="slides">
             <ul>
-              {pendingSongId ? (
-                <li
-                  key={pendingSongId}
-                  className="deck-slide-item deck-slide-item--pending"
-                  data-testid="pending-song-slide"
-                  style={{ border: '1px dashed #06c' }}
-                >
-                  <div className="deck-slide-row">
-                    <strong>·</strong>
-                    <div className="deck-slide-row-title-wrap">
-                      <span className="deck-slide-row-title">New song slide (not saved)</span>
+              {(() => {
+                const pendingRow = pendingSongId ? (
+                  <li
+                    key={pendingSongId}
+                    className="deck-slide-item deck-slide-item--pending"
+                    data-testid="pending-song-slide"
+                    style={{ border: '1px dashed #06c' }}
+                  >
+                    <div className="deck-slide-row">
+                      <strong>·</strong>
+                      <div className="deck-slide-row-title-wrap">
+                        <span className="deck-slide-row-title">New song slide (not saved)</span>
+                      </div>
                     </div>
-                  </div>
-                </li>
-              ) : null}
-              {deck?.slides.map((slide: any, index: number) => {
+                  </li>
+                ) : null;
+                const slideItems =
+                  deck?.slides.map((slide: any, index: number) => {
                 const slideId = (slide as any).id as string | undefined;
                 const showingSlideId = getShowingSlideId();
                 const isShowing = !!slideId && slideId === showingSlideId;
@@ -1412,7 +1545,26 @@ export default function DeckBuilder() {
                   </div>
                 </li>
                 );
-              })}
+                  }) ?? [];
+                const nodes: React.ReactNode[] = [];
+                if (pendingSongId && (selectedSlideIndex === null || selectedSlideIndex < 0)) {
+                  // No selection: pending at end (after all slides).
+                  nodes.push(...slideItems);
+                  nodes.push(pendingRow);
+                } else {
+                  slideItems.forEach((item, index) => {
+                    nodes.push(item);
+                    if (pendingSongId && selectedSlideIndex === index) {
+                      nodes.push(pendingRow);
+                    }
+                  });
+                  // Pending with selection but empty deck: still show pending.
+                  if (pendingSongId && slideItems.length === 0) {
+                    nodes.push(pendingRow);
+                  }
+                }
+                return nodes;
+              })()}
             </ul>
           </div>
         </div>
@@ -1432,7 +1584,7 @@ export default function DeckBuilder() {
                     else collapseSlideEditor();
                   }}
                 >
-                  ×
+                  ✕ Close
                 </button>
               </div>
               {(() => {
@@ -1497,12 +1649,22 @@ export default function DeckBuilder() {
                               }
                             : null
                         }
+                        linkedFingerprint={slide.librarySongSyncedFingerprint ?? null}
                         onCommitReadyChange={setSongCommitReady}
+                        onRequestSaveSlide={() => void saveSlideEdits()}
                         getCommitRef={songCommitRef}
                       />
                     )}
 
-                    <h4>Style (effective shown; overrides saved to slide.style)</h4>
+                    <details
+                      data-testid="slide-style-section"
+                      open={slide.type !== SlideType.SONG}
+                    >
+                    <summary>
+                      <h4 style={{ display: 'inline' }}>
+                        Style (effective shown; overrides saved to slide.style)
+                      </h4>
+                    </summary>
                     {(() => {
                       const effective = resolveSlideStyle(deck, slide);
                       const textStyleKeys: Array<'backgroundColor' | 'color' | 'fontFamily' | 'fontSize'> = [
@@ -1558,6 +1720,11 @@ export default function DeckBuilder() {
                             </select>
                             <button type="button" onClick={() => resetDraftStyleField('verticalAlign')} style={{ marginLeft: '8px' }}>Reset</button>
                           </div>
+                          <button onClick={resetAllDraftStyleOverrides}>Reset all overrides</button>
+                        </div>
+                      );
+                    })()}
+                    </details>
                           <div className="deck-slide-editor-footer-actions">
                             {slide.type === SlideType.SONG && slide.lyrics && slide.id ? (
                               <>
@@ -1586,7 +1753,6 @@ export default function DeckBuilder() {
                                 </button>
                               </>
                             ) : null}
-                            <button onClick={resetAllDraftStyleOverrides}>Reset all overrides</button>
                             {!pendingSongId && typeof selectedSlideIndex === 'number' ? (
                               <>
                                 <button onClick={() => duplicateSlide(selectedSlideIndex)}>Duplicate</button>
@@ -1610,12 +1776,9 @@ export default function DeckBuilder() {
                               disabled={Boolean(pendingSongId) && !songCommitReady}
                               onClick={() => void saveSlideEdits()}
                             >
-                              Save slide
+                              Save slide (Ctrl+Enter)
                             </button>
                           </div>
-                        </div>
-                      );
-                    })()}
                   </div>
                 );
               })()}
