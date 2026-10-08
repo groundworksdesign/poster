@@ -4,11 +4,22 @@ import { test, expect } from '@playwright/test';
  * REQ-002 single Home: Open Presentation opens a deck; Home stays;
  * Home does not launch bare /presentation without a session.
  */
+async function waitForHomeHydrated(page: import('@playwright/test').Page) {
+  await expect(page.getByRole('heading', { name: 'Poster', level: 1 })).toBeVisible();
+  // Client hydrate attaches openDeckWindow; clicking before that does a same-tab
+  // navigation and context.waitForEvent('page') never fires (CI flake).
+  await page.waitForFunction(
+    () => document.documentElement.dataset.themeReady === '1',
+    undefined,
+    { timeout: 15000 },
+  );
+}
+
 test.describe('single Home / Open Presentation', () => {
   test('Open Presentation opens /deck while Home stays put', async ({ context, page, baseURL }) => {
     const base = baseURL || 'http://127.0.0.1:3000';
     await page.goto(`${base}/`, { waitUntil: 'domcontentloaded' });
-    await expect(page.getByRole('heading', { name: 'Poster', level: 1 })).toBeVisible();
+    await waitForHomeHydrated(page);
 
     const openPresentation = page.getByTestId('open-presentation');
     await expect(openPresentation).toHaveAttribute('href', '/deck');
