@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
 export type DeckUsageOption = {
   id: string;
@@ -16,9 +16,19 @@ type Props = {
   onSkip: () => void;
 };
 
+function initialSelection(decks: DeckUsageOption[]): Record<string, boolean> {
+  const init: Record<string, boolean> = {};
+  for (const d of decks) init[d.id] = false;
+  return init;
+}
+
 /**
  * REQ-012 / REQ-023: ask about updating decks only when the song is used;
  * list decks with checkboxes. REQ-016: extra confirm for hand-edited slides.
+ *
+ * Selection is initialized once at mount (parent should remount via `key` when
+ * the prompt target changes). Do not reset selection in an effect — that races
+ * with fast checkbox + Apply clicks in full-file Jest runs.
  */
 export default function UpdateDecksPrompt({
   mode,
@@ -28,19 +38,10 @@ export default function UpdateDecksPrompt({
   onConfirm,
   onSkip,
 }: Props) {
-  const [selected, setSelected] = useState<Record<string, boolean>>(() => {
-    const init: Record<string, boolean> = {};
-    for (const d of decks) init[d.id] = false;
-    return init;
-  });
+  const [selected, setSelected] = useState<Record<string, boolean>>(() =>
+    initialSelection(decks),
+  );
   const [phase, setPhase] = useState<'choose' | 'hand-edit'>('choose');
-
-  useEffect(() => {
-    const init: Record<string, boolean> = {};
-    for (const d of decks) init[d.id] = false;
-    setSelected(init);
-    setPhase('choose');
-  }, [decks]);
 
   const selectedIds = useMemo(
     () => decks.filter(d => selected[d.id]).map(d => d.id),

@@ -474,3 +474,8 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - tsc 0; Jest 59/375; build:remix 0; e2e remix 52+4; electron xvfb 12.
 - Present/ + stagedSongSlide NO DIFF vs main. PR #26 only. completeEpic true. No merge.
 
+
+## Epic-004 LOOP 19 DEV — fix-iris-regate-followups
+
+- Iris re-gate bc4320e: apply-decks flake (UpdateDecksPrompt effect reset) + move routes/*.server.ts to remix/server/.
+- completeEpic false; passes false. 45f10ff CI noted/ignored.

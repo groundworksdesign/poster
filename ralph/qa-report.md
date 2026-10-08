@@ -1,5 +1,21 @@
 # Feedback
 
+## LOOP 19 DEV — fix-iris-regate-followups
+
+`<status>pending</status>`
+
+Iris re-gate on bc4320e (18 ACs PASS) found follow-ups; MUST-FIX apply-decks flake before final gate.
+
+### DEV
+
+- `UpdateDecksPrompt`: selection via useState initializer only; parent remounts with `key` (no effect reset).
+- `SongLibraryPage.unit.test`: wait for checkbox checked + Apply label before click.
+- Moved `routes/*.server.ts` → `src/adapters/remix/server/`; route ids / `?_data` unchanged.
+- Prod e2e: `/library/loader/server` → 404.
+
+`passes` false. `completeEpic` false. 45f10ff CI noted/ignored. No merge.
+
+
 ## LOOP 18 FINAL QA — add-slide-song-scratch-or-linked + epic
 
 `<status>PASS</status>`

@@ -365,6 +365,9 @@ export default function SongLibraryPage() {
 
       {deckPrompt ? (
         <UpdateDecksPrompt
+          key={`${deckPrompt.mode}:${deckPrompt.songId}:${deckPrompt.decks
+            .map(d => d.id)
+            .join(',')}`}
           mode={deckPrompt.mode}
           songTitle={deckPrompt.songTitle}
           decks={deckPrompt.decks}

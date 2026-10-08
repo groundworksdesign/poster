@@ -38,6 +38,12 @@ function attachClientErrorGuards(page: Page) {
 }
 
 test.describe('Song library (production Remix build)', () => {
+  test('Helper *.server modules are not exposed as routes', async ({ page, baseURL }) => {
+    const base = baseURL || 'http://127.0.0.1:3010';
+    const res = await page.request.get(`${base}/library/loader/server`);
+    expect(res.status(), await res.text()).toBe(404);
+  });
+
   test('Home > Song library > Add, Import, and Edit render real UI', async ({ page, baseURL }) => {
     const base = baseURL || 'http://127.0.0.1:3010';
     const errors = attachClientErrorGuards(page);
