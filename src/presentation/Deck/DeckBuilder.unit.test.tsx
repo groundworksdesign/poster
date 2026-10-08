@@ -198,10 +198,15 @@ test('import-save prompt appears after valid JSON deck import', async () => {
   await waitFor(() => expect(screen.getByTestId('import-save-prompt')).toBeInTheDocument());
 });
 
-test('import-save prompt appears after valid song JSON import', async () => {
+test('AC-020: loading song JSON via toolbar adds a song slide (does not replace)', async () => {
   render(<DeckBuilder />);
+  await loadFile(makeJsonFile(VALID_DECK));
+  await waitFor(() => expect(screen.getByText('Slide 1')).toBeInTheDocument());
+  // Dismiss deck-library save prompt from the JSON deck load so it does not confuse assertions.
+  fireEvent.click(screen.getByRole('button', { name: /skip/i }));
   await loadFile(makeJsonFile(VALID_SONG_JSON, 'song.json'));
-  await waitFor(() => expect(screen.getByTestId('import-save-prompt')).toBeInTheDocument());
+  await waitFor(() => expect(screen.getByText('My Song')).toBeInTheDocument());
+  expect(screen.getByText('Slide 1')).toBeInTheDocument();
 });
 
 test('clicking Skip dismisses the import-save prompt without calling /library/save', async () => {
@@ -245,12 +250,16 @@ test('import validation error does not show import-save prompt', async () => {
   expect(screen.queryByTestId('import-save-prompt')).not.toBeInTheDocument();
 });
 
-test('import-save prompt appears after valid XML song import', async () => {
+test('AC-020: loading song XML via toolbar adds a song slide', async () => {
   render(<DeckBuilder />);
+  await loadFile(makeJsonFile(VALID_DECK));
+  await waitFor(() => expect(screen.getByTestId('import-save-prompt')).toBeInTheDocument());
+  fireEvent.click(document.getElementById('import-skip-save-to-library') as HTMLButtonElement);
   const xml = `<?xml version="1.0"?><song><title>XML Song</title><verse number="1"><line>Line one</line></verse></song>`;
   const xmlFile = new File([xml], 'song.xml', { type: 'text/xml' });
   await loadFile(xmlFile);
-  await waitFor(() => expect(screen.getByTestId('import-save-prompt')).toBeInTheDocument());
+  await waitFor(() => expect(screen.getByText('XML Song')).toBeInTheDocument());
+  expect(screen.getByText('Slide 1')).toBeInTheDocument();
 });
 
 test('imported JSON deck with id does not show prompt and sets libraryId', async () => {
@@ -451,25 +460,28 @@ test('AC-007: add song slide from library inserts without replacing other slides
   await loadFile(makeJsonFile(twoSlideDeck));
   await waitFor(() => expect(screen.getByText('Stay One')).toBeInTheDocument());
 
-  const typeSelect = document.getElementById('add-slide-type') as HTMLSelectElement;
-  fireEvent.change(typeSelect, { target: { value: 'song' } });
   fireEvent.click(screen.getByTestId('add-slide-button'));
+  await waitFor(() => expect(screen.getByTestId('add-slide-menu')).toBeInTheDocument());
+  fireEvent.click(screen.getByTestId('add-slide-song'));
 
-  await waitFor(() => expect(screen.getByTestId('add-song-kind-picker')).toBeInTheDocument());
-  fireEvent.click(screen.getByTestId('add-song-kind-linked'));
-
-  await waitFor(() => expect(screen.getByTestId('add-song-slide-chooser')).toBeInTheDocument());
-  expect(screen.getByTestId('add-song-mode-pick')).toBeChecked();
+  await waitFor(() => expect(screen.getByTestId('song-type-choice')).toBeInTheDocument());
+  fireEvent.click(screen.getByTestId('song-type-linked'));
   await waitFor(() => expect(screen.getByTestId('add-song-pick-lib-song-1')).toBeInTheDocument());
   fireEvent.click(screen.getByTestId('add-song-pick-lib-song-1'));
+  await waitFor(() => expect(screen.getByTestId('song-linked-card')).toBeInTheDocument());
 
-  await waitFor(() => expect(screen.queryByTestId('add-song-slide-chooser')).not.toBeInTheDocument());
+  // Card preview is in the panel; slide list still shows only the pending row until Save.
+  expect(screen.getByTestId('pending-song-slide')).toBeInTheDocument();
+  expect(screen.getByTestId('song-linked-card')).toHaveTextContent('Picked Song');
+  fireEvent.click(screen.getByTestId('save-slide-button'));
+
+  await waitFor(() => expect(screen.queryByTestId('pending-song-slide')).not.toBeInTheDocument());
   expect(screen.getByText('Stay One')).toBeInTheDocument();
   expect(screen.getByText('Stay Two')).toBeInTheDocument();
-  expect(screen.getByText('Picked Song')).toBeInTheDocument();
+  expect(document.getElementById('slides')).toHaveTextContent('Picked Song');
 });
 
-test('AC-019: Add slide > SONG scratch creates blank unlinked slide without chooser', async () => {
+test('AC-019 / AC-020: Add slide > SONG scratch stays pending until Save; Also save unchecked', async () => {
   render(<DeckBuilder />);
   const twoSlideDeck = {
     title: 'Keep Me',
@@ -481,28 +493,30 @@ test('AC-019: Add slide > SONG scratch creates blank unlinked slide without choo
   await loadFile(makeJsonFile(twoSlideDeck));
   await waitFor(() => expect(screen.getByText('Stay One')).toBeInTheDocument());
 
-  const typeSelect = document.getElementById('add-slide-type') as HTMLSelectElement;
-  fireEvent.change(typeSelect, { target: { value: 'song' } });
   fireEvent.click(screen.getByTestId('add-slide-button'));
+  fireEvent.click(await screen.findByTestId('add-slide-song'));
 
-  await waitFor(() => expect(screen.getByTestId('add-song-kind-picker')).toBeInTheDocument());
-  expect(screen.queryByTestId('add-song-slide-chooser')).not.toBeInTheDocument();
-  fireEvent.click(screen.getByTestId('add-song-kind-scratch'));
+  await waitFor(() => expect(screen.getByTestId('song-type-choice')).toBeInTheDocument());
+  fireEvent.click(screen.getByTestId('song-type-scratch'));
 
-  await waitFor(() => expect(screen.queryByTestId('add-song-kind-picker')).not.toBeInTheDocument());
-  expect(screen.queryByTestId('add-song-slide-chooser')).not.toBeInTheDocument();
+  await waitFor(() => expect(screen.getByTestId('song-scratch-editor')).toBeInTheDocument());
+  expect(screen.getByTestId('pending-song-slide')).toBeInTheDocument();
   expect(screen.getByText('Stay One')).toBeInTheDocument();
   expect(screen.getByText('Stay Two')).toBeInTheDocument();
-  expect(screen.getByText('Song')).toBeInTheDocument();
-
-  // Open editor on the new song slide (last in list after insert at end when none selected — selection is on new slide).
-  await waitFor(() => expect(screen.getByTestId('deck-slide-editor-panel')).toBeInTheDocument());
+  expect(screen.getByTestId('song-also-save-scratch')).not.toBeChecked();
   expect(screen.getByTestId('slide-scratch-unlinked')).toBeInTheDocument();
-  expect(screen.getByTestId('save-scratch-to-library')).toBeInTheDocument();
-  expect(screen.queryByTestId('slide-library-song-id')).not.toBeInTheDocument();
+
+  fireEvent.change(screen.getByTestId('song-scratch-title'), { target: { value: 'Scratch Title' } });
+  fireEvent.change(screen.getByTestId('song-scratch-words'), {
+    target: { value: 'Line one\nLine two' },
+  });
+  fireEvent.click(screen.getByTestId('save-slide-button'));
+
+  await waitFor(() => expect(screen.getByText('Scratch Title')).toBeInTheDocument());
+  expect(screen.queryByTestId('pending-song-slide')).not.toBeInTheDocument();
 });
 
-test('AC-019: scratch Save to library sets librarySongId via ImportReviewScreen', async () => {
+test('AC-019: scratch Also save + title-match links via ImportReviewScreen on Save', async () => {
   (global.fetch as jest.Mock).mockImplementation(async (input: RequestInfo, init?: RequestInit) => {
     const url = String(input);
     if (url.includes('/library/songs/import') && init?.method === 'POST') {
@@ -532,31 +546,24 @@ test('AC-019: scratch Save to library sets librarySongId via ImportReviewScreen'
   });
 
   render(<DeckBuilder />);
-  await loadFile(
-    makeJsonFile({
-      title: 'Deck',
-      slides: [
-        {
-          type: 'song',
-          title: 'Amazing Grace',
-          id: 'scratch-1',
-          lyrics: {
-            title: 'Amazing Grace',
-            verses: [{ number: 1, lines: ['New line'] }],
-          },
-        },
-      ],
-    }),
-  );
-  await waitFor(() => expect(screen.getByText('Amazing Grace')).toBeInTheDocument());
-  fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
-  await waitFor(() => expect(screen.getByTestId('slide-scratch-unlinked')).toBeInTheDocument());
+  await loadFile(makeJsonFile(VALID_DECK));
+  await waitFor(() => expect(screen.getByTestId('add-slide-button')).toBeInTheDocument());
+  fireEvent.click(screen.getByTestId('add-slide-button'));
+  fireEvent.click(await screen.findByTestId('add-slide-song'));
+  await waitFor(() => expect(screen.getByTestId('song-type-choice')).toBeInTheDocument());
+  fireEvent.click(screen.getByTestId('song-type-scratch'));
+  await waitFor(() => expect(screen.getByTestId('song-scratch-title')).toBeInTheDocument());
+  fireEvent.change(screen.getByTestId('song-scratch-title'), {
+    target: { value: 'Amazing Grace' },
+  });
+  fireEvent.change(screen.getByTestId('song-scratch-words'), {
+    target: { value: 'New line' },
+  });
+  fireEvent.click(screen.getByTestId('song-also-save-scratch'));
+  fireEvent.click(screen.getByTestId('save-slide-button'));
 
-  fireEvent.click(screen.getByTestId('save-scratch-to-library'));
   await waitFor(() => expect(screen.getByTestId('import-review-screen')).toBeInTheDocument());
-  expect(screen.getByTestId('import-title-match-section')).toBeInTheDocument();
   expect(screen.getByTestId('import-match-scratch-save-keep_both')).toBeChecked();
-
   fireEvent.click(screen.getByTestId('import-confirm'));
   await waitFor(() =>
     expect(screen.getByTestId('slide-library-song-id')).toHaveAttribute(
@@ -564,7 +571,6 @@ test('AC-019: scratch Save to library sets librarySongId via ImportReviewScreen'
       'saved-scratch-1',
     ),
   );
-  expect(screen.queryByTestId('slide-scratch-unlinked')).not.toBeInTheDocument();
 });
 
 test('REQ-026: ArrowRight does not move Present while focus is in the slide list', async () => {

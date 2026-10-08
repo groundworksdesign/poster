@@ -110,24 +110,44 @@ test.describe('Song library (production Remix build)', () => {
     errors.detach();
   });
 
-  test('Add-song-slide chooser library link opens real manage UI', async ({ page }) => {
+  test('Add-song panel Edit in library opens real manage UI in a new window', async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    const base = baseURL || 'http://127.0.0.1:3010';
     const errors = attachClientErrorGuards(page);
+
+    const seed = await page.request.post(
+      `${base}/library/songs/save?_data=routes%2Flibrary.songs.save`,
+      {
+        data: {
+          title: 'Panel Lib Song',
+          book: 'Hymns',
+          number: '1',
+          lyrics: { title: 'Panel Lib Song', verses: [{ number: 1, lines: ['Hi'] }] },
+        },
+      },
+    );
+    expect(seed.ok(), await seed.text()).toBeTruthy();
+    const id = ((await seed.json()) as { id: string }).id;
 
     await page.goto('/deck', { waitUntil: 'domcontentloaded' });
     await page.getByRole('button', { name: 'New Deck' }).click();
-    await page.locator('#add-slide-type').selectOption('song');
     await page.getByTestId('add-slide-button').click();
-    await expect(page.getByTestId('add-song-kind-picker')).toBeVisible({ timeout: 15000 });
-    await page.getByTestId('add-song-kind-linked').click();
-    await expect(page.getByTestId('add-song-slide-chooser')).toBeVisible({ timeout: 15000 });
-    await expect(page.getByTestId('add-song-open-library')).toBeVisible();
-    errors.assertClean();
-
-    await page.getByTestId('add-song-open-library').click();
-    await expect(page).toHaveURL(/\/library\/songs\/?$/);
-    await assertNotComingSoon(page);
-    await expect(page.getByTestId('song-library-page')).toBeVisible({ timeout: 15000 });
-    await expect(page.getByTestId('song-library-search')).toBeVisible();
+    await page.getByTestId('add-slide-song').click();
+    await expect(page.getByTestId('song-type-choice')).toBeVisible({ timeout: 15000 });
+    await page.getByTestId('song-type-linked').click();
+    await expect(page.getByTestId(`add-song-pick-${id}`)).toBeVisible({ timeout: 15000 });
+    await page.getByTestId(`add-song-pick-${id}`).click();
+    await expect(page.getByTestId('song-linked-card')).toBeVisible();
+    const popupPromise = context.waitForEvent('page');
+    await page.getByTestId('song-edit-in-library').click();
+    const lib = await popupPromise;
+    await lib.waitForLoadState('domcontentloaded');
+    await expect(lib).toHaveURL(/\/library\/songs/);
+    await assertNotComingSoon(lib);
+    await expect(lib.getByTestId('song-library-page')).toBeVisible({ timeout: 15000 });
     errors.assertClean();
     errors.detach();
   });
@@ -159,17 +179,16 @@ test.describe('Song library (production Remix build)', () => {
     await page.goto('/deck', { waitUntil: 'domcontentloaded' });
     await page.getByRole('button', { name: 'New Deck' }).click();
     // Keep a non-song slide so we can prove import does not replace the deck.
-    await page.locator('#add-slide-type').selectOption('title');
     await page.getByTestId('add-slide-button').click();
+    await page.getByTestId('add-slide-title').click();
     await expect(page.locator('#slides')).toContainText(/Title/i);
 
-    await page.locator('#add-slide-type').selectOption('song');
     await page.getByTestId('add-slide-button').click();
-    await expect(page.getByTestId('add-song-kind-picker')).toBeVisible({ timeout: 15000 });
-    await page.getByTestId('add-song-kind-linked').click();
-    await expect(page.getByTestId('add-song-slide-chooser')).toBeVisible({ timeout: 15000 });
-    await page.getByTestId('add-song-mode-import').check();
-    await expect(page.getByTestId('add-song-also-save')).toBeChecked();
+    await page.getByTestId('add-slide-song').click();
+    await expect(page.getByTestId('song-type-choice')).toBeVisible({ timeout: 15000 });
+    await page.getByTestId('song-type-linked').click();
+    await page.getByTestId('song-import-file-link').click();
+    await expect(page.getByTestId('song-also-save-import').or(page.getByTestId('song-panel-import-file'))).toBeAttached();
     errors.assertClean();
 
     const importBody = JSON.stringify({
@@ -183,13 +202,14 @@ test.describe('Song library (production Remix build)', () => {
         { title: 'No Lyrics Song', number: '9', verses: [] },
       ],
     });
-    await page.setInputFiles('[data-testid="add-song-import-file"]', {
+    await page.setInputFiles('[data-testid="song-panel-import-file"]', {
       name: 'book.json',
       mimeType: 'application/json',
       buffer: Buffer.from(importBody),
     });
 
     await expect(page.getByTestId('import-review-screen')).toBeVisible({ timeout: 15000 });
+    await expect(page.getByTestId('song-also-save-import')).toBeChecked();
     await expect(page.getByTestId('import-title-match-section')).toBeVisible();
     await expect(page.getByTestId('import-match-song-0-keep_both')).toBeChecked();
     await expect(page.getByTestId('import-no-lyrics-section')).toBeVisible();
@@ -197,7 +217,8 @@ test.describe('Song library (production Remix build)', () => {
     errors.assertClean();
 
     await page.getByTestId('import-confirm').click();
-    await expect(page.getByTestId('add-song-slide-chooser')).toHaveCount(0, { timeout: 15000 });
+    await expect(page.getByTestId('song-multi-import-ready').or(page.getByTestId('song-linked-card'))).toBeVisible({ timeout: 15000 });
+    await page.getByTestId('save-slide-button').click();
     // Original title slide remains (AC-007: no deck replace).
     await expect(page.locator('#slides')).toContainText(/Title/i);
     await expect(page.locator('#slides')).toContainText(/Amazing Grace/i);
@@ -254,55 +275,35 @@ test.describe('Song library (production Remix build)', () => {
     await page.goto('/deck', { waitUntil: 'domcontentloaded' });
     await page.getByRole('button', { name: 'New Deck' }).click();
 
-    // Scratch path: blank in place, no chooser, unlinked.
-    await page.locator('#add-slide-type').selectOption('song');
+    // Scratch path in panel: Also save unchecked by default; join deck only on Save.
     await page.getByTestId('add-slide-button').click();
-    await expect(page.getByTestId('add-song-kind-picker')).toBeVisible({ timeout: 15000 });
-    await page.getByTestId('add-song-kind-scratch').click();
-    await expect(page.getByTestId('add-song-kind-picker')).toHaveCount(0);
-    await expect(page.getByTestId('add-song-slide-chooser')).toHaveCount(0);
-    await expect(page.locator('#slides')).toContainText(/Song/i);
-    await expect(page.getByTestId('slide-scratch-unlinked')).toBeVisible({ timeout: 15000 });
-    await expect(page.getByTestId('save-scratch-to-library')).toBeVisible();
-    errors.assertClean();
-
-    // While scratch editor is open: Save to library with duplicate-title review.
-    await page
-      .getByTestId('deck-slide-editor-panel')
-      .getByRole('textbox', { name: 'Title:', exact: true })
-      .fill('Scratch Dup Title');
-    const lyricsBox = page.locator('#lyrics-json');
-    await lyricsBox.fill(
-      JSON.stringify(
-        {
-          title: 'Scratch Dup Title',
-          verses: [{ number: 1, lines: ['Scratch new lyrics'] }],
-        },
-        null,
-        2,
-      ),
-    );
-    await page.getByRole('button', { name: 'Apply Lyrics JSON' }).click();
-    await page.getByTestId('save-scratch-to-library').click();
+    await page.getByTestId('add-slide-song').click();
+    await expect(page.getByTestId('song-type-choice')).toBeVisible({ timeout: 15000 });
+    await page.getByTestId('song-type-scratch').click();
+    await expect(page.getByTestId('pending-song-slide')).toBeVisible();
+    await expect(page.getByTestId('song-also-save-scratch')).not.toBeChecked();
+    await page.getByTestId('song-scratch-title').fill('Scratch Dup Title');
+    await page.getByTestId('song-scratch-words').fill('Scratch new lyrics');
+    await page.getByTestId('song-also-save-scratch').check();
+    await page.getByTestId('save-slide-button').click();
     await expect(page.getByTestId('import-review-screen')).toBeVisible({ timeout: 15000 });
-    await expect(page.getByTestId('import-title-match-section')).toBeVisible();
     await expect(page.getByTestId('import-match-scratch-save-keep_both')).toBeChecked();
     await page.getByTestId('import-confirm').click();
     await expect(page.getByTestId('slide-library-song-id')).toBeVisible({ timeout: 15000 });
     const linkedId = await page.getByTestId('slide-library-song-id').getAttribute('data-library-song-id');
     expect(linkedId).toBeTruthy();
     expect(linkedId).not.toBe(existingId);
-    await expect(page.getByTestId('slide-scratch-unlinked')).toHaveCount(0);
+    await page.getByTestId('save-slide-button').click();
+    await expect(page.locator('#slides')).toContainText(/Scratch Dup Title/i);
     errors.assertClean();
 
-    // Linked path: chooser insert without replacing deck.
-    await page.locator('#add-slide-type').selectOption('song');
+    // Linked path: pick then Save slide.
     await page.getByTestId('add-slide-button').click();
-    await expect(page.getByTestId('add-song-kind-picker')).toBeVisible({ timeout: 15000 });
-    await page.getByTestId('add-song-kind-linked').click();
-    await expect(page.getByTestId('add-song-slide-chooser')).toBeVisible({ timeout: 15000 });
+    await page.getByTestId('add-slide-song').click();
+    await page.getByTestId('song-type-linked').click();
     await page.getByTestId(`add-song-pick-${linkedJson.id}`).click();
-    await expect(page.getByTestId('add-song-slide-chooser')).toHaveCount(0, { timeout: 15000 });
+    await expect(page.getByTestId('song-linked-card')).toBeVisible({ timeout: 15000 });
+    await page.getByTestId('save-slide-button').click();
     await expect(page.locator('#slides')).toContainText(/Linked Pick Song/i);
     await expect(page.locator('#slides')).toContainText(/Scratch Dup Title/i);
     errors.assertClean();

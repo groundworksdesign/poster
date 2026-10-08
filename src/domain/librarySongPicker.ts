@@ -11,6 +11,20 @@ export function firstVerseLine(song: LibrarySong): string | null {
   return null;
 }
 
+/**
+ * Full first verse text (all non-empty lines of the first verse that has lines),
+ * joined with newlines — used when duplicate titles need disambiguation (Roy / REQ-014).
+ */
+export function firstVerseText(song: LibrarySong): string | null {
+  for (const verse of song.lyrics?.verses ?? []) {
+    const lines = (verse.lines ?? [])
+      .map(line => String(line).trim())
+      .filter(Boolean);
+    if (lines.length > 0) return lines.join('\n');
+  }
+  return null;
+}
+
 /** Lowercased titles that appear more than once in the result set. */
 export function duplicateTitleKeys(songs: LibrarySong[]): Set<string> {
   const counts = new Map<string, number>();

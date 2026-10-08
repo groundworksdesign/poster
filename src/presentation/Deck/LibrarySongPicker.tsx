@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import type { LibrarySong } from '../../domain/librarySong';
 import {
   filterSongsByBook,
-  firstVerseLine,
+  firstVerseText,
   shouldShowFirstVerse,
   uniqueBooks,
 } from '../../domain/librarySongPicker';
@@ -87,7 +87,9 @@ export default function LibrarySongPicker({ onPick, onSwitchToImport }: Props) {
       e.preventDefault();
       setFocusIndex(i => Math.max(i - 1, 0));
     } else if (e.key === 'Enter') {
+      // Enter and Ctrl/Cmd+Enter both stop on the song card (pick only) — never save (Roy).
       e.preventDefault();
+      e.stopPropagation();
       const song = visible[focusIndex];
       if (song) pick(song);
     }
@@ -162,7 +164,7 @@ export default function LibrarySongPicker({ onPick, onSwitchToImport }: Props) {
           ) : (
             visible.map((song, index) => {
               const showVerse = shouldShowFirstVerse(song, visible);
-              const verse = showVerse ? firstVerseLine(song) : null;
+              const verse = showVerse ? firstVerseText(song) : null;
               return (
                 <li
                   key={song.id}
@@ -191,7 +193,11 @@ export default function LibrarySongPicker({ onPick, onSwitchToImport }: Props) {
                         : ''}
                     </span>
                     {verse ? (
-                      <span className="library-song-picker-verse" data-testid={`library-song-verse-${song.id}`}>
+                      <span
+                        className="library-song-picker-verse"
+                        data-testid={`library-song-verse-${song.id}`}
+                        style={{ display: 'block', whiteSpace: 'pre-wrap', color: '#666' }}
+                      >
                         {verse}
                       </span>
                     ) : null}
@@ -204,7 +210,9 @@ export default function LibrarySongPicker({ onPick, onSwitchToImport }: Props) {
       ) : null}
 
       {visible.length > 0 ? (
-        <p className="library-song-picker-hint">Enter or double-click to add after the current slide.</p>
+        <p className="library-song-picker-hint">
+          Enter, Ctrl/Cmd+Enter, or double-click to choose the song (then Save slide).
+        </p>
       ) : null}
     </div>
   );
