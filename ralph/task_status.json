@@ -2,10 +2,10 @@
   "epic": "epic-004",
   "branch": "cursor/epic-004-song-library",
   "baseBranch": "main",
-  "status": "in_progress",
-  "loop": 34,
-  "persona": "dev",
-  "completeEpic": false,
+  "status": "done",
+  "loop": 35,
+  "persona": "qa",
+  "completeEpic": true,
   "prUrl": "https://github.com/groundworksdesign/poster/pull/26",
   "canonicalStatusFile": "ralph/task_status.json",
   "sourceArtifacts": [
@@ -26,7 +26,7 @@
     "irisChooserImport": "Fixed: chooser uses shared ImportReviewScreen.",
     "irisClientProcess": "Fixed DEV loop 12: song-library actions in *.server.ts; client no longer bundles db/library-root/process.",
     "irisJsonRestoreSongs": "JSON: omit songs key keeps existing; songs key (incl []) replaces. SQLite: pre-epic schema (no songs table or no book/number) preserves when empty; post-epic empty songs replaces.",
-    "irisApplyFlake": "DEV loop 14: saveEdit clears busy before fetchSongs after setDeckPrompt; test waits for Apply enabled."
+    "irisApplyFlake": "QA loop 15: clear busy + wait Apply enabled; isolation 10/10; Present/stagedSongSlide NO DIFF vs main."
   },
   "requirements": [
     {
@@ -499,9 +499,10 @@
         "AC-010",
         "AC-013"
       ],
-      "status": "in_progress",
-      "passes": false,
-      "notes": "DEV fix loop 14: saveEdit setBusy(false) before fetchSongs after setDeckPrompt; test waitFor Apply enabled. Isolation 10/10 PASS. passes=false."
+      "status": "done",
+      "passes": true,
+      "notes": "QA fix loop 15 PASS (final). Isolation REQ-012/023 apply-decks 10/10. tsc 0; Jest 59/371; build:remix 0; e2e remix 52+3; electron xvfb 12. Present/ + stagedSongSlide.ts NO DIFF vs main. All 5 Iris fix tasks + epic todos passes:true. Side PR #27 closed; only open epic PR #26.",
+      "qaVerifiedAt": "2026-10-08T00:20:00.000Z"
     }
   ],
   "acceptanceCriteria": [
@@ -526,7 +527,7 @@
   ],
   "selected": {
     "id": "fix-song-library-apply-flake",
-    "reason": "DEV cleared busy before list refresh + test waits for Apply; awaiting QA 10x."
+    "reason": "Iris fix pass complete; all fix tasks + epic todos passes:true; completeEpic true."
   },
   "outOfScope": [
     "Bundling the three church books in the app",
@@ -536,30 +537,35 @@
   ],
   "openQuestions": [],
   "blockers": [],
-  "lastUpdated": "2026-10-08T00:15:00.000Z",
+  "lastUpdated": "2026-10-08T00:20:00.000Z",
   "qaEvidence": {
-    "taskId": "fix-client-process-reference",
+    "taskId": "fix-song-library-apply-flake",
     "tsc": "exit 0",
     "jest": "59 suites / 371 tests PASS",
-    "clientBundleAudit": "song-library routes + chunks: no process.env/sqlite; *.server emptied",
-    "dataActions": "save/import/delete/decks/apply-decks + picker q= PASS",
+    "applyFlakeIsolation": "10/10 PASS",
+    "buildRemix": "exit 0",
     "e2eRemixDev": "52 passed",
     "e2eSongLibraryProd": "3 passed",
-    "fixPassLoop": 13,
-    "loopsUsed": 33
+    "e2eElectron": "12 passed (xvfb + ELECTRON_DISABLE_SANDBOX)",
+    "presentUnchanged": true,
+    "stagedSongSlideUnchanged": true,
+    "openAgentPrs": "PR #26 only (#27 closed unmerged)",
+    "fixPassLoop": 15,
+    "loopsUsed": 35
   },
   "feedback": {
     "taskId": "fix-song-library-apply-flake",
-    "content": "DEV done apply-flake (clear busy + wait Apply enabled). Isolation 10/10. Awaiting QA. Fix 14/16. No merge.",
-    "updatedAt": "2026-10-08T00:15:00.000Z"
+    "content": "QA PASS final Iris fix pass. All 5 fix tasks + epic todos passes:true. completeEpic true. Fix 15/16. No merge.",
+    "updatedAt": "2026-10-08T00:20:00.000Z"
   },
   "fixPass": {
     "irisGate": "ralph/specs/20261007-iris-gate-pr26-fail.md",
     "prUrl": "https://github.com/groundworksdesign/poster/pull/26",
     "headShaAtFail": "15ee17d0c8b523d0f34b9b6d31ed9bde7f0784ef",
     "budget": 16,
-    "loop": 14,
-    "loopsUsed": 14,
-    "maxLoop": 16
+    "loop": 15,
+    "loopsUsed": 15,
+    "maxLoop": 16,
+    "status": "complete"
   }
 }

@@ -450,3 +450,9 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 
 - saveEdit clears busy before fetchSongs after setDeckPrompt; test waits for Apply enabled.
 - Isolation 10/10 PASS. passes=false. Fix 14/16.
+
+## Epic-004 FIX LOOP 15 FINAL QA — Iris fix pass PASS
+
+- Flake 10/10; tsc 0; Jest 59/371; build:remix 0; e2e remix 52+3; electron xvfb 12.
+- Present/ + stagedSongSlide NO DIFF vs main. All 5 fix tasks + epic todos passes:true.
+- completeEpic true. Side PR #27 closed. No merge. Fix 15/16.

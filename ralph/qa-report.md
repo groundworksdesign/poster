@@ -1,20 +1,31 @@
 # Feedback
 
-## fix-song-library-apply-flake DEV (fix loop 14) — awaiting QA
+## Iris fix pass FINAL QA (fix loop 15) — PASS
 
-`<status>pending</status>`
+`<status>verified</status>`
 
-### Changes
+### Iris gate items
 
-- `saveEdit`: `setBusy(false)` before `fetchSongs` after `setDeckPrompt` so Apply is not disabled during list refresh.
-- Unit test waits for Apply `toBeEnabled()` before click.
+| Item | Result |
+| --- | --- |
+| Remix song-library outlets (not coming soon) | PASS |
+| Chooser import uses shared review | PASS |
+| JSON/SQLite restore preserves pre-epic songs | PASS |
+| Client `process` out of song-library bundle | PASS |
+| Apply-decks unit flake | PASS (10/10 isolation) |
 
-### Checks (DEV)
+### Final bar
 
 | Check | Result |
 | --- | --- |
-| REQ-012/023 apply-decks isolation ×10 | **10/10 PASS** |
+| Apply flake ×10 | 10/10 PASS |
+| `tsc --noEmit` | exit 0 |
+| Full Jest | 59 / 371 PASS |
+| `build:remix` | exit 0 |
+| `test:e2e:remix` | 52 + 3 PASS |
+| Electron e2e (xvfb) | 12 PASS |
+| `Present/` + `stagedSongSlide.ts` vs `main` | NO DIFF |
+| All todos `passes:true` | yes |
+| Extra open agent PRs | none (#27 closed) |
 
-### Next
-
-QA on `fix-song-library-apply-flake` (10× isolation; do not set passes until QA).
+`completeEpic` true. Do not merge.
