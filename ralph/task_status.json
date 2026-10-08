@@ -516,7 +516,7 @@
     },
     {
       "id": "add-slide-song-scratch-or-linked",
-      "content": "Add slide > SONG offers two types: (1) Song from scratch — blank in place, no librarySongId, no chooser; (2) Linked song — AddSongSlideChooser with librarySongId. Scratch has Save to library via shared ImportReviewScreen (title-match keep-both; no-lyrics REQ-018/019/022); cancel keeps scratch; confirm sets librarySongId. Scratch never in linked-update/apply-decks until linked. Prod e2e: scratch; linked insert; scratch\to Save\to duplicate-title\to linked. Unit: excluded before save, included after. Present/stagedSongSlide byte-identical to main.",
+      "content": "Add slide > SONG offers two types: (1) Song from scratch — blank in place, no librarySongId, no chooser; (2) Linked song — AddSongSlideChooser with librarySongId. Scratch has Save to library via shared ImportReviewScreen (title-match keep-both; no-lyrics REQ-018/019/022); cancel keeps scratch; confirm sets librarySongId. Scratch never in linked-update/apply-decks until linked. Prod e2e: scratch; linked insert; scratch -> Save -> duplicate-title -> linked. Unit: excluded before save, included after. Present/stagedSongSlide byte-identical to main.",
       "requirementIds": [
         "REQ-024",
         "REQ-007",
@@ -538,7 +538,7 @@
       ],
       "status": "pending",
       "passes": false,
-      "notes": "PLANNING loop 16 (amended): Roy decision + Save to library on scratch via ImportReviewScreen. Budget loops 16–19. Selected next for DEV."
+      "notes": "DEV loop 17: kind picker + scratch Save to library wired; unit + song-library e2e added. passes false for QA 18–19."
     }
   ],
   "acceptanceCriteria": [
@@ -574,7 +574,7 @@
   ],
   "openQuestions": [],
   "blockers": [],
-  "lastUpdated": "2026-10-08T00:35:00.000Z",
+  "lastUpdated": "2026-10-08T01:00:00.000Z",
   "qaEvidence": {
     "taskId": "fix-song-library-apply-flake",
     "tsc": "exit 0",
@@ -592,8 +592,8 @@
   },
   "feedback": {
     "taskId": "add-slide-song-scratch-or-linked",
-    "content": "PLANNING loop 16 amended: Save to library on scratch via ImportReviewScreen. completeEpic false. Budget 16–19. No merge.",
-    "updatedAt": "2026-10-08T00:35:00.000Z"
+    "content": "DEV loop 17: scratch/linked kind picker + Save to library. passes false. Budget 16–19. No merge.",
+    "updatedAt": "2026-10-08T01:00:00.000Z"
   },
   "fixPass": {
     "irisGate": "ralph/specs/20261007-iris-gate-pr26-fail.md",
@@ -609,8 +609,8 @@
     "decision": "ralph/specs/20261008-add-slide-song-scratch-or-linked.md",
     "prUrl": "https://github.com/groundworksdesign/poster/pull/26",
     "budget": 4,
-    "loop": 16,
-    "loopsUsed": 1,
+    "loop": 17,
+    "loopsUsed": 2,
     "minLoop": 16,
     "maxLoop": 19,
     "status": "in_progress"

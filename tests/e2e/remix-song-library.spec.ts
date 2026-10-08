@@ -111,6 +111,8 @@ test.describe('Song library (production Remix build)', () => {
     await page.getByRole('button', { name: 'New Deck' }).click();
     await page.locator('#add-slide-type').selectOption('song');
     await page.getByTestId('add-slide-button').click();
+    await expect(page.getByTestId('add-song-kind-picker')).toBeVisible({ timeout: 15000 });
+    await page.getByTestId('add-song-kind-linked').click();
     await expect(page.getByTestId('add-song-slide-chooser')).toBeVisible({ timeout: 15000 });
     await expect(page.getByTestId('add-song-open-library')).toBeVisible();
     errors.assertClean();
@@ -157,6 +159,8 @@ test.describe('Song library (production Remix build)', () => {
 
     await page.locator('#add-slide-type').selectOption('song');
     await page.getByTestId('add-slide-button').click();
+    await expect(page.getByTestId('add-song-kind-picker')).toBeVisible({ timeout: 15000 });
+    await page.getByTestId('add-song-kind-linked').click();
     await expect(page.getByTestId('add-song-slide-chooser')).toBeVisible({ timeout: 15000 });
     await page.getByTestId('add-song-mode-import').check();
     await expect(page.getByTestId('add-song-also-save')).toBeChecked();
@@ -192,6 +196,110 @@ test.describe('Song library (production Remix build)', () => {
     await expect(page.locator('#slides')).toContainText(/Title/i);
     await expect(page.locator('#slides')).toContainText(/Amazing Grace/i);
     await expect(page.locator('#slides')).toContainText(/No Lyrics Song/i);
+    errors.assertClean();
+    errors.detach();
+  });
+
+  test('AC-019: scratch blank unlinked; linked insert; scratch Save to library links after title-match', async ({
+    page,
+    baseURL,
+  }) => {
+    const base = baseURL || 'http://127.0.0.1:3010';
+    const errors = attachClientErrorGuards(page);
+
+    const seed = await page.request.post(
+      `${base}/library/songs/save?_data=routes%2Flibrary.songs.save`,
+      {
+        data: {
+          title: 'Scratch Dup Title',
+          book: 'Hymns',
+          number: '12',
+          lyrics: {
+            title: 'Scratch Dup Title',
+            verses: [{ number: 1, lines: ['Library original line'] }],
+          },
+        },
+      },
+    );
+    expect(seed.ok(), await seed.text()).toBeTruthy();
+    const seedJson = (await seed.json()) as { id?: string };
+    const existingId = seedJson.id;
+    expect(existingId).toBeTruthy();
+
+    // Seed a second library song for the linked-insert path.
+    const linkedSeed = await page.request.post(
+      `${base}/library/songs/save?_data=routes%2Flibrary.songs.save`,
+      {
+        data: {
+          title: 'Linked Pick Song',
+          book: 'Hymns',
+          number: '99',
+          lyrics: {
+            title: 'Linked Pick Song',
+            verses: [{ number: 1, lines: ['Linked verse line'] }],
+          },
+        },
+      },
+    );
+    expect(linkedSeed.ok(), await linkedSeed.text()).toBeTruthy();
+    const linkedJson = (await linkedSeed.json()) as { id?: string };
+    expect(linkedJson.id).toBeTruthy();
+
+    await page.goto('/deck', { waitUntil: 'domcontentloaded' });
+    await page.getByRole('button', { name: 'New Deck' }).click();
+
+    // Scratch path: blank in place, no chooser, unlinked.
+    await page.locator('#add-slide-type').selectOption('song');
+    await page.getByTestId('add-slide-button').click();
+    await expect(page.getByTestId('add-song-kind-picker')).toBeVisible({ timeout: 15000 });
+    await page.getByTestId('add-song-kind-scratch').click();
+    await expect(page.getByTestId('add-song-kind-picker')).toHaveCount(0);
+    await expect(page.getByTestId('add-song-slide-chooser')).toHaveCount(0);
+    await expect(page.locator('#slides')).toContainText(/Song/i);
+    await expect(page.getByTestId('slide-scratch-unlinked')).toBeVisible({ timeout: 15000 });
+    await expect(page.getByTestId('save-scratch-to-library')).toBeVisible();
+    errors.assertClean();
+
+    // While scratch editor is open: Save to library with duplicate-title review.
+    const titleInput = page
+      .getByTestId('deck-slide-editor-panel')
+      .locator('label', { hasText: 'Title:' })
+      .locator('input');
+    await titleInput.fill('Scratch Dup Title');
+    const lyricsBox = page.locator('#lyrics-json');
+    await lyricsBox.fill(
+      JSON.stringify(
+        {
+          title: 'Scratch Dup Title',
+          verses: [{ number: 1, lines: ['Scratch new lyrics'] }],
+        },
+        null,
+        2,
+      ),
+    );
+    await page.getByRole('button', { name: 'Apply Lyrics JSON' }).click();
+    await page.getByTestId('save-scratch-to-library').click();
+    await expect(page.getByTestId('import-review-screen')).toBeVisible({ timeout: 15000 });
+    await expect(page.getByTestId('import-title-match-section')).toBeVisible();
+    await expect(page.getByTestId('import-match-scratch-save-keep_both')).toBeChecked();
+    await page.getByTestId('import-confirm').click();
+    await expect(page.getByTestId('slide-library-song-id')).toBeVisible({ timeout: 15000 });
+    const linkedId = await page.getByTestId('slide-library-song-id').getAttribute('data-library-song-id');
+    expect(linkedId).toBeTruthy();
+    expect(linkedId).not.toBe(existingId);
+    await expect(page.getByTestId('slide-scratch-unlinked')).toHaveCount(0);
+    errors.assertClean();
+
+    // Linked path: chooser insert without replacing deck.
+    await page.locator('#add-slide-type').selectOption('song');
+    await page.getByTestId('add-slide-button').click();
+    await expect(page.getByTestId('add-song-kind-picker')).toBeVisible({ timeout: 15000 });
+    await page.getByTestId('add-song-kind-linked').click();
+    await expect(page.getByTestId('add-song-slide-chooser')).toBeVisible({ timeout: 15000 });
+    await page.getByTestId(`add-song-pick-${linkedJson.id}`).click();
+    await expect(page.getByTestId('add-song-slide-chooser')).toHaveCount(0, { timeout: 15000 });
+    await expect(page.locator('#slides')).toContainText(/Linked Pick Song/i);
+    await expect(page.locator('#slides')).toContainText(/Scratch Dup Title/i);
     errors.assertClean();
     errors.detach();
   });

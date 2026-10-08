@@ -454,6 +454,9 @@ test('AC-007: add song slide from library inserts without replacing other slides
   fireEvent.change(typeSelect, { target: { value: 'song' } });
   fireEvent.click(screen.getByTestId('add-slide-button'));
 
+  await waitFor(() => expect(screen.getByTestId('add-song-kind-picker')).toBeInTheDocument());
+  fireEvent.click(screen.getByTestId('add-song-kind-linked'));
+
   await waitFor(() => expect(screen.getByTestId('add-song-slide-chooser')).toBeInTheDocument());
   expect(screen.getByTestId('add-song-mode-pick')).toBeChecked();
   await waitFor(() => expect(screen.getByTestId('add-song-pick-lib-song-1')).toBeInTheDocument());
@@ -463,5 +466,103 @@ test('AC-007: add song slide from library inserts without replacing other slides
   expect(screen.getByText('Stay One')).toBeInTheDocument();
   expect(screen.getByText('Stay Two')).toBeInTheDocument();
   expect(screen.getByText('Picked Song')).toBeInTheDocument();
+});
+
+test('AC-019: Add slide > SONG scratch creates blank unlinked slide without chooser', async () => {
+  render(<DeckBuilder />);
+  const twoSlideDeck = {
+    title: 'Keep Me',
+    slides: [
+      { type: 'general', title: 'Stay One', id: 'a' },
+      { type: 'general', title: 'Stay Two', id: 'b' },
+    ],
+  };
+  await loadFile(makeJsonFile(twoSlideDeck));
+  await waitFor(() => expect(screen.getByText('Stay One')).toBeInTheDocument());
+
+  const typeSelect = document.getElementById('add-slide-type') as HTMLSelectElement;
+  fireEvent.change(typeSelect, { target: { value: 'song' } });
+  fireEvent.click(screen.getByTestId('add-slide-button'));
+
+  await waitFor(() => expect(screen.getByTestId('add-song-kind-picker')).toBeInTheDocument());
+  expect(screen.queryByTestId('add-song-slide-chooser')).not.toBeInTheDocument();
+  fireEvent.click(screen.getByTestId('add-song-kind-scratch'));
+
+  await waitFor(() => expect(screen.queryByTestId('add-song-kind-picker')).not.toBeInTheDocument());
+  expect(screen.queryByTestId('add-song-slide-chooser')).not.toBeInTheDocument();
+  expect(screen.getByText('Stay One')).toBeInTheDocument();
+  expect(screen.getByText('Stay Two')).toBeInTheDocument();
+  expect(screen.getByText('Song')).toBeInTheDocument();
+
+  // Open editor on the new song slide (last in list after insert at end when none selected — selection is on new slide).
+  await waitFor(() => expect(screen.getByTestId('deck-slide-editor-panel')).toBeInTheDocument());
+  expect(screen.getByTestId('slide-scratch-unlinked')).toBeInTheDocument();
+  expect(screen.getByTestId('save-scratch-to-library')).toBeInTheDocument();
+  expect(screen.queryByTestId('slide-library-song-id')).not.toBeInTheDocument();
+});
+
+test('AC-019: scratch Save to library sets librarySongId via ImportReviewScreen', async () => {
+  (global.fetch as jest.Mock).mockImplementation(async (input: RequestInfo, init?: RequestInit) => {
+    const url = String(input);
+    if (url.includes('/library/songs/import') && init?.method === 'POST') {
+      return {
+        ok: true,
+        json: async () => ({ ids: ['saved-scratch-1'] }),
+      } as Response;
+    }
+    if (url.includes('/library/songs') && !url.includes('/import')) {
+      return {
+        ok: true,
+        json: async () => [
+          {
+            id: 'existing-1',
+            title: 'Amazing Grace',
+            book: 'Hymns',
+            number: '1',
+            lyrics: {
+              title: 'Amazing Grace',
+              verses: [{ number: 1, lines: ['Old line'] }],
+            },
+          },
+        ],
+      } as Response;
+    }
+    return { ok: true, json: async () => [] } as Response;
+  });
+
+  render(<DeckBuilder />);
+  await loadFile(
+    makeJsonFile({
+      title: 'Deck',
+      slides: [
+        {
+          type: 'song',
+          title: 'Amazing Grace',
+          id: 'scratch-1',
+          lyrics: {
+            title: 'Amazing Grace',
+            verses: [{ number: 1, lines: ['New line'] }],
+          },
+        },
+      ],
+    }),
+  );
+  await waitFor(() => expect(screen.getByText('Amazing Grace')).toBeInTheDocument());
+  fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
+  await waitFor(() => expect(screen.getByTestId('slide-scratch-unlinked')).toBeInTheDocument());
+
+  fireEvent.click(screen.getByTestId('save-scratch-to-library'));
+  await waitFor(() => expect(screen.getByTestId('import-review-screen')).toBeInTheDocument());
+  expect(screen.getByTestId('import-title-match-section')).toBeInTheDocument();
+  expect(screen.getByTestId('import-match-scratch-save-keep_both')).toBeChecked();
+
+  fireEvent.click(screen.getByTestId('import-confirm'));
+  await waitFor(() =>
+    expect(screen.getByTestId('slide-library-song-id')).toHaveAttribute(
+      'data-library-song-id',
+      'saved-scratch-1',
+    ),
+  );
+  expect(screen.queryByTestId('slide-scratch-unlinked')).not.toBeInTheDocument();
 });
 

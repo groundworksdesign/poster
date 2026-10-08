@@ -21,6 +21,8 @@ import { remixDataUrl, REMIX_ROUTE_ID } from '../remixDataUrl';
 import { notifyLibraryChanged } from '../libraryRefresh';
 import { openPresentForRuntime } from './openPresentWindow';
 import AddSongSlideChooser, { type SongSlideChoice } from './AddSongSlideChooser';
+import AddSongSlideKindPicker from './AddSongSlideKindPicker';
+import SaveScratchSongToLibrary from './SaveScratchSongToLibrary';
 
 export default function DeckBuilder() {
   useTheme();
@@ -60,7 +62,9 @@ export default function DeckBuilder() {
   const [songLastStagedById, setSongLastStagedById] = useState<Record<string, number>>({});
   /** Slide list index being dragged (visual feedback only; drop uses dataTransfer). */
   const [dragSlideIndex, setDragSlideIndex] = useState<number | null>(null);
-  /** When true, show Pick from library / Import chooser instead of a blank song slide. */
+  /** When true, show scratch vs linked kind picker for Add slide > SONG. */
+  const [showAddSongKindPicker, setShowAddSongKindPicker] = useState(false);
+  /** When true, show Pick from library / Import chooser (linked path). */
   const [showAddSongChooser, setShowAddSongChooser] = useState(false);
 
   const genId = () => (typeof (globalThis as any).crypto !== 'undefined' && typeof (globalThis as any).crypto.randomUUID === 'function') ? (globalThis as any).crypto.randomUUID() : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
@@ -728,16 +732,45 @@ export default function DeckBuilder() {
     setMessage('New deck created');
   };
 
+  /** Blank unlinked song slide (scratch path). No chooser, no librarySongId. */
+  const addScratchSongSlide = () => {
+    if (!deck) {
+      setMessage('Open or create a deck before adding a song slide.');
+      setShowAddSongKindPicker(false);
+      return;
+    }
+    const slides = deck.slides.slice();
+    const newSlide: any = {
+      type: SlideType.SONG,
+      title: 'Song',
+      subTitle: '',
+      style: {},
+      id: genId(),
+      lyrics: { title: 'Song', author: '', verses: [{ number: 1, lines: [''] }] },
+    };
+    let insertAt =
+      selectedSlideIndex !== null && selectedSlideIndex >= 0
+        ? selectedSlideIndex + 1
+        : slides.length;
+    slides.splice(insertAt, 0, newSlide);
+    const newDeck = { ...deck, slides };
+    setDeck(newDeck);
+    setSelectedSlideIndex(insertAt);
+    setShowAddSongKindPicker(false);
+    setMessage('Added blank song slide (not linked to library)');
+    syncSentSlideIfNeeded(newDeck);
+  };
+
   const addSlide = (type: SlideType = SlideType.GENERAL) => {
     if (!deck) {
       createNewDeck();
       if (type === SlideType.SONG) {
-        setShowAddSongChooser(true);
+        setShowAddSongKindPicker(true);
       }
       return;
     }
     if (type === SlideType.SONG) {
-      setShowAddSongChooser(true);
+      setShowAddSongKindPicker(true);
       return;
     }
     const slides = deck.slides.slice();
@@ -752,6 +785,33 @@ export default function DeckBuilder() {
     const newDeck = { ...deck, slides };
     setDeck(newDeck);
     setSelectedSlideIndex(slides.length - 1);
+    syncSentSlideIfNeeded(newDeck);
+  };
+
+  /** Link a scratch song slide after Save to library succeeds. */
+  const linkScratchSlideToLibrary = (librarySongId: string, lyrics: SongData) => {
+    if (!deck || typeof selectedSlideIndex !== 'number') return;
+    const slides = deck.slides.slice();
+    const prev = slides[selectedSlideIndex] as any;
+    if (!prev || prev.type !== SlideType.SONG) return;
+    const next = {
+      ...prev,
+      ...(slideEditDraft && slideEditDraft.id === prev.id ? slideEditDraft : {}),
+      type: SlideType.SONG,
+      title: lyrics.title || prev.title,
+      subTitle: lyrics.author ? `by ${lyrics.author}` : prev.subTitle,
+      lyrics: {
+        title: lyrics.title,
+        author: lyrics.author,
+        verses: Array.isArray(lyrics.verses) ? lyrics.verses : [],
+      },
+      librarySongId,
+    };
+    slides[selectedSlideIndex] = next;
+    const newDeck = { ...deck, slides };
+    setDeck(newDeck);
+    setSlideEditDraft(next);
+    setMessage(`Saved to library and linked (${librarySongId.slice(0, 8)}…)`);
     syncSentSlideIfNeeded(newDeck);
   };
 
@@ -999,6 +1059,16 @@ export default function DeckBuilder() {
         <a href="/" className="deck-page-home-link">← Home</a>
       </nav>
       <h1>Deck</h1>
+      {showAddSongKindPicker ? (
+        <AddSongSlideKindPicker
+          onScratch={addScratchSongSlide}
+          onLinked={() => {
+            setShowAddSongKindPicker(false);
+            setShowAddSongChooser(true);
+          }}
+          onCancel={() => setShowAddSongKindPicker(false)}
+        />
+      ) : null}
       {showAddSongChooser ? (
         <AddSongSlideChooser
           onCancel={() => setShowAddSongChooser(false)}
@@ -1405,6 +1475,29 @@ export default function DeckBuilder() {
                             }} style={{ marginLeft: '8px' }}>Add Verse</button>
                           </div>
                         </div>
+                        {slide.librarySongId ? (
+                          <p data-testid="slide-library-song-id" data-library-song-id={slide.librarySongId}>
+                            Linked to library: {slide.librarySongId}
+                          </p>
+                        ) : (
+                          <div data-testid="slide-scratch-unlinked" style={{ marginTop: '8px' }}>
+                            <SaveScratchSongToLibrary
+                              lyrics={{
+                                title:
+                                  (slide.title || slide.lyrics?.title || 'Song').trim() ||
+                                  'Untitled',
+                                author: slide.lyrics?.author ?? '',
+                                verses: Array.isArray(slide.lyrics?.verses)
+                                  ? slide.lyrics.verses
+                                  : [{ number: 1, lines: [''] }],
+                              }}
+                              onLinked={linkScratchSlideToLibrary}
+                              onCancel={() => {
+                                /* cancel keeps slide scratch / unlinked */
+                              }}
+                            />
+                          </div>
+                        )}
                       </div>
                     )}
 

@@ -4,6 +4,7 @@ import {
   applyLibraryEditToDeck,
   countHandEditedLinkedSlides,
   isHandEditedLinkedSlide,
+  linkedSlidesInDeck,
   lyricsFingerprint,
 } from './linkedSongUpdate';
 
@@ -164,5 +165,59 @@ describe('linkedSongUpdate (AC-010, AC-013, REQ-016)', () => {
       },
     ]);
     expect(countHandEditedLinkedSlides(d, 's1', baseLyrics)).toBe(1);
+  });
+
+  it('AC-019: scratch slides (no librarySongId) never appear in linked edit and are never changed', () => {
+    const scratch = {
+      type: SlideType.SONG,
+      title: 'Amazing Grace',
+      style: {},
+      lyrics: baseLyrics,
+    };
+    const linked = {
+      type: SlideType.SONG,
+      title: 'Amazing Grace',
+      style: {},
+      lyrics: baseLyrics,
+      librarySongId: 's1',
+    };
+    const d = deck([scratch, linked]);
+    expect(linkedSlidesInDeck(d, 's1')).toHaveLength(1);
+    expect(linkedSlidesInDeck(d, 's1')[0].librarySongId).toBe('s1');
+
+    const result = applyLibraryEditToDeck(d, 's1', newLibrary, baseLyrics, true);
+    expect(result.updatedCount).toBe(1);
+    expect(result.deck.slides[0].librarySongId).toBeUndefined();
+    expect(result.deck.slides[0].lyrics?.verses[0].lines[0]).toBe('Amazing grace how sweet');
+    expect(result.deck.slides[1].lyrics?.verses[0].lines[0]).toBe('Library new line');
+    expect(result.deck.slides[1].librarySongId).toBe('s1');
+  });
+
+  it('AC-019: after Save to library (librarySongId set), former scratch is included in prompts/edit', () => {
+    const before = deck([
+      {
+        type: SlideType.SONG,
+        title: 'Amazing Grace',
+        style: {},
+        lyrics: baseLyrics,
+      },
+    ]);
+    expect(linkedSlidesInDeck(before, 's1')).toHaveLength(0);
+    const excluded = applyLibraryEditToDeck(before, 's1', newLibrary, baseLyrics, true);
+    expect(excluded.updatedCount).toBe(0);
+
+    const afterLink = deck([
+      {
+        type: SlideType.SONG,
+        title: 'Amazing Grace',
+        style: {},
+        lyrics: baseLyrics,
+        librarySongId: 's1',
+      },
+    ]);
+    expect(linkedSlidesInDeck(afterLink, 's1')).toHaveLength(1);
+    const included = applyLibraryEditToDeck(afterLink, 's1', newLibrary, baseLyrics, true);
+    expect(included.updatedCount).toBe(1);
+    expect(included.deck.slides[0].lyrics?.verses[0].lines[0]).toBe('Library new line');
   });
 });

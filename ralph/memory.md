@@ -463,3 +463,8 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - Amended: scratch Save to library via ImportReviewScreen; cancel keeps scratch; confirm links (`librarySongId`).
 - Spec `20261008-add-slide-song-scratch-or-linked.md`; REQ-024 / AC-019; completeEpic false; budget 16–19.
 
+## Epic-004 LOOP 17 DEV — add-slide-song-scratch-or-linked
+
+- Kind picker + scratch blank slide + SaveScratchSongToLibrary (ImportReviewScreen).
+- Unit + song-library prod e2e updated. passes false (QA next). Present/stagedSongSlide untouched.
+
