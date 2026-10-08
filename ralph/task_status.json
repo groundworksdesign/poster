@@ -26,7 +26,7 @@
     "irisChooserImport": "Fixed: chooser uses shared ImportReviewScreen.",
     "irisClientProcess": "Fixed DEV loop 12: song-library actions in *.server.ts; client no longer bundles db/library-root/process.",
     "irisJsonRestoreSongs": "JSON: omit songs key keeps existing; songs key (incl []) replaces. SQLite: pre-epic schema (no songs table or no book/number) preserves when empty; post-epic empty songs replaces.",
-    "irisApplyFlake": "saveEdit awaits fetchSongs while busy=true after setDeckPrompt; Apply disabled until finally."
+    "irisApplyFlake": "DEV loop 14: saveEdit clears busy before fetchSongs after setDeckPrompt; test waits for Apply enabled."
   },
   "requirements": [
     {
