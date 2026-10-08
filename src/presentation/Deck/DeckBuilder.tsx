@@ -24,6 +24,7 @@ import { openPresentForRuntime } from './openPresentWindow';
 import AddSongSlideChooser, { type SongSlideChoice } from './AddSongSlideChooser';
 import AddSongSlideKindPicker from './AddSongSlideKindPicker';
 import SaveScratchSongToLibrary from './SaveScratchSongToLibrary';
+import { shouldIgnorePresentShortcuts } from './presentShortcutGuard';
 
 export default function DeckBuilder() {
   useTheme();
@@ -127,8 +128,8 @@ export default function DeckBuilder() {
   // Keyboard shortcut handler ref -- always reflects latest state without stale closures
   const keyHandlerRef = useRef<(e: KeyboardEvent) => void>();
   keyHandlerRef.current = (e: KeyboardEvent) => {
-    const tag = (document.activeElement as HTMLElement)?.tagName?.toUpperCase();
-    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+    // Never steer Present while focus is in the slide list or slide edit panel (REQ-026).
+    if (shouldIgnorePresentShortcuts(document.activeElement)) return;
 
     if (!deck) return;
     if (e.key === 'ArrowRight' || e.key === 'PageDown') {
@@ -1281,7 +1282,7 @@ export default function DeckBuilder() {
         className={`deck-slides-editor-row${isSlideEditorExpanded ? ' deck-slides-editor-row--expanded' : ''}`}
         data-editor-expanded={isSlideEditorExpanded ? 'true' : 'false'}
       >
-        <div className="deck-slides-list">
+        <div className="deck-slides-list" data-testid="deck-slides-list">
           <div className="deck-slides-list-header">
             <h2>Slides</h2>
             {deck && deck.slides.length > 0 ? (

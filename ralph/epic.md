@@ -46,7 +46,7 @@ todos:
     status: completed
   - id: fix-present-keys-while-editing
     content: "Live-show safety: DeckBuilder page-wide Arrow/Page key handler must NOT move Present while focus is inside the slide edit panel or the song list; add a unit/integration test."
-    status: pending
+    status: completed
   - id: add-song-panel-redesign
     content: "Add song redesign (Pam mockup + Roy decisions): Add slide below Slides header; type choice + linked/scratch/import inside slide edit panel; Also save unchecked for scratch / checked for imports; full first verse for duplicate titles; toolbar Load adds song slide (no deck replace); draft slide joins deck only on Save; Ctrl/Cmd+Enter on search stops on song card; panel states unit tests + e2e both SONG paths; Iris AC-001..018 stay green; Present/stagedSongSlide unchanged."
     status: pending

@@ -35,6 +35,7 @@ afterEach(() => {
 });
 
 import DeckBuilder from './DeckBuilder';
+import { shouldIgnorePresentShortcuts } from './presentShortcutGuard';
 
 function makeJsonFile(content: object | string, name = 'deck.json'): File {
   const text = typeof content === 'string' ? content : JSON.stringify(content);
@@ -564,5 +565,33 @@ test('AC-019: scratch Save to library sets librarySongId via ImportReviewScreen'
     ),
   );
   expect(screen.queryByTestId('slide-scratch-unlinked')).not.toBeInTheDocument();
+});
+
+test('REQ-026: ArrowRight does not move Present while focus is in the slide list', async () => {
+  render(<DeckBuilder />);
+  await loadFile(makeJsonFile(VALID_DECK));
+  await waitFor(() => expect(screen.getByTestId('deck-session-ready')).toHaveAttribute('data-ready', 'true'));
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Edit' })).toBeInTheDocument());
+
+  // Baseline: with focus outside, ArrowRight sends to Present.
+  const outside = document.createElement('button');
+  outside.type = 'button';
+  outside.textContent = 'outside-focus';
+  document.body.appendChild(outside);
+  outside.focus();
+  expect(shouldIgnorePresentShortcuts(document.activeElement)).toBe(false);
+  mockSend.mockClear();
+  fireEvent.keyDown(window, { key: 'ArrowRight' });
+  await waitFor(() => expect(mockSend).toHaveBeenCalled());
+
+  // Focus a control inside the slide list — Present must not advance.
+  const editBtn = screen.getByRole('button', { name: 'Edit' });
+  editBtn.focus();
+  expect(editBtn.closest('[data-testid="deck-slides-list"]')).toBeTruthy();
+  expect(shouldIgnorePresentShortcuts(document.activeElement)).toBe(true);
+  mockSend.mockClear();
+  fireEvent.keyDown(window, { key: 'ArrowRight' });
+  expect(mockSend).not.toHaveBeenCalled();
+  outside.remove();
 });
 

@@ -3,7 +3,7 @@
   "branch": "cursor/epic-004-song-library",
   "baseBranch": "main",
   "status": "in_progress",
-  "loop": 42,
+  "loop": 44,
   "persona": "qa",
   "completeEpic": false,
   "prUrl": "https://github.com/groundworksdesign/poster/pull/26",
@@ -244,7 +244,7 @@
       "todoIds": [
         "fix-present-keys-while-editing"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "REQ-027",
@@ -613,9 +613,10 @@
       "acceptanceCriteria": [
         "Present-keys-ignored-while-editing"
       ],
-      "status": "pending",
-      "passes": false,
-      "notes": ""
+      "status": "done",
+      "passes": true,
+      "notes": "QA: shouldIgnorePresentShortcuts + DeckBuilder ArrowRight ignored in slide list; baseline outside still sends. Present/staged untouched.",
+      "qaVerifiedAt": "2026-10-08T22:55:00.000Z"
     },
     {
       "id": "add-song-panel-redesign",
@@ -669,8 +670,8 @@
     "Theme-persist (REQ-027): remix-theme-persist Home reopen chooseTheme stable 10x"
   ],
   "selected": {
-    "id": "fix-present-keys-while-editing",
-    "reason": "Next: live-show safety before redesign."
+    "id": "add-song-panel-redesign",
+    "reason": "Main redesign task after CI flake + Present key safety."
   },
   "outOfScope": [
     "Bundling the three church books in the app",
@@ -680,7 +681,7 @@
   ],
   "openQuestions": [],
   "blockers": [],
-  "lastUpdated": "2026-10-08T22:40:00.000Z",
+  "lastUpdated": "2026-10-08T22:55:00.000Z",
   "qaEvidence": {
     "taskId": "fix-iris-regate-followups",
     "tsc": "exit 0",
@@ -702,9 +703,9 @@
     "loopsUsed": 39
   },
   "feedback": {
-    "taskId": "fix-remix-theme-persist-flake",
-    "content": "Theme persist flake PASS 10x. Selected fix-present-keys-while-editing.",
-    "updatedAt": "2026-10-08T22:40:00.000Z"
+    "taskId": "fix-present-keys-while-editing",
+    "content": "Present keys while editing PASS. Selected add-song-panel-redesign.",
+    "updatedAt": "2026-10-08T22:55:00.000Z"
   },
   "fixPass": {
     "irisGate": "ralph/specs/20261007-iris-gate-pr26-fail.md",
@@ -735,8 +736,8 @@
     "prUrl": "https://github.com/groundworksdesign/poster/pull/26",
     "baseHead": "a6ebb7716e2042ef358290cb1009a4ab027e35e1",
     "budget": 14,
-    "loop": 3,
-    "loopsUsed": 3,
+    "loop": 5,
+    "loopsUsed": 5,
     "maxLoop": 14,
     "status": "in_progress",
     "royDecisions": [
