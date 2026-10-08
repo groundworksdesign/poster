@@ -1,5 +1,31 @@
 # Feedback
 
+## LOOP 18 FINAL QA — add-slide-song-scratch-or-linked + epic
+
+`<status>PASS</status>`
+
+### AC-019 (six items)
+
+1. Kind picker: Song from scratch / Linked song — PASS (prod e2e + spot)
+2. Scratch excluded from linked-update / apply-decks; library edit leaves scratch alone — PASS (unit + seed unused decks)
+3. Save to library via shared ImportReviewScreen; cancel keeps scratch; confirm sets librarySongId — PASS (prod spot)
+4. Prod song-library e2e: scratch; linked insert; Save → title-match → linked — PASS (4/4)
+5. Unit before/after link exclusion — PASS (`linkedSongUpdate.test.ts`)
+6. Present/ + `stagedSongSlide.ts` byte-identical to main — PASS (0 diff bytes)
+
+### Gate suite
+
+| Check | Result |
+| --- | --- |
+| `tsc --noEmit` | 0 |
+| Jest | 59 / 375 PASS |
+| `build:remix` | 0 |
+| `test:e2e:remix` | 52 + 4 = 56 PASS |
+| Electron e2e (xvfb + `ELECTRON_DISABLE_SANDBOX`) | 12 PASS |
+| Open agent PRs | #26 only (#27 closed) |
+
+`completeEpic` true. All todos `passes: true`. No merge.
+
 ## LOOP 17 DEV — add-slide-song-scratch-or-linked
 
 `<status>pending</status>`

@@ -468,3 +468,9 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - Kind picker + scratch blank slide + SaveScratchSongToLibrary (ImportReviewScreen).
 - Unit + song-library prod e2e updated. passes false (QA next). Present/stagedSongSlide untouched.
 
+## Epic-004 LOOP 18 FINAL QA — PASS + completeEpic
+
+- AC-019 six items verified (prod e2e + cancel spot + unit exclusion).
+- tsc 0; Jest 59/375; build:remix 0; e2e remix 52+4; electron xvfb 12.
+- Present/ + stagedSongSlide NO DIFF vs main. PR #26 only. completeEpic true. No merge.
+

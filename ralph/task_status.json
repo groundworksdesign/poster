@@ -2,10 +2,10 @@
   "epic": "epic-004",
   "branch": "cursor/epic-004-song-library",
   "baseBranch": "main",
-  "status": "in_progress",
-  "loop": 36,
-  "persona": "planning",
-  "completeEpic": false,
+  "status": "complete",
+  "loop": 37,
+  "persona": "qa",
+  "completeEpic": true,
   "prUrl": "https://github.com/groundworksdesign/poster/pull/26",
   "canonicalStatusFile": "ralph/task_status.json",
   "sourceArtifacts": [
@@ -223,7 +223,7 @@
       "todoIds": [
         "add-slide-song-scratch-or-linked"
       ],
-      "status": "pending"
+      "status": "done"
     }
   ],
   "todos": [
@@ -516,7 +516,7 @@
     },
     {
       "id": "add-slide-song-scratch-or-linked",
-      "content": "Add slide > SONG offers two types: (1) Song from scratch — blank in place, no librarySongId, no chooser; (2) Linked song — AddSongSlideChooser with librarySongId. Scratch has Save to library via shared ImportReviewScreen (title-match keep-both; no-lyrics REQ-018/019/022); cancel keeps scratch; confirm sets librarySongId. Scratch never in linked-update/apply-decks until linked. Prod e2e: scratch; linked insert; scratch -> Save -> duplicate-title -> linked. Unit: excluded before save, included after. Present/stagedSongSlide byte-identical to main.",
+      "content": "Add slide > SONG offers two types: (1) Song from scratch \u2014 blank in place, no librarySongId, no chooser; (2) Linked song \u2014 AddSongSlideChooser with librarySongId. Scratch has Save to library via shared ImportReviewScreen (title-match keep-both; no-lyrics REQ-018/019/022); cancel keeps scratch; confirm sets librarySongId. Scratch never in linked-update/apply-decks until linked. Prod e2e: scratch; linked insert; scratch -> Save -> duplicate-title -> linked. Unit: excluded before save, included after. Present/stagedSongSlide byte-identical to main.",
       "requirementIds": [
         "REQ-024",
         "REQ-007",
@@ -536,9 +536,10 @@
         "AC-015",
         "AC-018"
       ],
-      "status": "pending",
-      "passes": false,
-      "notes": "DEV loop 17: kind picker + scratch Save to library wired; unit + song-library e2e added. passes false for QA 18–19."
+      "status": "done",
+      "passes": true,
+      "notes": "QA loop 18 FINAL PASS AC-019 / REQ-024 (all six items). Prod spot: scratch no librarySongId; ImportReviewScreen Save; cancel keeps scratch; confirm links (keep-both new id). Unit: scratch excluded from linked edit until linked; library edit leaves scratch alone. Prod e2e song-library 4/4. Present/ + stagedSongSlide.ts NO DIFF vs main. Only open epic PR #26 (#27 closed; #23 unrelated). No merge.",
+      "qaVerifiedAt": "2026-10-08T01:30:00.000Z"
     }
   ],
   "acceptanceCriteria": [
@@ -563,8 +564,8 @@
     "AC-019 (REQ-024): Add slide > SONG offers scratch (blank, unlinked, no chooser) and linked (chooser); scratch Save to library via ImportReviewScreen (cancel keeps scratch; confirm links); scratch excluded from library update prompts until linked; never changed by library edit while scratch"
   ],
   "selected": {
-    "id": "add-slide-song-scratch-or-linked",
-    "reason": "Roy decision (amended): scratch vs linked + Save to library; next DEV loop 17."
+    "id": null,
+    "reason": "Epic complete \u2014 all todos passes:true including add-slide-song-scratch-or-linked (QA loop 18)."
   },
   "outOfScope": [
     "Bundling the three church books in the app",
@@ -574,26 +575,28 @@
   ],
   "openQuestions": [],
   "blockers": [],
-  "lastUpdated": "2026-10-08T01:00:00.000Z",
+  "lastUpdated": "2026-10-08T01:30:00.000Z",
   "qaEvidence": {
-    "taskId": "fix-song-library-apply-flake",
+    "taskId": "add-slide-song-scratch-or-linked",
     "tsc": "exit 0",
-    "jest": "59 suites / 371 tests PASS",
-    "applyFlakeIsolation": "10/10 PASS",
+    "jest": "59 suites / 375 tests PASS",
     "buildRemix": "exit 0",
     "e2eRemixDev": "52 passed",
-    "e2eSongLibraryProd": "3 passed",
+    "e2eSongLibraryProd": "4 passed",
+    "e2eRemixCombined": "56 passed (52+4)",
     "e2eElectron": "12 passed (xvfb + ELECTRON_DISABLE_SANDBOX)",
+    "ac019ProdSpot": "cancelKeptScratch + confirmLinked + seedUnused (ImportReviewScreen)",
     "presentUnchanged": true,
     "stagedSongSlideUnchanged": true,
-    "openAgentPrs": "PR #26 only (#27 closed unmerged)",
-    "fixPassLoop": 15,
-    "loopsUsed": 35
+    "openAgentPrs": "PR #26 only (#27 closed; #23 unrelated gatekeeper)",
+    "qaPassLoop": 18,
+    "followOnLoopsUsed": 3,
+    "loopsUsed": 37
   },
   "feedback": {
     "taskId": "add-slide-song-scratch-or-linked",
-    "content": "DEV loop 17: scratch/linked kind picker + Save to library. passes false. Budget 16–19. No merge.",
-    "updatedAt": "2026-10-08T01:00:00.000Z"
+    "content": "QA loop 18 FINAL PASS. completeEpic true. All todos passes. No merge.",
+    "updatedAt": "2026-10-08T01:30:00.000Z"
   },
   "fixPass": {
     "irisGate": "ralph/specs/20261007-iris-gate-pr26-fail.md",
@@ -609,10 +612,10 @@
     "decision": "ralph/specs/20261008-add-slide-song-scratch-or-linked.md",
     "prUrl": "https://github.com/groundworksdesign/poster/pull/26",
     "budget": 4,
-    "loop": 17,
-    "loopsUsed": 2,
+    "loop": 18,
+    "loopsUsed": 3,
     "minLoop": 16,
     "maxLoop": 19,
-    "status": "in_progress"
+    "status": "complete"
   }
 }

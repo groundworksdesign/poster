@@ -10,34 +10,34 @@ overview: "Ship an empty local song library with add-by-hand, one-screen file im
 todos:
   - id: empty-library-schema
     content: "Wire the unused local songs table (or equivalent) so a fresh install has an empty library, store title, book, number, lyrics, and a stable song id, and do not bundle the three church books."
-    status: pending
+    status: completed
   - id: add-song-by-hand
     content: "Add a form to create one library song at a time (title, book, number, verses) so it appears in search afterward (REQ-002)."
-    status: pending
+    status: completed
   - id: import-review-screen
     content: "Import Doug's gathered JSON plus existing Poster song XML/JSON through one review screen: checklist of songs all checked by default, no-lyrics group (title only or skip), title-match rows showing number and lyrics with keep both (default) / replace / skip. Skip the review screen for a single clean song file (REQ-003–006, 018–019, 022)."
-    status: pending
+    status: completed
   - id: add-slide-chooser
     content: "When adding a song slide, offer Pick from library (default) and Import a file. Importing while adding a slide shows Also save to my library checked by default on the same screen. The chosen song becomes a new slide in the open deck and does not replace the deck (REQ-007, 008, 010, 017)."
-    status: pending
+    status: completed
   - id: add-slide-song-scratch-or-linked
     content: "Add slide > SONG offers two types: (1) Song from scratch — blank song slide in place, no librarySongId, no chooser; (2) Linked song — AddSongSlideChooser (pick/import + Also save) with librarySongId. Scratch has Save to library via ImportReviewScreen (title-match keep-both; no-lyrics; cancel keeps scratch; confirm sets librarySongId). Scratch never appears in linked-update/apply-decks until linked. Prod e2e: scratch, linked insert, scratch→Save→duplicate-title→linked. Unit: excluded before save, included after (REQ-024)."
-    status: pending
+    status: completed
   - id: library-search-pick
     content: "Library search matches title, book, number, and lyrics. Results show title, book, and number. Shared titles show the first verse inline. Enter or double-click inserts a linked slide after the current slide (REQ-009, 014, 015, 020)."
-    status: pending
+    status: completed
   - id: library-page
     content: "Add a library page reachable from the main menu and from Add song slide, with the same search list plus Add, Edit, Delete, Import, and a used-in-N-decks count (REQ-011, 021)."
-    status: pending
+    status: completed
   - id: linked-update-decks
     content: "Keep slides linked to their library song. On edit or delete, ask about updating decks only when the song is used, list those decks with checkboxes, and ask again before overwriting slides that were edited by hand. Deleting never removes slides unless the user selects those decks (REQ-012, 015, 016, 023)."
-    status: pending
+    status: completed
   - id: present-unchanged
     content: "Leave Present song staging as title then two lyric lines per stage. Do not change that layout in this epic (REQ-013)."
-    status: pending
+    status: completed
   - id: tests-song-library
     content: "Add tests covering AC-001 through AC-018: empty library, hand add, import formats and review defaults, pick-to-slide without replacing the deck, search including lyrics and first-verse for duplicate titles, save checkbox default, title-only empty lyrics, keep-both default, linked updates with hand-edit ask, and Present two-line staging still green."
-    status: pending
+    status: completed
 isProject: false
 ---
 
@@ -100,19 +100,19 @@ flowchart TD
 
 ## Validation
 
-- [ ] Fresh install has zero library songs (AC-001 / REQ-001)
-- [ ] Hand-added song is findable later (AC-002 / REQ-002)
-- [ ] Import accepts gathered book JSON and existing Poster song XML/JSON (AC-003 / REQ-003)
-- [ ] Multi-song file does not import until the review checklist is confirmed (AC-004 / REQ-004, 022)
-- [ ] No-lyrics songs offer title only or skip; nothing auto-imports (AC-005, AC-015 / REQ-005, 018)
-- [ ] Title match shows number and lyrics; default keep both; also replace and skip (AC-006, AC-015 / REQ-006, 019)
-- [ ] Add song slide can import or insert without replacing other slides (AC-007 / REQ-007, 008)
-- [ ] Search by title, book, number, and lyrics works; shared titles can show first verse (AC-008, AC-012, AC-016 / REQ-009, 014, 020)
-- [ ] Also save to my library starts checked and only saves when checked (AC-009, AC-014 / REQ-010, 017)
-- [ ] Edit/delete available; decks update only after confirm; hand-edited slides need an extra yes (AC-010, AC-013, AC-018 / REQ-011, 012, 015, 016, 023)
-- [ ] Present still title then two lines (AC-011 / REQ-013)
-- [ ] Library opens from main menu and Add song slide (AC-017 / REQ-021)
-- [ ] Add slide > SONG offers scratch (blank, unlinked) and linked (chooser); scratch Save to library via ImportReviewScreen; scratch excluded from update prompts until linked (AC-019 / REQ-024)
+- [x] Fresh install has zero library songs (AC-001 / REQ-001)
+- [x] Hand-added song is findable later (AC-002 / REQ-002)
+- [x] Import accepts gathered book JSON and existing Poster song XML/JSON (AC-003 / REQ-003)
+- [x] Multi-song file does not import until the review checklist is confirmed (AC-004 / REQ-004, 022)
+- [x] No-lyrics songs offer title only or skip; nothing auto-imports (AC-005, AC-015 / REQ-005, 018)
+- [x] Title match shows number and lyrics; default keep both; also replace and skip (AC-006, AC-015 / REQ-006, 019)
+- [x] Add song slide can import or insert without replacing other slides (AC-007 / REQ-007, 008)
+- [x] Search by title, book, number, and lyrics works; shared titles can show first verse (AC-008, AC-012, AC-016 / REQ-009, 014, 020)
+- [x] Also save to my library starts checked and only saves when checked (AC-009, AC-014 / REQ-010, 017)
+- [x] Edit/delete available; decks update only after confirm; hand-edited slides need an extra yes (AC-010, AC-013, AC-018 / REQ-011, 012, 015, 016, 023)
+- [x] Present still title then two lines (AC-011 / REQ-013)
+- [x] Library opens from main menu and Add song slide (AC-017 / REQ-021)
+- [x] Add slide > SONG offers scratch (blank, unlinked) and linked (chooser); scratch Save to library via ImportReviewScreen; scratch excluded from update prompts until linked (AC-019 / REQ-024)
 
 ## Risks to manage
 
