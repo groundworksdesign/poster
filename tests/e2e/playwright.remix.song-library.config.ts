@@ -2,8 +2,9 @@ import path from 'node:path';
 import { defineConfig, devices } from '@playwright/test';
 
 /**
- * Production Remix (server.js) e2e for song-library routes.
- * Separate from playwright.remix.config.ts so build:remix never races remix-dev assets.
+ * Production Remix (server.js) e2e: song-library UI + specs that spawn server.js
+ * (library relaunch/repoint). webServer runs a fresh NODE_ENV=production build:remix
+ * so these never see a jsxDEV build/ left by remix-dev.
  */
 const PORT = Number(process.env.SONG_LIBRARY_E2E_PORT || process.env.PORT || 3010);
 const origin = `http://127.0.0.1:${PORT}`;
@@ -12,7 +13,11 @@ const webServerScript = path.join(repoRoot, 'scripts', 'e2e-song-library-webserv
 
 export default defineConfig({
   testDir: '.',
-  testMatch: /remix-song-library\.spec\.ts/,
+  testMatch: [
+    /remix-song-library\.spec\.ts/,
+    /remix-library-relaunch\.spec\.ts/,
+    /remix-library-repoint\.spec\.ts/,
+  ],
   timeout: 90 * 1000,
   expect: { timeout: 15000 },
   fullyParallel: false,
