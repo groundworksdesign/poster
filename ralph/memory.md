@@ -484,3 +484,9 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 
 - `librarySongSyncedFingerprint`: out-of-date = "Not updated to the latest library version"; hand-edit wins when both.
 - Budget max 21. passes false. Present/staged untouched.
+
+## Epic-004 LOOP 21 DEV+QA — e2e build isolation + completeEpic
+
+- DEV: relaunch/repoint under song-library prod Playwright config (fresh `build:remix`); remix-dev ignores those specs.
+- QA: empty `build/` e2e 57; after remix-dev poison e2e 57; tsc 0; Jest 59/385; electron 12; flake 10/10+10/10; Present/stagedSongSlide NO DIFF.
+- completeEpic true. PR #26 only. No merge.

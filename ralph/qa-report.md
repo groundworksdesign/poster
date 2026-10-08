@@ -1,5 +1,30 @@
 # Feedback
 
+## LOOP 21 FINAL QA — fix-iris-regate-followups + epic
+
+`<status>PASS</status>`
+
+### DEV (same loop)
+
+Moved relaunch/repoint specs into `playwright.remix.song-library.config.ts` (fresh production `build:remix` before `server.js`). Remix-dev suite ignores them. Spawns set `NODE_ENV=production`.
+
+### Gate suite
+
+| Check | Result |
+| --- | --- |
+| `rm -rf build` then `test:e2e:remix` | 50 + 7 = 57 PASS |
+| After deliberate remix-dev jsxDEV `build/` then `test:e2e:remix` | 50 + 7 = 57 PASS |
+| `tsc --noEmit` | 0 |
+| Jest | 59 / 385 PASS (config-path-alignment 5/5) |
+| Electron e2e (xvfb + `ELECTRON_DISABLE_SANDBOX`) | 12 PASS |
+| SongLibraryPage.unit.test 10× | 10/10 |
+| apply-decks single test 10× | 10/10 |
+| Present/ + `stagedSongSlide.ts` vs main | 0 diff bytes |
+| Lint | N/A (no job in pr.yml; baseline eslint noise only) |
+
+`passes` true. `completeEpic` true. All todos `passes: true`. No merge.
+
+
 ## LOOP 19 DEV amendment — hand-edit vs out-of-date labels
 
 `<status>pending</status>`

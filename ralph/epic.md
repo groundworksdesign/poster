@@ -40,7 +40,7 @@ todos:
     status: completed
   - id: fix-iris-regate-followups
     content: "Iris re-gate follow-ups: fix UpdateDecksPrompt apply-decks selection reset (MUST-FIX); move routes/*.server.ts helpers out of routes so /library/loader/server is 404; hand-edited vs out-of-date labels (Not updated to the latest library version) via librarySongSyncedFingerprint (REQ-012/023)."
-    status: pending
+    status: completed
 isProject: false
 ---
 
