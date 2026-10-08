@@ -456,3 +456,8 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - Flake 10/10; tsc 0; Jest 59/371; build:remix 0; e2e remix 52+3; electron xvfb 12.
 - Present/ + stagedSongSlide NO DIFF vs main. All 5 fix tasks + epic todos passes:true.
 - completeEpic true. Side PR #27 closed. No merge. Fix 15/16.
+
+## Epic-004 LOOP 16 PLANNING — add-slide-song-scratch-or-linked
+
+- Roy: Add slide > SONG = scratch (blank unlinked) or linked (chooser). Scratch excluded from update prompts.
+- Spec `20261008-add-slide-song-scratch-or-linked.md`; REQ-024 / AC-019; completeEpic false; budget 16–19.

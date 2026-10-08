@@ -20,6 +20,9 @@ todos:
   - id: add-slide-chooser
     content: "When adding a song slide, offer Pick from library (default) and Import a file. Importing while adding a slide shows Also save to my library checked by default on the same screen. The chosen song becomes a new slide in the open deck and does not replace the deck (REQ-007, 008, 010, 017)."
     status: pending
+  - id: add-slide-song-scratch-or-linked
+    content: "Add slide > SONG offers two types: (1) Song from scratch — blank song slide in place, no librarySongId, no chooser; (2) Linked song — AddSongSlideChooser (pick/import + Also save) with librarySongId. Scratch slides never appear in linked-update or apply-decks prompts and are never changed by library edits. Prod song-library e2e for both paths; unit test that library edit leaves scratch slides alone (REQ-024)."
+    status: pending
   - id: library-search-pick
     content: "Library search matches title, book, number, and lyrics. Results show title, book, and number. Shared titles show the first verse inline. Enter or double-click inserts a linked slide after the current slide (REQ-009, 014, 015, 020)."
     status: pending
@@ -71,14 +74,16 @@ Poster has a local song library that starts empty. Users add songs by hand or im
 
 ```mermaid
 flowchart TD
-  addSlide[Add song slide] --> choice{Pick or Import}
+  addSlide[Add song slide] --> kind{Scratch or Linked}
+  kind -->|Scratch| blank[Blank song slide no librarySongId]
+  kind -->|Linked| choice{Pick or Import}
   choice -->|Pick| search[Search title book number lyrics]
   search --> slide[New linked slide in open deck]
   choice -->|Import| review[One review screen]
   review --> slide
   review --> library[(Song library)]
   manage[Library page] --> library
-  library -->|edit or delete with confirm| decks[Linked decks]
+  library -->|edit or delete with confirm| decks[Linked decks only]
 ```
 
 ## Primary Files Expected to Change
@@ -103,6 +108,7 @@ flowchart TD
 - [ ] Edit/delete available; decks update only after confirm; hand-edited slides need an extra yes (AC-010, AC-013, AC-018 / REQ-011, 012, 015, 016, 023)
 - [ ] Present still title then two lines (AC-011 / REQ-013)
 - [ ] Library opens from main menu and Add song slide (AC-017 / REQ-021)
+- [ ] Add slide > SONG offers scratch (blank, unlinked) and linked (chooser); scratch excluded from library update prompts (AC-019 / REQ-024)
 
 ## Risks to manage
 

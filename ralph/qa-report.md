@@ -1,31 +1,19 @@
 # Feedback
 
-## Iris fix pass FINAL QA (fix loop 15) — PASS
+## LOOP 16 PLANNING — add-slide-song-scratch-or-linked
 
-`<status>verified</status>`
+`<status>pending</status>`
 
-### Iris gate items
+### Decision
 
-| Item | Result |
-| --- | --- |
-| Remix song-library outlets (not coming soon) | PASS |
-| Chooser import uses shared review | PASS |
-| JSON/SQLite restore preserves pre-epic songs | PASS |
-| Client `process` out of song-library bundle | PASS |
-| Apply-decks unit flake | PASS (10/10 isolation) |
+Roy: Add slide > SONG offers **Song from scratch** (blank, no `librarySongId`, no chooser) and **Linked song** (`AddSongSlideChooser`). Scratch never appears in linked-update / apply-decks prompts and is never changed by library edits.
 
-### Final bar
+Spec: `ralph/specs/20261008-add-slide-song-scratch-or-linked.md`
 
-| Check | Result |
-| --- | --- |
-| Apply flake ×10 | 10/10 PASS |
-| `tsc --noEmit` | exit 0 |
-| Full Jest | 59 / 371 PASS |
-| `build:remix` | exit 0 |
-| `test:e2e:remix` | 52 + 3 PASS |
-| Electron e2e (xvfb) | 12 PASS |
-| `Present/` + `stagedSongSlide.ts` vs `main` | NO DIFF |
-| All todos `passes:true` | yes |
-| Extra open agent PRs | none (#27 closed) |
+### Selected task
 
-`completeEpic` true. Do not merge.
+`add-slide-song-scratch-or-linked` (REQ-024 / AC-019)
+
+### Budget
+
+Loops 16–19 (this planning = 16). `completeEpic` false. No merge.
