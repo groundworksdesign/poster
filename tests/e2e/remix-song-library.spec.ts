@@ -187,8 +187,7 @@ test.describe('Song library (production Remix build)', () => {
     await page.getByTestId('add-slide-song').click();
     await expect(page.getByTestId('song-type-choice')).toBeVisible({ timeout: 15000 });
     await page.getByTestId('song-type-linked').click();
-    await page.getByTestId('song-import-file-link').click();
-    await expect(page.getByTestId('song-also-save-import').or(page.getByTestId('song-panel-import-file'))).toBeAttached();
+    await expect(page.getByTestId('song-panel-import-file')).toBeAttached();
     errors.assertClean();
 
     const importBody = JSON.stringify({
