@@ -2,10 +2,10 @@
   "epic": "epic-004",
   "branch": "cursor/epic-004-song-library",
   "baseBranch": "main",
-  "status": "complete",
-  "loop": 39,
-  "persona": "qa",
-  "completeEpic": true,
+  "status": "in_progress",
+  "loop": 40,
+  "persona": "planning",
+  "completeEpic": false,
   "prUrl": "https://github.com/groundworksdesign/poster/pull/26",
   "canonicalStatusFile": "ralph/task_status.json",
   "sourceArtifacts": [
@@ -14,7 +14,9 @@
     "ralph/epic.md",
     "ralph/specs/20261007-ac-traceability-song-library.md",
     "ralph/specs/20261007-iris-gate-pr26-fail.md",
-    "ralph/specs/20261008-add-slide-song-scratch-or-linked.md"
+    "ralph/specs/20261008-add-slide-song-scratch-or-linked.md",
+    "ralph/specs/20261008-add-song-redesign.md",
+    "ralph/specs/20261008-add-song-redesign-mockup.html"
   ],
   "codebaseFindings": {
     "songsTable": "Exists in schema.server.ts (id, title, author, song_json, created_at, updated_at) but unused \u2014 no CRUD, routes, or repo reads/writes.",
@@ -29,7 +31,9 @@
     "irisJsonRestoreSongs": "JSON: omit songs key keeps existing; songs key (incl []) replaces. SQLite: pre-epic schema (no songs table or no book/number) preserves when empty; post-epic empty songs replaces.",
     "irisApplyFlake": "QA loop 15: clear busy + wait Apply enabled; isolation 10/10; Present/stagedSongSlide NO DIFF vs main.",
     "royScratchVsLinked": "Add slide > SONG: scratch blank unlinked vs linked chooser; scratch Save to library via ImportReviewScreen then gets librarySongId; scratch excluded from prompts until linked (20261008 + amendment).",
-    "irisRegateFollowups": "Iris re-gate bc4320e: apply-decks flake = UpdateDecksPrompt useEffect reset after mount; *.server.ts under routes/ exposed as URL routes (e.g. /library/loader/server)."
+    "irisRegateFollowups": "Iris re-gate bc4320e: apply-decks flake = UpdateDecksPrompt useEffect reset after mount; *.server.ts under routes/ exposed as URL routes (e.g. /library/loader/server).",
+    "addSongRedesign": "Pam mockup: song type/search/scratch/import live in slide edit panel; Add slide under Slides header. Today KindPicker/Chooser overlay under Deck heading; lyrics JSON editor; Load replaces deck; firstVerseLine is one lyric line; arrows move Present unless focus is INPUT/TEXTAREA/SELECT.",
+    "themePersistFlake": "CI run 37845317615: remix-theme-persist Home reopen failed in chooseTheme \u2014 localStorage stayed light after synthetic select change (hydrate race / React onChange)."
   },
   "requirements": [
     {
@@ -225,6 +229,30 @@
         "add-slide-song-scratch-or-linked"
       ],
       "status": "done"
+    },
+    {
+      "id": "REQ-025",
+      "title": "Add song slide redesign inside edit panel (Roy mockup decisions)",
+      "todoIds": [
+        "add-song-panel-redesign"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "REQ-026",
+      "title": "Present arrow/Page keys ignored while focus in slide edit panel or song list",
+      "todoIds": [
+        "fix-present-keys-while-editing"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "REQ-027",
+      "title": "Remix theme persist e2e stable (Home reopen chooseTheme)",
+      "todoIds": [
+        "fix-remix-theme-persist-flake"
+      ],
+      "status": "pending"
     }
   ],
   "todos": [
@@ -561,6 +589,57 @@
       "passes": true,
       "notes": "QA loop 21 FINAL PASS. DEV loop 21: relaunch/repoint under song-library prod suite (fresh build:remix) so remix-dev jsxDEV build/ cannot poison server.js. e2e empty build/ 50+7; e2e after remix-dev poison 50+7; tsc 0; Jest 59/385; electron xvfb 12; flake SongLibraryPage full 10/10 + apply-decks single 10/10; Present/ + stagedSongSlide.ts NO DIFF vs main; config-path-alignment 5/5. No dedicated lint job in pr.yml (eslint baseline noise). completeEpic true. No merge.",
       "qaVerifiedAt": "2026-10-08T01:02:13.000Z"
+    },
+    {
+      "id": "fix-remix-theme-persist-flake",
+      "content": "CI blocker: remix-theme-persist.spec.ts Home reopen \u2014 chooseTheme localStorage stayed light (run 37845317615 on a6ebb77). Find root cause (race after #23 rebase or pre-existing flake) and fix. QA runs that spec 10x green.",
+      "requirementIds": [
+        "REQ-027"
+      ],
+      "acceptanceCriteria": [
+        "Theme-persist-Home-reopen-10x"
+      ],
+      "status": "pending",
+      "passes": false,
+      "notes": "Selected first: blocks Remix E2E so song-library suite never ran."
+    },
+    {
+      "id": "fix-present-keys-while-editing",
+      "content": "Live-show safety: DeckBuilder keydown (~128-147) must not move Present (Arrow/Page/song up-down) while focus is inside the slide edit panel or the song/slide list. Add a test.",
+      "requirementIds": [
+        "REQ-026"
+      ],
+      "acceptanceCriteria": [
+        "Present-keys-ignored-while-editing"
+      ],
+      "status": "pending",
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "add-song-panel-redesign",
+      "content": "Add song redesign per ralph/specs/20261008-add-song-redesign.md + Roy: Add slide below Slides header; panel hosts type choice, linked search/card, scratch editor, import review; Also save unchecked scratch / checked imports; full first verse for duplicate titles; toolbar Load adds song slide; draft joins deck only on Save; Ctrl/Cmd+Enter on search stops on card; unit tests for panel states + e2e both SONG paths; AC-001..018 stay green; Present/stagedSongSlide unchanged.",
+      "requirementIds": [
+        "REQ-025",
+        "REQ-007",
+        "REQ-008",
+        "REQ-014",
+        "REQ-017",
+        "REQ-024"
+      ],
+      "acceptanceCriteria": [
+        "AC-020-panel-states",
+        "AC-020-add-under-slides",
+        "AC-020-also-save-defaults",
+        "AC-020-full-first-verse",
+        "AC-020-toolbar-load-adds",
+        "AC-020-save-joins-deck",
+        "AC-020-ctrl-enter-search",
+        "AC-020-e2e-both-paths"
+      ],
+      "status": "pending",
+      "passes": false,
+      "notes": ""
     }
   ],
   "acceptanceCriteria": [
@@ -583,9 +662,15 @@
     "AC-017 (REQ-021): Library opens from main menu and Add song slide",
     "AC-018 (REQ-022, 023): Clean multi-song one-click; problem sections only when needed; unused songs edit/delete without deck prompt",
     "AC-019 (REQ-024): Add slide > SONG offers scratch (blank, unlinked, no chooser) and linked (chooser); scratch Save to library via ImportReviewScreen (cancel keeps scratch; confirm links); scratch excluded from library update prompts until linked; never changed by library edit while scratch",
-    "Iris-regate: linked slide that only skipped a prior library update is labelled \"Not updated to the latest library version\" (not edited by hand); both states ask before overwrite; hand-edit wins when both"
+    "Iris-regate: linked slide that only skipped a prior library update is labelled \"Not updated to the latest library version\" (not edited by hand); both states ask before overwrite; hand-edit wins when both",
+    "AC-020 (REQ-025): Add song redesign in slide edit panel \u2014 Roy decisions (also-save defaults, full first verse, toolbar Load adds slide, Save-only join, Ctrl/Cmd+Enter pauses on card); Add slide below Slides header; e2e both SONG paths",
+    "Present-keys (REQ-026): Arrow/Page keys do not move Present while focus is in slide edit panel or song list",
+    "Theme-persist (REQ-027): remix-theme-persist Home reopen chooseTheme stable 10x"
   ],
-  "selected": null,
+  "selected": {
+    "id": "fix-remix-theme-persist-flake",
+    "reason": "CI blocker on a6ebb77 \u2014 Remix E2E failed before song-library suite; fix first."
+  },
   "outOfScope": [
     "Bundling the three church books in the app",
     "Transcribing the five copyright-held songs",
@@ -594,7 +679,7 @@
   ],
   "openQuestions": [],
   "blockers": [],
-  "lastUpdated": "2026-10-08T01:02:13.000Z",
+  "lastUpdated": "2026-10-08T22:30:00.000Z",
   "qaEvidence": {
     "taskId": "fix-iris-regate-followups",
     "tsc": "exit 0",
@@ -616,9 +701,9 @@
     "loopsUsed": 39
   },
   "feedback": {
-    "taskId": "fix-iris-regate-followups",
-    "content": "Loop 21 FINAL QA PASS + completeEpic. e2e self-sufficient from any build/ state. No merge.",
-    "updatedAt": "2026-10-08T01:02:13.000Z"
+    "taskId": "fix-remix-theme-persist-flake",
+    "content": "Planning loop 40: add-song redesign + present-keys + theme-persist flake. Budget 14 loops. completeEpic false.",
+    "updatedAt": "2026-10-08T22:30:00.000Z"
   },
   "fixPass": {
     "irisGate": "ralph/specs/20261007-iris-gate-pr26-fail.md",
@@ -643,5 +728,22 @@
     "note45f10ffCi": "ignored except noted (Iris reopened before final gate)",
     "amendment": "hand-edited vs out-of-date labels (librarySongSyncedFingerprint)",
     "loop21E2eIsolation": "relaunch/repoint under song-library prod suite after fresh build:remix"
+  },
+  "redesignPass": {
+    "spec": "ralph/specs/20261008-add-song-redesign.md",
+    "prUrl": "https://github.com/groundworksdesign/poster/pull/26",
+    "baseHead": "a6ebb7716e2042ef358290cb1009a4ab027e35e1",
+    "budget": 14,
+    "loop": 1,
+    "loopsUsed": 1,
+    "maxLoop": 14,
+    "status": "in_progress",
+    "royDecisions": [
+      "also-save unchecked scratch / checked imports",
+      "full first verse for duplicate titles",
+      "toolbar Load adds song slide",
+      "draft joins deck only on Save",
+      "Ctrl/Cmd+Enter on search stops on card"
+    ]
   }
 }

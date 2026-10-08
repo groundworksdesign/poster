@@ -41,6 +41,15 @@ todos:
   - id: fix-iris-regate-followups
     content: "Iris re-gate follow-ups: fix UpdateDecksPrompt apply-decks selection reset (MUST-FIX); move routes/*.server.ts helpers out of routes so /library/loader/server is 404; hand-edited vs out-of-date labels (Not updated to the latest library version) via librarySongSyncedFingerprint (REQ-012/023)."
     status: completed
+  - id: fix-remix-theme-persist-flake
+    content: "CI blocker: remix-theme-persist Home reopen (chooseTheme localStorage) flake after rebase onto #23 — find root cause (race vs flake) and fix; QA runs that spec 10x green."
+    status: pending
+  - id: fix-present-keys-while-editing
+    content: "Live-show safety: DeckBuilder page-wide Arrow/Page key handler must NOT move Present while focus is inside the slide edit panel or the song list; add a unit/integration test."
+    status: pending
+  - id: add-song-panel-redesign
+    content: "Add song redesign (Pam mockup + Roy decisions): Add slide below Slides header; type choice + linked/scratch/import inside slide edit panel; Also save unchecked for scratch / checked for imports; full first verse for duplicate titles; toolbar Load adds song slide (no deck replace); draft slide joins deck only on Save; Ctrl/Cmd+Enter on search stops on song card; panel states unit tests + e2e both SONG paths; Iris AC-001..018 stay green; Present/stagedSongSlide unchanged."
+    status: pending
 isProject: false
 ---
 
@@ -116,6 +125,7 @@ flowchart TD
 - [x] Present still title then two lines (AC-011 / REQ-013)
 - [x] Library opens from main menu and Add song slide (AC-017 / REQ-021)
 - [x] Add slide > SONG offers scratch (blank, unlinked) and linked (chooser); scratch Save to library via ImportReviewScreen; scratch excluded from update prompts until linked (AC-019 / REQ-024)
+- [ ] Add song redesign inside slide edit panel (Roy-approved Pam mockup); toolbar Load adds song slide; Present keys ignored while editing (AC-020+)
 
 ## Risks to manage
 
