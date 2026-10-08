@@ -261,11 +261,10 @@ test.describe('Song library (production Remix build)', () => {
     errors.assertClean();
 
     // While scratch editor is open: Save to library with duplicate-title review.
-    const titleInput = page
+    await page
       .getByTestId('deck-slide-editor-panel')
-      .locator('label', { hasText: 'Title:' })
-      .locator('input');
-    await titleInput.fill('Scratch Dup Title');
+      .getByRole('textbox', { name: 'Title:', exact: true })
+      .fill('Scratch Dup Title');
     const lyricsBox = page.locator('#lyrics-json');
     await lyricsBox.fill(
       JSON.stringify(
