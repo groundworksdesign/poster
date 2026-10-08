@@ -2,10 +2,10 @@
   "epic": "epic-004",
   "branch": "cursor/epic-004-song-library",
   "baseBranch": "main",
-  "status": "complete",
-  "loop": 46,
-  "persona": "qa",
-  "completeEpic": true,
+  "status": "in_progress",
+  "loop": 47,
+  "persona": "planning",
+  "completeEpic": false,
   "prUrl": "https://github.com/groundworksdesign/poster/pull/26",
   "canonicalStatusFile": "ralph/task_status.json",
   "sourceArtifacts": [
@@ -16,7 +16,8 @@
     "ralph/specs/20261007-iris-gate-pr26-fail.md",
     "ralph/specs/20261008-add-slide-song-scratch-or-linked.md",
     "ralph/specs/20261008-add-song-redesign.md",
-    "ralph/specs/20261008-add-song-redesign-mockup.html"
+    "ralph/specs/20261008-add-song-redesign-mockup.html",
+    "ralph/specs/20261008-iris-gate-pr26-d2145f6.md"
   ],
   "codebaseFindings": {
     "songsTable": "Exists in schema.server.ts (id, title, author, song_json, created_at, updated_at) but unused \u2014 no CRUD, routes, or repo reads/writes.",
@@ -33,7 +34,8 @@
     "royScratchVsLinked": "Add slide > SONG: scratch blank unlinked vs linked chooser; scratch Save to library via ImportReviewScreen then gets librarySongId; scratch excluded from prompts until linked (20261008 + amendment).",
     "irisRegateFollowups": "Iris re-gate bc4320e: apply-decks flake = UpdateDecksPrompt useEffect reset after mount; *.server.ts under routes/ exposed as URL routes (e.g. /library/loader/server).",
     "addSongRedesign": "Pam mockup: song type/search/scratch/import live in slide edit panel; Add slide under Slides header. Today KindPicker/Chooser overlay under Deck heading; lyrics JSON editor; Load replaces deck; firstVerseLine is one lyric line; arrows move Present unless focus is INPUT/TEXTAREA/SELECT.",
-    "themePersistFlake": "CI run 37845317615: remix-theme-persist Home reopen failed in chooseTheme \u2014 localStorage stayed light after synthetic select change (hydrate race / React onChange)."
+    "themePersistFlake": "CI run 37845317615: remix-theme-persist Home reopen failed in chooseTheme \u2014 localStorage stayed light after synthetic select change (hydrate race / React onChange).",
+    "irisGateD2145f6": "Iris FAIL d2145f6: (1) single clean file savePayloads before Save; (2) existing scratch null commit still saves old draft; (3) library writes before Save on import/scratch confirm; (4) weakened e2e. Plus N1 keys, N3 array commit, N4 Add by hand, F3 Skip, F5 tag ref, UI mockup gaps, state I."
   },
   "requirements": [
     {
@@ -253,6 +255,46 @@
         "fix-remix-theme-persist-flake"
       ],
       "status": "done"
+    },
+    {
+      "id": "REQ-028",
+      "title": "Defer all panel library writes until Save slide; Also save on single-file import",
+      "todoIds": [
+        "fix-iris-library-defer-until-save"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "REQ-029",
+      "title": "Existing-slide song panel: null commit stays open; multi-import array applies; F3 Skip unticks Also save",
+      "todoIds": [
+        "fix-iris-library-defer-until-save"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "REQ-030",
+      "title": "Present keys ignore list/panel click focus; empty-lib Type a new song in panel; manage full first verse",
+      "todoIds": [
+        "fix-iris-keys-empty-lib-manage"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "REQ-031",
+      "title": "Panel UI matches redesign mockup (menu, keys, Esc, state I, toolbar, insert-after)",
+      "todoIds": [
+        "fix-iris-panel-ui-mockup"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "REQ-032",
+      "title": "Beta tag ref force-moved to release target commit (F5)",
+      "todoIds": [
+        "fix-iris-beta-tag-ref"
+      ],
+      "status": "pending"
     }
   ],
   "todos": [
@@ -643,6 +685,73 @@
       "passes": true,
       "notes": "QA loop FINAL: panel redesign PASS. Add under Slides; linked/scratch/import in panel; Also save unchecked scratch / checked import; full first verse; toolbar Load adds; Save-only join; Ctrl/Cmd+Enter pick-only. e2e 50+7; Jest 413; tsc 0; electron 12; theme 10x; Present/staged NO DIFF.",
       "qaVerifiedAt": "2026-10-08T23:30:00.000Z"
+    },
+    {
+      "id": "fix-iris-library-defer-until-save",
+      "content": "Iris blockers 1-3 + N3 + F3: Also save box for single clean file (checked); defer ALL library writes (import confirm, single-file, scratch review/Replace) until Save slide; Cancel/x/Esc drops pending ops with library unchanged; saveSlideEdits null commit stays open (keeps Words); array multi-import on existing slide applies; Skip unticks Also save. Strict unit/e2e with library counts.",
+      "requirementIds": [
+        "REQ-028",
+        "REQ-029",
+        "REQ-009",
+        "REQ-014",
+        "REQ-017"
+      ],
+      "acceptanceCriteria": [
+        "Iris-AC-009",
+        "Iris-AC-014",
+        "Iris-decision-5-library",
+        "Iris-scratch-existing-review",
+        "Iris-N3",
+        "Iris-F3"
+      ],
+      "status": "pending",
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "fix-iris-keys-empty-lib-manage",
+      "content": "N1: extend presentShortcutGuard so click/focus anywhere in slide list or panel (incl. non-focusable row text/background) blocks Arrow/Page; test. N4: empty-library Type a new song stays in panel scratch; Open song library in new window. Manage page: full first verse for same-title songs.",
+      "requirementIds": [
+        "REQ-030",
+        "REQ-026"
+      ],
+      "acceptanceCriteria": [
+        "Iris-N1",
+        "Iris-N4",
+        "Iris-manage-full-verse"
+      ],
+      "status": "pending",
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "fix-iris-panel-ui-mockup",
+      "content": "UI to redesign spec/mockup: remove Start Song/Prev/Next 2 Lines; insert pending+new after selected; add-slide menu \u25be icons S/T/G/I; type cards descriptions+1/2/arrows; highlight active Linked/Scratch; Save slide Ctrl/Cmd+Enter (card saves; search stops on card); Esc one level; Style collapsed for song; Also-save explanation; header \u2715 Close + import review heading; state I Edit words / yellow note / Use library words. Tests for new states/keys.",
+      "requirementIds": [
+        "REQ-031",
+        "REQ-025"
+      ],
+      "acceptanceCriteria": [
+        "Iris-UI-mockup",
+        "Iris-state-I",
+        "Iris-keyboard"
+      ],
+      "status": "pending",
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "fix-iris-beta-tag-ref",
+      "content": "F5: pr.yml force-moves beta tag v*-pr.<N> to the release target commit (head SHA) so the tag ref matches the packaged assets.",
+      "requirementIds": [
+        "REQ-032"
+      ],
+      "acceptanceCriteria": [
+        "Iris-F5"
+      ],
+      "status": "pending",
+      "passes": false,
+      "notes": ""
     }
   ],
   "acceptanceCriteria": [
@@ -670,7 +779,10 @@
     "Present-keys (REQ-026): Arrow/Page keys do not move Present while focus is in slide edit panel or song list",
     "Theme-persist (REQ-027): remix-theme-persist Home reopen chooseTheme stable 10x"
   ],
-  "selected": null,
+  "selected": {
+    "id": "fix-iris-library-defer-until-save",
+    "reason": "Iris FAIL blockers 1-3 (library before Save, AC-009/014, existing scratch review). Cap 14."
+  },
   "outOfScope": [
     "Bundling the three church books in the app",
     "Transcribing the five copyright-held songs",
@@ -692,8 +804,8 @@
     "qaPassLoop": 46
   },
   "feedback": {
-    "taskId": "add-song-panel-redesign",
-    "content": "Redesign pass FINAL QA PASS + completeEpic. PR #26. No merge.",
+    "taskId": "fix-iris-library-defer-until-save",
+    "content": "Planning: Iris d2145f6 FAIL + Race UI expansion. Selected library-defer-until-save. Budget 14. completeEpic false.",
     "updatedAt": "2026-10-08T23:30:00.000Z"
   },
   "fixPass": {
@@ -737,5 +849,15 @@
       "Ctrl/Cmd+Enter on search stops on card"
     ],
     "finalHeadPending": true
+  },
+  "irisFixPass": {
+    "gate": "ralph/specs/20261008-iris-gate-pr26-d2145f6.md",
+    "prUrl": "https://github.com/groundworksdesign/poster/pull/26",
+    "headShaAtFail": "d2145f67b0fc9e66540e84bba73e01d30a9c083b",
+    "budget": 14,
+    "loop": 1,
+    "loopsUsed": 1,
+    "maxLoop": 14,
+    "status": "in_progress"
   }
 }

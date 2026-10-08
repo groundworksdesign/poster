@@ -50,6 +50,19 @@ todos:
   - id: add-song-panel-redesign
     content: "Add song redesign (Pam mockup + Roy decisions): Add slide below Slides header; type choice + linked/scratch/import inside slide edit panel; Also save unchecked for scratch / checked for imports; full first verse for duplicate titles; toolbar Load adds song slide (no deck replace); draft slide joins deck only on Save; Ctrl/Cmd+Enter on search stops on song card; panel states unit tests + e2e both SONG paths; Iris AC-001..018 stay green; Present/stagedSongSlide unchanged."
     status: completed
+
+  - id: fix-iris-library-defer-until-save
+    content: "Iris blockers: Also save on single-file; defer library writes until Save slide; Cancel drops pending; existing-slide null commit stays open; multi-import array; F3 Skip unticks Also save."
+    status: pending
+  - id: fix-iris-keys-empty-lib-manage
+    content: "N1 Present keys on list/panel click; N4 Type a new song in panel; manage page full first verse."
+    status: pending
+  - id: fix-iris-panel-ui-mockup
+    content: "UI mockup polish: toolbar, insert-after, menu keys, type cards, Esc/Ctrl+Enter, state I, Style collapsed."
+    status: pending
+  - id: fix-iris-beta-tag-ref
+    content: "F5: force-move beta tag ref to release head commit in pr.yml."
+    status: pending
 isProject: false
 ---
 
