@@ -248,6 +248,8 @@ export default function SongLibraryPage() {
         baselineLyrics,
         decks,
       });
+      // Release busy before list refresh so Apply is clickable while songs reload.
+      setBusy(false);
       await fetchSongs(debouncedQuery);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Network error saving song.');

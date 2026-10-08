@@ -209,7 +209,12 @@ describe('SongLibraryPage (AC-017, REQ-011, used-in-N-decks)', () => {
     fireEvent.click(screen.getByTestId('song-library-edit-save'));
     await waitFor(() => expect(screen.getByTestId('update-decks-prompt')).toBeInTheDocument());
     fireEvent.click(screen.getByTestId('update-decks-check-d1'));
-    fireEvent.click(screen.getByTestId('update-decks-apply'));
+    const apply = await waitFor(() => {
+      const btn = screen.getByTestId('update-decks-apply');
+      expect(btn).toBeEnabled();
+      return btn;
+    });
+    fireEvent.click(apply);
     await waitFor(() => expect(applies.length).toBe(1));
     expect(applies[0]).toEqual(
       expect.objectContaining({

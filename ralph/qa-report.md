@@ -1,21 +1,20 @@
 # Feedback
 
-## fix-client-process-reference QA (fix loop 13) — PASS
+## fix-song-library-apply-flake DEV (fix loop 14) — awaiting QA
 
-`<status>verified</status>`
+`<status>pending</status>`
 
-### Checks
+### Changes
+
+- `saveEdit`: `setBusy(false)` before `fetchSongs` after `setDeckPrompt` so Apply is not disabled during list refresh.
+- Unit test waits for Apply `toBeEnabled()` before click.
+
+### Checks (DEV)
 
 | Check | Result |
 | --- | --- |
-| Fresh `build:remix` | exit 0 |
-| Song-library client: no `process.env` / sqlite via routes+chunks | PASS |
-| `*.server` client stubs emptied | PASS |
-| `?_data` save / import / delete / decks / apply-decks / picker `?q=` | PASS |
-| `tsc --noEmit` | exit 0 |
-| Full Jest | 59 / 371 PASS |
-| `pnpm test:e2e:remix` | 52 + 3 PASS |
+| REQ-012/023 apply-decks isolation ×10 | **10/10 PASS** |
 
 ### Next
 
-`fix-song-library-apply-flake`
+QA on `fix-song-library-apply-flake` (10× isolation; do not set passes until QA).

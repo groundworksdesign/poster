@@ -445,3 +445,8 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 
 - Fresh build; song client audit clean; ?_data actions OK; tsc/Jest 371/e2e 52+3 PASS.
 - Next: fix-song-library-apply-flake. Fix 13/16.
+
+## Epic-004 FIX LOOP 14 DEV — fix-song-library-apply-flake
+
+- saveEdit clears busy before fetchSongs after setDeckPrompt; test waits for Apply enabled.
+- Isolation 10/10 PASS. passes=false. Fix 14/16.
