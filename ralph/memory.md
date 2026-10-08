@@ -460,4 +460,6 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 ## Epic-004 LOOP 16 PLANNING — add-slide-song-scratch-or-linked
 
 - Roy: Add slide > SONG = scratch (blank unlinked) or linked (chooser). Scratch excluded from update prompts.
+- Amended: scratch Save to library via ImportReviewScreen; cancel keeps scratch; confirm links (`librarySongId`).
 - Spec `20261008-add-slide-song-scratch-or-linked.md`; REQ-024 / AC-019; completeEpic false; budget 16–19.
+

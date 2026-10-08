@@ -28,7 +28,7 @@
     "irisClientProcess": "Fixed DEV loop 12: song-library actions in *.server.ts; client no longer bundles db/library-root/process.",
     "irisJsonRestoreSongs": "JSON: omit songs key keeps existing; songs key (incl []) replaces. SQLite: pre-epic schema (no songs table or no book/number) preserves when empty; post-epic empty songs replaces.",
     "irisApplyFlake": "QA loop 15: clear busy + wait Apply enabled; isolation 10/10; Present/stagedSongSlide NO DIFF vs main.",
-    "royScratchVsLinked": "Add slide > SONG: scratch blank unlinked vs linked chooser; scratch excluded from linked-update/apply-decks (20261008 decision)."
+    "royScratchVsLinked": "Add slide > SONG: scratch blank unlinked vs linked chooser; scratch Save to library via ImportReviewScreen then gets librarySongId; scratch excluded from prompts until linked (20261008 + amendment)."
   },
   "requirements": [
     {
@@ -219,7 +219,7 @@
     },
     {
       "id": "REQ-024",
-      "title": "Add slide > SONG: scratch blank unlinked or linked via chooser",
+      "title": "Add slide > SONG: scratch blank unlinked or linked via chooser; scratch Save to library",
       "todoIds": [
         "add-slide-song-scratch-or-linked"
       ],
@@ -516,24 +516,29 @@
     },
     {
       "id": "add-slide-song-scratch-or-linked",
-      "content": "Add slide > SONG offers two types: (1) Song from scratch — blank song slide in place, no librarySongId, no chooser; (2) Linked song — AddSongSlideChooser (pick/import + Also save) with librarySongId. Scratch slides never appear in linked-update or apply-decks prompts and are never changed by library edits. Prod song-library e2e for both paths; unit test that library edit leaves scratch slides alone. Present/ and stagedSongSlide.ts stay byte-identical to main.",
+      "content": "Add slide > SONG offers two types: (1) Song from scratch — blank in place, no librarySongId, no chooser; (2) Linked song — AddSongSlideChooser with librarySongId. Scratch has Save to library via shared ImportReviewScreen (title-match keep-both; no-lyrics REQ-018/019/022); cancel keeps scratch; confirm sets librarySongId. Scratch never in linked-update/apply-decks until linked. Prod e2e: scratch; linked insert; scratch\to Save\to duplicate-title\to linked. Unit: excluded before save, included after. Present/stagedSongSlide byte-identical to main.",
       "requirementIds": [
         "REQ-024",
         "REQ-007",
         "REQ-012",
         "REQ-015",
-        "REQ-013"
+        "REQ-013",
+        "REQ-018",
+        "REQ-019",
+        "REQ-022"
       ],
       "acceptanceCriteria": [
         "AC-019",
         "AC-007",
         "AC-010",
         "AC-013",
-        "AC-011"
+        "AC-011",
+        "AC-015",
+        "AC-018"
       ],
       "status": "pending",
       "passes": false,
-      "notes": "PLANNING loop 16: Roy decision 20261008-add-slide-song-scratch-or-linked. Budget loops 16–19. Selected next for DEV."
+      "notes": "PLANNING loop 16 (amended): Roy decision + Save to library on scratch via ImportReviewScreen. Budget loops 16–19. Selected next for DEV."
     }
   ],
   "acceptanceCriteria": [
@@ -555,11 +560,11 @@
     "AC-016 (REQ-020): Searching a lyric phrase finds the song",
     "AC-017 (REQ-021): Library opens from main menu and Add song slide",
     "AC-018 (REQ-022, 023): Clean multi-song one-click; problem sections only when needed; unused songs edit/delete without deck prompt",
-    "AC-019 (REQ-024): Add slide > SONG offers scratch (blank, unlinked, no chooser) and linked (chooser); scratch excluded from library update prompts and never changed by library edits"
+    "AC-019 (REQ-024): Add slide > SONG offers scratch (blank, unlinked, no chooser) and linked (chooser); scratch Save to library via ImportReviewScreen (cancel keeps scratch; confirm links); scratch excluded from library update prompts until linked; never changed by library edit while scratch"
   ],
   "selected": {
     "id": "add-slide-song-scratch-or-linked",
-    "reason": "Roy decision: two SONG slide types (scratch vs linked); next DEV loop 17."
+    "reason": "Roy decision (amended): scratch vs linked + Save to library; next DEV loop 17."
   },
   "outOfScope": [
     "Bundling the three church books in the app",
@@ -569,7 +574,7 @@
   ],
   "openQuestions": [],
   "blockers": [],
-  "lastUpdated": "2026-10-08T00:30:00.000Z",
+  "lastUpdated": "2026-10-08T00:35:00.000Z",
   "qaEvidence": {
     "taskId": "fix-song-library-apply-flake",
     "tsc": "exit 0",
@@ -587,8 +592,8 @@
   },
   "feedback": {
     "taskId": "add-slide-song-scratch-or-linked",
-    "content": "PLANNING loop 16: task add-slide-song-scratch-or-linked selected (REQ-024/AC-019). completeEpic false. Budget loops 16–19. No merge.",
-    "updatedAt": "2026-10-08T00:30:00.000Z"
+    "content": "PLANNING loop 16 amended: Save to library on scratch via ImportReviewScreen. completeEpic false. Budget 16–19. No merge.",
+    "updatedAt": "2026-10-08T00:35:00.000Z"
   },
   "fixPass": {
     "irisGate": "ralph/specs/20261007-iris-gate-pr26-fail.md",

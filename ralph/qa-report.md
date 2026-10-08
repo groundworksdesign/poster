@@ -1,12 +1,12 @@
 # Feedback
 
-## LOOP 16 PLANNING — add-slide-song-scratch-or-linked
+## LOOP 16 PLANNING (amended) — add-slide-song-scratch-or-linked
 
 `<status>pending</status>`
 
 ### Decision
 
-Roy: Add slide > SONG offers **Song from scratch** (blank, no `librarySongId`, no chooser) and **Linked song** (`AddSongSlideChooser`). Scratch never appears in linked-update / apply-decks prompts and is never changed by library edits.
+Roy: Add slide > SONG offers **Song from scratch** and **Linked song**. Scratch has **Save to library** via shared `ImportReviewScreen` (title-match keep-both; no-lyrics). Cancel keeps scratch; confirm sets `librarySongId`. Scratch excluded from update prompts until linked.
 
 Spec: `ralph/specs/20261008-add-slide-song-scratch-or-linked.md`
 
@@ -16,4 +16,4 @@ Spec: `ralph/specs/20261008-add-slide-song-scratch-or-linked.md`
 
 ### Budget
 
-Loops 16–19 (this planning = 16). `completeEpic` false. No merge.
+Loops 16–19 (planning amendment stays loop 16). `completeEpic` false. No merge.
