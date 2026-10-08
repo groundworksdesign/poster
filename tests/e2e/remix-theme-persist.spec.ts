@@ -8,17 +8,14 @@ test.describe('persist theme all windows', () => {
   async function chooseTheme(page: import('@playwright/test').Page, themeId: string) {
     const select = page.getByLabel('Select theme');
     await expect(select).toBeVisible();
-    // Wait for client hydrate from localStorage (SSR starts as light).
-    await page.waitForFunction(() => {
-      const el = document.querySelector('select[aria-label="Select theme"]');
-      return Boolean(el);
-    });
-    await select.evaluate((el, value) => {
-      const selectEl = el as HTMLSelectElement;
-      selectEl.value = value;
-      selectEl.dispatchEvent(new Event('input', { bubbles: true }));
-      selectEl.dispatchEvent(new Event('change', { bubbles: true }));
-    }, themeId);
+    // Wait for useTheme client hydrate (SSR starts as light). Synthetic
+    // change events can race that hydrate and leave localStorage stuck on light.
+    await page.waitForFunction(
+      () => document.documentElement.dataset.themeReady === '1',
+      undefined,
+      { timeout: 15000 },
+    );
+    await select.selectOption(themeId);
     await expect
       .poll(async () => page.evaluate(() => localStorage.getItem('poster-theme')))
       .toBe(themeId);

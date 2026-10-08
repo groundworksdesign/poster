@@ -43,7 +43,7 @@ todos:
     status: completed
   - id: fix-remix-theme-persist-flake
     content: "CI blocker: remix-theme-persist Home reopen (chooseTheme localStorage) flake after rebase onto #23 — find root cause (race vs flake) and fix; QA runs that spec 10x green."
-    status: pending
+    status: completed
   - id: fix-present-keys-while-editing
     content: "Live-show safety: DeckBuilder page-wide Arrow/Page key handler must NOT move Present while focus is inside the slide edit panel or the song list; add a unit/integration test."
     status: pending
