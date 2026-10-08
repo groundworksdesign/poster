@@ -429,3 +429,9 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - JSON restore: omit `songs` → keep existing; key present → replace.
 - SQLite `replaceDb`: empty restored songs → re-insert preserved.
 - Tests: library-json + db-restore-songs (pre-epic keep + with-songs replace). passes=false. Fix 10/16.
+- Housekeeping: side PR #27 closed; commit on epic-004 only.
+
+## Epic-004 FIX LOOP 11 QA — fix-json-restore-preserve-songs PASS
+
+- JSON omit/`songs`/`[]` verified. SQLite row-count overridden deliberate empty → schema heuristic (no songs table or no book/number).
+- tsc 0; Jest 59/371. Next: fix-client-process-reference. Fix 11/16.

@@ -191,6 +191,37 @@ describe('library-json.server', () => {
     expect(songs[0].title).toBe('From Backup');
     expect(jsonLib.jsonLibraryList()[0]?.title).toBe('Deck B');
   });
+
+  it('restore of JSON backup with songs: [] clears the song library', () => {
+    jsonLib.jsonLibraryUpsertSong({
+      title: 'Wipe Me',
+      book: 'Hymns',
+      number: '3',
+      lyrics: { title: 'Wipe Me', verses: [{ number: 1, lines: ['gone'] }] },
+    });
+
+    jsonLib.replaceLibraryFromJsonText(
+      JSON.stringify({
+        presentations: [
+          {
+            id: 'empty-songs-deck',
+            title: 'Empty Songs Deck',
+            date: null,
+            location: null,
+            notes: null,
+            use_green_screen: 0,
+            deck_json: JSON.stringify({ ...baseDeck, title: 'Empty Songs Deck' }),
+            created_at: '2026-01-03T00:00:00.000Z',
+            updated_at: '2026-01-03T00:00:00.000Z',
+          },
+        ],
+        songs: [],
+      }),
+    );
+
+    expect(jsonLib.jsonLibraryListSongs()).toEqual([]);
+    expect(jsonLib.jsonLibraryList()[0]?.title).toBe('Empty Songs Deck');
+  });
 });
 
 

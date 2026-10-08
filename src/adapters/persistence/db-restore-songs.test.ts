@@ -6,32 +6,93 @@ import { sqliteDriversAvailable } from './sqliteTestDb';
 
 const describeSqlite = sqliteDriversAvailable() ? describe : describe.skip;
 
-function openFileDb(filePath: string) {
+type FileDb = {
+  exec: (sql: string) => void;
+  prepare: (sql: string) => {
+    run: (...p: unknown[]) => unknown;
+    get: (...p: unknown[]) => unknown;
+    all: (...p: unknown[]) => unknown[];
+  };
+  close: () => void;
+};
+
+function openRawFileDb(filePath: string): FileDb {
   try {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const Database = require('better-sqlite3') as {
-      new (path: string): {
-        exec: (sql: string) => void;
-        prepare: (sql: string) => {
-          run: (...p: unknown[]) => unknown;
-          get: (...p: unknown[]) => unknown;
-          all: (...p: unknown[]) => unknown[];
-        };
-        close: () => void;
-      };
-    };
+    const Database = require('better-sqlite3') as { new (path: string): FileDb };
     const db = new Database(filePath);
     db.exec('PRAGMA foreign_keys = ON;');
-    initSchema(db);
     return db;
   } catch {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { DatabaseSync } = require('node:sqlite') as typeof import('node:sqlite');
     const db = new DatabaseSync(filePath);
     db.exec('PRAGMA foreign_keys = ON;');
-    initSchema(db);
     return db;
   }
+}
+
+function openModernFileDb(filePath: string): FileDb {
+  const db = openRawFileDb(filePath);
+  initSchema(db);
+  return db;
+}
+
+/** Pre-epic-004 stub: presentations + songs without book/number. */
+function openPreEpicFileDb(filePath: string): FileDb {
+  const db = openRawFileDb(filePath);
+  db.exec(`
+    CREATE TABLE presentations (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      date TEXT,
+      location TEXT,
+      notes TEXT,
+      use_green_screen INTEGER NOT NULL DEFAULT 0,
+      deck_json TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE TABLE songs (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      author TEXT,
+      song_json TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+  `);
+  return db;
+}
+
+function seedLiveSongAndDeck(db: NonNullable<ReturnType<typeof import('./db.server').tryGetSqliteDb>>) {
+  db.prepare(
+    `INSERT INTO songs (id, title, book, number, author, song_json, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+  ).run(
+    'song-keep',
+    'Keep Me',
+    'Hymns',
+    '1',
+    null,
+    JSON.stringify({ title: 'Keep Me', verses: [{ number: 1, lines: ['stay'] }] }),
+    '2026-01-01T00:00:00.000Z',
+    '2026-01-01T00:00:00.000Z',
+  );
+  db.prepare(
+    `INSERT INTO presentations (id, title, date, location, notes, use_green_screen, deck_json, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  ).run(
+    'old-deck',
+    'Old Deck',
+    null,
+    null,
+    null,
+    0,
+    JSON.stringify({ title: 'Old Deck', slides: [] }),
+    '2026-01-01T00:00:00.000Z',
+    '2026-01-01T00:00:00.000Z',
+  );
 }
 
 describeSqlite('replaceDb song preserve on restore', () => {
@@ -55,43 +116,13 @@ describeSqlite('replaceDb song preserve on restore', () => {
     fs.rmSync(tmpRoot, { recursive: true, force: true });
   });
 
-  it('pre-epic backup with empty songs keeps existing songs and restores decks', () => {
+  it('pre-epic backup (songs without book/number) keeps existing songs and restores decks', () => {
     const live = dbModule.tryGetSqliteDb();
     expect(live).not.toBeNull();
-    live!
-      .prepare(
-        `INSERT INTO songs (id, title, book, number, author, song_json, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      )
-      .run(
-        'song-keep',
-        'Keep Me',
-        'Hymns',
-        '1',
-        null,
-        JSON.stringify({ title: 'Keep Me', verses: [{ number: 1, lines: ['stay'] }] }),
-        '2026-01-01T00:00:00.000Z',
-        '2026-01-01T00:00:00.000Z',
-      );
-    live!
-      .prepare(
-        `INSERT INTO presentations (id, title, date, location, notes, use_green_screen, deck_json, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      )
-      .run(
-        'old-deck',
-        'Old Deck',
-        null,
-        null,
-        null,
-        0,
-        JSON.stringify({ title: 'Old Deck', slides: [] }),
-        '2026-01-01T00:00:00.000Z',
-        '2026-01-01T00:00:00.000Z',
-      );
+    seedLiveSongAndDeck(live!);
 
     const backupPath = path.join(tmpRoot, 'pre-epic-backup.sqlite');
-    const backup = openFileDb(backupPath);
+    const backup = openPreEpicFileDb(backupPath);
     backup
       .prepare(
         `INSERT INTO presentations (id, title, date, location, notes, use_green_screen, deck_json, created_at, updated_at)
@@ -108,7 +139,6 @@ describeSqlite('replaceDb song preserve on restore', () => {
         '2026-02-01T00:00:00.000Z',
         '2026-02-01T00:00:00.000Z',
       );
-    // intentionally no songs rows (pre-epic-004)
     backup.close();
 
     dbModule.replaceDb(backupPath);
@@ -120,6 +150,43 @@ describeSqlite('replaceDb song preserve on restore', () => {
     }[];
     expect(songs).toEqual([{ id: 'song-keep', title: 'Keep Me' }]);
 
+    const decks = restored.prepare(`SELECT id, title FROM presentations`).all() as {
+      id: string;
+      title: string;
+    }[];
+    expect(decks).toEqual([{ id: 'restored-deck', title: 'Restored Deck' }]);
+  });
+
+  it('post-epic backup with empty songs replaces (does not keep live songs)', () => {
+    const live = dbModule.tryGetSqliteDb()!;
+    seedLiveSongAndDeck(live);
+
+    const backupPath = path.join(tmpRoot, 'empty-songs-backup.sqlite');
+    const backup = openModernFileDb(backupPath);
+    backup
+      .prepare(
+        `INSERT INTO presentations (id, title, date, location, notes, use_green_screen, deck_json, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      )
+      .run(
+        'restored-deck',
+        'Restored Deck',
+        null,
+        null,
+        null,
+        0,
+        JSON.stringify({ title: 'Restored Deck', slides: [] }),
+        '2026-02-01T00:00:00.000Z',
+        '2026-02-01T00:00:00.000Z',
+      );
+    // modern schema with book/number, zero song rows — deliberate empty
+    backup.close();
+
+    dbModule.replaceDb(backupPath);
+
+    const restored = dbModule.tryGetSqliteDb()!;
+    const songs = restored.prepare(`SELECT id FROM songs`).all();
+    expect(songs).toEqual([]);
     const decks = restored.prepare(`SELECT id, title FROM presentations`).all() as {
       id: string;
       title: string;
@@ -146,7 +213,7 @@ describeSqlite('replaceDb song preserve on restore', () => {
       );
 
     const backupPath = path.join(tmpRoot, 'with-songs-backup.sqlite');
-    const backup = openFileDb(backupPath);
+    const backup = openModernFileDb(backupPath);
     backup
       .prepare(
         `INSERT INTO presentations (id, title, date, location, notes, use_green_screen, deck_json, created_at, updated_at)

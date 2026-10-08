@@ -186,6 +186,50 @@ function songCount(database: SqliteDatabaseHandle): number {
   }
 }
 
+/** Open SQLite without running initSchema / column migrations (for backup inspection). */
+function openRawDb(filePath: string): SqliteDatabaseHandle {
+  try {
+    const Database = require('better-sqlite3') as typeof import('better-sqlite3');
+    return new Database(filePath, { readonly: true, fileMustExist: true });
+  } catch {
+    const { DatabaseSync } = loadNodeSqlite();
+    // node:sqlite supports readOnly at runtime; older @types may only allow the path.
+    const DatabaseSyncCtor = DatabaseSync as unknown as new (
+      path: string,
+      options?: { readOnly?: boolean },
+    ) => import('node:sqlite').DatabaseSync;
+    return new DatabaseSyncCtor(filePath, { readOnly: true });
+  }
+}
+
+/**
+ * Pre-epic-004 backups either lack a songs table or have the stub songs table
+ * without book/number columns. Must be checked before openDb migrates the file.
+ */
+function isPreEpicSongsSchema(filePath: string): boolean {
+  let database: SqliteDatabaseHandle | null = null;
+  try {
+    database = openRawDb(filePath);
+    const tables = database
+      .prepare(`SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'songs'`)
+      .all() as { name: string }[];
+    if (tables.length === 0) return true;
+    const cols = (database.prepare(`PRAGMA table_info(songs)`).all() as { name: string }[]).map(
+      c => c.name,
+    );
+    return !cols.includes('book') || !cols.includes('number');
+  } catch {
+    // Unreadable backup: do not preserve (replaceDb will surface the real error).
+    return false;
+  } finally {
+    try {
+      database?.close();
+    } catch {
+      /* ignore */
+    }
+  }
+}
+
 function reinsertPreservedSongs(database: SqliteDatabaseHandle, songs: SongRowSnapshot[]): void {
   const insert = database.prepare(
     `INSERT INTO songs (id, title, book, number, author, song_json, created_at, updated_at)
@@ -210,12 +254,13 @@ function reinsertPreservedSongs(database: SqliteDatabaseHandle, songs: SongRowSn
  * Closes the current connection, moves the file into place, then
  * reopens so subsequent queries go to the restored database.
  *
- * Pre-epic-004 backups have an empty songs table: when the restored file
- * has zero songs, keep the songs that were already in the live library.
- * Backups that include song rows keep current replace behavior.
+ * Pre-epic-004 backups (no songs table, or songs without book/number) keep
+ * the live song library when the restored file has zero songs. Post-epic
+ * backups with an empty songs table replace (including deliberate empties).
  */
 export function replaceDb(newFilePath: string): void {
   const preservedSongs = snapshotLiveSongs();
+  const backupIsPreEpic = isPreEpicSongsSchema(newFilePath);
 
   const dir = path.dirname(currentDbPath);
   let candidatePath = newFilePath;
@@ -250,7 +295,7 @@ export function replaceDb(newFilePath: string): void {
 
     sqliteDb = openDb(currentDbPath);
 
-    if (preservedSongs.length > 0 && songCount(sqliteDb) === 0) {
+    if (backupIsPreEpic && preservedSongs.length > 0 && songCount(sqliteDb) === 0) {
       reinsertPreservedSongs(sqliteDb, preservedSongs);
     }
   } catch (err) {
