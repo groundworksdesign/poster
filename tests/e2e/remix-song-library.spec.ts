@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type ConsoleMessage, type Page } from '@playwright/test';
 
 /**
  * Iris gate: song-library routes must render real UI under the production Remix
@@ -11,9 +11,36 @@ function assertNotComingSoon(page: Page) {
   return expect(page.getByText('Library (coming soon)')).toHaveCount(0);
 }
 
+/** Collect pageerror + console error for Iris process-is-not-defined gate. */
+function attachClientErrorGuards(page: Page) {
+  const pageErrors: string[] = [];
+  const consoleErrors: string[] = [];
+  const onPageError = (err: Error) => {
+    pageErrors.push(err.message);
+  };
+  const onConsole = (msg: ConsoleMessage) => {
+    if (msg.type() === 'error') {
+      consoleErrors.push(msg.text());
+    }
+  };
+  page.on('pageerror', onPageError);
+  page.on('console', onConsole);
+  return {
+    assertClean() {
+      expect(pageErrors, `pageerror: ${pageErrors.join(' | ')}`).toEqual([]);
+      expect(consoleErrors, `console error: ${consoleErrors.join(' | ')}`).toEqual([]);
+    },
+    detach() {
+      page.off('pageerror', onPageError);
+      page.off('console', onConsole);
+    },
+  };
+}
+
 test.describe('Song library (production Remix build)', () => {
   test('Home > Song library > Add, Import, and Edit render real UI', async ({ page, baseURL }) => {
     const base = baseURL || 'http://127.0.0.1:3010';
+    const errors = attachClientErrorGuards(page);
 
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     await expect(page.getByTestId('song-library-link')).toBeVisible();
@@ -25,6 +52,7 @@ test.describe('Song library (production Remix build)', () => {
     await expect(page.getByTestId('song-library-add')).toBeVisible();
     await expect(page.getByTestId('song-library-import')).toBeVisible();
     await expect(page.getByTestId('song-library-search')).toBeVisible();
+    errors.assertClean();
 
     await page.getByTestId('song-library-add').click();
     await expect(page).toHaveURL(/\/library\/songs\/add/);
@@ -33,6 +61,7 @@ test.describe('Song library (production Remix build)', () => {
     await expect(page.getByTestId('add-song-form')).toBeVisible();
     await expect(page.getByTestId('add-song-title')).toBeVisible();
     await expect(page.getByTestId('add-song-submit')).toBeVisible();
+    errors.assertClean();
 
     const saveRes = await page.request.post(
       `${base}/library/songs/save?_data=routes%2Flibrary.songs.save`,
@@ -56,6 +85,7 @@ test.describe('Song library (production Remix build)', () => {
     await expect(page.getByTestId('song-library-page')).toBeVisible({ timeout: 15000 });
     await assertNotComingSoon(page);
     await expect(page.getByText('Gate Song')).toBeVisible({ timeout: 15000 });
+    errors.assertClean();
 
     const editButton = page.locator('[data-testid^="song-library-edit-"]').first();
     await expect(editButton).toBeVisible();
@@ -70,21 +100,28 @@ test.describe('Song library (production Remix build)', () => {
     await assertNotComingSoon(page);
     await expect(page.getByTestId('import-songs-review')).toBeVisible({ timeout: 15000 });
     await expect(page.getByTestId('import-songs-file')).toBeVisible();
+    errors.assertClean();
+    errors.detach();
   });
 
   test('Add-song-slide chooser library link opens real manage UI', async ({ page }) => {
+    const errors = attachClientErrorGuards(page);
+
     await page.goto('/deck', { waitUntil: 'domcontentloaded' });
     await page.getByRole('button', { name: 'New Deck' }).click();
     await page.locator('#add-slide-type').selectOption('song');
     await page.getByTestId('add-slide-button').click();
     await expect(page.getByTestId('add-song-slide-chooser')).toBeVisible({ timeout: 15000 });
     await expect(page.getByTestId('add-song-open-library')).toBeVisible();
+    errors.assertClean();
 
     await page.getByTestId('add-song-open-library').click();
     await expect(page).toHaveURL(/\/library\/songs\/?$/);
     await assertNotComingSoon(page);
     await expect(page.getByTestId('song-library-page')).toBeVisible({ timeout: 15000 });
     await expect(page.getByTestId('song-library-search')).toBeVisible();
+    errors.assertClean();
+    errors.detach();
   });
 
   test('Chooser import shows review for duplicate title and no-lyrics; inserts without replacing deck', async ({
@@ -92,6 +129,7 @@ test.describe('Song library (production Remix build)', () => {
     baseURL,
   }) => {
     const base = baseURL || 'http://127.0.0.1:3010';
+    const errors = attachClientErrorGuards(page);
 
     // Seed an existing library song so import hits title-match.
     const seed = await page.request.post(
@@ -122,6 +160,7 @@ test.describe('Song library (production Remix build)', () => {
     await expect(page.getByTestId('add-song-slide-chooser')).toBeVisible({ timeout: 15000 });
     await page.getByTestId('add-song-mode-import').check();
     await expect(page.getByTestId('add-song-also-save')).toBeChecked();
+    errors.assertClean();
 
     const importBody = JSON.stringify({
       book: 'Hymns',
@@ -145,6 +184,7 @@ test.describe('Song library (production Remix build)', () => {
     await expect(page.getByTestId('import-match-song-0-keep_both')).toBeChecked();
     await expect(page.getByTestId('import-no-lyrics-section')).toBeVisible();
     await expect(page.getByTestId('import-no-lyrics-title-only')).toBeChecked();
+    errors.assertClean();
 
     await page.getByTestId('import-confirm').click();
     await expect(page.getByTestId('add-song-slide-chooser')).toHaveCount(0, { timeout: 15000 });
@@ -152,5 +192,7 @@ test.describe('Song library (production Remix build)', () => {
     await expect(page.locator('#slides')).toContainText(/Title/i);
     await expect(page.locator('#slides')).toContainText(/Amazing Grace/i);
     await expect(page.locator('#slides')).toContainText(/No Lyrics Song/i);
+    errors.assertClean();
+    errors.detach();
   });
 });

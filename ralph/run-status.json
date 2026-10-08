@@ -1,5 +1,5 @@
 {
   "branch": "cursor/epic-004-song-library",
-  "lastLog": "[ralph] epic-004 FIX LOOP 11 QA PASS fix-json-restore-preserve-songs; next fix-client-process-reference; fix 11/16; no merge",
-  "updatedAt": "2026-10-08T00:10:00.000Z"
+  "lastLog": "[ralph] epic-004 FIX LOOP 12 DEV fix-client-process-reference; awaiting QA; fix 12/16; no merge",
+  "updatedAt": "2026-10-08T00:20:00.000Z"
 }

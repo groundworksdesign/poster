@@ -3,8 +3,8 @@
   "branch": "cursor/epic-004-song-library",
   "baseBranch": "main",
   "status": "in_progress",
-  "loop": 31,
-  "persona": "qa",
+  "loop": 32,
+  "persona": "dev",
   "completeEpic": false,
   "prUrl": "https://github.com/groundworksdesign/poster/pull/26",
   "canonicalStatusFile": "ralph/task_status.json",
@@ -23,7 +23,8 @@
     "presentStaging": "stagedSongSlide.ts already does title then two lyric lines; leave unchanged (REQ-013).",
     "libraryUi": "No song library page, picker, search, or slide\u2194library song link field.",
     "irisLibraryOutlet": "library.tsx default is coming-soon div with no Outlet; library.songs*.tsx are nested children \u2014 verified FIX LOOP 1 planning.",
-    "irisChooserImport": "AddSongSlideChooser.confirmImport POSTs save directly; skips ImportSongsReview.",
+    "irisChooserImport": "Fixed: chooser uses shared ImportReviewScreen.",
+    "irisClientProcess": "Fixed DEV loop 12: song-library actions in *.server.ts; client no longer bundles db/library-root/process.",
     "irisJsonRestoreSongs": "JSON: omit songs key keeps existing; songs key (incl []) replaces. SQLite: pre-epic schema (no songs table or no book/number) preserves when empty; post-epic empty songs replaces.",
     "irisApplyFlake": "saveEdit awaits fetchSongs while busy=true after setDeckPrompt; Apply disabled until finally."
   },
@@ -482,9 +483,9 @@
       "acceptanceCriteria": [
         "AC-017"
       ],
-      "status": "pending",
+      "status": "in_progress",
       "passes": false,
-      "notes": "Iris: browser console error on /library/songs."
+      "notes": "DEV fix loop 12: moved song-library actions/loaders that imported songs.server/linkedSongDecks.server into *.server.ts (import/save/delete/decks/apply-decks). Client import route no longer pulls db/library-root/process chunk. Prod e2e asserts no pageerror/console error on /library/songs, /add, /import, chooser. 3/3 PASS. passes=false."
     },
     {
       "id": "fix-song-library-apply-flake",
@@ -524,7 +525,7 @@
   ],
   "selected": {
     "id": "fix-client-process-reference",
-    "reason": "Next Iris fix: ReferenceError process is not defined on /library/songs."
+    "reason": "DEV removed client process leak via .server action split; awaiting QA."
   },
   "outOfScope": [
     "Bundling the three church books in the app",
@@ -534,7 +535,7 @@
   ],
   "openQuestions": [],
   "blockers": [],
-  "lastUpdated": "2026-10-08T00:10:00.000Z",
+  "lastUpdated": "2026-10-08T00:20:00.000Z",
   "qaEvidence": {
     "taskId": "fix-json-restore-preserve-songs",
     "tsc": "exit 0",
@@ -545,17 +546,17 @@
     "loopsUsed": 31
   },
   "feedback": {
-    "taskId": "fix-json-restore-preserve-songs",
-    "content": "QA PASS fix-json-restore-preserve-songs. Next: fix-client-process-reference. Fix 11/16. No merge.",
-    "updatedAt": "2026-10-08T00:10:00.000Z"
+    "taskId": "fix-client-process-reference",
+    "content": "DEV done client process leak (song-library actions in .server). Awaiting QA. Fix 12/16. No merge.",
+    "updatedAt": "2026-10-08T00:20:00.000Z"
   },
   "fixPass": {
     "irisGate": "ralph/specs/20261007-iris-gate-pr26-fail.md",
     "prUrl": "https://github.com/groundworksdesign/poster/pull/26",
     "headShaAtFail": "15ee17d0c8b523d0f34b9b6d31ed9bde7f0784ef",
     "budget": 16,
-    "loop": 11,
-    "loopsUsed": 11,
+    "loop": 12,
+    "loopsUsed": 12,
     "maxLoop": 16
   }
 }
