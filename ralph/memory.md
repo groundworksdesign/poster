@@ -440,3 +440,8 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 
 - Root cause: song-library route modules imported persistence in the same file as client defaults → db/library-root/`process` in shared client chunk.
 - Split import/save/delete/decks/apply-decks into `*.server.ts`; e2e guards pageerror/console. 3/3 PASS. passes=false. Fix 12/16.
+
+## Epic-004 FIX LOOP 13 QA — fix-client-process-reference PASS
+
+- Fresh build; song client audit clean; ?_data actions OK; tsc/Jest 371/e2e 52+3 PASS.
+- Next: fix-song-library-apply-flake. Fix 13/16.
