@@ -2,10 +2,10 @@
   "epic": "epic-004",
   "branch": "cursor/epic-004-song-library",
   "baseBranch": "main",
-  "status": "in_progress",
-  "loop": 44,
+  "status": "complete",
+  "loop": 46,
   "persona": "qa",
-  "completeEpic": false,
+  "completeEpic": true,
   "prUrl": "https://github.com/groundworksdesign/poster/pull/26",
   "canonicalStatusFile": "ralph/task_status.json",
   "sourceArtifacts": [
@@ -236,7 +236,7 @@
       "todoIds": [
         "add-song-panel-redesign"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "REQ-026",
@@ -639,9 +639,10 @@
         "AC-020-ctrl-enter-search",
         "AC-020-e2e-both-paths"
       ],
-      "status": "pending",
-      "passes": false,
-      "notes": ""
+      "status": "done",
+      "passes": true,
+      "notes": "QA loop FINAL: panel redesign PASS. Add under Slides; linked/scratch/import in panel; Also save unchecked scratch / checked import; full first verse; toolbar Load adds; Save-only join; Ctrl/Cmd+Enter pick-only. e2e 50+7; Jest 413; tsc 0; electron 12; theme 10x; Present/staged NO DIFF.",
+      "qaVerifiedAt": "2026-10-08T23:30:00.000Z"
     }
   ],
   "acceptanceCriteria": [
@@ -669,10 +670,7 @@
     "Present-keys (REQ-026): Arrow/Page keys do not move Present while focus is in slide edit panel or song list",
     "Theme-persist (REQ-027): remix-theme-persist Home reopen chooseTheme stable 10x"
   ],
-  "selected": {
-    "id": "add-song-panel-redesign",
-    "reason": "Main redesign task after CI flake + Present key safety."
-  },
+  "selected": null,
   "outOfScope": [
     "Bundling the three church books in the app",
     "Transcribing the five copyright-held songs",
@@ -681,31 +679,22 @@
   ],
   "openQuestions": [],
   "blockers": [],
-  "lastUpdated": "2026-10-08T22:55:00.000Z",
+  "lastUpdated": "2026-10-08T23:30:00.000Z",
   "qaEvidence": {
-    "taskId": "fix-iris-regate-followups",
+    "taskId": "add-song-panel-redesign",
     "tsc": "exit 0",
-    "jest": "59 suites / 385 tests PASS",
-    "configPathAlignment": "5/5",
-    "buildRemix": "via song-library webServer (production)",
-    "e2eRemixDev": "50 passed",
-    "e2eSongLibraryProd": "7 passed (song-library + relaunch + repoint + 404)",
+    "jest": "63 suites / 413 tests PASS",
     "e2eRemixCombinedEmptyBuild": "57 passed (50+7)",
-    "e2eRemixCombinedAfterRemixDevPoison": "57 passed (50+7)",
-    "e2eElectron": "12 passed (xvfb + ELECTRON_DISABLE_SANDBOX)",
-    "flakeSongLibraryPageFull": "10/10",
-    "flakeApplyDecksSingle": "10/10",
+    "e2eElectron": "12 passed",
+    "themePersist10x": "30/30",
     "presentUnchanged": true,
     "stagedSongSlideUnchanged": true,
-    "openAgentPrs": "PR #26 only",
-    "qaPassLoop": 21,
-    "followOnLoopsUsed": 6,
-    "loopsUsed": 39
+    "qaPassLoop": 46
   },
   "feedback": {
-    "taskId": "fix-present-keys-while-editing",
-    "content": "Present keys while editing PASS. Selected add-song-panel-redesign.",
-    "updatedAt": "2026-10-08T22:55:00.000Z"
+    "taskId": "add-song-panel-redesign",
+    "content": "Redesign pass FINAL QA PASS + completeEpic. PR #26. No merge.",
+    "updatedAt": "2026-10-08T23:30:00.000Z"
   },
   "fixPass": {
     "irisGate": "ralph/specs/20261007-iris-gate-pr26-fail.md",
@@ -736,16 +725,17 @@
     "prUrl": "https://github.com/groundworksdesign/poster/pull/26",
     "baseHead": "a6ebb7716e2042ef358290cb1009a4ab027e35e1",
     "budget": 14,
-    "loop": 5,
-    "loopsUsed": 5,
+    "loop": 7,
+    "loopsUsed": 7,
     "maxLoop": 14,
-    "status": "in_progress",
+    "status": "complete",
     "royDecisions": [
       "also-save unchecked scratch / checked imports",
       "full first verse for duplicate titles",
       "toolbar Load adds song slide",
       "draft joins deck only on Save",
       "Ctrl/Cmd+Enter on search stops on card"
-    ]
+    ],
+    "finalHeadPending": true
   }
 }

@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import SongSlideEditPanel from './SongSlideEditPanel';
+import SongSlideEditPanel, { type SongPanelCommit } from './SongSlideEditPanel';
 
 beforeEach(() => {
   jest.spyOn(global, 'fetch').mockResolvedValue({
@@ -33,7 +33,9 @@ test('AC-020: Also save starts unchecked for scratch and checked for import', as
 });
 
 test('AC-020: Cancel path — commit ref returns null until song chosen or scratch titled', async () => {
-  const commitRef = { current: null as null | (() => Promise<unknown>) };
+  const commitRef: React.MutableRefObject<
+    (() => Promise<SongPanelCommit | SongPanelCommit[] | null>) | null
+  > = { current: null };
   render(<SongSlideEditPanel getCommitRef={commitRef} />);
   expect(await commitRef.current?.()).toBeNull();
   fireEvent.click(screen.getByTestId('song-type-scratch'));

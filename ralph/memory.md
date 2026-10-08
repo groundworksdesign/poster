@@ -490,3 +490,7 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - DEV: relaunch/repoint under song-library prod Playwright config (fresh `build:remix`); remix-dev ignores those specs.
 - QA: empty `build/` e2e 57; after remix-dev poison e2e 57; tsc 0; Jest 59/385; electron 12; flake 10/10+10/10; Present/stagedSongSlide NO DIFF.
 - completeEpic true. PR #26 only. No merge.
+
+## Epic-004 redesign FINAL QA — completeEpic
+
+- Theme flake, Present keys, add-song panel redesign PASS. e2e 57; Jest 413; electron 12; theme 10x; Present NO DIFF. PR #26. No merge.
