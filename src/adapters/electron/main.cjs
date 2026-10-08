@@ -1,6 +1,6 @@
 'use strict';
 
-const { app, BrowserWindow, ipcMain, dialog, screen } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, screen, shell, Menu } = require('electron');
 const { spawn } = require('child_process');
 const fs = require('fs');
 const net = require('net');
@@ -20,6 +20,7 @@ const {
   getPresentFullscreenMode,
   togglePresentFullscreen,
 } = require('./presentFullscreen.cjs');
+const { createAutoUpdateController } = require('./autoUpdate.cjs');
 
 ipcMain.on('poster:read-theme-sync', (event) => {
   event.returnValue = readThemePrefs();
@@ -423,6 +424,17 @@ if (!gotTheLock) {
       await waitForServer(port);
       ensureHomeWindow(port);
       logLine('window created');
+
+      const autoUpdate = createAutoUpdateController({
+        app,
+        dialog,
+        shell,
+        log: (msg) => logLine(msg),
+        getParentWindow: () =>
+          mainWindow && !mainWindow.isDestroyed() ? mainWindow : null,
+      });
+      autoUpdate.registerUpdateMenu(Menu);
+      autoUpdate.scheduleStartupCheck();
     } catch (err) {
       logLine(`startup error: ${err && err.stack ? err.stack : err}`);
       app.quit();
