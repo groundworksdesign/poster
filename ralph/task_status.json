@@ -2,10 +2,10 @@
   "epic": "epic-004",
   "branch": "cursor/epic-004-song-library",
   "baseBranch": "main",
-  "status": "complete",
-  "loop": 55,
-  "persona": "qa",
-  "completeEpic": true,
+  "status": "in_progress",
+  "loop": 56,
+  "persona": "planning",
+  "completeEpic": false,
   "prUrl": "https://github.com/groundworksdesign/poster/pull/26",
   "canonicalStatusFile": "ralph/task_status.json",
   "sourceArtifacts": [
@@ -18,7 +18,8 @@
     "ralph/specs/20261008-add-song-redesign.md",
     "ralph/specs/20261008-add-song-redesign-mockup.html",
     "ralph/specs/20261008-iris-gate-pr26-d2145f6.md",
-    "ralph/specs/20261009-iris-gate-pr26-3c9a031.md"
+    "ralph/specs/20261009-iris-gate-pr26-3c9a031.md",
+    "ralph/specs/20261009-iris-gate-pr26-c46bf2e-esc.md"
   ],
   "codebaseFindings": {
     "songsTable": "Exists in schema.server.ts (id, title, author, song_json, created_at, updated_at) but unused \u2014 no CRUD, routes, or repo reads/writes.",
@@ -321,6 +322,14 @@
         "fix-roy-tighten-tests"
       ],
       "status": "completed"
+    },
+    {
+      "id": "REQ-036",
+      "title": "Esc 3-press; existing song unsaved confirm; hand-edit fingerprint; cancel no reopen",
+      "todoIds": [
+        "fix-iris-esc-three-press"
+      ],
+      "status": "pending"
     }
   ],
   "todos": [
@@ -819,6 +828,22 @@
       "status": "completed",
       "passes": true,
       "notes": "QA PASS: jest 421; remix 50+8; electron 12; Present zero-diff."
+    },
+    {
+      "id": "fix-iris-esc-three-press",
+      "content": "Esc: drop stopPropagation so window sees clear-search; 3-press clear\u2192type\u2192cancel. Existing song Esc confirms panel-local dirty. Hand-edit save preserves synced fingerprint. Cancel pending does not reopen selected slide. Real-Esc e2e + hand-edit label test.",
+      "requirementIds": [
+        "REQ-036"
+      ],
+      "acceptanceCriteria": [
+        "Iris-esc-3",
+        "Iris-esc-unsaved",
+        "Iris-hand-edit-label",
+        "Iris-cancel-no-reopen"
+      ],
+      "status": "pending",
+      "passes": false,
+      "notes": ""
     }
   ],
   "acceptanceCriteria": [
@@ -847,8 +872,8 @@
     "Theme-persist (REQ-027): remix-theme-persist Home reopen chooseTheme stable 10x"
   ],
   "selected": {
-    "id": "fix-roy-state-i-library-words",
-    "reason": "Roy N1 / Iris \u00a74 State I broken for already-hand-edited slides."
+    "id": "fix-iris-esc-three-press",
+    "reason": "Iris FAIL c46bf2e Esc-only."
   },
   "outOfScope": [
     "Bundling the three church books in the app",
@@ -858,7 +883,7 @@
   ],
   "openQuestions": [],
   "blockers": [],
-  "lastUpdated": "2026-10-09T01:07:29.000Z",
+  "lastUpdated": "2026-10-09T13:09:57.000Z",
   "qaEvidence": {
     "taskId": "add-song-panel-redesign",
     "tsc": "exit 0",
@@ -871,9 +896,9 @@
     "qaPassLoop": 46
   },
   "feedback": {
-    "taskId": "fix-roy-tighten-tests",
-    "content": "CI fix: AC-019 Edit must target song row (New Deck has Title first). completeEpic stays true.",
-    "updatedAt": "2026-10-09T01:07:29.000Z"
+    "taskId": "fix-iris-esc-three-press",
+    "content": "Planning Esc FAIL fix. Cap 5.",
+    "updatedAt": "2026-10-09T13:09:57.000Z"
   },
   "fixPass": {
     "irisGate": "ralph/specs/20261007-iris-gate-pr26-fail.md",
@@ -939,5 +964,13 @@
     "loopsUsed": 4,
     "maxLoop": 6,
     "status": "qa_local_pass_awaiting_ci"
+  },
+  "irisEscFixPass": {
+    "gate": "ralph/specs/20261009-iris-gate-pr26-c46bf2e-esc.md",
+    "budget": 5,
+    "loop": 1,
+    "loopsUsed": 1,
+    "maxLoop": 5,
+    "status": "in_progress"
   }
 }

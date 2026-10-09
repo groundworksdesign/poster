@@ -76,6 +76,9 @@ todos:
     status: completed
     content: "Tighten 3 weakened tests; add State I / Esc / focus tests."
     status: completed
+  - id: fix-iris-esc-three-press
+    content: "Esc 3-press; song unsaved confirm; hand-edit fingerprint; cancel no reopen; real Esc e2e."
+    status: pending
 isProject: false
 ---
 
