@@ -34,7 +34,8 @@ async function freePort(): Promise<number> {
 }
 
 function startServer(port: number, home: string): ChildProcess {
-  const env = { ...process.env, HOME: home, PORT: String(port) };
+  // Production mode: this suite runs under song-library config after build:remix.
+  const env = { ...process.env, HOME: home, PORT: String(port), NODE_ENV: 'production' };
   delete env.POSTER_HOME;
   delete env.POSTER_LIBRARY_PATH;
   delete env.POSTER_DB_PATH;

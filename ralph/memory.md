@@ -257,3 +257,240 @@ Keep entries concise and non-obvious. Remove entries that are no longer relevant
 - Unit 274 PASS; Electron present-hydrate-stress + import→Present→send + library hydrate PASS (xvfb).
 - All todos passes true → `completeEpic` true. Draft PR #21 stays draft.
 - Residual: Jack AppImage cold Present repeats still required for packaged sign-off.
+
+## Epic-004 planning (loop 1)
+
+- Working branch: `cursor/epic-004-song-library` (from main; not gatekeeper PR #23).
+- Canonical status: `ralph/task_status.json`. Epic-003 status + qa-report + REQ stubs archived under `ralph/archive/epic-003/`.
+- Binding specs: brief Approved v1.2 + Pam UX review under `ralph/specs/`. Brief open questions: none (Pam's listed questions answered in v1.2).
+- Codebase: `songs` table stub unused (no book/number); DeckBuilder song import replaces whole deck; songParser has XML + song JSON only (no gathered book JSON); Present staging already title+2 lines — leave alone; no song library UI or slide songId.
+- Selected for loop 2 dev: `empty-library-schema`.
+- Standing: one task/loop; no PR until completeEpic; max 24 loops; out of scope = bundle books, transcribe copyright songs, change Present staging, replace deck on import.
+
+## Epic-004 DEV (loop 2) — empty-library-schema
+
+- Extended `songs` table with `book` + `number`; migrates legacy tables via ALTER.
+- `songs.server.ts`: list/get/upsert (SQLite) + JSON fallback in `library-json.server.ts`.
+- Domain `LibrarySong` / `LibrarySongInput`; Remix `GET /library/songs` returns [] when empty.
+- No church-book seed. Tests: schema + songs.server + library-json AC-001 / store fields. passes=false.
+
+## Epic-004 QA (loop 3) — empty-library-schema
+
+- PASS AC-001/REQ-001. Independent tsc + Jest 18 PASS; no bundled church books.
+- passes=true for empty-library-schema only. Selected next: add-song-by-hand.
+
+## Epic-004 DEV (loop 4) — add-song-by-hand
+
+- Form at `/library/songs/add` (title, book, number, verses); Home "Add a song" link.
+- POST `/library/songs/save`; GET `/library/songs?q=` find; `parseVersesText` + `findSongs`.
+- AC-002 unit tests (persist find + UI save/find). passes=false.
+- Status note: loop-3 QA commit under-wrote task_status; corrected empty-library passes/selected in this commit (not a scope change).
+
+## Epic-004 QA (loop 5) — add-song-by-hand
+
+- PASS AC-002/REQ-002. Independent tsc + Jest 27 PASS.
+- Affirmed empty-library-schema passes:true (loop-3; QA-owned).
+- Selected next: import-review-screen. Loops used: 5/24.
+
+## Epic-004 DEV (loop 6) — import-review-screen
+
+- Domain `songImport`: gathered book JSON + Poster song XML/JSON; review plan; resolve keep_both/replace/skip + no-lyrics title_only/skip.
+- UI `/library/songs/import` + POST import API writes song library only; does not touch open deck / DeckBuilder.
+- Single clean song skips review; multi-song checklist all checked; problem sections only when needed.
+- Tests: songImport + ImportSongsReview ACs. passes=false.
+
+## Epic-004 QA (loop 7) — import-review-screen
+
+- PASS AC-003/004/005/006/015/018(import)/022. Defaults: all checked, title_only, keep_both. No deck replace.
+- Selected next: add-slide-chooser. Loops used: 7/24.
+
+## Epic-004 DEV (loop 8) — add-slide-chooser
+
+- AddSongSlideChooser: Pick from library (default) / Import a file; empty library -> Import or Add by hand.
+- Also save to my library checkbox default checked; save only when checked (POST /library/songs/save).
+- Inserts song slide after current selection; other slides remain; optional librarySongId on Slide.
+- Tests: AddSongSlideChooser + DeckBuilder AC-007. passes=false.
+
+## Epic-004 QA (loop 9) — add-slide-chooser
+
+- PASS AC-007/009/014. Pick default; Also save default on; insert keeps slides.
+- Regression: Load song still replaces; Present staging green. Selected library-search-pick. Loops 9/24.
+
+## Epic-004 DEV (loop 10) — library-search-pick
+
+- LibrarySongPicker: search box + optional book filter; GET /library/songs?q=.
+- Shared titles show first verse inline; Enter / double-click pick with librarySongId.
+- Wired into AddSongSlideChooser pick panel. Tests green. passes=false.
+
+## Epic-004 QA (loop 11) — library-search-pick
+
+- PASS (independent) AC-008/012/016 + REQ-009/014/015/020. Book filter Pam-backed (not invented).
+- Insert after current via splice; no deck replace. tsc+Jest green. Selected library-page. Loops 11/24.
+
+## Epic-004 DEV (loop 12) — library-page
+
+- SongLibraryPage at /library/songs: search, book filter, Add/Edit/Delete/Import, used-in-N-decks.
+- Links from Home, layout nav, Add song slide chooser. DELETE via /library/songs/delete/:id.
+- Edit/delete library-only; seam listDecksUsingSongId for linked-update-decks. passes=false.
+- tsc + Jest green. Awaiting QA. Loops 12/24.
+
+## Epic-004 QA (loop 13) — library-page
+
+- PASS AC-017 + REQ-011/021. Main menu nav + Home + Add song slide. Search parity with picker.
+- usedInDeckCount accurate once-per-deck. Delete does not touch deck slides (REQ-016 safety).
+- Selected linked-update-decks. Loops 13/24.
+
+## Epic-004 DEV (loop 14) — linked-update-decks
+
+- UpdateDecksPrompt: deck checkboxes after edit/delete when used; hand-edit second confirm.
+- apply-decks + domain applyLibraryEdit/DeleteToDeck; unused skips prompt; unlinked untouched.
+- passes=false. Awaiting QA. Loops 14/24.
+
+## Epic-004 QA (loop 15) — linked-update-decks
+
+- PASS AC-010/013/018 + REQ-012/015/016/023. Persist/open/Present probe green.
+- Selected present-unchanged. Loops 15/24.
+
+## Epic-004 DEV (loop 16) — present-unchanged
+
+- Present/ + stagedSongSlide.ts: NO DIFF vs main. PresentTypes: optional librarySongId only.
+- AC-011 regression: library-linked + linked-update slides still title then two lines.
+- passes=false. Awaiting QA. Loops 16/24.
+
+## Epic-004 QA (loop 17) — present-unchanged
+
+- PASS AC-011 / REQ-013. Independent Present vs main: staging NO DIFF.
+- Selected tests-song-library. Loops 17/24.
+
+## Epic-004 DEV (loop 18) — tests-song-library
+
+- AC-001..018 map in ralph/specs/20261007-ac-traceability-song-library.md; uncovered: none.
+- Gap fills: AC-008 dimensions + AC-018 unused delete. CI: tsc + Jest 58/364 PASS.
+- passes=false. Awaiting QA. Loops 18/24.
+
+## Epic-004 QA (loop 19) — tests-song-library
+
+- PASS: spot-checked AC-001..018 assertions; tsc 0; Jest 58/364; build:remix; remix e2e 52; electron e2e 12.
+- All todos pass → completeEpic true. Loops 19/24. No PR (release persona).
+
+## Epic-004 FIX LOOP 1 planning — Iris FAIL PR#26
+
+- Gate: ralph/specs/20261007-iris-gate-pr26-fail.md @ 15ee17d.
+- Blocker: library.tsx no Outlet → song routes show coming soon in prod.
+- Also: chooser import skips review; JSON restore wipes songs; client process; Apply flake.
+- Selected: fix-remix-song-library-outlets. Prior passes kept. completeEpic false. Fix 1/14.
+
+## Epic-004 FIX LOOP 2 DEV — fix-remix-song-library-outlets
+
+- library.tsx: useOutlet() ?? coming soon; loader in library.loader.server.ts.
+- library.songs.tsx: Outlet layout; loader in library.songs.loader.server.ts.
+- SongLibraryPage on library.songs._index.tsx; REMIX_ROUTE_ID.librarySongs kept for _data.
+- Prod e2e: tests/e2e/remix-song-library.spec.ts (server.js) 2 passed. passes=false. Fix 2/14.
+
+## Epic-004 FIX LOOP 3 QA — fix-remix-song-library-outlets FAIL
+
+- server.js UI/_data/Edit/chooser PASS; Present/stagedSongSlide NO DIFF; song-library e2e 2/2.
+- Full remix e2e FAIL: mid-suite build:remix vs remix-dev hashes. Same task → DEV. Fix 3/14.
+
+## Epic-004 FIX LOOP 4 DEV — outlets e2e isolation
+
+- Separate playwright.remix.song-library.config.ts + e2e-song-library-webserver.cjs.
+- remix-dev config ignores remix-song-library; `test:e2e:remix` runs both sequentially.
+- Combined green: 52 + 2. pr.yml uses combined script. passes=false. Fix 4/14.
+
+## Epic-004 FIX LOOP 5 QA — fix-remix-song-library-outlets PASS
+
+- Combined e2e 52+2; pr.yml wired; Present/stagedSongSlide NO DIFF.
+- Next: fix-add-slide-import-review. Fix 5/14.
+
+## Epic-004 FIX LOOP 6 DEV — fix-add-slide-import-review
+
+- Shared ImportReviewScreen; chooser import uses review + Also-save via /import.
+- DeckBuilder inserts one or many slides after selection. Unit + prod e2e 3 PASS.
+- passes=false. Fix 6/14.
+
+## Epic-004 FIX LOOP 7 QA — fix-add-slide-import-review FAIL
+
+- Shared ImportReviewScreen + domain helpers PASS; e2e 52+3 PASS.
+- Jest FAIL: config-path-alignment vs compound test:e2e:remix. Same task → DEV. Fix 7/14.
+
+## Epic-004 FIX LOOP 8 DEV — path-alignment + budget 16
+
+- config-path-alignment asserts compound test:e2e:remix → both Playwright configs under tests/e2e/.
+- Full Jest 58/365 PASS. Budget raised to 16. passes=false. Fix 8/16.
+
+## Epic-004 FIX LOOP 9 QA — fix-add-slide-import-review PASS
+
+- tsc/Jest 365/e2e 52+3 PASS. Chooser suite 5/5 counted (net +1 explained).
+- Next: fix-json-restore-preserve-songs. Fix 9/16.
+
+## Epic-004 FIX LOOP 10 DEV — fix-json-restore-preserve-songs
+
+- JSON restore: omit `songs` → keep existing; key present → replace.
+- SQLite `replaceDb`: empty restored songs → re-insert preserved.
+- Tests: library-json + db-restore-songs (pre-epic keep + with-songs replace). passes=false. Fix 10/16.
+- Housekeeping: side PR #27 closed; commit on epic-004 only.
+
+## Epic-004 FIX LOOP 11 QA — fix-json-restore-preserve-songs PASS
+
+- JSON omit/`songs`/`[]` verified. SQLite row-count overridden deliberate empty → schema heuristic (no songs table or no book/number).
+- tsc 0; Jest 59/371. Next: fix-client-process-reference. Fix 11/16.
+
+## Epic-004 FIX LOOP 12 DEV — fix-client-process-reference
+
+- Root cause: song-library route modules imported persistence in the same file as client defaults → db/library-root/`process` in shared client chunk.
+- Split import/save/delete/decks/apply-decks into `*.server.ts`; e2e guards pageerror/console. 3/3 PASS. passes=false. Fix 12/16.
+
+## Epic-004 FIX LOOP 13 QA — fix-client-process-reference PASS
+
+- Fresh build; song client audit clean; ?_data actions OK; tsc/Jest 371/e2e 52+3 PASS.
+- Next: fix-song-library-apply-flake. Fix 13/16.
+
+## Epic-004 FIX LOOP 14 DEV — fix-song-library-apply-flake
+
+- saveEdit clears busy before fetchSongs after setDeckPrompt; test waits for Apply enabled.
+- Isolation 10/10 PASS. passes=false. Fix 14/16.
+
+## Epic-004 FIX LOOP 15 FINAL QA — Iris fix pass PASS
+
+- Flake 10/10; tsc 0; Jest 59/371; build:remix 0; e2e remix 52+3; electron xvfb 12.
+- Present/ + stagedSongSlide NO DIFF vs main. All 5 fix tasks + epic todos passes:true.
+- completeEpic true. Side PR #27 closed. No merge. Fix 15/16.
+
+## Epic-004 LOOP 16 PLANNING — add-slide-song-scratch-or-linked
+
+- Roy: Add slide > SONG = scratch (blank unlinked) or linked (chooser). Scratch excluded from update prompts.
+- Amended: scratch Save to library via ImportReviewScreen; cancel keeps scratch; confirm links (`librarySongId`).
+- Spec `20261008-add-slide-song-scratch-or-linked.md`; REQ-024 / AC-019; completeEpic false; budget 16–19.
+
+## Epic-004 LOOP 17 DEV — add-slide-song-scratch-or-linked
+
+- Kind picker + scratch blank slide + SaveScratchSongToLibrary (ImportReviewScreen).
+- Unit + song-library prod e2e updated. passes false (QA next). Present/stagedSongSlide untouched.
+
+## Epic-004 LOOP 18 FINAL QA — PASS + completeEpic
+
+- AC-019 six items verified (prod e2e + cancel spot + unit exclusion).
+- tsc 0; Jest 59/375; build:remix 0; e2e remix 52+4; electron xvfb 12.
+- Present/ + stagedSongSlide NO DIFF vs main. PR #26 only. completeEpic true. No merge.
+
+
+## Epic-004 LOOP 19 DEV — fix-iris-regate-followups
+
+- Iris re-gate bc4320e: apply-decks flake (UpdateDecksPrompt effect reset) + move routes/*.server.ts to remix/server/.
+- completeEpic false; passes false. 45f10ff CI noted/ignored.
+
+## Epic-004 LOOP 19 DEV amendment — hand-edit vs out-of-date
+
+- `librarySongSyncedFingerprint`: out-of-date = "Not updated to the latest library version"; hand-edit wins when both.
+- Budget max 21. passes false. Present/staged untouched.
+
+## Epic-004 LOOP 21 DEV+QA — e2e build isolation + completeEpic
+
+- DEV: relaunch/repoint under song-library prod Playwright config (fresh `build:remix`); remix-dev ignores those specs.
+- QA: empty `build/` e2e 57; after remix-dev poison e2e 57; tsc 0; Jest 59/385; electron 12; flake 10/10+10/10; Present/stagedSongSlide NO DIFF.
+- completeEpic true. PR #26 only. No merge.
+
+## Epic-004 redesign FINAL QA — completeEpic
+
+- Theme flake, Present keys, add-song panel redesign PASS. e2e 57; Jest 413; electron 12; theme 10x; Present NO DIFF. PR #26. No merge.

@@ -1,0 +1,181 @@
+{
+  "epic": "epic-003",
+  "branch": "ralph/epic-003-mac-present-fullscreen",
+  "baseBranch": "main",
+  "status": "complete",
+  "loop": 4,
+  "persona": "qa",
+  "completeEpic": true,
+  "prUrl": "https://github.com/groundworksdesign/poster/pull/25",
+  "requirements": [
+    {
+      "id": "REQ-001",
+      "title": "Electron Present F uses native setFullScreen",
+      "description": "On Mac Electron, Present F enters/exits fullscreen via main-process BrowserWindow.setFullScreen, not HTML requestFullscreen.",
+      "todoIds": [
+        "ipc-fullscreen-bridge",
+        "present-f-uses-native"
+      ],
+      "status": "done"
+    },
+    {
+      "id": "REQ-002",
+      "title": "Stronger setSimpleFullScreen fallback",
+      "description": "If the system menu bar still shows after native fullscreen (or native FS cannot be used), apply setSimpleFullScreen while preserving easy exit.",
+      "todoIds": [
+        "stronger-fallback"
+      ],
+      "status": "done"
+    },
+    {
+      "id": "REQ-003",
+      "title": "F and Escape always exit",
+      "description": "F and Escape always restore windowed Present; no hard kiosk that blocks easy exit.",
+      "todoIds": [
+        "easy-exit"
+      ],
+      "status": "done"
+    },
+    {
+      "id": "REQ-004",
+      "title": "No auto-fullscreen on open",
+      "description": "Present does not enter fullscreen automatically when the window opens.",
+      "todoIds": [
+        "no-auto-on-open"
+      ],
+      "status": "done"
+    },
+    {
+      "id": "REQ-005",
+      "title": "Window-scoped only, no display picker",
+      "description": "Only existing Present windows are fullscreened on the display they already occupy; no display-picker UI.",
+      "todoIds": [
+        "window-scoped-only"
+      ],
+      "status": "done"
+    },
+    {
+      "id": "REQ-006",
+      "title": "Browser Present keeps HTML fullscreen",
+      "description": "Browser / Remix Present continues to use HTML requestFullscreen / exitFullscreen only.",
+      "todoIds": [
+        "present-f-uses-native",
+        "automated-checks"
+      ],
+      "status": "done"
+    },
+    {
+      "id": "REQ-007",
+      "title": "Release notes bullet",
+      "description": "Shipping release notes mention the Mac Present fullscreen reliability fix in user-facing language.",
+      "todoIds": [
+        "release-notes-docs"
+      ],
+      "status": "done"
+    }
+  ],
+  "todos": [
+    {
+      "id": "ipc-fullscreen-bridge",
+      "content": "Add Electron IPC + preload APIs so Present can request enter/exit fullscreen on its own BrowserWindow (macOS native setFullScreen; no HTML-only path on Electron).",
+      "requirementId": "REQ-001",
+      "status": "done",
+      "passes": true,
+      "notes": "QA: presentFullscreen.cjs + main IPC enter/exit/toggle/is + preload APIs; electron-main.regression asserts sender-scoped handlers.",
+      "qaVerifiedAt": "2026-09-26T14:10:00.000Z"
+    },
+    {
+      "id": "present-f-uses-native",
+      "content": "On Electron Present, F enters/exits via the bridge (native setFullScreen). Do not call requestFullscreen on Electron. Browser Present keeps HTML requestFullscreen.",
+      "requirementId": "REQ-001",
+      "status": "done",
+      "passes": true,
+      "notes": "QA: Present.fullscreen.test \u2014 Electron F \u2192 toggleFullscreen, never requestFullscreen; browser F still requestFullscreen.",
+      "qaVerifiedAt": "2026-09-26T14:10:00.000Z"
+    },
+    {
+      "id": "stronger-fallback",
+      "content": "If after native fullscreen the Mac menu bar still remains visible (or native FS fails), fall back to setSimpleFullScreen (or equivalent) while preserving easy exit.",
+      "requirementId": "REQ-002",
+      "status": "done",
+      "passes": true,
+      "notes": "QA: presentFullscreen.test \u2014 native-failed and menu-bar-visible paths call setSimpleFullScreen; exit clears both.",
+      "qaVerifiedAt": "2026-09-26T14:10:00.000Z"
+    },
+    {
+      "id": "easy-exit",
+      "content": "F and Escape always leave fullscreen (native or fallback) and restore the windowed Present; no hard kiosk lock.",
+      "requirementId": "REQ-003",
+      "status": "done",
+      "passes": true,
+      "notes": "QA: Escape \u2192 exitFullscreen bridge; exitPresentFullscreen clears native+simple; no setKiosk in main.",
+      "qaVerifiedAt": "2026-09-26T14:10:00.000Z"
+    },
+    {
+      "id": "no-auto-on-open",
+      "content": "Opening a Present window stays windowed; fullscreen only after operator F (or explicit UI that maps to the same path).",
+      "requirementId": "REQ-004",
+      "status": "done",
+      "passes": true,
+      "notes": "QA: openPresentSessionWindow block has no setFullScreen/setSimpleFullScreen; regression test asserts.",
+      "qaVerifiedAt": "2026-09-26T14:10:00.000Z"
+    },
+    {
+      "id": "window-scoped-only",
+      "content": "Fullscreen applies only to existing Present BrowserWindows on the display they already occupy; no display-picker UI.",
+      "requirementId": "REQ-005",
+      "status": "done",
+      "passes": true,
+      "notes": "QA: IPC uses BrowserWindow.fromWebContents(event.sender) only; no display-picker UI.",
+      "qaVerifiedAt": "2026-09-26T14:10:00.000Z"
+    },
+    {
+      "id": "automated-checks",
+      "content": "Add automated coverage for Electron bridge behavior (enter/exit native vs fallback routing, browser still uses HTML FS) at unit/IPC mock level Jack can extend.",
+      "requirementId": "REQ-006",
+      "status": "done",
+      "passes": true,
+      "notes": "QA: presentFullscreen.test.js + Present.fullscreen.test.tsx + electron-main.regression; full suite 45/300 PASS.",
+      "qaVerifiedAt": "2026-09-26T14:10:00.000Z"
+    },
+    {
+      "id": "release-notes-docs",
+      "content": "Release-notes bullet for Mac Present fullscreen reliability; short note that System Settings menu-bar mode can still affect Never, with the app fallback covering stubborn cases.",
+      "requirementId": "REQ-007",
+      "status": "done",
+      "passes": true,
+      "notes": "QA: docs/release-notes-epic-003-mac-present-fullscreen.md + README Present bullet.",
+      "qaVerifiedAt": "2026-09-26T14:10:00.000Z"
+    }
+  ],
+  "acceptanceCriteria": [
+    "Electron F with window.poster present never calls requestFullscreen",
+    "Electron Escape / F exit clears native and simpleFullscreen in the mock",
+    "Fallback is invoked when native path reports menu-bar still visible / failure; exit clears fallback",
+    "Browser F still uses HTML requestFullscreen",
+    "Present opens windowed (no auto-fullscreen on open)",
+    "No display-picker UI",
+    "PR / shipping release notes include a clear user-facing bullet",
+    "Do not merge; Jack is merge gate"
+  ],
+  "selected": {
+    "id": null,
+    "reason": "All todos QA-passed; beta v0.1.16-pr.25 out; Jack merge gate."
+  },
+  "lastUpdated": "2026-09-26T14:10:00.000Z",
+  "qaEvidence": {
+    "tsc": "exit 0",
+    "jest": "45 suites, 300 tests passed",
+    "commands": [
+      "pnpm exec tsc --noEmit",
+      "CI=true pnpm exec react-scripts test --watchAll=false --runInBand"
+    ],
+    "tipSha": "95c306ab6bc242d66108253331d0e762570e1134",
+    "betaRelease": "v0.1.16-pr.25"
+  },
+  "feedback": {
+    "taskId": "epic-003",
+    "content": "QA PASS epic-003. Draft PR #25; beta pre-release v0.1.16-pr.25 published (Mac DMGs + portable). Jack merge gate. Do not merge.",
+    "updatedAt": "2026-09-26T14:10:00.000Z"
+  }
+}

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export const THEME_STORAGE_KEY = 'poster-theme';
 
@@ -79,12 +79,29 @@ export function applyTheme(theme: ThemeId): void {
 export function useTheme(): [ThemeId, (theme: ThemeId) => void] {
   const [theme, setThemeState] = useState<ThemeId>('light');
   const [hydrated, setHydrated] = useState(false);
+  /** True once the user (or a test) explicitly chose a theme this mount. */
+  const userSetRef = useRef(false);
 
   useEffect(() => {
-    const stored = readStoredTheme();
-    setThemeState(stored);
-    applyTheme(stored);
+    // Mark ready for e2e; do not clobber a theme the user already set before this effect.
+    if (!userSetRef.current) {
+      const stored = readStoredTheme();
+      setThemeState(stored);
+      applyTheme(stored);
+    }
     setHydrated(true);
+    try {
+      document.documentElement.dataset.themeReady = '1';
+    } catch {
+      // ignore
+    }
+    return () => {
+      try {
+        delete document.documentElement.dataset.themeReady;
+      } catch {
+        // ignore
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -118,6 +135,7 @@ export function useTheme(): [ThemeId, (theme: ThemeId) => void] {
   }, []);
 
   const setTheme = (next: ThemeId) => {
+    userSetRef.current = true;
     applyTheme(next);
     setThemeState(next);
   };

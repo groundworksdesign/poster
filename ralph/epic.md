@@ -1,105 +1,167 @@
 ---
-name: Reliable Mac Present fullscreen
-epic: epic-003
+name: Song library
+epic: epic-004
 status: approved
-overview: "On Mac Electron, Present F uses native fullscreen with a stronger simpleFullscreen-style fallback that still exits easily via F or Escape; no auto-FS on open; browser Present unchanged."
+source_artifacts:
+  - id: 20261004-001
+    title: Poster song library
+    path: 20261004-feature-brief-song-library.md
+overview: "Ship an empty local song library with add-by-hand, one-screen file import, search and pick onto a new linked slide, and library edit/delete that can update decks after the user confirms."
 todos:
-  - id: ipc-fullscreen-bridge
-    content: "Add Electron IPC + preload APIs so Present can request enter/exit fullscreen on its own BrowserWindow (macOS native setFullScreen; no HTML-only path on Electron)."
+  - id: empty-library-schema
+    content: "Wire the unused local songs table (or equivalent) so a fresh install has an empty library, store title, book, number, lyrics, and a stable song id, and do not bundle the three church books."
+    status: completed
+  - id: add-song-by-hand
+    content: "Add a form to create one library song at a time (title, book, number, verses) so it appears in search afterward (REQ-002)."
+    status: completed
+  - id: import-review-screen
+    content: "Import Doug's gathered JSON plus existing Poster song XML/JSON through one review screen: checklist of songs all checked by default, no-lyrics group (title only or skip), title-match rows showing number and lyrics with keep both (default) / replace / skip. Skip the review screen for a single clean song file (REQ-003–006, 018–019, 022)."
+    status: completed
+  - id: add-slide-chooser
+    content: "When adding a song slide, offer Pick from library (default) and Import a file. Importing while adding a slide shows Also save to my library checked by default on the same screen. The chosen song becomes a new slide in the open deck and does not replace the deck (REQ-007, 008, 010, 017)."
+    status: completed
+  - id: add-slide-song-scratch-or-linked
+    content: "Add slide > SONG offers two types: (1) Song from scratch — blank song slide in place, no librarySongId, no chooser; (2) Linked song — AddSongSlideChooser (pick/import + Also save) with librarySongId. Scratch has Save to library via ImportReviewScreen (title-match keep-both; no-lyrics; cancel keeps scratch; confirm sets librarySongId). Scratch never appears in linked-update/apply-decks until linked. Prod e2e: scratch, linked insert, scratch→Save→duplicate-title→linked. Unit: excluded before save, included after (REQ-024)."
+    status: completed
+  - id: library-search-pick
+    content: "Library search matches title, book, number, and lyrics. Results show title, book, and number. Shared titles show the first verse inline. Enter or double-click inserts a linked slide after the current slide (REQ-009, 014, 015, 020)."
+    status: completed
+  - id: library-page
+    content: "Add a library page reachable from the main menu and from Add song slide, with the same search list plus Add, Edit, Delete, Import, and a used-in-N-decks count (REQ-011, 021)."
+    status: completed
+  - id: linked-update-decks
+    content: "Keep slides linked to their library song. On edit or delete, ask about updating decks only when the song is used, list those decks with checkboxes, and ask again before overwriting slides that were edited by hand. Deleting never removes slides unless the user selects those decks (REQ-012, 015, 016, 023)."
+    status: completed
+  - id: present-unchanged
+    content: "Leave Present song staging as title then two lyric lines per stage. Do not change that layout in this epic (REQ-013)."
+    status: completed
+  - id: tests-song-library
+    content: "Add tests covering AC-001 through AC-018: empty library, hand add, import formats and review defaults, pick-to-slide without replacing the deck, search including lyrics and first-verse for duplicate titles, save checkbox default, title-only empty lyrics, keep-both default, linked updates with hand-edit ask, and Present two-line staging still green."
+    status: completed
+  - id: fix-iris-regate-followups
+    content: "Iris re-gate follow-ups: fix UpdateDecksPrompt apply-decks selection reset (MUST-FIX); move routes/*.server.ts helpers out of routes so /library/loader/server is 404; hand-edited vs out-of-date labels (Not updated to the latest library version) via librarySongSyncedFingerprint (REQ-012/023)."
+    status: completed
+  - id: fix-remix-theme-persist-flake
+    content: "CI blocker: remix-theme-persist Home reopen (chooseTheme localStorage) flake after rebase onto #23 — find root cause (race vs flake) and fix; QA runs that spec 10x green."
+    status: completed
+  - id: fix-present-keys-while-editing
+    content: "Live-show safety: DeckBuilder page-wide Arrow/Page key handler must NOT move Present while focus is inside the slide edit panel or the song list; add a unit/integration test."
+    status: completed
+  - id: add-song-panel-redesign
+    content: "Add song redesign (Pam mockup + Roy decisions): Add slide below Slides header; type choice + linked/scratch/import inside slide edit panel; Also save unchecked for scratch / checked for imports; full first verse for duplicate titles; toolbar Load adds song slide (no deck replace); draft slide joins deck only on Save; Ctrl/Cmd+Enter on search stops on song card; panel states unit tests + e2e both SONG paths; Iris AC-001..018 stay green; Present/stagedSongSlide unchanged."
+    status: completed
+
+  - id: fix-iris-library-defer-until-save
+    content: "Iris blockers: Also save on single-file; defer library writes until Save slide; Cancel drops pending; existing-slide null commit stays open; multi-import array; F3 Skip unticks Also save."
     status: pending
-  - id: present-f-uses-native
-    content: "On Electron Present, F enters/exits via the bridge (native setFullScreen). Do not call requestFullscreen on Electron. Browser Present keeps HTML requestFullscreen."
+  - id: fix-iris-keys-empty-lib-manage
+    content: "N1 Present keys on list/panel click; N4 Type a new song in panel; manage page full first verse."
     status: pending
-  - id: stronger-fallback
-    content: "If after native fullscreen the Mac menu bar still remains visible (or native FS fails), fall back to setSimpleFullScreen (or equivalent) while preserving easy exit."
+  - id: fix-iris-panel-ui-mockup
+    content: "UI mockup polish: toolbar, insert-after, menu keys, type cards, Esc/Ctrl+Enter, state I, Style collapsed."
     status: pending
-  - id: easy-exit
-    content: "F and Escape always leave fullscreen (native or fallback) and restore the windowed Present; no hard kiosk lock."
+  - id: fix-iris-beta-tag-ref
+    content: "F5: force-move beta tag ref to release head commit in pr.yml."
     status: pending
-  - id: no-auto-on-open
-    content: "Opening a Present window stays windowed; fullscreen only after operator F (or explicit UI that maps to the same path)."
-    status: pending
-  - id: window-scoped-only
-    content: "Fullscreen applies only to existing Present BrowserWindows on the display they already occupy; no display-picker UI."
-    status: pending
-  - id: automated-checks
-    content: "Add automated coverage for Electron bridge behavior (enter/exit native vs fallback routing, browser still uses HTML FS) at unit/IPC mock level Jack can extend."
-    status: pending
-  - id: release-notes-docs
-    content: "Release-notes bullet for Mac Present fullscreen reliability; short note that System Settings menu-bar mode can still affect Never, with the app fallback covering stubborn cases."
-    status: pending
+
+  - id: fix-roy-state-i-library-words
+    status: completed
+    content: "State I: restore from current library song words; yellow note on open when already hand-edited."
+    status: completed
+  - id: fix-roy-esc-focus-library-id
+    status: completed
+    content: "Esc levels + unsaved confirm; type-card/menu/E/B focus; remove raw Library ID."
+    status: completed
+  - id: fix-roy-tighten-tests
+    status: completed
+    content: "Tighten 3 weakened tests; add State I / Esc / focus tests."
+    status: completed
+  - id: fix-iris-esc-three-press
+    content: "Esc 3-press; song unsaved confirm; hand-edit fingerprint; cancel no reopen; real Esc e2e."
+    status: completed
+  - id: fix-iris-handtype-focus
+    content: "Focus Save only on first song pick; key-by-key e2e for hand-edit + search + scratch fields; no premature save."
+    status: completed
+
 isProject: false
 ---
 
-# Epic 003: Reliable Mac Present fullscreen
+# Epic 004: Song library
 
 ## Goal
 
-Mac Electron Present fullscreen reliably hides the system menu bar for program output. Present stays windowed on open; `F` (and Escape to leave) drive native Electron fullscreen, with a stronger Mac fallback when native alone is not enough, without trapping the operator. Browser Present keeps today’s HTML fullscreen.
+Poster has a local song library that starts empty. Users add songs by hand or import files through one review screen, find songs by title, book, number, or lyrics, and add a linked song slide to the open deck. Editing or deleting a library song can update the decks that use it after the user confirms.
 
-## Requirements
+## Current Baseline
 
-- **REQ-001** On Mac Electron, Present `F` enters/exits fullscreen via main-process native `BrowserWindow.setFullScreen`, not HTML `requestFullscreen`.
-- **REQ-002** If the system menu bar still shows after native fullscreen (or native FS cannot be used), apply a stronger Mac fallback (`setSimpleFullScreen` or equivalent) that still exits with `F` / Escape.
-- **REQ-003** `F` and Escape always restore windowed Present; no hard kiosk that blocks easy exit.
-- **REQ-004** Present does not enter fullscreen automatically when the window opens.
-- **REQ-005** Only existing Present windows are fullscreened, on the display they already occupy (no display-picker UI).
-- **REQ-006** Browser / Remix Present continues to use HTML `requestFullscreen` / `exitFullscreen` only.
-- **REQ-007** Shipping release notes mention the Mac Present fullscreen reliability fix in user-facing language.
+- Song slides and Present two-line staging already exist.
+- Importing a song XML or song-shaped JSON today replaces the whole deck.
+- A `songs` table exists in the local Poster database but is unused.
+- Doug's gathered books live as import files only; they must not ship inside the app.
 
-## Current baseline
+## Implementation Plan
 
-- Present toggle: `document.documentElement.requestFullscreen()` / `exitFullscreen()` on `F` in `src/presentation/Present/Present.tsx`.
-- Electron Present window: plain `BrowserWindow` in `openPresentSessionWindow()` (`src/adapters/electron/main.cjs`) — no `setFullScreen`, `setSimpleFullScreen`, or kiosk.
-- Preload has no fullscreen IPC (`src/adapters/electron/preload.cjs`).
-- macOS menu-bar visibility in fullscreen follows System Settings (Never / On Desktop Only can keep the bar visible); HTML FS does not put the window in a native macOS Space.
+1. Persist library songs with stable ids; ship empty.
+2. Build the import review screen and parsers for gathered JSON plus existing song XML/JSON.
+3. Build Add song slide chooser, library picker, and library page.
+4. Store a library song id on slides added from the library; wire edit/delete update prompts.
+5. Keep Present staging unchanged.
+6. Cover AC-001–AC-018 with automated tests.
 
-## Out of scope
+### Out of scope
 
-- Auto-fullscreen when Present opens.
-- Display-picker / “which screen” UI.
-- Changing browser Present fullscreen behavior.
-- Hard kiosk lock with no easy exit.
-- Windows / Linux menu-bar APIs as the Mac fix (`autoHideMenuBar` / `setMenuBarVisibility` do not control the macOS system menu bar).
+- Bundling the three church books in the app
+- Transcribing the five copyright-held songs
+- Changing how Present stages a song slide
+- Replacing the open deck with an imported song
 
-## Implementation plan
+## Data Flow
 
-1. Add main IPC handlers to enter/exit fullscreen on the sender’s `BrowserWindow` (prefer `setFullScreen`; on macOS, stronger fallback via `setSimpleFullScreen` when needed). Expose a small `poster` preload API (e.g. enter/exit/isFullscreen) without elevating privileges.
-2. In Present, detect Electron (`window.poster` / existing bridge) and route `F` / Escape through that API; leave HTML fullscreen for non-Electron.
-3. Avoid stacking HTML `requestFullscreen` with native/simple modes on Electron (known Electron conflict with simpleFullscreen). Prefer one mode at a time.
-4. Ensure Escape and `F` both exit whichever mode is active and restore a normal windowed Present.
-5. Automated tests: mock IPC / bridge so Electron path never calls `requestFullscreen`; browser path still does; exit paths clear both native and fallback flags in the mock.
-6. Release notes + brief operator note pointing at System Settings only as context; app fallback is the product answer for stubborn Never cases.
+```mermaid
+flowchart TD
+  addSlide[Add song slide] --> kind{Scratch or Linked}
+  kind -->|Scratch| blank[Blank song slide no librarySongId]
+  blank -->|Save to library| saveReview[ImportReviewScreen]
+  saveReview -->|confirm| linkedFromScratch[Slide gets librarySongId]
+  saveReview -->|cancel| blank
+  kind -->|Linked| choice{Pick or Import}
+  choice -->|Pick| search[Search title book number lyrics]
+  search --> slide[New linked slide in open deck]
+  choice -->|Import| review[One review screen]
+  review --> slide
+  review --> library[(Song library)]
+  linkedFromScratch --> library
+  manage[Library page] --> library
+  library -->|edit or delete with confirm| decks[Linked decks only]
+```
 
-## Primary files (expected)
+## Primary Files Expected to Change
 
-- `src/adapters/electron/main.cjs`
-- `src/adapters/electron/preload.cjs`
-- `src/presentation/Present/Present.tsx`
-- New/extended unit or IPC tests under `src/` / `tests/` (align with Jack)
-
-## Definition of Done
-
-- [ ] Mac Electron: Present opens windowed; `F` enters native fullscreen (menu bar auto-hides when OS allows).
-- [ ] Stubborn menu-bar cases: stronger fallback hides the menu bar; `F` and Escape still exit to windowed Present.
-- [ ] Browser Present: `F` still uses HTML fullscreen only.
-- [ ] No auto-fullscreen on Present open; no display picker.
-- [ ] Automated bridge/path checks pass.
-- [ ] PR / shipping release notes include a clear user-facing bullet.
-- [ ] No implementation merge until this epic is `approved` and Roy says go.
+- Local DB / songs persistence and any migration from schema version 1
+- Deck builder add-slide and song import paths (`DeckBuilder`, song parser)
+- New library UI (picker, review screen, manage page)
+- Slide / song types so a slide can hold a library song id
+- Present path only as needed to keep existing staging green
 
 ## Validation
 
-| Check | Layer | Fails if |
-|-------|-------|----------|
-| Electron `F` → native enter | Unit / IPC mock | Present still calls `requestFullscreen` when `window.poster` is present |
-| Electron Escape / `F` → exit | Unit / IPC mock | Window left in fullscreen / simpleFullscreen after exit |
-| Fallback path | Unit / IPC mock | Fallback never invoked when native path reports menu-bar still visible / failure; or exit does not clear fallback |
-| Browser `F` | Unit | Browser path stops using HTML fullscreen |
-| Open Present | Manual / smoke | Present starts already fullscreen |
+- [x] Fresh install has zero library songs (AC-001 / REQ-001)
+- [x] Hand-added song is findable later (AC-002 / REQ-002)
+- [x] Import accepts gathered book JSON and existing Poster song XML/JSON (AC-003 / REQ-003)
+- [x] Multi-song file does not import until the review checklist is confirmed (AC-004 / REQ-004, 022)
+- [x] No-lyrics songs offer title only or skip; nothing auto-imports (AC-005, AC-015 / REQ-005, 018)
+- [x] Title match shows number and lyrics; default keep both; also replace and skip (AC-006, AC-015 / REQ-006, 019)
+- [x] Add song slide can import or insert without replacing other slides (AC-007 / REQ-007, 008)
+- [x] Search by title, book, number, and lyrics works; shared titles can show first verse (AC-008, AC-012, AC-016 / REQ-009, 014, 020)
+- [x] Also save to my library starts checked and only saves when checked (AC-009, AC-014 / REQ-010, 017)
+- [x] Edit/delete available; decks update only after confirm; hand-edited slides need an extra yes (AC-010, AC-013, AC-018 / REQ-011, 012, 015, 016, 023)
+- [x] Present still title then two lines (AC-011 / REQ-013)
+- [x] Library opens from main menu and Add song slide (AC-017 / REQ-021)
+- [x] Add slide > SONG offers scratch (blank, unlinked) and linked (chooser); scratch Save to library via ImportReviewScreen; scratch excluded from update prompts until linked (AC-019 / REQ-024)
+- [x] Add song redesign inside slide edit panel (Roy-approved Pam mockup); toolbar Load adds song slide; Present keys ignored while editing (AC-020+)
 
 ## Risks to manage
 
-- Mixing HTML fullscreen with `setSimpleFullScreen` can fight (Electron #50842); Electron path must not dual-enter.
-- Simple fullscreen UX differs from Spaces (no separate Mission Control Space); easy exit is mandatory acceptance.
-- OS “Never” may still reveal chrome on extreme edge cases; document briefly, rely on fallback first.
+- Same title must not force overwrite; keep both is the default.
+- Do not fill empty copyright songs by scanning or transcription.
+- Existing decks without library links must keep working; only newly linked slides participate in updates.

@@ -1,0 +1,193 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+*{box-sizing:border-box} body{margin:0;width:1280px;font:13px/1.35 -apple-system,"Segoe UI",Helvetica,Arial,sans-serif;color:#222;background:#eef0f3}
+.sheet{padding:18px 22px}
+h1{font-size:20px;margin:0 0 2px} .sub{color:#666;margin:0 0 12px}
+.lbl{font-weight:700;font-size:12px;color:#fff;background:#3b5bdb;display:inline-block;padding:2px 8px;border-radius:3px;margin-bottom:6px}
+.frame{background:#fff;border:1px solid #c9ced6;border-radius:6px;overflow:hidden}
+.app{display:flex;height:470px}
+.toolbar{height:34px;border-bottom:1px solid #ddd;display:flex;align-items:center;gap:6px;padding:0 10px;background:#fafafa}
+.tb{border:1px solid #bbb;border-radius:3px;padding:2px 8px;font-size:12px;background:#fff;color:#555}
+.list{width:430px;border-right:1px solid #ddd;padding:10px;position:relative}
+.list h2{font-size:17px;margin:0 0 6px}
+.addbtn{display:inline-block;border:2px solid #3b5bdb;color:#3b5bdb;border-radius:4px;padding:4px 12px;font-weight:700;background:#f0f3ff}
+.menu{position:absolute;left:10px;top:76px;width:170px;background:#fff;border:1px solid #999;box-shadow:0 3px 10px rgba(0,0,0,.18);border-radius:4px;z-index:2}
+.menu div{padding:5px 10px;border-bottom:1px solid #eee} .menu .on{background:#dbe4ff;font-weight:700}
+.menu kbd{float:right;color:#888}
+.row{border:1px solid #ddd;border-radius:4px;padding:6px 8px;margin:6px 0;display:flex;gap:6px;align-items:center;color:#444}
+.row .t{flex:1} .row .b{border:1px solid #ccc;font-size:11px;padding:0 5px;border-radius:3px;color:#666}
+.row.new{border:2px dashed #3b5bdb;background:#f0f3ff;color:#1c3bb0;font-weight:700}
+.panel{flex:1;display:flex;flex-direction:column}
+.ph{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid #ddd}
+.ph h3{margin:0;font-size:16px}
+.pb{flex:1;padding:12px 14px;overflow:hidden}
+.pf{border-top:1px solid #ddd;padding:8px 14px;display:flex;gap:8px;align-items:center;background:#fafafa}
+.pf .sp{flex:1}
+.btn{border:1px solid #999;border-radius:4px;padding:4px 10px;background:#fff;font-size:12px}
+.btn.pri{background:#1a7f5a;color:#fff;border-color:#1a7f5a;font-weight:700}
+.btn.dis{background:#cfd8d3;border-color:#cfd8d3;color:#fff}
+.btn.lnk{border:none;background:none;color:#3b5bdb;text-decoration:underline;padding:0}
+.focus{outline:3px solid #f08c00;outline-offset:2px}
+.cards{display:flex;gap:12px;margin-top:6px}
+.card{flex:1;border:2px solid #ccc;border-radius:6px;padding:12px}
+.card b{display:block;font-size:14px;margin-bottom:4px} .card span{color:#666}
+.hint{color:#666;font-size:12px}
+.kb{font-size:11px;color:#8a5a00;background:#fff4e0;border:1px solid #f0c36d;border-radius:3px;padding:3px 6px;margin-top:8px}
+.seg{display:flex;border:1px solid #bbb;border-radius:4px;overflow:hidden;width:max-content;font-size:12px;margin-bottom:10px}
+.seg div{padding:3px 10px} .seg .on{background:#3b5bdb;color:#fff;font-weight:700}
+.search{border:2px solid #3b5bdb;border-radius:4px;padding:5px 8px;display:flex;justify-content:space-between}
+.res{border:1px solid #ccc;border-radius:4px;margin-top:6px}
+.r{padding:5px 8px;border-bottom:1px solid #eee} .r small{color:#777}
+.r.hl{background:#dbe4ff}
+.grp{background:#f5f5f5;padding:3px 8px;font-size:11px;font-weight:700;color:#555;border-bottom:1px solid #e5e5e5}
+.v{color:#666;font-style:italic;font-size:12px;padding-left:10px}
+.fld{margin-bottom:7px} .fld label{display:block;font-size:11px;font-weight:700;color:#555}
+.in{border:1px solid #aaa;border-radius:3px;padding:4px 6px;background:#fff;min-height:24px}
+.ta{min-height:110px;white-space:pre-line;color:#333}
+.chk{font-weight:700;margin:6px 0}
+.chk i{display:inline-block;width:14px;height:14px;border:2px solid #3b5bdb;background:#3b5bdb;color:#fff;font-style:normal;font-size:10px;line-height:10px;text-align:center;border-radius:2px;margin-right:5px}
+.songcard{border:2px solid #1a7f5a;border-radius:6px;padding:10px;background:#f2fbf6}
+.badge{display:inline-block;background:#1a7f5a;color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:8px;margin-left:6px;vertical-align:middle}
+.warn{border:1px solid #e0b100;background:#fff8d6;border-radius:4px;padding:7px;font-size:12px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px}
+.mini{height:520px;display:flex;flex-direction:column}
+.note{font-size:11px;color:#555;margin-top:4px}
+.collapsed{color:#888;font-size:12px;border-top:1px dashed #ccc;padding-top:6px;margin-top:8px}
+</style></head><body><div class="sheet">
+<h1>Poster · Add song slide, redesigned inside the slide edit panel</h1>
+<p class="sub">Pam, design draft, 2026-10-08. Wireframe only. Orange outline = default focus. Nothing in a separate box; one Save slide button in a pinned footer.</p>
+
+<div class="lbl">1 · DeckBuilder: Add slide under the Slides header → state A: choose song type</div>
+<div class="frame">
+ <div class="toolbar"><span class="tb">Load</span><span class="tb">Export</span><span class="tb">Save deck</span><span class="tb">New deck</span><span class="tb">Open Present</span><span class="hint" style="margin-left:10px">(old "Add slide: [GENERAL▾] [Add Slide]" removed from this toolbar)</span></div>
+ <div class="app">
+  <div class="list">
+   <h2>Slides</h2>
+   <span class="addbtn">+ Add slide ▾</span>
+   <div class="menu"><div class="on">♪ Song <kbd>S</kbd></div><div>Title <kbd>T</kbd></div><div>General <kbd>G</kbd></div><div>Image <kbd>I</kbd></div></div>
+   <div style="height:8px"></div>
+   <div class="row" style="margin-top:118px"><span>1.</span><span class="t">Welcome</span><span class="b">Send</span><span class="b">Edit</span></div>
+   <div class="row"><span>2.</span><span class="t">♪ Come, Come, Ye Saints</span><span class="b">Send</span><span class="b">Edit</span></div>
+   <div class="row new"><span>3.</span><span class="t">♪ New song slide (not saved)</span></div>
+   <div class="row"><span>4.</span><span class="t">Announcements</span><span class="b">Send</span><span class="b">Edit</span></div>
+   <p class="note">New slide goes after the selected slide. It joins the deck only on Save slide; Cancel leaves nothing behind.</p>
+  </div>
+  <div class="panel">
+   <div class="ph"><h3>New song slide</h3><span class="btn">✕ Close</span></div>
+   <div class="pb">
+    <div style="font-weight:700;margin-bottom:2px">What kind of song slide?</div>
+    <div class="cards">
+     <div class="card focus"><b>🔗 Linked song from the library</b><span>Search your library by title, book, number, or words. Updates when the library song changes.</span><div class="note">Key: 1 · or Import a song file</div></div>
+     <div class="card"><b>✎ Song from scratch</b><span>Type a title and words here. Lives in this deck; tick "Also save to my library" to keep it.</span><div class="note">Key: 2</div></div>
+    </div>
+    <div class="kb">← → move · Enter choose · Esc cancel new slide · Focus starts on Linked (or Scratch when the library is empty)</div>
+    <div class="collapsed">▸ Style (collapsed for song slides)</div>
+   </div>
+   <div class="pf"><span class="sp"></span><span class="btn">Cancel</span><span class="btn dis">Save slide  Ctrl+Enter</span></div>
+  </div>
+ </div>
+</div>
+
+<div class="grid">
+ <div>
+  <div class="lbl">C/D · Linked: searching, duplicate titles show first verse</div>
+  <div class="frame mini"><div class="ph"><h3>New song slide</h3><span class="btn">✕</span></div>
+   <div class="pb">
+    <div class="seg"><div class="on">Linked song</div><div>Song from scratch</div></div>
+    <div class="search focus"><span>how great|</span><span class="hint">Book: All ▾</span></div>
+    <div class="hint" style="margin-top:3px">Title, book, number, or words</div>
+    <div class="res">
+     <div class="grp">How Great Thou Art · 2 songs</div>
+     <div class="r hl"><b>How Great Thou Art</b> <small>Hymns · 86</small><div class="v">O Lord my God, when I in awesome wonder<br>Consider all the worlds thy hands have made</div></div>
+     <div class="r"><b>How Great Thou Art</b> <small>Hymns for Home and Church · 1010</small><div class="v">O Lord, my God, when I in awe and wonder<br>Behold the stars, the rolling thunder hear</div></div>
+     <div class="r"><b>How Great the Wisdom and the Love</b> <small>Hymns · 195</small></div>
+     <div class="r"><b>I Stand All Amazed</b> <small>Hymns · 193</small><div class="v" style="font-style:normal">…how <u>great</u> the love…  <small>(matched words)</small></div></div>
+    </div>
+    <div style="margin-top:8px"><span class="btn lnk">Import a song file instead</span></div>
+    <div class="kb">Type to search · ↑↓ move · Enter pick · Ctrl+Enter pick &amp; save · Esc clear, then back</div>
+   </div>
+   <div class="pf"><span class="sp"></span><span class="btn">Cancel</span><span class="btn dis">Save slide</span></div>
+  </div>
+ </div>
+
+ <div>
+  <div class="lbl">E · Linked: song chosen</div>
+  <div class="frame mini"><div class="ph"><h3>New song slide</h3><span class="btn">✕</span></div>
+   <div class="pb">
+    <div class="seg"><div class="on">Linked song</div><div>Song from scratch</div></div>
+    <div class="songcard">
+     <div style="font-size:15px;font-weight:700">How Great Thou Art <span class="badge">LINKED TO LIBRARY</span></div>
+     <div class="hint">Hymns · 86 · 4 verses</div>
+     <div style="margin-top:6px;color:#333">O Lord my God, when I in awesome wonder<br>Consider all the worlds thy hands have made<br>I see the stars, I hear the rolling thunder<br>Thy pow'r throughout the universe displayed…</div>
+     <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap"><span class="btn">Change song</span><span class="btn">Unlink (make a copy)</span><span class="btn">Edit in library ↗</span></div>
+    </div>
+    <p class="note">Present: title, then two lines at a time (unchanged).</p>
+    <div class="collapsed">▸ Style</div>
+    <div class="kb">Focus moves to Save slide · Enter saves · Esc back to search (keeps your query)</div>
+   </div>
+   <div class="pf"><span class="sp"></span><span class="btn">Cancel</span><span class="btn pri focus">Save slide  Ctrl+Enter</span></div>
+  </div>
+ </div>
+
+ <div>
+  <div class="lbl">F · Song from scratch: editor + Also save</div>
+  <div class="frame mini"><div class="ph"><h3>New song slide</h3><span class="btn">✕</span></div>
+   <div class="pb">
+    <div class="seg"><div>Linked song</div><div class="on">Song from scratch</div></div>
+    <div class="fld"><label>Title *</label><div class="in focus">Lead, Kindly Light</div></div>
+    <div style="display:flex;gap:8px"><div class="fld" style="flex:2"><label>Book</label><div class="in">Hymns</div></div><div class="fld" style="flex:1"><label>Number</label><div class="in">97</div></div></div>
+    <div class="fld"><label>Words <span class="hint" style="font-weight:400">· blank line = new verse · shows 2 lines at a time</span></label><div class="in ta">Lead, kindly Light, amid th'encircling gloom;
+Lead thou me on!
+The night is dark, and I am far from home;
+Lead thou me on!
+
+Keep thou my feet; I do not ask to see…</div></div>
+    <div class="chk"><i>✓</i>Also save to my library</div>
+    <div class="note">Checked: Save slide also adds it to the library and links this slide. Unchecked: stays in this deck only.</div>
+   </div>
+   <div class="pf"><span class="sp"></span><span class="btn">Cancel</span><span class="btn pri">Save slide  Ctrl+Enter</span></div>
+  </div>
+ </div>
+</div>
+
+<div class="grid">
+ <div>
+  <div class="lbl">B · Linked: library is empty</div>
+  <div class="frame" style="height:300px;display:flex;flex-direction:column"><div class="ph"><h3>New song slide</h3><span class="btn">✕</span></div>
+   <div class="pb">
+    <div class="seg"><div class="on">Linked song</div><div>Song from scratch</div></div>
+    <div style="font-weight:700;margin:10px 0 4px">Your song library is empty.</div>
+    <div class="hint">Bring songs in from a file, or type one.</div>
+    <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap"><span class="btn focus">Import a song file…</span><span class="btn">Type a new song</span><span class="btn">Open song library ↗</span></div>
+    <p class="note" style="margin-top:12px">"Type a new song" switches to Song from scratch with Also save checked. Library opens in its own window so the deck stays open.</p>
+   </div>
+  </div>
+ </div>
+
+ <div>
+  <div class="lbl">G · Import a file: review inside the panel</div>
+  <div class="frame" style="height:300px;display:flex;flex-direction:column"><div class="ph"><h3>Import: hymns-book.json</h3><span class="btn">✕</span></div>
+   <div class="pb" style="font-size:12px">
+    <div class="chk"><i>✓</i>Also save to my library</div>
+    <div>3 songs · <span class="btn lnk">Select none</span></div>
+    <div>☑ Abide with Me · Hymns 166<br>☑ Be Still, My Soul · Hymns 124<br>☑ Silent Night · Hymns 204 <span class="badge" style="background:#e0b100">title match</span></div>
+    <div class="warn" style="margin-top:6px"><b>Silent Night</b> is already in the library.<br>Library: No. 204 · "Silent night! Holy night! All is calm…"<br>This file: No. 204 · "Silent night, holy night…"<br>◉ Keep both (default) ○ Replace ○ Skip</div>
+   </div>
+   <div class="pf"><span class="sp"></span><span class="btn">Cancel</span><span class="btn pri focus">Add 3 song slides</span></div>
+  </div>
+ </div>
+
+ <div>
+  <div class="lbl">I · Linked slide edited by hand</div>
+  <div class="frame" style="height:300px;display:flex;flex-direction:column"><div class="ph"><h3>Editing slide 2</h3><span class="btn">✕</span></div>
+   <div class="pb">
+    <div style="font-weight:700">Come, Come, Ye Saints <span class="badge">LINKED</span></div>
+    <div class="hint">Hymns · 30</div>
+    <div class="warn" style="margin-top:8px">✎ These words were changed on this slide. Library updates will ask before replacing them.<div style="margin-top:6px"><span class="btn">Use library words</span></div></div>
+    <div class="in ta" style="min-height:60px;margin-top:8px">Come, come, ye Saints, no toil nor labor fear;
+But with joy wend your way…</div>
+   </div>
+   <div class="pf"><span class="btn">Delete</span><span class="btn">Duplicate</span><span class="sp"></span><span class="btn">Cancel</span><span class="btn pri">Save slide</span></div>
+  </div>
+ </div>
+</div>
+</div></body></html>

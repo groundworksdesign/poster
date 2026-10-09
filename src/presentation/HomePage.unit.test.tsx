@@ -49,6 +49,13 @@ test('Home lists Open Presentation targeting /deck (not bare /presentation)', ()
   expect(workflowHrefs).toEqual(['/deck', '/deck', '/deck?focusImport=1']);
 });
 
+test('AC-017 / REQ-021: Song library opens from main menu (Home)', () => {
+  render(<HomePage />);
+  const link = screen.getByTestId('song-library-link');
+  expect(link).toHaveAttribute('href', '/library/songs');
+  expect(link).toHaveTextContent(/Song library/i);
+});
+
 test('Open Presentation opens a deck window and leaves Home put', () => {
   const openSpy = jest.spyOn(window, 'open').mockReturnValue({
     opener: null,
