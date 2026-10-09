@@ -8,6 +8,7 @@ import {
 } from '../../domain/librarySongPicker';
 import { remixDataUrl, REMIX_ROUTE_ID } from '../remixDataUrl';
 import type { SongSlideChoice } from './AddSongSlideChooser';
+import { markSearchEscConsumed } from './songPanelEsc';
 
 type Props = {
   onPick: (choice: SongSlideChoice) => void;
@@ -80,7 +81,28 @@ export default function LibrarySongPicker({ onPick, onSwitchToImport, onTypeNewS
     });
   };
 
+  const importBtnRef = React.useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    // State B: focus "Import a song file" when the library is empty.
+    if (results !== null && results.length === 0 && !debouncedQuery.trim() && !bookFilter) {
+      importBtnRef.current?.focus();
+    }
+  }, [results, debouncedQuery, bookFilter]);
+
   const onKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      // Spec Esc step 1: clear search text before backing out to type choice.
+      if (query.trim() || bookFilter) {
+        e.preventDefault();
+        e.stopPropagation();
+        markSearchEscConsumed();
+        setQuery('');
+        setBookFilter('');
+        setFocusIndex(0);
+      }
+      return;
+    }
     if (!visible.length) return;
     if (e.key === 'ArrowDown') {
       e.preventDefault();
@@ -147,7 +169,12 @@ export default function LibrarySongPicker({ onPick, onSwitchToImport, onTypeNewS
           <p>Your song library is empty.</p>
           <p style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
             {onSwitchToImport ? (
-              <button type="button" onClick={onSwitchToImport} data-testid="add-song-go-import">
+              <button
+                ref={importBtnRef}
+                type="button"
+                onClick={onSwitchToImport}
+                data-testid="add-song-go-import"
+              >
                 Import a song file
               </button>
             ) : null}

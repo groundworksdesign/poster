@@ -216,7 +216,8 @@ test.describe('Song library (production Remix build)', () => {
     errors.assertClean();
 
     await page.getByTestId('import-confirm').click();
-    await expect(page.getByTestId('song-multi-import-ready').or(page.getByTestId('song-linked-card'))).toBeVisible({ timeout: 15000 });
+    // Two songs (title-match + no-lyrics) → multi-import ready (not a single card).
+    await expect(page.getByTestId('song-multi-import-ready')).toBeVisible({ timeout: 15000 });
     await page.getByTestId('save-slide-button').click();
     // Original title slide remains (AC-007: no deck replace).
     await expect(page.locator('#slides')).toContainText(/Title/i);
@@ -312,6 +313,14 @@ test.describe('Song library (production Remix build)', () => {
       s => s.title === 'Scratch Dup Title' && s.id !== existingId,
     );
     expect(linked).toBeTruthy();
+    // Re-open the slide and assert the slide's own linked library id.
+    await page.locator('#slides').getByRole('button', { name: 'Edit' }).first().click();
+    await expect(page.getByTestId('slide-library-song-id')).toBeVisible({ timeout: 15000 });
+    const slideLibId = await page
+      .getByTestId('slide-library-song-id')
+      .getAttribute('data-library-song-id');
+    expect(slideLibId).toBe(linked!.id);
+    expect(slideLibId).not.toBe(existingId);
     errors.assertClean();
 
     // Linked path: pick then Save slide.

@@ -27,6 +27,7 @@ import {
   notePresentShortcutPointerTarget,
   shouldIgnorePresentShortcuts,
 } from './presentShortcutGuard';
+import { consumeSearchEscFlag } from './songPanelEsc';
 import { versesToText } from '../../domain/librarySong';
 
 export default function DeckBuilder() {
@@ -73,6 +74,7 @@ export default function DeckBuilder() {
   const songCommitRef = useRef<
     (() => Promise<SongPanelCommit | SongPanelCommit[] | null>) | null
   >(null);
+  const songEscapeRef = useRef<(() => void) | null>(null);
   const [songCommitReady, setSongCommitReady] = useState(false);
 
   const genId = () => (typeof (globalThis as any).crypto !== 'undefined' && typeof (globalThis as any).crypto.randomUUID === 'function') ? (globalThis as any).crypto.randomUUID() : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
@@ -134,18 +136,30 @@ export default function DeckBuilder() {
   // Keyboard shortcut handler ref -- always reflects latest state without stale closures
   const keyHandlerRef = useRef<(e: KeyboardEvent) => void>();
   const saveSlideEditsRef = useRef<() => Promise<void>>(async () => {});
+  const panelEscapeFallbackRef = useRef<() => void>(() => {});
   keyHandlerRef.current = (e: KeyboardEvent) => {
     // Never steer Present while focus/click is in the slide list or edit panel (REQ-026 / N1).
     if (shouldIgnorePresentShortcuts(e.target) || shouldIgnorePresentShortcuts(document.activeElement)) {
-      // Still allow Ctrl/Cmd+Enter Save when the ignore is only for Present arrows.
-      if (!((e.ctrlKey || e.metaKey) && e.key === 'Enter')) return;
+      // Still allow Ctrl/Cmd+Enter Save / Esc when the ignore is only for Present arrows.
+      if (!((e.ctrlKey || e.metaKey) && e.key === 'Enter') && e.key !== 'Escape') return;
+    }
+
+    const inPanel =
+      e.target instanceof Element &&
+      Boolean(e.target.closest('[data-testid="deck-slide-editor-panel"]'));
+
+    // Esc from footer / panel chrome (Save, Cancel) — same back-out as panel body.
+    if (e.key === 'Escape' && inPanel) {
+      e.preventDefault();
+      // Search already cleared this keypress — wait for the next Esc to back out.
+      if (consumeSearchEscFlag()) return;
+      if (songEscapeRef.current) songEscapeRef.current();
+      else panelEscapeFallbackRef.current();
+      return;
     }
 
     // Panel Save slide: Ctrl/Cmd+Enter (search results handled inside the panel / picker).
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-      const inPanel =
-        e.target instanceof Element &&
-        Boolean(e.target.closest('[data-testid="deck-slide-editor-panel"]'));
       const inSearch =
         e.target instanceof Element &&
         Boolean(e.target.closest('[data-testid="library-song-picker"]'));
@@ -806,6 +820,33 @@ export default function DeckBuilder() {
     setMessage('Cancelled new song slide');
   };
 
+  const focusSaveSlideButton = () => {
+    window.requestAnimationFrame(() => {
+      const btn = document.querySelector(
+        '[data-testid="save-slide-button"]',
+      ) as HTMLButtonElement | null;
+      btn?.focus();
+    });
+  };
+
+  const escapeExistingSlideEditor = () => {
+    if (!deck || typeof selectedSlideIndex !== 'number' || !slideEditDraft) {
+      collapseSlideEditor();
+      return;
+    }
+    const original = deck.slides[selectedSlideIndex] as any;
+    const dirty = JSON.stringify(original) !== JSON.stringify(slideEditDraft);
+    if (dirty) {
+      const ok = window.confirm('Discard unsaved changes to this slide?');
+      if (!ok) return;
+    }
+    collapseSlideEditor();
+  };
+  panelEscapeFallbackRef.current = () => {
+    if (pendingSongId) cancelPendingSongSlide();
+    else escapeExistingSlideEditor();
+  };
+
   const addSlide = (type: SlideType = SlideType.GENERAL) => {
     setAddSlideMenuOpen(false);
     if (type === SlideType.SONG) {
@@ -1336,9 +1377,25 @@ export default function DeckBuilder() {
                   sel.dataset.userSet = '';
                   return;
                 }
-                setAddSlideMenuOpen(o => !o);
+                setAddSlideMenuOpen(o => {
+                  const next = !o;
+                  if (next) {
+                    window.requestAnimationFrame(() => {
+                      (
+                        document.querySelector(
+                          '[data-testid="add-slide-song"]',
+                        ) as HTMLButtonElement | null
+                      )?.focus();
+                    });
+                  }
+                  return next;
+                });
               }}
               onKeyDown={e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  // Allow default open via click handler; after open, focus moves to menu.
+                  return;
+                }
                 if (!addSlideMenuOpen) return;
                 const map: Record<string, SlideType> = {
                   s: SlideType.SONG,
@@ -1364,6 +1421,20 @@ export default function DeckBuilder() {
                 role="menu"
                 style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 4, alignItems: 'stretch' }}
                 onKeyDown={e => {
+                  const items = Array.from(
+                    e.currentTarget.querySelectorAll<HTMLButtonElement>('[role="menuitem"]'),
+                  );
+                  const idx = items.indexOf(document.activeElement as HTMLButtonElement);
+                  if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    items[Math.min(idx + 1, items.length - 1)]?.focus();
+                    return;
+                  }
+                  if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    items[Math.max(idx - 1, 0)]?.focus();
+                    return;
+                  }
                   const map: Record<string, SlideType> = {
                     s: SlideType.SONG,
                     S: SlideType.SONG,
@@ -1650,9 +1721,14 @@ export default function DeckBuilder() {
                             : null
                         }
                         linkedFingerprint={slide.librarySongSyncedFingerprint ?? null}
+                        isPendingNewSlide={Boolean(pendingSongId)}
                         onCommitReadyChange={setSongCommitReady}
                         onRequestSaveSlide={() => void saveSlideEdits()}
+                        onFocusSaveSlide={focusSaveSlideButton}
+                        onCancelNewSlide={cancelPendingSongSlide}
+                        onEscapeExistingSlide={escapeExistingSlideEditor}
                         getCommitRef={songCommitRef}
+                        escapeRef={songEscapeRef}
                       />
                     )}
 
@@ -1800,7 +1876,7 @@ export default function DeckBuilder() {
           <button id="import-skip-save-to-library" onClick={() => setShowSaveToLibraryPrompt(false)}>Skip</button>
         </div>
       )}
-      {libraryId && <div data-testid="library-id" style={{ fontSize: '11px', color: '#888' }}>Library ID: {libraryId}</div>}
+      {/* Raw Library ID text removed (Pam spec §6). libraryId still used for Save/Load. */}
       {/* Library panel moved to HomePage — DeckBuilder keeps Save/Load controls on /deck */}
     </main>
   );

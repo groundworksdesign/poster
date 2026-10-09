@@ -266,8 +266,10 @@ test('imported JSON deck with id does not show prompt and sets libraryId', async
   render(<DeckBuilder />);
   const deckWithId = { ...VALID_DECK, id: 'lib-123' };
   await loadFile(makeJsonFile(deckWithId));
-  await waitFor(() => expect(screen.getByTestId('library-id')).toBeInTheDocument());
-  expect(screen.getByTestId('library-id')).toHaveTextContent('Library ID: lib-123');
+  // Spec §6: raw Library ID text is removed from the UI.
+  await waitFor(() => expect(screen.getByRole('heading', { name: 'Deck', level: 1 })).toBeInTheDocument());
+  expect(screen.queryByTestId('library-id')).not.toBeInTheDocument();
+  expect(screen.queryByText(/Library ID:/i)).not.toBeInTheDocument();
 });
 
 async function exportDeckJson(): Promise<any> {
@@ -571,6 +573,15 @@ test('AC-019: scratch Also save + title-match links via ImportReviewScreen on Sa
   fireEvent.click(screen.getByTestId('save-slide-button'));
   await waitFor(() => expect(screen.queryByTestId('pending-song-slide')).not.toBeInTheDocument());
   expect(document.getElementById('slides')).toHaveTextContent('Amazing Grace');
+  // Re-open the song slide: must be linked to the saved library id.
+  const editButtons = screen.getAllByRole('button', { name: 'Edit' });
+  fireEvent.click(editButtons[editButtons.length - 1]);
+  await waitFor(() =>
+    expect(screen.getByTestId('slide-library-song-id')).toHaveAttribute(
+      'data-library-song-id',
+      'saved-scratch-1',
+    ),
+  );
 });
 
 test('REQ-026: ArrowRight does not move Present while focus is in the slide list', async () => {

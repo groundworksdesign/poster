@@ -41,9 +41,19 @@ type Props = {
   onCommitReadyChange?: (ready: boolean) => void;
   /** Request parent to run Save slide (Ctrl/Cmd+Enter from card / scratch). */
   onRequestSaveSlide?: () => void;
+  /** State E: move focus to Save slide after a song is chosen. */
+  onFocusSaveSlide?: () => void;
+  /** Esc at type choice on a pending new slide — cancel (leave nothing). */
+  onCancelNewSlide?: () => void;
+  /** Esc on an existing slide — parent confirms unsaved then closes. */
+  onEscapeExistingSlide?: () => void;
+  /** True while editing a pending new song slide (not yet in the deck). */
+  isPendingNewSlide?: boolean;
   getCommitRef?: React.MutableRefObject<
     (() => Promise<SongPanelCommit | SongPanelCommit[] | null>) | null
   >;
+  /** Parent can invoke the same Esc back-out used by the panel key handler. */
+  escapeRef?: React.MutableRefObject<(() => void) | null>;
 };
 
 function candidateFromScratch(
@@ -103,7 +113,12 @@ export default function SongSlideEditPanel({
   linkedFingerprint = null,
   onCommitReadyChange,
   onRequestSaveSlide,
+  onFocusSaveSlide,
+  onCancelNewSlide,
+  onEscapeExistingSlide,
+  isPendingNewSlide = false,
   getCommitRef,
+  escapeRef,
 }: Props) {
   const [kind, setKind] = useState<SongKind | null>(initialKind);
   const [choice, setChoice] = useState<SongSlideChoice | null>(initialChoice);
@@ -125,11 +140,16 @@ export default function SongSlideEditPanel({
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [handEditUnlocked, setHandEditUnlocked] = useState(false);
+  /** Current library song words (fetched by id) — source for "Use library words". */
+  const [libraryWords, setLibraryWords] = useState<string | null>(null);
+  const [libraryWordsReady, setLibraryWordsReady] = useState(false);
+  /** Type-choice keyboard focus (Left/Right move focus only; Enter/Space picks). */
+  const [typeFocus, setTypeFocus] = useState<SongKind>('linked');
   const fileRef = useRef<HTMLInputElement>(null);
   const linkedCardRef = useRef<HTMLDivElement>(null);
-  const libraryWordsRef = useRef<string | null>(
-    initialChoice?.lyrics ? versesToText(initialChoice.lyrics.verses) : null,
-  );
+  const typeLinkedRef = useRef<HTMLButtonElement>(null);
+  const typeScratchRef = useRef<HTMLButtonElement>(null);
+  const libraryWordsRef = useRef<string | null>(null);
 
   const ready =
     Boolean(choice) ||
@@ -145,6 +165,72 @@ export default function SongSlideEditPanel({
     if (!res.ok) throw new Error(`Failed to load library (${res.status})`);
     return (await res.json()) as LibrarySong[];
   };
+
+  // State I: load CURRENT library words by id (not the slide's own lyrics).
+  useEffect(() => {
+    const id = initialChoice?.librarySongId;
+    if (!id) {
+      setLibraryWords(null);
+      libraryWordsRef.current = null;
+      setLibraryWordsReady(true);
+      return;
+    }
+    let cancelled = false;
+    setLibraryWordsReady(false);
+    void (async () => {
+      try {
+        const songs = await loadLibrarySongs();
+        if (cancelled) return;
+        const song = songs.find(s => s.id === id);
+        const libText = song ? versesToText(song.lyrics?.verses) : null;
+        setLibraryWords(libText);
+        libraryWordsRef.current = libText;
+        const slideText = versesToText(initialChoice?.lyrics?.verses);
+        if (libText !== null && slideText !== libText) {
+          // Already hand-edited: unlock editor + show yellow note immediately.
+          setWords(slideText);
+          setHandEditUnlocked(true);
+        }
+      } finally {
+        if (!cancelled) setLibraryWordsReady(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // Only re-fetch when the linked id changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialChoice?.librarySongId]);
+
+  // Empty library → prefer Scratch on type choice (spec state A).
+  useEffect(() => {
+    if (kind !== null || !isPendingNewSlide) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const songs = await loadLibrarySongs();
+        if (cancelled) return;
+        if (songs.length === 0) {
+          setTypeFocus('scratch');
+          typeScratchRef.current?.focus();
+        } else {
+          setTypeFocus('linked');
+          typeLinkedRef.current?.focus();
+        }
+      } catch {
+        /* ignore */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [kind, isPendingNewSlide]);
+
+  useEffect(() => {
+    if (kind === null) {
+      (typeFocus === 'scratch' ? typeScratchRef : typeLinkedRef).current?.focus();
+    }
+  }, [typeFocus, kind]);
 
   const savePayloads = async (payloads: LibrarySongInput[]): Promise<string[]> => {
     const res = await fetch(
@@ -175,8 +261,8 @@ export default function SongSlideEditPanel({
     }
   };
 
-  useEffect(() => {
-    if (!getCommitRef) return;
+  // Keep commit fn on the ref every render (no cleanup null — that raced callers).
+  if (getCommitRef) {
     getCommitRef.current = async () => {
       // Multi-song import staged in panel memory.
       if (importChoices && importChoices.length > 0) {
@@ -278,10 +364,7 @@ export default function SongSlideEditPanel({
       }
       return null;
     };
-    return () => {
-      getCommitRef.current = null;
-    };
-  });
+  }
 
   const openImportPicker = () => fileRef.current?.click();
 
@@ -356,8 +439,9 @@ export default function SongSlideEditPanel({
   };
 
   useEffect(() => {
-    if (choice && linkedCardRef.current) linkedCardRef.current.focus();
-  }, [choice]);
+    // State E: focus Save slide (not the card).
+    if (choice) onFocusSaveSlide?.();
+  }, [choice, onFocusSaveSlide]);
 
   const switchToScratch = (opts?: { alsoSave?: boolean; seedTitle?: string }) => {
     setKind('scratch');
@@ -370,35 +454,62 @@ export default function SongSlideEditPanel({
     if (typeof opts?.alsoSave === 'boolean') setAlsoSaveScratch(opts.alsoSave);
   };
 
-  const onPanelKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      e.stopPropagation();
-      if (importPlan) {
-        setImportPlan(null);
-        setImportSelections(null);
-        return;
-      }
-      if (scratchPlan) {
-        setAlsoSaveScratch(false);
-        setScratchPlan(null);
-        setScratchSelections(null);
-        return;
-      }
-      if (choice || importChoices) {
-        setChoice(null);
-        setImportChoices(null);
-        setPendingLibraryPayloads(null);
-        return;
-      }
-      if (kind !== null) {
-        setKind(null);
-        return;
-      }
+  const restoreLibraryWords = () => {
+    const lib = libraryWordsRef.current ?? libraryWords;
+    if (lib === null || !choice) return;
+    setWords(lib);
+    const restored = {
+      ...choice.lyrics,
+      verses: parseVersesText(lib),
+    };
+    setChoice({ ...choice, lyrics: restored });
+    setHandEditUnlocked(false);
+  };
+
+  const handleEscapeBack = () => {
+    // Existing slide: close panel (confirm if unsaved) — do not walk type-choice levels.
+    if (!isPendingNewSlide) {
+      onEscapeExistingSlide?.();
       return;
     }
+    if (importPlan) {
+      setImportPlan(null);
+      setImportSelections(null);
+      return;
+    }
+    if (scratchPlan) {
+      setAlsoSaveScratch(false);
+      setScratchPlan(null);
+      setScratchSelections(null);
+      return;
+    }
+    if (choice || importChoices) {
+      setChoice(null);
+      setImportChoices(null);
+      setPendingLibraryPayloads(null);
+      setHandEditUnlocked(false);
+      return;
+    }
+    if (kind !== null) {
+      // Search Esc (clear query) is handled inside LibrarySongPicker first.
+      setKind(null);
+      return;
+    }
+    onCancelNewSlide?.();
+  };
+
+  useEffect(() => {
+    if (!escapeRef) return;
+    escapeRef.current = handleEscapeBack;
+    return () => {
+      escapeRef.current = null;
+    };
+  });
+
+  const onPanelKeyDown = (e: React.KeyboardEvent) => {
+    // Escape is handled at the window level via escapeRef (covers footer focus too).
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
       // Search results: LibrarySongPicker handles Ctrl+Enter → card only.
-      // On card / scratch (no open review): request Save slide.
       if (kind === 'linked' && !choice && !importPlan && !importChoices) return;
       if (scratchPlan || importPlan) return;
       if (ready) {
@@ -408,12 +519,21 @@ export default function SongSlideEditPanel({
       }
     }
     if (kind === null) {
-      if (e.key === 'ArrowRight' || e.key === '2') {
+      if (e.key === 'ArrowRight') {
         e.preventDefault();
-        setKind('scratch');
-      } else if (e.key === 'ArrowLeft' || e.key === '1') {
+        setTypeFocus('scratch');
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        setTypeFocus('linked');
+      } else if (e.key === '1') {
         e.preventDefault();
         setKind('linked');
+      } else if (e.key === '2') {
+        e.preventDefault();
+        setKind('scratch');
+      } else if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        setKind(typeFocus);
       }
     }
   };
@@ -424,10 +544,12 @@ export default function SongSlideEditPanel({
 
   const existingLinked =
     Boolean(initialChoice?.librarySongId) && kind === 'linked' && Boolean(choice?.librarySongId);
+  const effectiveLibraryWords = libraryWordsRef.current ?? libraryWords;
   const wordsDifferFromLibrary =
     existingLinked &&
-    libraryWordsRef.current !== null &&
-    words !== libraryWordsRef.current;
+    libraryWordsReady &&
+    effectiveLibraryWords !== null &&
+    (handEditUnlocked ? words : versesToText(choice?.lyrics?.verses)) !== effectiveLibraryWords;
 
   return (
     <div
@@ -465,10 +587,19 @@ export default function SongSlideEditPanel({
           <div style={{ display: 'flex', gap: 12 }}>
             <button
               type="button"
+              ref={typeLinkedRef}
               data-testid="song-type-linked"
-              autoFocus
+              data-focused={typeFocus === 'linked' ? 'true' : 'false'}
+              aria-pressed={typeFocus === 'linked'}
+              onFocus={() => setTypeFocus('linked')}
               onClick={() => setKind('linked')}
-              style={{ flex: 1, minHeight: 72, textAlign: 'left', padding: 12 }}
+              style={{
+                flex: 1,
+                minHeight: 72,
+                textAlign: 'left',
+                padding: 12,
+                outline: typeFocus === 'linked' ? '2px solid #06c' : undefined,
+              }}
             >
               <strong>Linked song from the library</strong>
               <div style={{ fontSize: 13, color: '#555', marginTop: 4 }}>
@@ -477,9 +608,19 @@ export default function SongSlideEditPanel({
             </button>
             <button
               type="button"
+              ref={typeScratchRef}
               data-testid="song-type-scratch"
+              data-focused={typeFocus === 'scratch' ? 'true' : 'false'}
+              aria-pressed={typeFocus === 'scratch'}
+              onFocus={() => setTypeFocus('scratch')}
               onClick={() => setKind('scratch')}
-              style={{ flex: 1, minHeight: 72, textAlign: 'left', padding: 12 }}
+              style={{
+                flex: 1,
+                minHeight: 72,
+                textAlign: 'left',
+                padding: 12,
+                outline: typeFocus === 'scratch' ? '2px solid #06c' : undefined,
+              }}
             >
               <strong>Song from scratch</strong>
               <div style={{ fontSize: 13, color: '#555', marginTop: 4 }}>
@@ -487,7 +628,9 @@ export default function SongSlideEditPanel({
               </div>
             </button>
           </div>
-          <p style={{ fontSize: 12, color: '#666' }}>Left/Right or 1/2 to choose, Enter to confirm.</p>
+          <p style={{ fontSize: 12, color: '#666' }}>
+            Left/Right moves focus; Enter or Space picks. 1 = Linked, 2 = Scratch.
+          </p>
         </div>
       ) : (
         <div data-testid="song-type-switch" style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
@@ -627,6 +770,31 @@ export default function SongSlideEditPanel({
             {(choice.lyrics.verses?.[0]?.lines ?? []).slice(0, 4).join('\n')}
           </pre>
 
+          {existingLinked && wordsDifferFromLibrary ? (
+            <div
+              data-testid="song-hand-edit-note"
+              style={{
+                background: '#fff8c5',
+                border: '1px solid #e6c200',
+                padding: 8,
+                marginTop: 8,
+              }}
+            >
+              <p style={{ margin: 0 }}>
+                These words were changed on this slide. Library updates will ask before replacing
+                them.
+              </p>
+              <button
+                type="button"
+                data-testid="song-use-library-words"
+                style={{ marginTop: 6 }}
+                onClick={() => restoreLibraryWords()}
+              >
+                Use library words
+              </button>
+            </div>
+          ) : null}
+
           {existingLinked && !handEditUnlocked ? (
             <div data-testid="song-state-i-readonly" style={{ marginTop: 8 }}>
               <button
@@ -658,44 +826,6 @@ export default function SongSlideEditPanel({
                   }}
                 />
               </label>
-              {wordsDifferFromLibrary ||
-              (linkedFingerprint &&
-                choice.lyrics &&
-                // fingerprint check deferred to parent; yellow note when words changed
-                words !== libraryWordsRef.current) ? (
-                <div
-                  data-testid="song-hand-edit-note"
-                  style={{
-                    background: '#fff8c5',
-                    border: '1px solid #e6c200',
-                    padding: 8,
-                    marginTop: 8,
-                  }}
-                >
-                  <p style={{ margin: 0 }}>
-                    These words were changed on this slide. Library updates will ask before replacing
-                    them.
-                  </p>
-                  <button
-                    type="button"
-                    data-testid="song-use-library-words"
-                    style={{ marginTop: 6 }}
-                    onClick={() => {
-                      if (libraryWordsRef.current !== null) {
-                        setWords(libraryWordsRef.current);
-                        const restored = {
-                          ...choice.lyrics,
-                          verses: parseVersesText(libraryWordsRef.current),
-                        };
-                        setChoice({ ...choice, lyrics: restored });
-                      }
-                      setHandEditUnlocked(false);
-                    }}
-                  >
-                    Use library words
-                  </button>
-                </div>
-              ) : null}
             </div>
           ) : null}
 
