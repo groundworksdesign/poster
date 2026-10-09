@@ -3,7 +3,7 @@
   "branch": "cursor/epic-004-song-library",
   "baseBranch": "main",
   "status": "complete",
-  "loop": 54,
+  "loop": 55,
   "persona": "qa",
   "completeEpic": true,
   "prUrl": "https://github.com/groundworksdesign/poster/pull/26",
@@ -858,7 +858,7 @@
   ],
   "openQuestions": [],
   "blockers": [],
-  "lastUpdated": "2026-10-09T01:00:18.000Z",
+  "lastUpdated": "2026-10-09T01:07:29.000Z",
   "qaEvidence": {
     "taskId": "add-song-panel-redesign",
     "tsc": "exit 0",
@@ -872,8 +872,8 @@
   },
   "feedback": {
     "taskId": "fix-roy-tighten-tests",
-    "content": "QA PASS Roy polish. completeEpic true. Final push without skip ci.",
-    "updatedAt": "2026-10-09T01:00:18.000Z"
+    "content": "CI fix: AC-019 Edit must target song row (New Deck has Title first). completeEpic stays true.",
+    "updatedAt": "2026-10-09T01:07:29.000Z"
   },
   "fixPass": {
     "irisGate": "ralph/specs/20261007-iris-gate-pr26-fail.md",
@@ -935,8 +935,8 @@
   "royPolishPass": {
     "gate": "ralph/specs/20261009-iris-gate-pr26-3c9a031.md",
     "budget": 6,
-    "loop": 3,
-    "loopsUsed": 3,
+    "loop": 4,
+    "loopsUsed": 4,
     "maxLoop": 6,
     "status": "qa_local_pass_awaiting_ci"
   }

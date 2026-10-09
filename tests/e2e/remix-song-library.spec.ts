@@ -313,8 +313,9 @@ test.describe('Song library (production Remix build)', () => {
       s => s.title === 'Scratch Dup Title' && s.id !== existingId,
     );
     expect(linked).toBeTruthy();
-    // Re-open the slide and assert the slide's own linked library id.
-    await page.locator('#slides').getByRole('button', { name: 'Edit' }).first().click();
+    // Re-open the *song* row (New Deck already has a Title slide — not .first()).
+    const songRow = page.locator('#slides li').filter({ hasText: /Scratch Dup Title/i });
+    await songRow.getByRole('button', { name: 'Edit' }).click();
     await expect(page.getByTestId('slide-library-song-id')).toBeVisible({ timeout: 15000 });
     const slideLibId = await page
       .getByTestId('slide-library-song-id')
