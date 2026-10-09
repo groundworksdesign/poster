@@ -65,14 +65,17 @@ todos:
     status: pending
 
   - id: fix-roy-state-i-library-words
+    status: completed
     content: "State I: restore from current library song words; yellow note on open when already hand-edited."
-    status: pending
+    status: completed
   - id: fix-roy-esc-focus-library-id
+    status: completed
     content: "Esc levels + unsaved confirm; type-card/menu/E/B focus; remove raw Library ID."
-    status: pending
+    status: completed
   - id: fix-roy-tighten-tests
+    status: completed
     content: "Tighten 3 weakened tests; add State I / Esc / focus tests."
-    status: pending
+    status: completed
 isProject: false
 ---
 
