@@ -2,10 +2,10 @@
   "epic": "epic-004",
   "branch": "cursor/epic-004-song-library",
   "baseBranch": "main",
-  "status": "completed",
-  "loop": 58,
-  "persona": "qa",
-  "completeEpic": true,
+  "status": "in_progress",
+  "loop": 59,
+  "persona": "planning",
+  "completeEpic": false,
   "prUrl": "https://github.com/groundworksdesign/poster/pull/26",
   "canonicalStatusFile": "ralph/task_status.json",
   "sourceArtifacts": [
@@ -19,7 +19,8 @@
     "ralph/specs/20261008-add-song-redesign-mockup.html",
     "ralph/specs/20261008-iris-gate-pr26-d2145f6.md",
     "ralph/specs/20261009-iris-gate-pr26-3c9a031.md",
-    "ralph/specs/20261009-iris-gate-pr26-c46bf2e-esc.md"
+    "ralph/specs/20261009-iris-gate-pr26-c46bf2e-esc.md",
+    "ralph/specs/20261009-iris-gate-pr26-7d46dbf-handtype.md"
   ],
   "codebaseFindings": {
     "songsTable": "Exists in schema.server.ts (id, title, author, song_json, created_at, updated_at) but unused \u2014 no CRUD, routes, or repo reads/writes.",
@@ -38,7 +39,8 @@
     "addSongRedesign": "Pam mockup: song type/search/scratch/import live in slide edit panel; Add slide under Slides header. Today KindPicker/Chooser overlay under Deck heading; lyrics JSON editor; Load replaces deck; firstVerseLine is one lyric line; arrows move Present unless focus is INPUT/TEXTAREA/SELECT.",
     "themePersistFlake": "CI run 37845317615: remix-theme-persist Home reopen failed in chooseTheme \u2014 localStorage stayed light after synthetic select change (hydrate race / React onChange).",
     "irisGateD2145f6": "Iris FAIL d2145f6: (1) single clean file savePayloads before Save; (2) existing scratch null commit still saves old draft; (3) library writes before Save on import/scratch confirm; (4) weakened e2e. Plus N1 keys, N3 array commit, N4 Add by hand, F3 Skip, F5 tag ref, UI mockup gaps, state I.",
-    "irisPassRoyPolish": "Iris PASS 3c9a031/4737baa. Roy before merge: (1) State I fetch library words by id; (2) Esc clear search then type then cancel; existing unsaved confirm; (3) type-card focus-only arrows; menu focus; focus E/B; (4) remove raw Library ID; (5) tighten 3 weakened tests + add 1-3 tests. Cap 6. Final head no [skip ci]."
+    "irisPassRoyPolish": "Iris PASS 3c9a031/4737baa. Roy before merge: (1) State I fetch library words by id; (2) Esc clear search then type then cancel; existing unsaved confirm; (3) type-card focus-only arrows; menu focus; focus E/B; (4) remove raw Library ID; (5) tighten 3 weakened tests + add 1-3 tests. Cap 6. Final head no [skip ci].",
+    "irisHandtypeFocus": "Iris FAIL 7d46dbf: useEffect([choice,onFocusSaveSlide]) steals focus on every hand-edit keystroke (choice replaced). Race: same risk for search + scratch fields. Focus Save only on first pick into state E."
   },
   "requirements": [
     {
@@ -330,6 +332,14 @@
         "fix-iris-esc-three-press"
       ],
       "status": "pending"
+    },
+    {
+      "id": "REQ-037",
+      "title": "Song panel text fields keep focus while typing (state E focus once)",
+      "todoIds": [
+        "fix-iris-handtype-focus"
+      ],
+      "status": "in_progress"
     }
   ],
   "todos": [
@@ -844,6 +854,20 @@
       "status": "completed",
       "passes": true,
       "notes": "QA PASS loop 58: Esc 3-press via real keys; song dirty confirm; hand-edit fingerprint; cancel no reopen; e2e+unit green."
+    },
+    {
+      "id": "fix-iris-handtype-focus",
+      "content": "Focus Save only on first song pick; key-by-key e2e for hand-edit, search, scratch Title/Book/Number/Words; no premature save.",
+      "requirementIds": [
+        "REQ-037"
+      ],
+      "acceptanceCriteria": [
+        "Iris-handtype",
+        "Race-panel-fields"
+      ],
+      "status": "pending",
+      "passes": false,
+      "notes": ""
     }
   ],
   "acceptanceCriteria": [
@@ -869,11 +893,12 @@
     "Iris-regate: linked slide that only skipped a prior library update is labelled \"Not updated to the latest library version\" (not edited by hand); both states ask before overwrite; hand-edit wins when both",
     "AC-020 (REQ-025): Add song redesign in slide edit panel \u2014 Roy decisions (also-save defaults, full first verse, toolbar Load adds slide, Save-only join, Ctrl/Cmd+Enter pauses on card); Add slide below Slides header; e2e both SONG paths",
     "Present-keys (REQ-026): Arrow/Page keys do not move Present while focus is in slide edit panel or song list",
-    "Theme-persist (REQ-027): remix-theme-persist Home reopen chooseTheme stable 10x"
+    "Theme-persist (REQ-027): remix-theme-persist Home reopen chooseTheme stable 10x",
+    "Iris-handtype / Race-panel-fields (REQ-037): typing in hand-edit, search, scratch Title/Book/Number/Words keeps focus; Save focus only on first pick"
   ],
   "selected": {
-    "id": "fix-iris-esc-three-press",
-    "reason": "Iris FAIL c46bf2e Esc-only."
+    "id": "fix-iris-handtype-focus",
+    "reason": "Iris FAIL 7d46dbf handtype focus + Race panel fields"
   },
   "outOfScope": [
     "Bundling the three church books in the app",
@@ -883,7 +908,7 @@
   ],
   "openQuestions": [],
   "blockers": [],
-  "lastUpdated": "2026-10-09T13:21:52.000Z",
+  "lastUpdated": "2026-10-09T14:51:21.000Z",
   "qaEvidence": {
     "taskId": "fix-iris-esc-three-press",
     "tsc": "exit 0",
@@ -896,9 +921,9 @@
     "qaPassLoop": 58
   },
   "feedback": {
-    "taskId": "fix-iris-esc-three-press",
-    "content": "QA PASS: Esc 3-press, unsaved confirm, hand-edit label, cancel no reopen. tsc0 jest427 remix50+11 electron12 Present identical. completeEpic true.",
-    "updatedAt": "2026-10-09T13:21:52.000Z"
+    "taskId": "fix-iris-handtype-focus",
+    "content": "Planning handtype focus FAIL. Cap 3. Race: all panel text fields.",
+    "updatedAt": "2026-10-09T14:51:21.000Z"
   },
   "fixPass": {
     "irisGate": "ralph/specs/20261007-iris-gate-pr26-fail.md",

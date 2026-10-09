@@ -79,6 +79,10 @@ todos:
   - id: fix-iris-esc-three-press
     content: "Esc 3-press; song unsaved confirm; hand-edit fingerprint; cancel no reopen; real Esc e2e."
     status: completed
+  - id: fix-iris-handtype-focus
+    content: "Focus Save only on first song pick; key-by-key e2e for hand-edit + search + scratch fields; no premature save."
+    status: pending
+
 isProject: false
 ---
 
