@@ -491,6 +491,129 @@ test.describe('Song library (production Remix build)', () => {
     errors.detach();
   });
 
+  /** Type real key events one character at a time (catches focus-steal bugs fill() misses). */
+  async function typeKeysKeepFocus(
+    page: Page,
+    testId: string,
+    text: string,
+  ) {
+    const field = page.getByTestId(testId);
+    await field.click();
+    await field.pressSequentially(text, { delay: 15 });
+    await expect(field).toBeFocused();
+    await expect(field).toHaveValue(text);
+    // Panel must still be open — Space/Enter must not have triggered Save slide.
+    await expect(page.getByTestId('deck-slide-editor-panel')).toBeVisible();
+  }
+
+  test('Iris/Race: hand-edit typing keeps focus; Save only on explicit click', async ({
+    page,
+    baseURL,
+  }) => {
+    const base = baseURL || 'http://127.0.0.1:3010';
+    const errors = attachClientErrorGuards(page);
+    const seed = await page.request.post(
+      `${base}/library/songs/save?_data=routes%2Flibrary.songs.save`,
+      {
+        data: {
+          title: 'Handtype Focus Song',
+          book: 'Hymns',
+          number: '4',
+          lyrics: {
+            title: 'Handtype Focus Song',
+            verses: [{ number: 1, lines: ['LIBRARY line'] }],
+          },
+        },
+      },
+    );
+    expect(seed.ok(), await seed.text()).toBeTruthy();
+    const id = ((await seed.json()) as { id: string }).id;
+
+    await page.goto('/deck', { waitUntil: 'domcontentloaded' });
+    await page.getByRole('button', { name: 'New Deck' }).click();
+    await page.getByTestId('add-slide-button').click();
+    await page.getByTestId('add-slide-song').click();
+    await page.getByTestId('song-type-linked').click();
+    await page.getByTestId(`add-song-pick-${id}`).click();
+    await expect(page.getByTestId('save-slide-button')).toBeFocused({ timeout: 5000 });
+    await page.getByTestId('save-slide-button').click();
+    await expect(page.locator('#slides')).toContainText(/Handtype Focus Song/i);
+
+    const songRow = page.locator('#slides li').filter({ hasText: /Handtype Focus Song/i });
+    await songRow.getByRole('button', { name: 'Edit' }).click();
+    await page.getByTestId('song-edit-words-on-slide').click();
+    const typed = 'alpha beta gamma';
+    await typeKeysKeepFocus(page, 'song-hand-edit-words', typed);
+    await page.getByTestId('save-slide-button').click();
+    await expect(page.getByTestId('deck-slide-editor-panel')).toHaveCount(0);
+
+    await songRow.getByRole('button', { name: 'Edit' }).click();
+    await expect(page.getByTestId('song-hand-edit-note')).toBeVisible({ timeout: 15000 });
+    // Already hand-edited → editor unlocks on open (no second "Edit words" click).
+    await expect(page.getByTestId('song-hand-edit-words')).toHaveValue(typed);
+    errors.assertClean();
+    errors.detach();
+  });
+
+  test('Race: search and scratch fields keep focus while typing real keys', async ({
+    page,
+    baseURL,
+  }) => {
+    const base = baseURL || 'http://127.0.0.1:3010';
+    const errors = attachClientErrorGuards(page);
+    const seed = await page.request.post(
+      `${base}/library/songs/save?_data=routes%2Flibrary.songs.save`,
+      {
+        data: {
+          title: 'Search Keep Focus',
+          book: 'Hymns',
+          number: '5',
+          lyrics: {
+            title: 'Search Keep Focus',
+            verses: [{ number: 1, lines: ['line'] }],
+          },
+        },
+      },
+    );
+    expect(seed.ok(), await seed.text()).toBeTruthy();
+
+    await page.goto('/deck', { waitUntil: 'domcontentloaded' });
+    await page.getByRole('button', { name: 'New Deck' }).click();
+
+    // Search box: key-by-key including a space; no save / no panel close.
+    await page.getByTestId('add-slide-button').click();
+    await page.getByTestId('add-slide-song').click();
+    await page.getByTestId('song-type-linked').click();
+    await expect(page.getByTestId('library-song-search')).toBeVisible({ timeout: 15000 });
+    await typeKeysKeepFocus(page, 'library-song-search', 'Search Keep');
+    await expect(page.getByTestId('pending-song-slide')).toBeVisible();
+    await page.getByTestId('slide-editor-cancel').click();
+    await expect(page.getByTestId('pending-song-slide')).toHaveCount(0);
+
+    // Scratch Title, Book, Number, Words — each keeps focus; save only on button.
+    await page.getByTestId('add-slide-button').click();
+    await page.getByTestId('add-slide-song').click();
+    await page.getByTestId('song-type-scratch').click();
+    await expect(page.getByTestId('song-scratch-title')).toBeVisible({ timeout: 15000 });
+    await typeKeysKeepFocus(page, 'song-scratch-title', 'scratch title x');
+    await typeKeysKeepFocus(page, 'song-scratch-book', 'book name');
+    await typeKeysKeepFocus(page, 'song-scratch-number', '12 a');
+    await typeKeysKeepFocus(page, 'song-scratch-words', 'line one two');
+    await expect(page.getByTestId('pending-song-slide')).toBeVisible();
+    await page.getByTestId('save-slide-button').click();
+    await expect(page.getByTestId('pending-song-slide')).toHaveCount(0);
+    await expect(page.locator('#slides')).toContainText(/scratch title x/i);
+
+    const songRow = page.locator('#slides li').filter({ hasText: /scratch title x/i });
+    await songRow.getByRole('button', { name: 'Edit' }).click();
+    await expect(page.getByTestId('song-scratch-title')).toHaveValue('scratch title x');
+    await expect(page.getByTestId('song-scratch-book')).toHaveValue('book name');
+    await expect(page.getByTestId('song-scratch-number')).toHaveValue('12 a');
+    await expect(page.getByTestId('song-scratch-words')).toHaveValue('line one two');
+    errors.assertClean();
+    errors.detach();
+  });
+
   test('Iris: hand-edit save is labelled edited by hand on library update', async ({
     page,
     baseURL,

@@ -461,10 +461,27 @@ export default function SongSlideEditPanel({
     setError(null);
   };
 
+  // State E: focus Save slide only when a song is first picked — not when hand-edit
+  // (or restore) replaces the choice object, and not when the parent re-creates
+  // onFocusSaveSlide on every keystroke in search/scratch fields.
+  const onFocusSaveSlideRef = useRef(onFocusSaveSlide);
+  onFocusSaveSlideRef.current = onFocusSaveSlide;
+  const focusedPickKeyRef = useRef<string | null>(null);
+  const choicePickKey = choice
+    ? choice.librarySongId
+      ? `id:${choice.librarySongId}`
+      : `staged:${(choice.lyrics?.title || '').trim().toLowerCase()}|${choice.book || ''}|${choice.number || ''}`
+    : null;
+
   useEffect(() => {
-    // State E: focus Save slide (not the card).
-    if (choice) onFocusSaveSlide?.();
-  }, [choice, onFocusSaveSlide]);
+    if (!choicePickKey) {
+      focusedPickKeyRef.current = null;
+      return;
+    }
+    if (focusedPickKeyRef.current === choicePickKey) return;
+    focusedPickKeyRef.current = choicePickKey;
+    onFocusSaveSlideRef.current?.();
+  }, [choicePickKey]);
 
   const switchToScratch = (opts?: { alsoSave?: boolean; seedTitle?: string }) => {
     setKind('scratch');

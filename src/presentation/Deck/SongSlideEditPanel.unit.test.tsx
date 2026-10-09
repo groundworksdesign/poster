@@ -210,6 +210,49 @@ test('existing song panel reports dirty for unsaved words; clean when unchanged'
   expect(dirtyRef.current?.()).toBe(true);
 });
 
+test('State E: hand-edit keystrokes do not re-call onFocusSaveSlide', async () => {
+  const onFocus = jest.fn();
+  const baseLyrics = {
+    title: 'Alpha',
+    author: '',
+    verses: [{ number: 1, lines: ['LIBRARY one'] }],
+  };
+  (global.fetch as jest.Mock).mockResolvedValue({
+    ok: true,
+    json: async () => [{ id: 'lib-1', title: 'Alpha', lyrics: baseLyrics }],
+  } as Response);
+
+  const { rerender } = render(
+    <SongSlideEditPanel
+      initialKind="linked"
+      initialChoice={{ lyrics: baseLyrics, librarySongId: 'lib-1' }}
+      linkedFingerprint="fp"
+      onFocusSaveSlide={onFocus}
+    />,
+  );
+  await waitFor(() => expect(onFocus).toHaveBeenCalled());
+  const afterOpen = onFocus.mock.calls.length;
+
+  fireEvent.click(await screen.findByTestId('song-edit-words-on-slide'));
+  const words = screen.getByTestId('song-hand-edit-words');
+  fireEvent.change(words, { target: { value: 'H' } });
+  fireEvent.change(words, { target: { value: 'HA' } });
+  fireEvent.change(words, { target: { value: 'HAND EDIT' } });
+  // Parent often passes a new callback identity each render — must not re-focus.
+  rerender(
+    <SongSlideEditPanel
+      initialKind="linked"
+      initialChoice={{ lyrics: baseLyrics, librarySongId: 'lib-1' }}
+      linkedFingerprint="fp"
+      onFocusSaveSlide={() => onFocus()}
+    />,
+  );
+  fireEvent.change(screen.getByTestId('song-hand-edit-words'), {
+    target: { value: 'HAND EDIT MORE' },
+  });
+  expect(onFocus.mock.calls.length).toBe(afterOpen);
+});
+
 test('hand-edit commit sets handEdited so synced fingerprint can be preserved', async () => {
   const { lyricsFingerprint } = await import('../../domain/linkedSongUpdate');
   const baseLyrics = {
