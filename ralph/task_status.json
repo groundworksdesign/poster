@@ -2,10 +2,10 @@
   "epic": "epic-004",
   "branch": "cursor/epic-004-song-library",
   "baseBranch": "main",
-  "status": "in_progress",
-  "loop": 60,
-  "persona": "dev",
-  "completeEpic": false,
+  "status": "completed",
+  "loop": 61,
+  "persona": "qa",
+  "completeEpic": true,
   "prUrl": "https://github.com/groundworksdesign/poster/pull/26",
   "canonicalStatusFile": "ralph/task_status.json",
   "sourceArtifacts": [
@@ -339,7 +339,7 @@
       "todoIds": [
         "fix-iris-handtype-focus"
       ],
-      "status": "in_progress"
+      "status": "done"
     }
   ],
   "todos": [
@@ -865,9 +865,9 @@
         "Iris-handtype",
         "Race-panel-fields"
       ],
-      "status": "in_progress",
-      "passes": false,
-      "notes": "DEV implementing pickKey focus + Race field e2e"
+      "status": "completed",
+      "passes": true,
+      "notes": "QA PASS loop 61: Save focus only on pick identity; Race field e2e green."
     }
   ],
   "acceptanceCriteria": [
@@ -908,22 +908,22 @@
   ],
   "openQuestions": [],
   "blockers": [],
-  "lastUpdated": "2026-10-09T14:52:48.000Z",
+  "lastUpdated": "2026-10-09T14:57:33.000Z",
   "qaEvidence": {
-    "taskId": "fix-iris-esc-three-press",
+    "taskId": "fix-iris-handtype-focus",
     "tsc": "exit 0",
-    "jest": "63 suites / 427 tests PASS",
+    "jest": "63 suites / 428 tests PASS",
     "e2eRemixDev": "50 passed",
-    "e2eSongLibrary": "11 passed",
+    "e2eSongLibrary": "13 passed",
     "e2eElectron": "12 passed",
     "presentUnchanged": true,
     "stagedSongSlideUnchanged": true,
-    "qaPassLoop": 58
+    "qaPassLoop": 61
   },
   "feedback": {
     "taskId": "fix-iris-handtype-focus",
-    "content": "DEV: focus Save only on pickKey; e2e key-by-key for hand-edit/search/scratch.",
-    "updatedAt": "2026-10-09T14:52:48.000Z"
+    "content": "QA PASS: pickKey Save focus; key-by-key e2e hand-edit/search/scratch. tsc0 jest428 remix50+13 electron12 Present identical. completeEpic true.",
+    "updatedAt": "2026-10-09T14:57:33.000Z"
   },
   "fixPass": {
     "irisGate": "ralph/specs/20261007-iris-gate-pr26-fail.md",

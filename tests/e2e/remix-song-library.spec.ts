@@ -499,6 +499,8 @@ test.describe('Song library (production Remix build)', () => {
   ) {
     const field = page.getByTestId(testId);
     await field.click();
+    // Clear any prefilled value without asserting on clear; typed keys are real.
+    await field.fill('');
     await field.pressSequentially(text, { delay: 15 });
     await expect(field).toBeFocused();
     await expect(field).toHaveValue(text);

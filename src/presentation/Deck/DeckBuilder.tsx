@@ -838,12 +838,20 @@ export default function DeckBuilder() {
   };
 
   const focusSaveSlideButton = () => {
-    window.requestAnimationFrame(() => {
-      const btn = document.querySelector(
-        '[data-testid="save-slide-button"]',
-      ) as HTMLButtonElement | null;
-      btn?.focus();
-    });
+    // Save may still be disabled until commit-ready propagates — retry briefly.
+    const tryFocus = (attemptsLeft: number) => {
+      window.requestAnimationFrame(() => {
+        const btn = document.querySelector(
+          '[data-testid="save-slide-button"]',
+        ) as HTMLButtonElement | null;
+        if (btn && !btn.disabled) {
+          btn.focus();
+          return;
+        }
+        if (attemptsLeft > 0) tryFocus(attemptsLeft - 1);
+      });
+    };
+    tryFocus(12);
   };
 
   const escapeExistingSlideEditor = () => {
@@ -975,6 +983,12 @@ export default function DeckBuilder() {
     for (const choice of choices) {
       const songSlide = createSongSlide(choice.lyrics, baseStyle) as Slide;
       (songSlide as any).id = genId();
+      if (choice.book != null && choice.book !== '') {
+        (songSlide as any).book = choice.book;
+      }
+      if (choice.number != null && choice.number !== '') {
+        (songSlide as any).number = choice.number;
+      }
       if (choice.librarySongId) {
         songSlide.librarySongId = choice.librarySongId;
         songSlide.librarySongSyncedFingerprint = lyricsFingerprint(choice.lyrics);

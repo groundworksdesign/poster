@@ -81,7 +81,7 @@ todos:
     status: completed
   - id: fix-iris-handtype-focus
     content: "Focus Save only on first song pick; key-by-key e2e for hand-edit + search + scratch fields; no premature save."
-    status: pending
+    status: completed
 
 isProject: false
 ---
