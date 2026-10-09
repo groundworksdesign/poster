@@ -78,7 +78,7 @@ todos:
     status: completed
   - id: fix-iris-esc-three-press
     content: "Esc 3-press; song unsaved confirm; hand-edit fingerprint; cancel no reopen; real Esc e2e."
-    status: pending
+    status: completed
 isProject: false
 ---
 

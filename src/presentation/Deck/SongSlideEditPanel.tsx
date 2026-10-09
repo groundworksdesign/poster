@@ -555,7 +555,7 @@ export default function SongSlideEditPanel({
     }
     // Switched away from the slide's original kind without saving.
     if (initialChoice && kind !== 'linked') return true;
-    if (initialScratch && kind !== 'scratch') return true;
+    if (initialScratch && kind === 'linked') return true;
     return false;
   };
 

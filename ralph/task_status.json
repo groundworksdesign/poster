@@ -2,10 +2,10 @@
   "epic": "epic-004",
   "branch": "cursor/epic-004-song-library",
   "baseBranch": "main",
-  "status": "in_progress",
-  "loop": 57,
-  "persona": "dev",
-  "completeEpic": false,
+  "status": "completed",
+  "loop": 58,
+  "persona": "qa",
+  "completeEpic": true,
   "prUrl": "https://github.com/groundworksdesign/poster/pull/26",
   "canonicalStatusFile": "ralph/task_status.json",
   "sourceArtifacts": [
@@ -841,9 +841,9 @@
         "Iris-hand-edit-label",
         "Iris-cancel-no-reopen"
       ],
-      "status": "in_progress",
-      "passes": false,
-      "notes": "DEV implementing Iris Esc FAIL fixes"
+      "status": "completed",
+      "passes": true,
+      "notes": "QA PASS loop 58: Esc 3-press via real keys; song dirty confirm; hand-edit fingerprint; cancel no reopen; e2e+unit green."
     }
   ],
   "acceptanceCriteria": [
@@ -883,22 +883,22 @@
   ],
   "openQuestions": [],
   "blockers": [],
-  "lastUpdated": "2026-10-09T13:15:03.000Z",
+  "lastUpdated": "2026-10-09T13:21:52.000Z",
   "qaEvidence": {
-    "taskId": "add-song-panel-redesign",
+    "taskId": "fix-iris-esc-three-press",
     "tsc": "exit 0",
-    "jest": "63 suites / 413 tests PASS",
-    "e2eRemixCombinedEmptyBuild": "57 passed (50+7)",
+    "jest": "63 suites / 427 tests PASS",
+    "e2eRemixDev": "50 passed",
+    "e2eSongLibrary": "11 passed",
     "e2eElectron": "12 passed",
-    "themePersist10x": "30/30",
     "presentUnchanged": true,
     "stagedSongSlideUnchanged": true,
-    "qaPassLoop": 46
+    "qaPassLoop": 58
   },
   "feedback": {
     "taskId": "fix-iris-esc-three-press",
-    "content": "DEV: Esc stopPropagation, dirty confirm, hand-edit fingerprint, cancel no reopen + tests.",
-    "updatedAt": "2026-10-09T13:15:03.000Z"
+    "content": "QA PASS: Esc 3-press, unsaved confirm, hand-edit label, cancel no reopen. tsc0 jest427 remix50+11 electron12 Present identical. completeEpic true.",
+    "updatedAt": "2026-10-09T13:21:52.000Z"
   },
   "fixPass": {
     "irisGate": "ralph/specs/20261007-iris-gate-pr26-fail.md",
