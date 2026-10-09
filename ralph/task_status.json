@@ -3,8 +3,8 @@
   "branch": "cursor/epic-004-song-library",
   "baseBranch": "main",
   "status": "in_progress",
-  "loop": 51,
-  "persona": "qa",
+  "loop": 52,
+  "persona": "planning",
   "completeEpic": false,
   "prUrl": "https://github.com/groundworksdesign/poster/pull/26",
   "canonicalStatusFile": "ralph/task_status.json",
@@ -17,7 +17,8 @@
     "ralph/specs/20261008-add-slide-song-scratch-or-linked.md",
     "ralph/specs/20261008-add-song-redesign.md",
     "ralph/specs/20261008-add-song-redesign-mockup.html",
-    "ralph/specs/20261008-iris-gate-pr26-d2145f6.md"
+    "ralph/specs/20261008-iris-gate-pr26-d2145f6.md",
+    "ralph/specs/20261009-iris-gate-pr26-3c9a031.md"
   ],
   "codebaseFindings": {
     "songsTable": "Exists in schema.server.ts (id, title, author, song_json, created_at, updated_at) but unused \u2014 no CRUD, routes, or repo reads/writes.",
@@ -35,7 +36,8 @@
     "irisRegateFollowups": "Iris re-gate bc4320e: apply-decks flake = UpdateDecksPrompt useEffect reset after mount; *.server.ts under routes/ exposed as URL routes (e.g. /library/loader/server).",
     "addSongRedesign": "Pam mockup: song type/search/scratch/import live in slide edit panel; Add slide under Slides header. Today KindPicker/Chooser overlay under Deck heading; lyrics JSON editor; Load replaces deck; firstVerseLine is one lyric line; arrows move Present unless focus is INPUT/TEXTAREA/SELECT.",
     "themePersistFlake": "CI run 37845317615: remix-theme-persist Home reopen failed in chooseTheme \u2014 localStorage stayed light after synthetic select change (hydrate race / React onChange).",
-    "irisGateD2145f6": "Iris FAIL d2145f6: (1) single clean file savePayloads before Save; (2) existing scratch null commit still saves old draft; (3) library writes before Save on import/scratch confirm; (4) weakened e2e. Plus N1 keys, N3 array commit, N4 Add by hand, F3 Skip, F5 tag ref, UI mockup gaps, state I."
+    "irisGateD2145f6": "Iris FAIL d2145f6: (1) single clean file savePayloads before Save; (2) existing scratch null commit still saves old draft; (3) library writes before Save on import/scratch confirm; (4) weakened e2e. Plus N1 keys, N3 array commit, N4 Add by hand, F3 Skip, F5 tag ref, UI mockup gaps, state I.",
+    "irisPassRoyPolish": "Iris PASS 3c9a031/4737baa. Roy before merge: (1) State I fetch library words by id; (2) Esc clear search then type then cancel; existing unsaved confirm; (3) type-card focus-only arrows; menu focus; focus E/B; (4) remove raw Library ID; (5) tighten 3 weakened tests + add 1-3 tests. Cap 6. Final head no [skip ci]."
   },
   "requirements": [
     {
@@ -295,6 +297,30 @@
         "fix-iris-beta-tag-ref"
       ],
       "status": "completed"
+    },
+    {
+      "id": "REQ-033",
+      "title": "State I: Use library words from current library song; note on open",
+      "todoIds": [
+        "fix-roy-state-i-library-words"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "REQ-034",
+      "title": "Esc levels + focus cards/menu/E/B; remove raw Library ID",
+      "todoIds": [
+        "fix-roy-esc-focus-library-id"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "REQ-035",
+      "title": "Tighten weakened e2e/unit asserts; tests for State I, Esc, focus",
+      "todoIds": [
+        "fix-roy-tighten-tests"
+      ],
+      "status": "pending"
     }
   ],
   "todos": [
@@ -752,6 +778,47 @@
       "status": "completed",
       "passes": true,
       "notes": "QA PASS: jest 418/418; remix-dev e2e 50; song-library 8; electron 12; Present/stagedSongSlide zero diff vs origin/main."
+    },
+    {
+      "id": "fix-roy-state-i-library-words",
+      "content": "State I: fetch current library song by librarySongId; seed restore from library words; show yellow note when slide already differs on open; Use library words restores library text.",
+      "requirementIds": [
+        "REQ-033"
+      ],
+      "acceptanceCriteria": [
+        "Roy-state-I"
+      ],
+      "status": "pending",
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "fix-roy-esc-focus-library-id",
+      "content": "Esc: clear search then type choice then cancel pending (deck+library unchanged). Existing slide Esc confirms unsaved. Type cards Left/Right move focus only; Enter/Space/1/2 pick. Add-slide menu focuses first item. State E focus Save slide; empty-lib type\u2192Scratch, state B\u2192Import. Remove raw Library ID text.",
+      "requirementIds": [
+        "REQ-034"
+      ],
+      "acceptanceCriteria": [
+        "Roy-esc",
+        "Roy-focus",
+        "Roy-no-raw-lib-id"
+      ],
+      "status": "pending",
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "fix-roy-tighten-tests",
+      "content": "Tighten GATE weakened asserts (slide-library-song-id after scratch save; DeckBuilder linked id; multi-import not or-card). Add unit/e2e for State I, Esc levels, type-card focus.",
+      "requirementIds": [
+        "REQ-035"
+      ],
+      "acceptanceCriteria": [
+        "Roy-tests"
+      ],
+      "status": "pending",
+      "passes": false,
+      "notes": ""
     }
   ],
   "acceptanceCriteria": [
@@ -780,8 +847,8 @@
     "Theme-persist (REQ-027): remix-theme-persist Home reopen chooseTheme stable 10x"
   ],
   "selected": {
-    "id": "fix-iris-library-defer-until-save",
-    "reason": "Iris FAIL blockers 1-3 (library before Save, AC-009/014, existing scratch review). Cap 14."
+    "id": "fix-roy-state-i-library-words",
+    "reason": "Roy N1 / Iris \u00a74 State I broken for already-hand-edited slides."
   },
   "outOfScope": [
     "Bundling the three church books in the app",
@@ -791,7 +858,7 @@
   ],
   "openQuestions": [],
   "blockers": [],
-  "lastUpdated": "2026-10-08T23:47:02.000Z",
+  "lastUpdated": "2026-10-09T00:51:39.000Z",
   "qaEvidence": {
     "taskId": "add-song-panel-redesign",
     "tsc": "exit 0",
@@ -804,9 +871,9 @@
     "qaPassLoop": 46
   },
   "feedback": {
-    "taskId": "fix-iris-library-defer-until-save",
-    "content": "COMPLETE: CI green 37860810228 on 4737baa; beta tag v0.1.19-pr.26 \u2192 4737baa. Iris blockers + Race UI done. Loops used 5/14.",
-    "updatedAt": "2026-10-08T23:47:02.000Z"
+    "taskId": "fix-roy-state-i-library-words",
+    "content": "Planning Roy polish after Iris PASS. Cap 6. Selected State I first.",
+    "updatedAt": "2026-10-09T00:51:39.000Z"
   },
   "fixPass": {
     "irisGate": "ralph/specs/20261007-iris-gate-pr26-fail.md",
@@ -864,5 +931,13 @@
     "ciResult": "success",
     "betaTag": "v0.1.19-pr.26",
     "betaTagSha": "4737baadc04273535f8474079af25efc1c69cfe3"
+  },
+  "royPolishPass": {
+    "gate": "ralph/specs/20261009-iris-gate-pr26-3c9a031.md",
+    "budget": 6,
+    "loop": 1,
+    "loopsUsed": 1,
+    "maxLoop": 6,
+    "status": "in_progress"
   }
 }

@@ -63,6 +63,16 @@ todos:
   - id: fix-iris-beta-tag-ref
     content: "F5: force-move beta tag ref to release head commit in pr.yml."
     status: pending
+
+  - id: fix-roy-state-i-library-words
+    content: "State I: restore from current library song words; yellow note on open when already hand-edited."
+    status: pending
+  - id: fix-roy-esc-focus-library-id
+    content: "Esc levels + unsaved confirm; type-card/menu/E/B focus; remove raw Library ID."
+    status: pending
+  - id: fix-roy-tighten-tests
+    content: "Tighten 3 weakened tests; add State I / Esc / focus tests."
+    status: pending
 isProject: false
 ---
 
