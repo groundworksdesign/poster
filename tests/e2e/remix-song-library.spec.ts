@@ -389,4 +389,168 @@ test.describe('Song library (production Remix build)', () => {
     errors.assertClean();
     errors.detach();
   });
+
+  test('Iris Esc: 3 real Esc presses clear search → type choice → cancel', async ({
+    page,
+    baseURL,
+  }) => {
+    const base = baseURL || 'http://127.0.0.1:3010';
+    const errors = attachClientErrorGuards(page);
+
+    const seed = await page.request.post(
+      `${base}/library/songs/save?_data=routes%2Flibrary.songs.save`,
+      {
+        data: {
+          title: 'Esc Probe Song',
+          book: 'Hymns',
+          number: '1',
+          lyrics: {
+            title: 'Esc Probe Song',
+            verses: [{ number: 1, lines: ['probe line'] }],
+          },
+        },
+      },
+    );
+    expect(seed.ok(), await seed.text()).toBeTruthy();
+
+    const beforeLib = await page.request.get(
+      `${base}/library/songs?_data=routes%2Flibrary.songs`,
+    );
+    const beforeCount = ((await beforeLib.json()) as unknown[]).length;
+
+    await page.goto('/deck', { waitUntil: 'domcontentloaded' });
+    await page.getByRole('button', { name: 'New Deck' }).click();
+    await page.getByTestId('add-slide-button').click();
+    await page.getByTestId('add-slide-song').click();
+    await expect(page.getByTestId('song-type-choice')).toBeVisible({ timeout: 15000 });
+    await page.getByTestId('song-type-linked').click();
+    const search = page.getByTestId('library-song-search');
+    await expect(search).toBeVisible({ timeout: 15000 });
+    await search.fill('Esc Probe');
+    await expect(search).toHaveValue('Esc Probe');
+
+    // Esc 1: clear search
+    await search.press('Escape');
+    await expect(search).toHaveValue('');
+    await expect(page.getByTestId('library-song-picker')).toBeVisible();
+    await expect(page.getByTestId('pending-song-slide')).toBeVisible();
+
+    // Esc 2: type choice (must not be a dead press)
+    await search.press('Escape');
+    await expect(page.getByTestId('song-type-choice')).toBeVisible({ timeout: 5000 });
+    await expect(page.getByTestId('pending-song-slide')).toBeVisible();
+
+    // Esc 3: cancel — nothing left in deck or library
+    await page.getByTestId('song-type-choice').press('Escape');
+    await expect(page.getByTestId('pending-song-slide')).toHaveCount(0);
+    await expect(page.getByTestId('deck-slide-editor-panel')).toHaveCount(0);
+
+    const afterLib = await page.request.get(
+      `${base}/library/songs?_data=routes%2Flibrary.songs`,
+    );
+    expect(((await afterLib.json()) as unknown[]).length).toBe(beforeCount);
+    errors.assertClean();
+    errors.detach();
+  });
+
+  test('Iris Esc: existing song with unsaved words asks before discard', async ({ page }) => {
+    const errors = attachClientErrorGuards(page);
+    await page.goto('/deck', { waitUntil: 'domcontentloaded' });
+    await page.getByRole('button', { name: 'New Deck' }).click();
+    await page.getByTestId('add-slide-button').click();
+    await page.getByTestId('add-slide-song').click();
+    await page.getByTestId('song-type-scratch').click();
+    await page.getByTestId('song-scratch-title').fill('esc one');
+    await page.getByTestId('song-scratch-words').fill('probe one');
+    await page.getByTestId('save-slide-button').click();
+    await expect(page.locator('#slides')).toContainText(/esc one/i);
+
+    const songRow = page.locator('#slides li').filter({ hasText: /esc one/i });
+    await songRow.getByRole('button', { name: 'Edit' }).click();
+    await expect(page.getByTestId('song-scratch-words')).toBeVisible({ timeout: 15000 });
+    await page.getByTestId('song-scratch-words').fill('probe one CHANGED');
+
+    page.once('dialog', async dialog => {
+      expect(dialog.message()).toMatch(/Discard unsaved changes/i);
+      await dialog.dismiss();
+    });
+    await page.getByTestId('song-scratch-words').press('Escape');
+    await expect(page.getByTestId('deck-slide-editor-panel')).toBeVisible();
+    await expect(page.getByTestId('song-scratch-words')).toHaveValue('probe one CHANGED');
+
+    page.once('dialog', async dialog => {
+      await dialog.accept();
+    });
+    await page.getByTestId('song-scratch-words').press('Escape');
+    await expect(page.getByTestId('deck-slide-editor-panel')).toHaveCount(0);
+
+    // Reopen: unsaved words were discarded
+    await songRow.getByRole('button', { name: 'Edit' }).click();
+    await expect(page.getByTestId('song-scratch-words')).toHaveValue('probe one');
+    errors.assertClean();
+    errors.detach();
+  });
+
+  test('Iris: hand-edit save is labelled edited by hand on library update', async ({
+    page,
+    baseURL,
+  }) => {
+    const base = baseURL || 'http://127.0.0.1:3010';
+    const errors = attachClientErrorGuards(page);
+
+    const seed = await page.request.post(
+      `${base}/library/songs/save?_data=routes%2Flibrary.songs.save`,
+      {
+        data: {
+          title: 'Hand Edit Label Song',
+          book: 'Hymns',
+          number: '3',
+          lyrics: {
+            title: 'Hand Edit Label Song',
+            verses: [{ number: 1, lines: ['LIBRARY one', 'LIBRARY two'] }],
+          },
+        },
+      },
+    );
+    expect(seed.ok(), await seed.text()).toBeTruthy();
+    const id = ((await seed.json()) as { id: string }).id;
+
+    await page.goto('/deck', { waitUntil: 'domcontentloaded' });
+    await page.getByRole('button', { name: 'New Deck' }).click();
+    await page.getByTestId('add-slide-button').click();
+    await page.getByTestId('add-slide-song').click();
+    await page.getByTestId('song-type-linked').click();
+    await page.getByTestId(`add-song-pick-${id}`).click();
+    await page.getByTestId('save-slide-button').click();
+    await expect(page.locator('#slides')).toContainText(/Hand Edit Label Song/i);
+
+    const songRow = page.locator('#slides li').filter({ hasText: /Hand Edit Label Song/i });
+    await songRow.getByRole('button', { name: 'Edit' }).click();
+    await expect(page.getByTestId('song-edit-words-on-slide')).toBeVisible({ timeout: 15000 });
+    await page.getByTestId('song-edit-words-on-slide').click();
+    await page.getByTestId('song-hand-edit-words').fill('HAND EDITED one\nHAND EDITED two');
+    await page.getByTestId('save-slide-button').click();
+    await expect(page.getByTestId('deck-slide-editor-panel')).toHaveCount(0);
+
+    // Persist deck so library edit can find the linked slide.
+    await page.getByRole('button', { name: /^save$/i }).click();
+    await expect(page.getByText(/saved to library|updated in library/i)).toBeVisible({
+      timeout: 15000,
+    });
+
+    // Change library words → update prompt must say edited by hand (not Not updated).
+    await page.goto('/library/songs', { waitUntil: 'domcontentloaded' });
+    await expect(page.getByTestId('song-library-page')).toBeVisible({ timeout: 15000 });
+    await page.getByTestId(`song-library-edit-${id}`).click();
+    await expect(page.getByTestId('song-library-edit-form')).toBeVisible();
+    await page.getByTestId('song-library-edit-verses').fill('LIBRARY v2 a\nLIBRARY v2 b');
+    await page.getByTestId('song-library-edit-save').click();
+    await expect(page.getByTestId('update-decks-prompt')).toBeVisible({ timeout: 15000 });
+    await expect(page.getByTestId('update-decks-prompt')).toContainText(/edited by hand/i);
+    await expect(page.getByTestId('update-decks-prompt')).not.toContainText(
+      /Not updated to the latest library version/i,
+    );
+    errors.assertClean();
+    errors.detach();
+  });
 });

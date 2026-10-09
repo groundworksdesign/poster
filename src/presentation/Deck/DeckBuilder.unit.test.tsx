@@ -612,3 +612,158 @@ test('REQ-026: ArrowRight does not move Present while focus is in the slide list
   outside.remove();
 });
 
+async function pressEscInPanel(el: Element) {
+  await act(async () => {
+    fireEvent.keyDown(el, { key: 'Escape', bubbles: true, cancelable: true });
+  });
+}
+
+test('Iris Esc: 3 real Esc presses clear search → type choice → cancel (nothing left)', async () => {
+  (global.fetch as jest.Mock).mockResolvedValue({
+    ok: true,
+    json: async () => [
+      {
+        id: 's1',
+        title: 'Alpha',
+        lyrics: { title: 'Alpha', verses: [{ number: 1, lines: ['a'] }] },
+      },
+    ],
+  } as Response);
+
+  render(<DeckBuilder />);
+  await loadFile(makeJsonFile(VALID_DECK));
+  await waitFor(() => expect(screen.getByText('Slide 1')).toBeInTheDocument());
+
+  fireEvent.click(screen.getByTestId('add-slide-button'));
+  fireEvent.click(await screen.findByTestId('add-slide-song'));
+  await waitFor(() => expect(screen.getByTestId('song-type-choice')).toBeInTheDocument());
+  fireEvent.click(screen.getByTestId('song-type-linked'));
+  const search = await screen.findByTestId('library-song-search');
+  fireEvent.change(search, { target: { value: 'Alp' } });
+  expect(search).toHaveValue('Alp');
+  search.focus();
+
+  // Esc 1: clear search
+  await pressEscInPanel(search);
+  await waitFor(() => expect(screen.getByTestId('library-song-search')).toHaveValue(''));
+  expect(screen.getByTestId('library-song-picker')).toBeInTheDocument();
+  expect(screen.getByTestId('pending-song-slide')).toBeInTheDocument();
+
+  // Esc 2: back to type choice (must not be a dead press)
+  await pressEscInPanel(screen.getByTestId('library-song-search'));
+  await waitFor(() => expect(screen.getByTestId('song-type-choice')).toBeInTheDocument());
+  expect(screen.getByTestId('pending-song-slide')).toBeInTheDocument();
+
+  // Esc 3: cancel pending — panel closed, no pending row
+  await pressEscInPanel(screen.getByTestId('song-type-choice'));
+  await waitFor(() => expect(screen.queryByTestId('pending-song-slide')).not.toBeInTheDocument());
+  expect(screen.queryByTestId('deck-slide-editor-panel')).not.toBeInTheDocument();
+  expect(screen.getByText('Slide 1')).toBeInTheDocument();
+});
+
+test('Iris Esc: existing song with unsaved words confirms before discard', async () => {
+  const confirmSpy = jest.spyOn(window, 'confirm').mockReturnValue(false);
+  const deck = {
+    title: 'Song Deck',
+    slides: [
+      {
+        type: 'song',
+        id: 'song-1',
+        title: 'esc one',
+        lyrics: { title: 'esc one', verses: [{ number: 1, lines: ['probe one'] }] },
+      },
+    ],
+  };
+  render(<DeckBuilder />);
+  await loadFile(makeJsonFile(deck));
+  await waitFor(() => expect(screen.getByText('esc one')).toBeInTheDocument());
+  fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
+  await waitFor(() => expect(screen.getByTestId('song-scratch-words')).toBeInTheDocument());
+  fireEvent.change(screen.getByTestId('song-scratch-words'), {
+    target: { value: 'probe one CHANGED' },
+  });
+  const words = screen.getByTestId('song-scratch-words');
+  words.focus();
+  await pressEscInPanel(words);
+  expect(confirmSpy).toHaveBeenCalledWith('Discard unsaved changes to this slide?');
+  // Decline keeps the editor open with the unsaved words.
+  expect(screen.getByTestId('deck-slide-editor-panel')).toBeInTheDocument();
+  expect(screen.getByTestId('song-scratch-words')).toHaveValue('probe one CHANGED');
+
+  confirmSpy.mockReturnValue(true);
+  await pressEscInPanel(screen.getByTestId('song-scratch-words'));
+  await waitFor(() => expect(screen.queryByTestId('deck-slide-editor-panel')).not.toBeInTheDocument());
+  confirmSpy.mockRestore();
+});
+
+test('Iris: hand-edit save keeps synced fingerprint (edited by hand, not Not updated)', async () => {
+  const { lyricsFingerprint } = await import('../../domain/linkedSongUpdate');
+  const baseLyrics = {
+    title: 'Alpha',
+    author: '',
+    verses: [{ number: 1, lines: ['LIBRARY one', 'LIBRARY two'] }],
+  };
+  const synced = lyricsFingerprint(baseLyrics);
+  (global.fetch as jest.Mock).mockResolvedValue({
+    ok: true,
+    json: async () => [
+      {
+        id: 'lib-1',
+        title: 'Alpha',
+        lyrics: baseLyrics,
+      },
+    ],
+  } as Response);
+
+  const deck = {
+    title: 'Linked Deck',
+    slides: [
+      {
+        type: 'song',
+        id: 'song-1',
+        title: 'Alpha',
+        lyrics: baseLyrics,
+        librarySongId: 'lib-1',
+        librarySongSyncedFingerprint: synced,
+      },
+    ],
+  };
+  render(<DeckBuilder />);
+  await loadFile(makeJsonFile(deck));
+  fireEvent.click(await screen.findByRole('button', { name: 'Edit' }));
+  await waitFor(() => expect(screen.getByTestId('song-edit-words-on-slide')).toBeInTheDocument());
+  fireEvent.click(screen.getByTestId('song-edit-words-on-slide'));
+  fireEvent.change(screen.getByTestId('song-hand-edit-words'), {
+    target: { value: 'HAND EDITED one\nHAND EDITED two' },
+  });
+  fireEvent.click(screen.getByTestId('save-slide-button'));
+  await waitFor(() => expect(screen.queryByTestId('deck-slide-editor-panel')).not.toBeInTheDocument());
+
+  const saved = await exportDeckJson();
+  const slide = saved.slides[0];
+  expect(slide.librarySongId).toBe('lib-1');
+  expect(slide.librarySongSyncedFingerprint).toBe(synced);
+  expect(lyricsFingerprint(slide.lyrics)).not.toBe(synced);
+  const { linkedSlideStatusLabel } = await import('../../domain/linkedSongUpdate');
+  expect(linkedSlideStatusLabel(slide, 'lib-1', baseLyrics)).toBe('edited by hand');
+});
+
+test('Iris: cancel pending song does not reopen previously selected slide editor', async () => {
+  render(<DeckBuilder />);
+  await loadFile(makeJsonFile(VALID_DECK));
+  await waitFor(() => expect(screen.getByText('Slide 1')).toBeInTheDocument());
+  fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
+  await waitFor(() => expect(screen.getByTestId('deck-slide-editor-panel')).toBeInTheDocument());
+  expect(screen.getByRole('heading', { name: /Editing slide 1/i })).toBeInTheDocument();
+
+  fireEvent.click(screen.getByTestId('add-slide-button'));
+  fireEvent.click(await screen.findByTestId('add-slide-song'));
+  await waitFor(() => expect(screen.getByTestId('pending-song-slide')).toBeInTheDocument());
+  await waitFor(() => expect(screen.getByTestId('song-type-choice')).toBeInTheDocument());
+
+  fireEvent.click(screen.getByTestId('slide-editor-cancel'));
+  await waitFor(() => expect(screen.queryByTestId('pending-song-slide')).not.toBeInTheDocument());
+  expect(screen.queryByTestId('deck-slide-editor-panel')).not.toBeInTheDocument();
+  expect(screen.queryByRole('heading', { name: /Editing slide 1/i })).not.toBeInTheDocument();
+});
+

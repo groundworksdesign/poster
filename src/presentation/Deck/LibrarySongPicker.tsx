@@ -93,9 +93,10 @@ export default function LibrarySongPicker({ onPick, onSwitchToImport, onTypeNewS
   const onKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
       // Spec Esc step 1: clear search text before backing out to type choice.
+      // Do NOT stopPropagation — React 18 stops the native event too, so the
+      // window Esc handler never consumes the flag and the next Esc is swallowed.
       if (query.trim() || bookFilter) {
         e.preventDefault();
-        e.stopPropagation();
         markSearchEscConsumed();
         setQuery('');
         setBookFilter('');

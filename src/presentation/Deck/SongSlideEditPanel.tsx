@@ -13,6 +13,7 @@ import {
 } from '../../domain/songImport';
 import ImportReviewScreen from '../SongLibrary/ImportReviewScreen';
 import { remixDataUrl, REMIX_ROUTE_ID } from '../remixDataUrl';
+import { lyricsFingerprint } from '../../domain/linkedSongUpdate';
 import LibrarySongPicker from './LibrarySongPicker';
 import type { SongSlideChoice } from './AddSongSlideChooser';
 
@@ -24,6 +25,8 @@ export type SongPanelCommit = {
   book?: string | null;
   number?: string | null;
   alsoSavedToLibrary?: boolean;
+  /** True when saving hand-edited words that differ from the last library sync. */
+  handEdited?: boolean;
 };
 
 type Props = {
@@ -54,6 +57,8 @@ type Props = {
   >;
   /** Parent can invoke the same Esc back-out used by the panel key handler. */
   escapeRef?: React.MutableRefObject<(() => void) | null>;
+  /** Parent reads local unsaved song edits (words/title) for Esc confirm. */
+  isDirtyRef?: React.MutableRefObject<(() => boolean) | null>;
 };
 
 function candidateFromScratch(
@@ -119,6 +124,7 @@ export default function SongSlideEditPanel({
   isPendingNewSlide = false,
   getCommitRef,
   escapeRef,
+  isDirtyRef,
 }: Props) {
   const [kind, setKind] = useState<SongKind | null>(initialKind);
   const [choice, setChoice] = useState<SongSlideChoice | null>(initialChoice);
@@ -302,7 +308,24 @@ export default function SongSlideEditPanel({
             number: choice.number,
           };
         }
-        return choice;
+        const libText = libraryWordsRef.current;
+        const slideText = versesToText(choice.lyrics?.verses);
+        const sameLinkedId =
+          Boolean(choice.librarySongId) &&
+          Boolean(initialChoice?.librarySongId) &&
+          choice.librarySongId === initialChoice?.librarySongId;
+        const differsFromSynced =
+          Boolean(linkedFingerprint) &&
+          lyricsFingerprint(choice.lyrics) !== linkedFingerprint;
+        const differsFromLibrary = libText === null || slideText !== libText;
+        const handEdited = Boolean(sameLinkedId && differsFromSynced && differsFromLibrary);
+        return {
+          lyrics: choice.lyrics,
+          librarySongId: choice.librarySongId,
+          book: choice.book,
+          number: choice.number,
+          handEdited,
+        };
       }
 
       if (kind === 'scratch' && title.trim()) {
@@ -505,6 +528,40 @@ export default function SongSlideEditPanel({
       escapeRef.current = null;
     };
   });
+
+  const computeLocalDirty = (): boolean => {
+    if (isPendingNewSlide) return false;
+    if (kind === 'scratch') {
+      const init = initialScratch;
+      if (!init) {
+        return title.trim().length > 0 || words.trim().length > 0;
+      }
+      return (
+        title !== (init.title ?? '') ||
+        book !== (init.book ?? '') ||
+        number !== (init.number ?? '') ||
+        words !== (init.words ?? '')
+      );
+    }
+    if (kind === 'linked' && choice && initialChoice) {
+      if (choice.librarySongId !== initialChoice.librarySongId) return true;
+      if (lyricsFingerprint(choice.lyrics) !== lyricsFingerprint(initialChoice.lyrics)) {
+        return true;
+      }
+      if (handEditUnlocked && words !== versesToText(initialChoice.lyrics?.verses)) {
+        return true;
+      }
+      return false;
+    }
+    // Switched away from the slide's original kind without saving.
+    if (initialChoice && kind !== 'linked') return true;
+    if (initialScratch && kind !== 'scratch') return true;
+    return false;
+  };
+
+  if (isDirtyRef) {
+    isDirtyRef.current = computeLocalDirty;
+  }
 
   const onPanelKeyDown = (e: React.KeyboardEvent) => {
     // Escape is handled at the window level via escapeRef (covers footer focus too).

@@ -75,6 +75,8 @@ export default function DeckBuilder() {
     (() => Promise<SongPanelCommit | SongPanelCommit[] | null>) | null
   >(null);
   const songEscapeRef = useRef<(() => void) | null>(null);
+  /** Song panel local dirty (words/title) — not yet in slideEditDraft until Save. */
+  const songPanelDirtyRef = useRef<(() => boolean) | null>(null);
   const [songCommitReady, setSongCommitReady] = useState(false);
 
   const genId = () => (typeof (globalThis as any).crypto !== 'undefined' && typeof (globalThis as any).crypto.randomUUID === 'function') ? (globalThis as any).crypto.randomUUID() : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
@@ -150,9 +152,12 @@ export default function DeckBuilder() {
 
     // Esc from footer / panel chrome (Save, Cancel) — same back-out as panel body.
     if (e.key === 'Escape' && inPanel) {
+      // Search clear uses preventDefault (not stopPropagation) so we still see this
+      // keypress. Always consume the flag first — otherwise defaultPrevented
+      // short-circuits and the stale flag swallows the next Esc.
+      const searchEsc = consumeSearchEscFlag();
+      if (e.defaultPrevented || searchEsc) return;
       e.preventDefault();
-      // Search already cleared this keypress — wait for the next Esc to back out.
-      if (consumeSearchEscFlag()) return;
       if (songEscapeRef.current) songEscapeRef.current();
       else panelEscapeFallbackRef.current();
       return;
@@ -385,20 +390,30 @@ export default function DeckBuilder() {
     setSlideEditDraft((prev: any) => (prev ? { ...prev, style: {} } : prev));
   };
 
-  const applySongCommitToDraft = (draft: any, commit: SongPanelCommit) => ({
-    ...draft,
-    title: commit.lyrics.title || draft.title,
-    subTitle: commit.lyrics.author ? `by ${commit.lyrics.author}` : draft.subTitle,
-    lyrics: commit.lyrics,
-    librarySongId: commit.librarySongId,
-    book: commit.book ?? draft.book,
-    number: commit.number ?? draft.number,
-    librarySongSyncedFingerprint: commit.librarySongId
-      ? lyricsFingerprint(commit.lyrics)
-      : commit.librarySongId === undefined && !commit.alsoSavedToLibrary
-        ? undefined
-        : draft.librarySongSyncedFingerprint,
-  });
+  const applySongCommitToDraft = (draft: any, commit: SongPanelCommit) => {
+    let syncedFp = draft.librarySongSyncedFingerprint;
+    if (commit.librarySongId) {
+      // Hand edits must keep the prior sync fingerprint so library updates label
+      // the slide "edited by hand" (not "Not updated") and warn before overwrite.
+      if (commit.handEdited && typeof draft.librarySongSyncedFingerprint === 'string') {
+        syncedFp = draft.librarySongSyncedFingerprint;
+      } else {
+        syncedFp = lyricsFingerprint(commit.lyrics);
+      }
+    } else if (commit.librarySongId === undefined && !commit.alsoSavedToLibrary) {
+      syncedFp = undefined;
+    }
+    return {
+      ...draft,
+      title: commit.lyrics.title || draft.title,
+      subTitle: commit.lyrics.author ? `by ${commit.lyrics.author}` : draft.subTitle,
+      lyrics: commit.lyrics,
+      librarySongId: commit.librarySongId,
+      book: commit.book ?? draft.book,
+      number: commit.number ?? draft.number,
+      librarySongSyncedFingerprint: syncedFp,
+    };
+  };
 
   const saveSlideEdits = async () => {
     if (!deck || !slideEditDraft) return;
@@ -816,6 +831,8 @@ export default function DeckBuilder() {
   const cancelPendingSongSlide = () => {
     setPendingSongId(null);
     setSlideEditDraft(null);
+    // Clear selection so a previously selected slide does not reopen its editor.
+    setSelectedSlideIndex(null);
     setSongCommitReady(false);
     setMessage('Cancelled new song slide');
   };
@@ -835,8 +852,9 @@ export default function DeckBuilder() {
       return;
     }
     const original = deck.slides[selectedSlideIndex] as any;
-    const dirty = JSON.stringify(original) !== JSON.stringify(slideEditDraft);
-    if (dirty) {
+    const draftDirty = JSON.stringify(original) !== JSON.stringify(slideEditDraft);
+    const songDirty = Boolean(songPanelDirtyRef.current?.());
+    if (draftDirty || songDirty) {
       const ok = window.confirm('Discard unsaved changes to this slide?');
       if (!ok) return;
     }
@@ -1729,6 +1747,7 @@ export default function DeckBuilder() {
                         onEscapeExistingSlide={escapeExistingSlideEditor}
                         getCommitRef={songCommitRef}
                         escapeRef={songEscapeRef}
+                        isDirtyRef={songPanelDirtyRef}
                       />
                     )}
 
