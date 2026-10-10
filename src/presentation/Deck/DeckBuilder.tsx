@@ -26,6 +26,12 @@ import type { SongSlideChoice } from './AddSongSlideChooser';
 import SongSlideEditPanel, { type SongPanelCommit } from './SongSlideEditPanel';
 import BackgroundImagePicker from './BackgroundImagePicker';
 import {
+  clearSlideBackgroundOverride,
+  clearSlideTitleTextBackgroundOverride,
+  resolveTitleTextBackground,
+  resolveWholeSlideBackground,
+} from '../../domain/backgroundImage';
+import {
   notePresentShortcutPointerTarget,
   shouldIgnorePresentShortcuts,
 } from './presentShortcutGuard';
@@ -1764,6 +1770,93 @@ export default function DeckBuilder() {
                         <label>Image URL/file: <input type="text" value={slide.file || slide.style?.backgroundImage || ''} onChange={e => updateDraftField('file', e.target.value)} /></label>
                       </div>
                     )}
+
+                    <div data-testid="slide-background-overrides" style={{ marginTop: 8 }}>
+                      {(() => {
+                        const wholeResolved = resolveWholeSlideBackground(deck, slide);
+                        const wholeValue = Object.prototype.hasOwnProperty.call(slide, 'background')
+                          ? slide.background
+                          : wholeResolved.image
+                            ? {
+                                image: wholeResolved.image,
+                                fit: wholeResolved.fit,
+                                dim: wholeResolved.dim,
+                              }
+                            : undefined;
+                        return (
+                          <BackgroundImagePicker
+                            label={
+                              wholeResolved.isOverride
+                                ? 'Whole-slide background (slide override)'
+                                : 'Whole-slide background (deck default)'
+                            }
+                            testIdPrefix="slide-bg"
+                            value={wholeValue}
+                            showClear
+                            clearMode="empty"
+                            useDeckDefaultLabel="Use deck default"
+                            onUseDeckDefault={() => {
+                              setSlideEditDraft((prev: any) =>
+                                prev ? clearSlideBackgroundOverride(prev) : prev
+                              );
+                            }}
+                            onChange={(next) => {
+                              if (next === undefined) {
+                                setSlideEditDraft((prev: any) =>
+                                  prev ? clearSlideBackgroundOverride(prev) : prev
+                                );
+                                return;
+                              }
+                              updateDraftField('background', next);
+                            }}
+                          />
+                        );
+                      })()}
+                      {slide.type === SlideType.TITLE &&
+                        (() => {
+                          const titleResolved = resolveTitleTextBackground(deck, slide);
+                          const titleValue = Object.prototype.hasOwnProperty.call(
+                            slide,
+                            'titleTextBackground'
+                          )
+                            ? slide.titleTextBackground
+                            : titleResolved.image
+                              ? {
+                                  image: titleResolved.image,
+                                  fit: titleResolved.fit,
+                                  dim: titleResolved.dim,
+                                }
+                              : undefined;
+                          return (
+                            <BackgroundImagePicker
+                              label={
+                                titleResolved.isOverride
+                                  ? 'Title text-layer background (slide override)'
+                                  : 'Title text-layer background (deck default)'
+                              }
+                              testIdPrefix="slide-title-bg"
+                              value={titleValue}
+                              showClear
+                              clearMode="empty"
+                              useDeckDefaultLabel="Use deck default"
+                              onUseDeckDefault={() => {
+                                setSlideEditDraft((prev: any) =>
+                                  prev ? clearSlideTitleTextBackgroundOverride(prev) : prev
+                                );
+                              }}
+                              onChange={(next) => {
+                                if (next === undefined) {
+                                  setSlideEditDraft((prev: any) =>
+                                    prev ? clearSlideTitleTextBackgroundOverride(prev) : prev
+                                  );
+                                  return;
+                                }
+                                updateDraftField('titleTextBackground', next);
+                              }}
+                            />
+                          );
+                        })()}
+                    </div>
 
                     {slide.type === SlideType.SONG && (
                       <SongSlideEditPanel

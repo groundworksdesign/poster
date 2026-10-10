@@ -19,6 +19,11 @@ export type BackgroundImagePickerProps = {
   onUseDeckDefault?: () => void;
   /** When true, show Clear instead of only replacing via picker. */
   showClear?: boolean;
+  /**
+   * unset (default): Clear calls onChange(undefined) — remove the value.
+   * empty: Clear writes an empty image spec — useful for slide overrides that hide the deck default.
+   */
+  clearMode?: 'unset' | 'empty';
   testIdPrefix?: string;
 };
 
@@ -33,6 +38,7 @@ export default function BackgroundImagePicker({
   useDeckDefaultLabel,
   onUseDeckDefault,
   showClear = true,
+  clearMode = 'unset',
   testIdPrefix = 'bg-picker',
 }: BackgroundImagePickerProps) {
   const fileRef = useRef<HTMLInputElement | null>(null);
@@ -139,11 +145,15 @@ export default function BackgroundImagePicker({
           <button
             type="button"
             data-testid={`${testIdPrefix}-clear`}
-            disabled={busy || !hasImage}
+            disabled={busy || (!hasImage && clearMode === 'unset')}
             onClick={() => {
               setError(null);
               setUrlDraft('');
-              onChange(undefined);
+              if (clearMode === 'empty') {
+                onChange(makeBackgroundImageSpec('', { fit, dim }));
+              } else {
+                onChange(undefined);
+              }
             }}
           >
             Clear
