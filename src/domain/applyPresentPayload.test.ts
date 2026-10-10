@@ -96,5 +96,28 @@ describe('applyPresentPayload', () => {
     expect(handlers.setDefaultBackground).toHaveBeenCalledWith(defaultBackground);
     expect(handlers.setDefaultTitleTextBackground).toHaveBeenCalledWith(defaultTitleTextBackground);
   });
+
+  test('explicit null background defaults clear Present state (LIVE-CLEAR / LIVE-OLDDECK)', () => {
+    const handlers = makeHandlers();
+    const slide = {
+      type: SlideType.GENERAL,
+      title: 'Legacy',
+      style: { backgroundColor: '#336699' },
+    };
+
+    applyPresentPayload(
+      {
+        slide,
+        defaultBackground: null,
+        defaultTitleTextBackground: null,
+        useGreenScreen: false,
+      },
+      handlers,
+    );
+
+    expect(handlers.setDefaultBackground).toHaveBeenCalledWith(undefined);
+    expect(handlers.setDefaultTitleTextBackground).toHaveBeenCalledWith(undefined);
+  });
 });
+
 

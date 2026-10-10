@@ -826,6 +826,69 @@ test('slide override UI can override and reset to deck default', async () => {
   await waitFor(() => expect(screen.getByTestId('slide-title-bg')).toBeInTheDocument());
 });
 
+test('Send always includes null background defaults when deck has none (LIVE-OLDDECK)', async () => {
+  render(<DeckBuilder />);
+  await loadFile(makeJsonFile(VALID_DECK));
+  await waitFor(() => screen.getByTestId('import-save-prompt'));
+  act(() => {
+    fireEvent.click(screen.getByRole('button', { name: /skip/i }));
+  });
+
+  await act(async () => {
+    fireEvent.click(screen.getAllByRole('button', { name: /^send$/i })[0]);
+  });
+  await waitFor(() => expect(mockSend).toHaveBeenCalled());
+  const payload = mockSend.mock.calls[mockSend.mock.calls.length - 1][0];
+  expect(payload).toEqual(
+    expect.objectContaining({
+      defaultBackground: null,
+      defaultTitleTextBackground: null,
+    })
+  );
+  // JSON wire format keeps explicit null (not omitted keys).
+  const wire = JSON.parse(JSON.stringify(payload));
+  expect(Object.prototype.hasOwnProperty.call(wire, 'defaultBackground')).toBe(true);
+  expect(wire.defaultBackground).toBeNull();
+  expect(wire.defaultTitleTextBackground).toBeNull();
+});
+
+test('Clear deck default re-sends null to Present when a slide is on program', async () => {
+  (global.fetch as jest.Mock).mockResolvedValue({
+    ok: true,
+    status: 200,
+    headers: { get: () => 'image/png' },
+    blob: async () => new Blob([new Uint8Array([1, 2, 3])], { type: 'image/png' }),
+    json: async () => [],
+  } as any);
+
+  render(<DeckBuilder />);
+  act(() => {
+    fireEvent.click(screen.getByRole('button', { name: /new deck/i }));
+  });
+  await waitFor(() => screen.getByTestId('deck-bg'));
+
+  fireEvent.change(screen.getByTestId('deck-bg-url'), {
+    target: { value: 'https://example.com/whole.png' },
+  });
+  await act(async () => {
+    fireEvent.click(screen.getByTestId('deck-bg-url-apply'));
+  });
+  await waitFor(() => screen.getByTestId('deck-bg-preview'));
+
+  await act(async () => {
+    fireEvent.click(screen.getAllByRole('button', { name: /^send$/i })[0]);
+  });
+  await waitFor(() => expect(mockSend).toHaveBeenCalled());
+  mockSend.mockClear();
+
+  await act(async () => {
+    fireEvent.click(screen.getByTestId('deck-bg-clear'));
+  });
+  await waitFor(() => expect(mockSend).toHaveBeenCalled());
+  const payload = mockSend.mock.calls[mockSend.mock.calls.length - 1][0];
+  expect(payload.defaultBackground).toBeNull();
+});
+
 test('deck defaults UI sets whole-slide and title text-layer backgrounds with fill default', async () => {
   (global.fetch as jest.Mock).mockResolvedValue({
     ok: true,

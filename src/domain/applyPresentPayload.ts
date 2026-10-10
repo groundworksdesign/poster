@@ -25,12 +25,18 @@ export function applyPresentPayload(
     return;
   }
 
+  /**
+   * Iris LIVE-OLDDECK / LIVE-CLEAR: when the payload includes background keys
+   * (including explicit null), always reset Present state. Null/undefined clears.
+   */
   const applyDeckBackgroundDefaults = () => {
     if ('defaultBackground' in present) {
-      handlers.setDefaultBackground?.(present.defaultBackground);
+      const v = present.defaultBackground;
+      handlers.setDefaultBackground?.(v && v.image ? v : undefined);
     }
     if ('defaultTitleTextBackground' in present) {
-      handlers.setDefaultTitleTextBackground?.(present.defaultTitleTextBackground);
+      const v = present.defaultTitleTextBackground;
+      handlers.setDefaultTitleTextBackground?.(v && v.image ? v : undefined);
     }
   };
 

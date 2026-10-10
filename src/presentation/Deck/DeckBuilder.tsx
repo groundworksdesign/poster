@@ -297,14 +297,18 @@ export default function DeckBuilder() {
   };
 
   const handleSendClick = (props: any) => {
+    // Prefer an explicit deck snapshot (e.g. after Clear) so we don't send stale
+    // React-state defaults before setDeck flushes.
+    const sourceDeck: Deck | null = props.deck ?? deck;
     // Explicit program-out only. Do not coerce a missing `slide` to null —
     // message-only / clear-message sends must leave Present's slide alone.
     if (props.slide === null) {
       const payload = new PresentData({
         ...props,
         slide: null,
-        defaultBackground: deck?.defaultBackground,
-        defaultTitleTextBackground: deck?.defaultTitleTextBackground,
+        // Always send both keys (null when absent) so Present clears stale layers.
+        defaultBackground: sourceDeck?.defaultBackground ?? null,
+        defaultTitleTextBackground: sourceDeck?.defaultTitleTextBackground ?? null,
       });
       const target = sendTargetRef.current;
       void deckSessionRef.current?.send(payload, target);
@@ -317,14 +321,16 @@ export default function DeckBuilder() {
       if (!sl) return sl;
       // ensure slide has an id so we can track it for sync across edits/reorder
       (sl as any).id = (sl as any).id ?? genId();
-      const resolvedStyle = resolveSlideStyle(deck, sl);
+      const resolvedStyle = resolveSlideStyle(sourceDeck, sl);
       return { ...sl, style: resolvedStyle };
     };
     const payloadProps: Record<string, unknown> = {
       ...props,
-      defaultBackground: deck?.defaultBackground,
-      defaultTitleTextBackground: deck?.defaultTitleTextBackground,
+      // Always send both keys (null when absent) so Present clears stale layers.
+      defaultBackground: sourceDeck?.defaultBackground ?? null,
+      defaultTitleTextBackground: sourceDeck?.defaultTitleTextBackground ?? null,
     };
+    delete payloadProps.deck;
     if (props.slide) {
       payloadProps.slide = safeSlide(props.slide);
     } else {
@@ -757,8 +763,9 @@ export default function DeckBuilder() {
     const found = newDeck.slides.find((s: any) => (s as any).id === lastSentSlideId);
     if (found && found.type === SlideType.SONG) return;
     if (found) {
-      // re-send updated slide to presenter so presentation stays in sync (no status banner)
-      handleSendClick({ slide: found, useGreenScreen: newDeck.useGreenScreen });
+      // re-send updated slide to presenter so presentation stays in sync (no status banner).
+      // Pass deck snapshot so background clears/nulls are not lost to stale React state.
+      handleSendClick({ slide: found, useGreenScreen: newDeck.useGreenScreen, deck: newDeck });
     }
   };
 

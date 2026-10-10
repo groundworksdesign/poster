@@ -143,6 +143,74 @@ test('AC-009: green screen keeps whole-slide and title text-layer images', async
   expect(screen.getByTestId('present-title-text-bg')).toBeInTheDocument();
 });
 
+test('LIVE-OLDDECK: sending a deck with null defaults clears a prior background', async () => {
+  const { deck } = await mountPresent();
+  await act(async () => {
+    await deck.send({
+      slide: {
+        id: 'with-bg',
+        type: SlideType.GENERAL,
+        title: 'With BG',
+        style: { color: '#fff' },
+      },
+      defaultBackground: { image: TINY_PNG, fit: 'fill', dim: 0 },
+      defaultTitleTextBackground: { image: TINY_TITLE, fit: 'fit', dim: 0 },
+      useGreenScreen: false,
+    });
+  });
+  await waitFor(() => expect(screen.getByTestId('present-whole-bg')).toBeInTheDocument());
+
+  await act(async () => {
+    await deck.send({
+      slide: {
+        id: 'legacy',
+        type: SlideType.GENERAL,
+        title: 'Old Deck',
+        style: { backgroundColor: '#336699', color: '#fff' },
+      },
+      defaultBackground: null,
+      defaultTitleTextBackground: null,
+      useGreenScreen: false,
+    });
+  });
+  await waitFor(() => expect(screen.getByText('Old Deck')).toBeInTheDocument());
+  expect(screen.queryByTestId('present-whole-bg')).not.toBeInTheDocument();
+  expect(screen.queryByTestId('present-title-text-bg')).not.toBeInTheDocument();
+});
+
+test('LIVE-CLEAR: null defaults clear layers while the same slide stays on program', async () => {
+  const { deck } = await mountPresent();
+  const slide = {
+    id: 'keep',
+    type: SlideType.TITLE,
+    title: 'Stay',
+    subTitle: 'Here',
+    style: { color: '#fff' },
+  };
+  await act(async () => {
+    await deck.send({
+      slide,
+      defaultBackground: { image: TINY_PNG, fit: 'fill', dim: 0 },
+      defaultTitleTextBackground: { image: TINY_TITLE, fit: 'fit', dim: 0 },
+      useGreenScreen: false,
+    });
+  });
+  await waitFor(() => expect(screen.getByTestId('present-whole-bg')).toBeInTheDocument());
+  await waitFor(() => expect(screen.getByTestId('present-title-text-bg')).toBeInTheDocument());
+
+  await act(async () => {
+    await deck.send({
+      slide,
+      defaultBackground: null,
+      defaultTitleTextBackground: null,
+      useGreenScreen: false,
+    });
+  });
+  await waitFor(() => expect(screen.queryByTestId('present-whole-bg')).not.toBeInTheDocument());
+  expect(screen.queryByTestId('present-title-text-bg')).not.toBeInTheDocument();
+  expect(screen.getByText('Stay')).toBeInTheDocument();
+});
+
 test('AC-010: older deck with only style.backgroundImage keeps legacy look (no new layer)', async () => {
   const { deck } = await mountPresent();
   await act(async () => {

@@ -157,4 +157,87 @@ test.describe('epic-005 background images (remix)', () => {
     await expect(page.getByTestId('deck-bg-empty')).toBeVisible();
     await expect(page.getByTestId('deck-title-bg-empty')).toBeVisible();
   });
+
+  test('LIVE-OLDDECK: switching to an old deck with Present open clears prior background', async ({
+    browser,
+    baseURL,
+  }) => {
+    const base = baseURL || 'http://127.0.0.1:3000';
+    const context = await browser.newContext();
+    const deckPage = await context.newPage();
+    await deckPage.goto(`${base}/deck`, { waitUntil: 'domcontentloaded' });
+    await expect(deckPage.getByTestId('deck-session-ready')).toHaveAttribute('data-ready', 'true', {
+      timeout: 15000,
+    });
+
+    const [presentation] = await Promise.all([
+      context.waitForEvent('page'),
+      deckPage.getByTestId('open-present').click(),
+    ]);
+    await presentation.waitForLoadState('domcontentloaded');
+    await expect(presentation.getByTestId('present-ready')).toBeVisible({ timeout: 15000 });
+
+    await loadDeck(deckPage, deckWithBackgrounds);
+    await deckPage.locator('#slides').getByRole('button', { name: 'Send' }).first().click();
+    await expect(presentation.getByTestId('present-whole-bg')).toBeVisible({ timeout: 10000 });
+
+    const legacy = {
+      title: 'Legacy After BG',
+      date: '2026-01-01',
+      location: '',
+      useGreenScreen: false,
+      notes: '',
+      slideStyles: {},
+      slides: [
+        {
+          type: 'general',
+          title: 'Old After BG',
+          style: { backgroundColor: '#336699', color: '#fff' },
+        },
+      ],
+    };
+    await loadDeck(deckPage, legacy);
+    await deckPage.locator('#slides').getByRole('button', { name: 'Send' }).first().click();
+    await expect(presentation.getByText('Old After BG')).toBeVisible({ timeout: 10000 });
+    await expect(presentation.getByTestId('present-whole-bg')).toHaveCount(0);
+    await expect(presentation.getByTestId('present-title-text-bg')).toHaveCount(0);
+
+    await context.close();
+  });
+
+  test('LIVE-CLEAR: clearing deck default clears open Present background', async ({
+    browser,
+    baseURL,
+  }) => {
+    const base = baseURL || 'http://127.0.0.1:3000';
+    const context = await browser.newContext();
+    const deckPage = await context.newPage();
+    await deckPage.goto(`${base}/deck`, { waitUntil: 'domcontentloaded' });
+    await expect(deckPage.getByTestId('deck-session-ready')).toHaveAttribute('data-ready', 'true', {
+      timeout: 15000,
+    });
+
+    const [presentation] = await Promise.all([
+      context.waitForEvent('page'),
+      deckPage.getByTestId('open-present').click(),
+    ]);
+    await presentation.waitForLoadState('domcontentloaded');
+    await expect(presentation.getByTestId('present-ready')).toBeVisible({ timeout: 15000 });
+
+    await loadDeck(deckPage, deckWithBackgrounds);
+    await deckPage.locator('#slides').getByRole('button', { name: 'Send' }).first().click();
+    await expect(presentation.getByTestId('present-whole-bg')).toBeVisible({ timeout: 10000 });
+    await expect(presentation.getByTestId('present-title-text-bg')).toBeVisible();
+
+    await deckPage.getByTestId('deck-bg-clear').click();
+    await expect(presentation.getByTestId('present-whole-bg')).toHaveCount(0, { timeout: 10000 });
+
+    await deckPage.getByTestId('deck-title-bg-clear').click();
+    await expect(presentation.getByTestId('present-title-text-bg')).toHaveCount(0, {
+      timeout: 10000,
+    });
+
+    await context.close();
+  });
 });
+

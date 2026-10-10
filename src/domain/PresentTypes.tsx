@@ -106,10 +106,16 @@ export type PresentDataProps = {
   useGreenScreen?: boolean | null;
   // Arbitrary payload for partial updates (e.g., lyricsNavigation)
   data?: any;
-  /** Deck default whole-slide background (for Present resolve). */
-  defaultBackground?: BackgroundImageSpec;
-  /** Deck default title text-layer background (for Present resolve). */
-  defaultTitleTextBackground?: BackgroundImageSpec;
+  /**
+   * Deck default whole-slide background (for Present resolve).
+   * Explicit null clears a previously shown default (Iris LIVE-CLEAR / LIVE-OLDDECK).
+   */
+  defaultBackground?: BackgroundImageSpec | null;
+  /**
+   * Deck default title text-layer background (for Present resolve).
+   * Explicit null clears a previously shown default.
+   */
+  defaultTitleTextBackground?: BackgroundImageSpec | null;
 };
 
 export class PresentData {
@@ -117,17 +123,18 @@ export class PresentData {
   message?: string | null = null;
   useGreenScreen?: boolean | null = null;
   data?: any = null;
-  defaultBackground?: BackgroundImageSpec;
-  defaultTitleTextBackground?: BackgroundImageSpec;
+  defaultBackground?: BackgroundImageSpec | null;
+  defaultTitleTextBackground?: BackgroundImageSpec | null;
 
   constructor(props: PresentDataProps) {
     if (props.slide !== undefined) this.slide = props.slide;
     if (props.message !== undefined) this.message = props.message;
     if (props.useGreenScreen !== undefined) this.useGreenScreen = props.useGreenScreen;
     if (props.data !== undefined) this.data = props.data;
-    if (props.defaultBackground !== undefined) this.defaultBackground = props.defaultBackground;
-    if (props.defaultTitleTextBackground !== undefined) {
-      this.defaultTitleTextBackground = props.defaultTitleTextBackground;
+    // Always assign when the key is present (including null) so JSON keeps the key.
+    if ('defaultBackground' in props) this.defaultBackground = props.defaultBackground ?? null;
+    if ('defaultTitleTextBackground' in props) {
+      this.defaultTitleTextBackground = props.defaultTitleTextBackground ?? null;
     }
   }
 }
