@@ -2,8 +2,8 @@ import React, { useLayoutEffect, useRef, useState } from 'react';
 import type { ProgramThumbnailState } from '../../application/SessionTransport';
 import { VerticalAlign } from '../../domain/PresentTypes';
 import { SHOW_IMAGE_PICTURE_IN_GREEN_SCREEN } from '../../domain/greenScreenImagePicture';
-import { presentFramePreviewScale } from '../../domain/presentFrame';
 import BackgroundImageLayer from '../shared/BackgroundImageLayer';
+import PresentScaledStage from '../shared/PresentScaledStage';
 
 export { SHOW_IMAGE_PICTURE_IN_GREEN_SCREEN };
 
@@ -57,12 +57,12 @@ export function ProgramThumbnailPanel({ program }: ProgramThumbnailPanelProps) {
   const hasTitleBlock = !!(program?.title || program?.subTitle);
   const hasLines = !!(program?.lines && program.lines.length > 0);
   const isTitle = program?.slideType === 'title';
-  const previewRef = useRef<HTMLDivElement | null>(null);
-  // CSS max-width is 32rem (~512px); measure the real box so the Present frame fills it.
+  const shellRef = useRef<HTMLDivElement | null>(null);
+  // CSS max-width is 32rem (~512px); measure the shell so the Present stage fills it.
   const [previewWidth, setPreviewWidth] = useState(512);
 
   useLayoutEffect(() => {
-    const el = previewRef.current;
+    const el = shellRef.current;
     if (!el || typeof ResizeObserver === 'undefined') return;
     const measure = () => {
       const w = Math.round(el.getBoundingClientRect().width);
@@ -74,13 +74,46 @@ export function ProgramThumbnailPanel({ program }: ProgramThumbnailPanelProps) {
     return () => ro.disconnect();
   }, [hasProgram, program?.slideType, program?.wholeBackground?.image]);
 
-  const frameScale = presentFramePreviewScale(previewWidth, isTitle);
   const showImagePicture =
     !!program?.wholeBackground?.image &&
     program.slideType === 'image' &&
     !!(program.slideFile || program.slideStyle?.backgroundImage) &&
     (!isGreenScreen || SHOW_IMAGE_PICTURE_IN_GREEN_SCREEN);
   const imagePictureSrc = program?.slideFile || program?.slideStyle?.backgroundImage;
+
+  const stageStyle: React.CSSProperties | undefined = program
+    ? {
+        display: 'flex',
+        flexDirection: 'column',
+        padding: lowerThird ? 0 : undefined,
+        backgroundColor: isGreenScreen
+          ? '#00b140'
+          : program.backgroundColor || style?.backgroundColor || '#111',
+        color: program.color || style?.color || '#fff',
+        fontFamily: style?.fontFamily,
+        fontSize: style?.fontSize,
+        fontWeight: style?.fontWeight,
+        textAlign: style?.horizontalAlign,
+        alignItems: lowerThird
+          ? 'stretch'
+          : style?.horizontalAlign === 'left'
+            ? 'flex-start'
+            : style?.horizontalAlign === 'right'
+              ? 'flex-end'
+              : 'center',
+        justifyContent: previewJustify(program),
+        // Legacy CSS backgrounds stay off in green screen (pre-epic-005 look).
+        backgroundImage:
+          !program.wholeBackground?.image && !isGreenScreen && program.slideFile
+            ? `url(${program.slideFile})`
+            : !program.wholeBackground?.image && !isGreenScreen && style?.backgroundImage
+              ? `url(${style.backgroundImage})`
+              : undefined,
+        backgroundSize: style?.backgroundSize ?? 'cover',
+        backgroundPosition: style?.backgroundPosition ?? 'center',
+        overflow: 'hidden',
+      }
+    : undefined;
 
   return (
     <div
@@ -89,63 +122,29 @@ export function ProgramThumbnailPanel({ program }: ProgramThumbnailPanelProps) {
       aria-label="Program thumbnail"
     >
       <h3>On program</h3>
-      {hasProgram ? (
+      {hasProgram && program ? (
         <div
-          ref={previewRef}
-          data-testid="program-thumbnail-preview"
-          data-preview-width={previewWidth}
-          className="deck-program-thumbnail-preview"
-          style={{
-            position: 'relative',
-            padding: lowerThird ? 0 : undefined,
-            backgroundColor: isGreenScreen
-              ? '#00b140'
-              : program.backgroundColor || style?.backgroundColor || '#111',
-            color: program.color || style?.color || '#fff',
-            fontFamily: style?.fontFamily,
-            fontSize: style?.fontSize,
-            fontWeight: style?.fontWeight,
-            textAlign: style?.horizontalAlign,
-            alignItems: lowerThird
-              ? 'stretch'
-              : style?.horizontalAlign === 'left'
-                ? 'flex-start'
-                : style?.horizontalAlign === 'right'
-                  ? 'flex-end'
-                  : 'center',
-            justifyContent: previewJustify(program),
-            // Legacy CSS backgrounds stay off in green screen (pre-epic-005 look).
-            backgroundImage:
-              !program.wholeBackground?.image && !isGreenScreen && program.slideFile
-                ? `url(${program.slideFile})`
-                : !program.wholeBackground?.image && !isGreenScreen && style?.backgroundImage
-                  ? `url(${style.backgroundImage})`
-                  : undefined,
-            backgroundSize: style?.backgroundSize ?? 'cover',
-            backgroundPosition: style?.backgroundPosition ?? 'center',
-            overflow: 'hidden',
-          }}
+          ref={shellRef}
+          data-testid="program-thumbnail-shell"
+          className="deck-program-thumbnail-shell"
         >
-          {program.wholeBackground?.image ? (
-            <div
-              aria-hidden
-              style={{
-                position: 'absolute',
-                inset: 0,
-                overflow: 'hidden',
-                zIndex: 0,
-                pointerEvents: 'none',
-              }}
-            >
+          <PresentScaledStage
+            testId="program-thumbnail-preview"
+            stageTestId="program-thumbnail-present-frame"
+            previewWidth={previewWidth}
+            isTitleSlide={isTitle}
+            className="deck-program-thumbnail-preview"
+            stageStyle={stageStyle}
+          >
+            {program.wholeBackground?.image ? (
               <div
-                data-testid="program-thumbnail-present-frame"
-                data-frame-scale={frameScale.scale}
+                aria-hidden
                 style={{
-                  width: frameScale.frame.width,
-                  height: frameScale.frame.height,
-                  transform: `scale(${frameScale.scale})`,
-                  transformOrigin: 'top left',
-                  position: 'relative',
+                  position: 'absolute',
+                  inset: 0,
+                  overflow: 'hidden',
+                  zIndex: 0,
+                  pointerEvents: 'none',
                 }}
               >
                 <BackgroundImageLayer
@@ -170,111 +169,111 @@ export function ProgramThumbnailPanel({ program }: ProgramThumbnailPanelProps) {
                   />
                 ) : null}
               </div>
-            </div>
-          ) : null}
-          {program.message ? (
-            <div
-              data-testid="program-thumbnail-message"
-              className="deck-program-thumbnail-message"
-              style={{ position: 'relative', zIndex: 2 }}
-            >
-              {program.message}
-            </div>
-          ) : null}
+            ) : null}
+            {program.message ? (
+              <div
+                data-testid="program-thumbnail-message"
+                className="deck-program-thumbnail-message"
+                style={{ position: 'relative', zIndex: 2 }}
+              >
+                {program.message}
+              </div>
+            ) : null}
 
-          {lowerThird && (hasTitleBlock || hasLines) ? (
-            <div
-              data-testid="program-thumbnail-lower-third"
-              style={{ ...lowerThird, position: 'relative', zIndex: 2, overflow: 'hidden' }}
-            >
-              {program.titleTextBackground?.image ? (
-                <BackgroundImageLayer
-                  resolved={program.titleTextBackground}
-                  testId="program-thumbnail-title-text-bg"
-                  zIndex={0}
-                />
-              ) : null}
-              {program.title ? (
-                <div
-                  data-testid="program-thumbnail-title"
-                  style={{
-                    position: 'relative',
-                    zIndex: 2,
-                    fontSize: program.titleFontSize ?? style?.fontSize,
-                  }}
-                >
-                  {program.title}
-                </div>
-              ) : null}
-              {program.subTitle ? (
-                <div
-                  data-testid="program-thumbnail-subtitle"
-                  style={{
-                    position: 'relative',
-                    zIndex: 2,
-                    fontSize: program.subTitleFontSize ?? style?.fontSize,
-                  }}
-                >
-                  {program.subTitle}
-                </div>
-              ) : null}
-              {hasLines ? (
-                <div data-testid="program-thumbnail-lines" style={{ position: 'relative', zIndex: 2 }}>
-                  {program.lines!.map((line, idx) => (
-                    <div key={idx}>{line}</div>
-                  ))}
-                </div>
-              ) : null}
-            </div>
-          ) : (
-            <div style={{ position: 'relative', zIndex: 2, width: '100%' }}>
-              {program.titleTextBackground?.image ? (
-                <BackgroundImageLayer
-                  resolved={program.titleTextBackground}
-                  testId="program-thumbnail-title-text-bg"
-                  zIndex={0}
-                />
-              ) : null}
-              {program.title ? (
-                <div
-                  data-testid="program-thumbnail-title"
-                  style={{
-                    position: 'relative',
-                    zIndex: 2,
-                    fontSize: program.titleFontSize ?? style?.fontSize,
-                  }}
-                >
-                  {program.title}
-                </div>
-              ) : null}
-              {program.subTitle ? (
-                <div
-                  data-testid="program-thumbnail-subtitle"
-                  style={{
-                    position: 'relative',
-                    zIndex: 2,
-                    fontSize: program.subTitleFontSize ?? style?.fontSize,
-                  }}
-                >
-                  {program.subTitle}
-                </div>
-              ) : null}
-              {hasLines ? (
-                <div data-testid="program-thumbnail-lines" style={{ position: 'relative', zIndex: 2 }}>
-                  {program.lines!.map((line, idx) => (
-                    <div key={idx}>{line}</div>
-                  ))}
-                </div>
-              ) : null}
-            </div>
-          )}
+            {lowerThird && (hasTitleBlock || hasLines) ? (
+              <div
+                data-testid="program-thumbnail-lower-third"
+                style={{ ...lowerThird, position: 'relative', zIndex: 2, overflow: 'hidden' }}
+              >
+                {program.titleTextBackground?.image ? (
+                  <BackgroundImageLayer
+                    resolved={program.titleTextBackground}
+                    testId="program-thumbnail-title-text-bg"
+                    zIndex={0}
+                  />
+                ) : null}
+                {program.title ? (
+                  <div
+                    data-testid="program-thumbnail-title"
+                    style={{
+                      position: 'relative',
+                      zIndex: 2,
+                      fontSize: program.titleFontSize ?? style?.fontSize,
+                    }}
+                  >
+                    {program.title}
+                  </div>
+                ) : null}
+                {program.subTitle ? (
+                  <div
+                    data-testid="program-thumbnail-subtitle"
+                    style={{
+                      position: 'relative',
+                      zIndex: 2,
+                      fontSize: program.subTitleFontSize ?? style?.fontSize,
+                    }}
+                  >
+                    {program.subTitle}
+                  </div>
+                ) : null}
+                {hasLines ? (
+                  <div data-testid="program-thumbnail-lines" style={{ position: 'relative', zIndex: 2 }}>
+                    {program.lines!.map((line, idx) => (
+                      <div key={idx}>{line}</div>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            ) : (
+              <div style={{ position: 'relative', zIndex: 2, width: '100%' }}>
+                {program.titleTextBackground?.image ? (
+                  <BackgroundImageLayer
+                    resolved={program.titleTextBackground}
+                    testId="program-thumbnail-title-text-bg"
+                    zIndex={0}
+                  />
+                ) : null}
+                {program.title ? (
+                  <div
+                    data-testid="program-thumbnail-title"
+                    style={{
+                      position: 'relative',
+                      zIndex: 2,
+                      fontSize: program.titleFontSize ?? style?.fontSize,
+                    }}
+                  >
+                    {program.title}
+                  </div>
+                ) : null}
+                {program.subTitle ? (
+                  <div
+                    data-testid="program-thumbnail-subtitle"
+                    style={{
+                      position: 'relative',
+                      zIndex: 2,
+                      fontSize: program.subTitleFontSize ?? style?.fontSize,
+                    }}
+                  >
+                    {program.subTitle}
+                  </div>
+                ) : null}
+                {hasLines ? (
+                  <div data-testid="program-thumbnail-lines" style={{ position: 'relative', zIndex: 2 }}>
+                    {program.lines!.map((line, idx) => (
+                      <div key={idx}>{line}</div>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            )}
 
-          {!program.title &&
-          !program.subTitle &&
-          !program.message &&
-          !hasLines ? (
-            <div data-testid="program-thumbnail-empty-slide">Slide on program</div>
-          ) : null}
+            {!program.title &&
+            !program.subTitle &&
+            !program.message &&
+            !hasLines ? (
+              <div data-testid="program-thumbnail-empty-slide">Slide on program</div>
+            ) : null}
+          </PresentScaledStage>
         </div>
       ) : (
         <p data-testid="program-thumbnail-empty">Blank program output.</p>

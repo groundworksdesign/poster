@@ -3,12 +3,12 @@
   "branch": "cursor/epic-005-background-images",
   "baseBranch": "main",
   "status": "complete",
-  "loop": 5,
+  "loop": 6,
   "persona": "qa",
   "completeEpic": true,
   "prUrl": "https://github.com/groundworksdesign/poster/pull/28",
   "canonicalStatusFile": "ralph/task_status.json",
-  "maxLoops": 8,
+  "maxLoops": 11,
   "sourceArtifacts": [
     "ralph/specs/20261008-feature-brief-background-images.md",
     "ralph/specs/20261008-epic-005-background-images.plan.md",
@@ -17,12 +17,14 @@
   ],
   "codebaseFindings": {
     "irisGate": "Iris2 QA: fetch-image body+SSRF, thumbnail measured scale, Present asset refs; server binds 127.0.0.1",
-    "serverBind": "127.0.0.1 by default (HOST override). LAN Present is future work; Electron already loopback-only."
+    "serverBind": "127.0.0.1 by default (HOST override). LAN Present is future work; Electron already loopback-only.",
+    "previewProportions": "PresentScaledStage: logical Present size + CSS scale for thumbnail, bg picker, slide previews; ratio tests green."
   },
   "requirements": [
     { "id": "REQ-008", "title": "URL import via server proxy (body + SSRF)", "todoIds": ["fix-fetch-image-proxy"], "status": "done" },
     { "id": "REQ-006", "title": "Program thumbnail Present-frame scale", "todoIds": ["fix-thumbnail-scale"], "status": "done" },
-    { "id": "REQ-001", "title": "Large images reach browser Present", "todoIds": ["fix-present-asset-refs"], "status": "done" }
+    { "id": "REQ-001", "title": "Large images reach browser Present", "todoIds": ["fix-present-asset-refs"], "status": "done" },
+    { "id": "REQ-009", "title": "Proportional slide previews (scaled Present stage)", "todoIds": ["fix-preview-proportions"], "status": "done" }
   ],
   "todos": [
     {
@@ -65,11 +67,27 @@
         "Uses asset reference path; dedupe table still used"
       ],
       "notes": ["QA: remix e2e AC-001 large image 120KB green."]
+    },
+    {
+      "id": "fix-preview-proportions",
+      "content": "Render every preview (slide, program thumbnail, bg picker) at Present logical size on a fixed stage; CSS-scale whole stage; shared PresentScaledStage; text-to-slide ratio tests for title/song/general.",
+      "requirementIds": ["REQ-009"],
+      "status": "done",
+      "passes": true,
+      "acceptanceCriteria": [
+        "Shared PresentScaledStage used by slide/program/bg previews",
+        "Text and layout keep Present proportions via whole-stage CSS scale",
+        "Ratio tests: title, song, general previews match Present within small tolerance",
+        "Prior greens stay green (GS, backgrounds, Iris2 fixes)"
+      ],
+      "notes": [
+        "QA: PresentScaledStage + previewProportions title/song/general within 0.02; ProgramThumbnailPanel text inside scaled stage; bg picker via PresentFramePreview; 90 related unit tests green."
+      ]
     }
   ],
   "selected": {
-    "id": "fix-present-asset-refs",
-    "reason": "Final Iris2 todo verified; epic complete."
+    "id": "fix-preview-proportions",
+    "reason": "Roy proportional previews verified; epic complete (maxLoops 11)."
   },
   "qaReport": "ralph/qa-report.md"
 }

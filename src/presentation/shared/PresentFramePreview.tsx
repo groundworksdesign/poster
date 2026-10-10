@@ -5,8 +5,8 @@ import {
   normalizeBackgroundFit,
   type ResolvedBackgroundImage,
 } from '../../domain/backgroundImage';
-import { presentFramePreviewScale } from '../../domain/presentFrame';
 import BackgroundImageLayer from './BackgroundImageLayer';
+import PresentScaledStage from './PresentScaledStage';
 
 export type PresentFramePreviewProps = {
   image?: string;
@@ -35,7 +35,6 @@ export default function PresentFramePreview({
   pictureSrc,
   showPicture = false,
 }: PresentFramePreviewProps) {
-  const { frame, scale, previewHeight } = presentFramePreviewScale(previewWidth, isTitleSlide);
   const resolved: ResolvedBackgroundImage = {
     image: image && image.trim() ? image.trim() : undefined,
     fit: normalizeBackgroundFit(fit),
@@ -44,47 +43,31 @@ export default function PresentFramePreview({
   };
 
   return (
-    <div
-      data-testid={testId}
-      data-present-frame={isTitleSlide ? 'title' : 'non-title'}
-      title="Embedded background preview"
-      style={{
-        width: previewWidth,
-        height: previewHeight,
-        overflow: 'hidden',
-        position: 'relative',
-        backgroundColor: '#111',
-      }}
+    <PresentScaledStage
+      testId={testId}
+      stageTestId={`${testId}-frame`}
+      previewWidth={previewWidth}
+      isTitleSlide={isTitleSlide}
+      style={{ backgroundColor: '#111' }}
+      stageStyle={{ backgroundColor: '#111' }}
     >
-      <div
-        data-testid={`${testId}-frame`}
-        style={{
-          width: frame.width,
-          height: frame.height,
-          transform: `scale(${scale})`,
-          transformOrigin: 'top left',
-          position: 'relative',
-          backgroundColor: '#111',
-        }}
-      >
-        <BackgroundImageLayer resolved={resolved} testId={`${testId}-layer`} zIndex={0} />
-        {showPicture && pictureSrc ? (
-          <div
-            data-testid={`${testId}-picture`}
-            aria-hidden
-            style={{
-              position: 'absolute',
-              inset: 0,
-              zIndex: 1,
-              backgroundImage: `url(${pictureSrc})`,
-              backgroundSize: 'contain',
-              backgroundRepeat: 'no-repeat',
-              backgroundPosition: 'center',
-              pointerEvents: 'none',
-            }}
-          />
-        ) : null}
-      </div>
-    </div>
+      <BackgroundImageLayer resolved={resolved} testId={`${testId}-layer`} zIndex={0} />
+      {showPicture && pictureSrc ? (
+        <div
+          data-testid={`${testId}-picture`}
+          aria-hidden
+          style={{
+            position: 'absolute',
+            inset: 0,
+            zIndex: 1,
+            backgroundImage: `url(${pictureSrc})`,
+            backgroundSize: 'contain',
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'center',
+            pointerEvents: 'none',
+          }}
+        />
+      ) : null}
+    </PresentScaledStage>
   );
 }
