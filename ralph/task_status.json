@@ -2,10 +2,10 @@
   "epic": "epic-005",
   "branch": "cursor/epic-005-background-images",
   "baseBranch": "main",
-  "status": "in_progress",
-  "loop": 20,
-  "persona": "dev",
-  "completeEpic": false,
+  "status": "completed",
+  "loop": 21,
+  "persona": "qa",
+  "completeEpic": true,
   "prUrl": null,
   "canonicalStatusFile": "ralph/task_status.json",
   "sourceArtifacts": [
@@ -124,7 +124,7 @@
         "data-model",
         "tests-background-images"
       ],
-      "status": "pending"
+      "status": "done"
     }
   ],
   "todos": [
@@ -266,20 +266,19 @@
         "REQ-010",
         "REQ-011"
       ],
-      "status": "pending",
-      "passes": false,
+      "status": "done",
+      "passes": true,
       "acceptanceCriteria": [
         "AC-001 through AC-012 covered by unit and e2e tests",
         "Save/reload round-trip covered in Remix server and Electron",
         "All existing tests stay green"
       ],
-      "notes": []
+      "notes": [
+        "QA loop 21: 462 unit tests green; remix-background-images 3/3; electron-background-images 1/1 under xvfb; stagedSongSlide byte-identical."
+      ]
     }
   ],
-  "selected": {
-    "id": "tests-background-images",
-    "reason": "All feature todos passed QA. Finish AC-001\u2013012 coverage with unit + e2e, including Remix and Electron save/reload."
-  },
-  "qaReport": null,
+  "selected": null,
+  "qaReport": "tests-background-images verified; epic complete",
   "maxLoops": 24
 }
