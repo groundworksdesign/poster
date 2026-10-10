@@ -72,7 +72,7 @@ No dedicated `pnpm run lint` script. ESLint is configured via `react-scripts` (`
 
 ## Loop rules
 
-- Work on the branch recorded in `ralph/task_status.json` (`cursor/epic-004-song-library`).
+- Work on the branch recorded in `ralph/task_status.json` (`cursor/epic-005-background-images`).
 - Canonical status file is `ralph/task_status.json` (do not revive `ralph/task-status.json`).
 - Read `ralph/epic.md`, `ralph/task_status.json`, and binding specs under `ralph/specs/` before each loop.
 - Planning loop: search the codebase before assuming something is unimplemented; set `selected` to the single most important remaining task; no product code.
@@ -85,9 +85,9 @@ No dedicated `pnpm run lint` script. ESLint is configured via `react-scripts` (`
 - Do not create a parallel `.ralph/` tree. `ralph/` is the loop harness for this epic.
 - Keep run logs/transcripts out of commits.
 
-## Epic 004 focus
+## Epic 005 focus
 
-Local song library that ships empty: hand add, one-screen file import (gathered JSON + Poster song XML/JSON), search/pick onto a new linked slide, library manage page, linked edit/delete with deck-update confirms. Present two-line staging stays unchanged. Do not bundle church books or replace the open deck on import.
+Whole-slide background image on every slide type plus title text-layer image, each with one deck default, per-slide override, Use deck default reset, fill/fit/tile (fill default), dimming toward black, and file/URL import copied into the deck. Green screen keeps both images. Older decks unchanged. Present song staging and title font-size behaviour stay unchanged.
 
 ## Key paths
 

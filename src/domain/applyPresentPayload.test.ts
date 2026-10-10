@@ -8,6 +8,8 @@ function makeHandlers() {
     setUseGreenScreen: jest.fn(),
     setSongData: jest.fn(),
     setSegmentIndex: jest.fn(),
+    setDefaultBackground: jest.fn(),
+    setDefaultTitleTextBackground: jest.fn(),
   };
 }
 
@@ -75,4 +77,47 @@ describe('applyPresentPayload', () => {
     expect(handlers.setUseGreenScreen).toHaveBeenCalledWith(true);
     expect(handlers.setSongData).toHaveBeenCalledWith(null);
   });
+
+  test('applies deck background defaults on slide send', () => {
+    const handlers = makeHandlers();
+    const slide = {
+      type: SlideType.GENERAL,
+      title: 'G',
+      style: {},
+    };
+    const defaultBackground = { image: 'data:image/png;base64,x', fit: 'fill' as const, dim: 0.2 };
+    const defaultTitleTextBackground = { image: 'data:image/png;base64,y', fit: 'fit' as const };
+
+    applyPresentPayload(
+      { slide, defaultBackground, defaultTitleTextBackground, useGreenScreen: false },
+      handlers,
+    );
+
+    expect(handlers.setDefaultBackground).toHaveBeenCalledWith(defaultBackground);
+    expect(handlers.setDefaultTitleTextBackground).toHaveBeenCalledWith(defaultTitleTextBackground);
+  });
+
+  test('explicit null background defaults clear Present state (LIVE-CLEAR / LIVE-OLDDECK)', () => {
+    const handlers = makeHandlers();
+    const slide = {
+      type: SlideType.GENERAL,
+      title: 'Legacy',
+      style: { backgroundColor: '#336699' },
+    };
+
+    applyPresentPayload(
+      {
+        slide,
+        defaultBackground: null,
+        defaultTitleTextBackground: null,
+        useGreenScreen: false,
+      },
+      handlers,
+    );
+
+    expect(handlers.setDefaultBackground).toHaveBeenCalledWith(undefined);
+    expect(handlers.setDefaultTitleTextBackground).toHaveBeenCalledWith(undefined);
+  });
 });
+
+

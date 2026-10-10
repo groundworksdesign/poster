@@ -1,0 +1,284 @@
+{
+  "epic": "epic-005",
+  "branch": "cursor/epic-005-background-images",
+  "baseBranch": "main",
+  "status": "completed",
+  "loop": 23,
+  "persona": "release",
+  "completeEpic": true,
+  "prUrl": "https://github.com/groundworksdesign/poster/pull/28",
+  "canonicalStatusFile": "ralph/task_status.json",
+  "sourceArtifacts": [
+    "ralph/specs/20261008-feature-brief-background-images.md",
+    "ralph/specs/20261008-epic-005-background-images.plan.md",
+    "ralph/epic.md"
+  ],
+  "codebaseFindings": {
+    "presentTypes": "SlideCSS has backgroundImage/Size/Position/Color only. Deck has slideStyles per slide type; no deck-level whole-slide or title text-layer image fields. Slide has file for media; no background override/fit/dim fields.",
+    "resolveSlideStyle": "Merges GENERAL -> type -> slide.style shallowly; no background-image resolution helper yet.",
+    "presentRender": "Present.tsx computeContainerStyle uses style.backgroundImage (image slides: slide.file ?? style.backgroundImage) and hides backgrounds when useGreenScreen. Title text sits on solid backgroundColor / green-screen band.",
+    "deckBuilder": "Deck settings expose backgroundColor/color/font; image slides have Image URL/file. No deck default background image UI, no fit/dim, no Use deck default.",
+    "imageEmbed": "No whole-image embed helper for backgrounds; FileReader used for song/deck JSON import only. Images are not copied into deck storage as data URLs for backgrounds.",
+    "greenScreen": "useGreenScreen currently suppresses backgroundImage and uses transparent / colored bands \u2014 must change later to keep both images (REQ-010).",
+    "songStaging": "stagedSongSlide.ts and Present song staging must stay byte-identical or staging logic untouched; Present may gain background layers without changing staging.",
+    "schemaVersion": "CURRENT_SCHEMA_VERSION / schema.ts pattern exists; older decks omit new fields and must load unchanged (REQ-011).",
+    "presentBackgroundRender": "Present.tsx gained whole-slide + title text-layer BackgroundImageLayer rendering. stagedSongSlide.ts remains byte-identical to main. Song shell only adds a background layer under existing staging content; staging logic untouched."
+  },
+  "requirements": [
+    {
+      "id": "REQ-001",
+      "title": "Whole-slide background on every slide type",
+      "todoIds": [
+        "data-model",
+        "slide-override-ui",
+        "render-editor-present"
+      ],
+      "status": "done"
+    },
+    {
+      "id": "REQ-002",
+      "title": "Title text-layer background image",
+      "todoIds": [
+        "data-model",
+        "slide-override-ui",
+        "render-editor-present"
+      ],
+      "status": "done"
+    },
+    {
+      "id": "REQ-003",
+      "title": "Deck defaults for both images",
+      "todoIds": [
+        "data-model",
+        "deck-defaults-ui"
+      ],
+      "status": "done"
+    },
+    {
+      "id": "REQ-004",
+      "title": "Per-slide override and Use deck default reset",
+      "todoIds": [
+        "data-model",
+        "slide-override-ui"
+      ],
+      "status": "done"
+    },
+    {
+      "id": "REQ-005",
+      "title": "Image slide picture fitted on top of background",
+      "todoIds": [
+        "render-editor-present"
+      ],
+      "status": "done"
+    },
+    {
+      "id": "REQ-006",
+      "title": "Fill / fit / tile; fill default",
+      "todoIds": [
+        "data-model",
+        "deck-defaults-ui",
+        "slide-override-ui",
+        "render-editor-present"
+      ],
+      "status": "done"
+    },
+    {
+      "id": "REQ-007",
+      "title": "Dimming toward black",
+      "todoIds": [
+        "data-model",
+        "deck-defaults-ui",
+        "slide-override-ui",
+        "render-editor-present"
+      ],
+      "status": "done"
+    },
+    {
+      "id": "REQ-008",
+      "title": "Local file or URL image source",
+      "todoIds": [
+        "image-import-embed"
+      ],
+      "status": "done"
+    },
+    {
+      "id": "REQ-009",
+      "title": "Images copied into the deck (self-contained)",
+      "todoIds": [
+        "image-import-embed"
+      ],
+      "status": "done"
+    },
+    {
+      "id": "REQ-010",
+      "title": "Green screen keeps both images",
+      "todoIds": [
+        "green-screen"
+      ],
+      "status": "done"
+    },
+    {
+      "id": "REQ-011",
+      "title": "Older decks open unchanged",
+      "todoIds": [
+        "data-model",
+        "tests-background-images"
+      ],
+      "status": "done"
+    }
+  ],
+  "todos": [
+    {
+      "id": "data-model",
+      "content": "Extend the deck and slide data so the deck holds one default whole-slide image and one default title text-layer image, each with fit (fill, fit, or tile, default fill) and dim level, and each slide can override either or inherit the deck default. Decks saved before this change load with no background images and look the same (REQ-001\u2013004, 006, 007, 011).",
+      "requirementIds": [
+        "REQ-001",
+        "REQ-002",
+        "REQ-003",
+        "REQ-004",
+        "REQ-006",
+        "REQ-007",
+        "REQ-011"
+      ],
+      "status": "done",
+      "passes": true,
+      "acceptanceCriteria": [
+        "AC-003: Deck default applies; override and Use deck default reset work at data layer",
+        "AC-005: New images default to fill",
+        "AC-010: Older decks without these fields load with the same look",
+        "AC-011: Single deck default for each image across all slide types"
+      ],
+      "notes": [
+        "QA loop 3: unit tests green; Present/stagedSongSlide unchanged vs main; old decks resolve to no image; fill default; single deck default across types; override/reset helpers verified."
+      ]
+    },
+    {
+      "id": "image-import-embed",
+      "content": "Add an image picker that accepts a local file or a web URL and copies the image into the deck so it still shows offline, after the source is deleted, and on another computer. A failed URL download shows an error and leaves the field empty (REQ-008, 009).",
+      "requirementIds": [
+        "REQ-008",
+        "REQ-009"
+      ],
+      "status": "done",
+      "passes": true,
+      "acceptanceCriteria": [
+        "AC-007: File and URL images are embedded and survive source deletion / offline / moved deck",
+        "AC-008: Failed URL shows error and leaves the field empty"
+      ],
+      "notes": [
+        "QA loop 6: embedImage + BackgroundImagePicker tests green; file/URL embed to data URL; failed URL error + empty field; Use deck default hook present."
+      ]
+    },
+    {
+      "id": "deck-defaults-ui",
+      "content": "In DeckBuilder deck settings, add the default whole-slide background image and default title text-layer image, each with image picker, fill/fit/tile choice, dimming slider, and clear (REQ-003, 006, 007).",
+      "requirementIds": [
+        "REQ-003",
+        "REQ-006",
+        "REQ-007"
+      ],
+      "status": "done",
+      "passes": true,
+      "acceptanceCriteria": [
+        "AC-003: Setting a deck default applies it to slides without override",
+        "AC-005: Fill/fit/tile controls present; fill default",
+        "AC-006: Dimming slider present for both defaults",
+        "AC-011: One default per image for the whole deck"
+      ],
+      "notes": [
+        "QA loop 9: DeckBuilder unit test sets both deck defaults with fill and dim; pickers visible under deck settings."
+      ]
+    },
+    {
+      "id": "slide-override-ui",
+      "content": "In each slide's editor, add an override for the whole-slide background (all slide types) and, on title slides, for the text-layer image. Each has image picker, fill/fit/tile, dimming slider, and Use deck default to reset (REQ-001, 002, 004, 006, 007).",
+      "requirementIds": [
+        "REQ-001",
+        "REQ-002",
+        "REQ-004",
+        "REQ-006",
+        "REQ-007"
+      ],
+      "status": "done",
+      "passes": true,
+      "acceptanceCriteria": [
+        "AC-001: Override UI available for all slide types for whole-slide background",
+        "AC-002: Title slides have text-layer image override UI",
+        "AC-003: Use deck default resets override to deck image",
+        "AC-005 / AC-006: Fit and dim controls on overrides"
+      ],
+      "notes": [
+        "QA loop 12: override + Use deck default unit test green; title text-layer picker only on title slides."
+      ]
+    },
+    {
+      "id": "render-editor-present",
+      "content": "Render in both the editor preview and Present: whole-slide layer with fit and dimming toward black under all slide content; on image slides the slide's picture fitted on top with the background visible around it; on title slides the text-layer image filling the title and subtitle area with its own fit and dimming under the text (REQ-001, 002, 005\u2013007).",
+      "requirementIds": [
+        "REQ-001",
+        "REQ-002",
+        "REQ-005",
+        "REQ-006",
+        "REQ-007"
+      ],
+      "status": "done",
+      "passes": true,
+      "acceptanceCriteria": [
+        "AC-001: Background shown in Present for each slide type",
+        "AC-002: Title text-layer image separate from whole-slide",
+        "AC-004: Image slide picture fitted on top; background visible around it",
+        "AC-005: Fill/fit/tile render as named",
+        "AC-006: Dimming darkens toward black in editor and Present",
+        "AC-012: Song staging and title font-size behavior unchanged"
+      ],
+      "notes": [
+        "QA loop 15: Present.background tests AC-001/002/004/005/006/010; stagedSongSlide byte-identical; fontSizePrecedence green."
+      ]
+    },
+    {
+      "id": "green-screen",
+      "content": "Keep both background images visible in green screen mode (REQ-010).",
+      "requirementIds": [
+        "REQ-010"
+      ],
+      "status": "done",
+      "passes": true,
+      "acceptanceCriteria": [
+        "AC-009: Green screen mode still shows both whole-slide and title text-layer images"
+      ],
+      "notes": [
+        "QA loop 18: AC-009 Present + thumbnail tests green."
+      ]
+    },
+    {
+      "id": "tests-background-images",
+      "content": "Add tests for AC-001 through AC-012: background shown on each slide type, title text-layer image separate from whole-slide image, deck default vs override vs reset, image slide picture on top, fill/fit/tile rendering and fill default, dimming darkens, file and URL images survive source deletion and offline and a moved deck, failed URL shows error with empty field, green screen keeps both, and an existing deck opens unchanged. Include save/reload round-trip in Remix and Electron.",
+      "requirementIds": [
+        "REQ-001",
+        "REQ-002",
+        "REQ-003",
+        "REQ-004",
+        "REQ-005",
+        "REQ-006",
+        "REQ-007",
+        "REQ-008",
+        "REQ-009",
+        "REQ-010",
+        "REQ-011"
+      ],
+      "status": "done",
+      "passes": true,
+      "acceptanceCriteria": [
+        "AC-001 through AC-012 covered by unit and e2e tests",
+        "Save/reload round-trip covered in Remix server and Electron",
+        "All existing tests stay green"
+      ],
+      "notes": [
+        "QA loop 21: 462 unit tests green; remix-background-images 3/3; electron-background-images 1/1 under xvfb; stagedSongSlide byte-identical."
+      ]
+    }
+  ],
+  "selected": null,
+  "qaReport": "tests-background-images verified; epic complete",
+  "maxLoops": 24
+}

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
+  BackgroundImageSpec,
   PresentData,
   Slide,
   SlideType,
@@ -7,12 +8,17 @@ import {
   HorizontalAlign,
   VerticalAlign,
 } from '../../domain/PresentTypes';
+import {
+  resolveTitleTextBackground,
+  resolveWholeSlideBackground,
+} from '../../domain/backgroundImage';
 import LyricsDisplay from './LyricsDisplay';
 import SafeAreaOverlay from './SafeAreaOverlay';
 import { createPresentSession } from '../../application/SessionTransport';
 import { applyPresentPayload } from '../../domain/applyPresentPayload';
 import { useTheme } from '../useTheme';
 import { buildProgramThumbnail } from '../../domain/programThumbnail';
+import BackgroundImageLayer from '../shared/BackgroundImageLayer';
 
 /**
  * REQ-010: Mark that Present client JS evaluated in the browser.
@@ -41,6 +47,12 @@ export default function Presentation() {
   const [useGreenScreen, setUseGreenScreen] = useState<boolean>(false);
   const [songData, setSongData] = useState<SongData | null>(null);
   const [segmentIndex, setSegmentIndex] = useState<number>(0);
+  const [defaultBackground, setDefaultBackground] = useState<BackgroundImageSpec | undefined>(
+    undefined
+  );
+  const [defaultTitleTextBackground, setDefaultTitleTextBackground] = useState<
+    BackgroundImageSpec | undefined
+  >(undefined);
   // Broadcast-safe overlay: activated by ?safearea=1 query param or S key toggle
   // NOTE: capture the presenter URL without this param for a clean program feed.
   const [showSafeArea, setShowSafeArea] = useState<boolean>(false);
@@ -87,6 +99,8 @@ export default function Presentation() {
             setUseGreenScreen,
             setSongData,
             setSegmentIndex,
+            setDefaultBackground,
+            setDefaultTitleTextBackground,
           });
         });
         setLoading(false);
@@ -114,9 +128,21 @@ export default function Presentation() {
       songData,
       segmentIndex,
       useGreenScreen,
+      defaultBackground,
+      defaultTitleTextBackground,
     });
     session.reportProgramState(program);
-  }, [slide, message, songData, segmentIndex, useGreenScreen, loading, sessionError]);
+  }, [
+    slide,
+    message,
+    songData,
+    segmentIndex,
+    useGreenScreen,
+    defaultBackground,
+    defaultTitleTextBackground,
+    loading,
+    sessionError,
+  ]);
 
   const hasElectronFullscreenBridge = () =>
     typeof window !== 'undefined' &&
@@ -281,6 +307,29 @@ export default function Presentation() {
 
   const isTitleSlideType = slide?.type === SlideType.TITLE;
 
+  const deckBgProxy = {
+    defaultBackground,
+    defaultTitleTextBackground,
+  };
+  const wholeBg = resolveWholeSlideBackground(deckBgProxy as any, slide);
+  const titleTextBg = resolveTitleTextBackground(deckBgProxy as any, slide);
+  /** New epic-005 layer when a resolved whole-slide image exists. */
+  const useWholeLayer = Boolean(wholeBg.image);
+  /**
+   * Image-slide picture source. With a whole-slide layer, only slide.file is the
+   * picture (fitted on top). Without, keep legacy file ?? style.backgroundImage.
+   */
+  const imagePictureSrc = useWholeLayer
+    ? slide?.file
+    : slide?.file ?? slide?.style?.backgroundImage;
+  /** Legacy CSS background for older decks with no epic-005 whole-slide image. */
+  const legacyCssBackgroundImage =
+    !useWholeLayer &&
+    !useGreenScreen &&
+    (slide?.type === SlideType.IMAGE
+      ? imagePictureSrc
+      : slide?.style?.backgroundImage);
+
   /** Flex sizing for the program slide frame: full raster for title, uniform band for all other types. */
   const slideFrameStyle = (): React.CSSProperties => {
     if (isTitleSlideType) {
@@ -298,12 +347,6 @@ export default function Presentation() {
   const computeContainerStyle = (): React.CSSProperties => {
     const textAlign = slide?.style?.horizontalAlign ?? 'center';
 
-    const backgroundImage =
-      !useGreenScreen &&
-      (slide?.type === SlideType.IMAGE
-        ? slide?.file ?? slide?.style?.backgroundImage
-        : slide?.style?.backgroundImage);
-
     return {
       boxSizing: 'border-box',
       textAlign,
@@ -316,12 +359,22 @@ export default function Presentation() {
       fontWeight: slide?.style?.fontWeight,
       padding: 0,
       margin: 0,
-      backgroundImage: backgroundImage ? `url(${backgroundImage})` : undefined,
+      backgroundImage: legacyCssBackgroundImage ? `url(${legacyCssBackgroundImage})` : undefined,
       backgroundSize: slide?.style?.backgroundSize ?? 'cover',
       backgroundPosition: slide?.style?.backgroundPosition ?? 'center',
       backgroundRepeat: 'no-repeat',
+      overflow: 'hidden',
     } as React.CSSProperties;
   };
+
+  const renderWholeSlideBackground = () => (
+    <BackgroundImageLayer
+      resolved={wholeBg}
+      testId="present-whole-bg"
+      zIndex={0}
+      enabled={!useGreenScreen || Boolean(wholeBg.image)}
+    />
+  );
 
   /** Absolutely positioned title (image / non-song slides). */
   const getTitleOverlayStyle = (): React.CSSProperties => {
@@ -340,8 +393,9 @@ export default function Presentation() {
       textAlign,
       zIndex: 2,
       boxSizing: 'border-box',
+      overflow: 'hidden',
     };
-    if (useGreenScreen && slide?.style?.backgroundColor) {
+    if (useGreenScreen && slide?.style?.backgroundColor && !titleTextBg.image) {
       base.backgroundColor = slide.style.backgroundColor;
       base.padding = '8px 0';
     }
@@ -354,11 +408,23 @@ export default function Presentation() {
     return base;
   };
 
-  const renderTitleOverlay = () =>
+  const renderTitleOverlay = (opts?: { withTextLayer?: boolean }) =>
     (slide?.title || slide?.subTitle) && (
       <div data-testid="slide-overlay" style={getTitleOverlayStyle()}>
-        <div style={{ fontSize: slide?.titleFontSize ?? slide?.style?.fontSize }}>{slide?.title}</div>
-        <div style={{ fontSize: slide?.subTitleFontSize ?? slide?.style?.fontSize }}>{slide?.subTitle}</div>
+        {opts?.withTextLayer ? (
+          <BackgroundImageLayer
+            resolved={titleTextBg}
+            testId="present-title-text-bg"
+            zIndex={0}
+            enabled={!useGreenScreen || Boolean(titleTextBg.image)}
+          />
+        ) : null}
+        <div style={{ position: 'relative', zIndex: 2, fontSize: slide?.titleFontSize ?? slide?.style?.fontSize }}>
+          {slide?.title}
+        </div>
+        <div style={{ position: 'relative', zIndex: 2, fontSize: slide?.subTitleFontSize ?? slide?.style?.fontSize }}>
+          {slide?.subTitle}
+        </div>
       </div>
     );
 
@@ -475,8 +541,11 @@ export default function Presentation() {
             const useLyricsFill = v === VerticalAlign.TOP;
             return (
               <div id="song" style={songShellStyle}>
+                {renderWholeSlideBackground()}
                 <div
                   style={{
+                    position: 'relative',
+                    zIndex: 2,
                     flex: 1,
                     minHeight: 0,
                     width: '100%',
@@ -506,12 +575,29 @@ export default function Presentation() {
           })()
         ) : slide?.type === SlideType.IMAGE ? (
           <div id="image-slide" style={{ ...computeContainerStyle(), position: 'relative', ...slideFrameStyle() }}>
+            {renderWholeSlideBackground()}
+            {useWholeLayer && imagePictureSrc ? (
+              <div
+                data-testid="present-image-picture"
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  zIndex: 1,
+                  backgroundImage: `url(${imagePictureSrc})`,
+                  backgroundSize: 'contain',
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'center',
+                  pointerEvents: 'none',
+                }}
+              />
+            ) : null}
             <div style={{ textAlign: 'inherit', color: slide?.style?.color }} />
             {renderTitleOverlay()}
           </div>
         ) : (
           <div id="content" style={{ ...computeContainerStyle(), position: 'relative', ...slideFrameStyle() }}>
-            {renderTitleOverlay()}
+            {renderWholeSlideBackground()}
+            {renderTitleOverlay({ withTextLayer: isTitleSlideType })}
           </div>
         )}
       </div>

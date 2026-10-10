@@ -204,26 +204,42 @@ test('ProgramThumbnailPanel renders blank output without slide content', () => {
   expect(screen.queryByTestId('program-thumbnail-lines')).not.toBeInTheDocument();
 });
 
-test('ProgramThumbnailPanel matches green-screen output and suppresses image backgrounds', () => {
+test('ProgramThumbnailPanel green screen keeps epic-005 backgrounds; suppresses legacy CSS images', () => {
   render(
     <ProgramThumbnailPanel
       program={{
         title: 'Green-screen slide',
-        subTitle: 'No image',
+        subTitle: 'With layers',
         slideFile: 'https://example.com/slide.jpg',
         slideStyle: { backgroundColor: '#222', color: '#fff', backgroundImage: 'https://example.com/style.jpg' },
         backgroundColor: 'transparent',
         color: '#fff',
-        slideType: 'image',
+        slideType: 'title',
         useGreenScreen: true,
+        wholeBackground: {
+          image: 'data:image/png;base64,whole',
+          fit: 'fill',
+          dim: 0.2,
+          isOverride: false,
+        },
+        titleTextBackground: {
+          image: 'data:image/png;base64,title',
+          fit: 'fit',
+          dim: 0,
+          isOverride: false,
+        },
       }}
     />,
   );
 
   const preview = screen.getByTestId('program-thumbnail-preview');
   expect(preview).toHaveStyle({ backgroundColor: '#00b140' });
+  // Legacy CSS backgrounds stay off in green screen.
   expect(preview).not.toHaveStyle({ backgroundImage: 'url(https://example.com/slide.jpg)' });
   expect(preview).not.toHaveStyle({ backgroundImage: 'url(https://example.com/style.jpg)' });
+  // Epic-005 layers remain visible (AC-009).
+  expect(screen.getByTestId('program-thumbnail-whole-bg')).toBeInTheDocument();
+  expect(screen.getByTestId('program-thumbnail-title-text-bg')).toBeInTheDocument();
   expect(screen.getByTestId('program-thumbnail-title')).toHaveTextContent('Green-screen slide');
   const lowerThird = screen.getByTestId('program-thumbnail-lower-third');
   expect(lowerThird).toHaveStyle({ backgroundColor: '#222' });

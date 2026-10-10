@@ -10,6 +10,7 @@ import {
   SongData,
   HorizontalAlign,
   VerticalAlign,
+  BackgroundImageSpec,
 } from '../../domain/PresentTypes';
 import { resolveSlideStyle } from '../../domain/resolveSlideStyle';
 import { maybeNormalizeStyleColor } from '../../domain/normalizeCssColor';
@@ -23,6 +24,13 @@ import { notifyLibraryChanged } from '../libraryRefresh';
 import { openPresentForRuntime } from './openPresentWindow';
 import type { SongSlideChoice } from './AddSongSlideChooser';
 import SongSlideEditPanel, { type SongPanelCommit } from './SongSlideEditPanel';
+import BackgroundImagePicker from './BackgroundImagePicker';
+import {
+  clearSlideBackgroundOverride,
+  clearSlideTitleTextBackgroundOverride,
+  resolveTitleTextBackground,
+  resolveWholeSlideBackground,
+} from '../../domain/backgroundImage';
 import {
   notePresentShortcutPointerTarget,
   shouldIgnorePresentShortcuts,
@@ -289,10 +297,19 @@ export default function DeckBuilder() {
   };
 
   const handleSendClick = (props: any) => {
+    // Prefer an explicit deck snapshot (e.g. after Clear) so we don't send stale
+    // React-state defaults before setDeck flushes.
+    const sourceDeck: Deck | null = props.deck ?? deck;
     // Explicit program-out only. Do not coerce a missing `slide` to null —
     // message-only / clear-message sends must leave Present's slide alone.
     if (props.slide === null) {
-      const payload = new PresentData({ ...props, slide: null });
+      const payload = new PresentData({
+        ...props,
+        slide: null,
+        // Always send both keys (null when absent) so Present clears stale layers.
+        defaultBackground: sourceDeck?.defaultBackground ?? null,
+        defaultTitleTextBackground: sourceDeck?.defaultTitleTextBackground ?? null,
+      });
       const target = sendTargetRef.current;
       void deckSessionRef.current?.send(payload, target);
       setLastSentSlideId(null);
@@ -304,10 +321,16 @@ export default function DeckBuilder() {
       if (!sl) return sl;
       // ensure slide has an id so we can track it for sync across edits/reorder
       (sl as any).id = (sl as any).id ?? genId();
-      const resolvedStyle = resolveSlideStyle(deck, sl);
+      const resolvedStyle = resolveSlideStyle(sourceDeck, sl);
       return { ...sl, style: resolvedStyle };
     };
-    const payloadProps: Record<string, unknown> = { ...props };
+    const payloadProps: Record<string, unknown> = {
+      ...props,
+      // Always send both keys (null when absent) so Present clears stale layers.
+      defaultBackground: sourceDeck?.defaultBackground ?? null,
+      defaultTitleTextBackground: sourceDeck?.defaultTitleTextBackground ?? null,
+    };
+    delete payloadProps.deck;
     if (props.slide) {
       payloadProps.slide = safeSlide(props.slide);
     } else {
@@ -740,8 +763,9 @@ export default function DeckBuilder() {
     const found = newDeck.slides.find((s: any) => (s as any).id === lastSentSlideId);
     if (found && found.type === SlideType.SONG) return;
     if (found) {
-      // re-send updated slide to presenter so presentation stays in sync (no status banner)
-      handleSendClick({ slide: found, useGreenScreen: newDeck.useGreenScreen });
+      // re-send updated slide to presenter so presentation stays in sync (no status banner).
+      // Pass deck snapshot so background clears/nulls are not lost to stale React state.
+      handleSendClick({ slide: found, useGreenScreen: newDeck.useGreenScreen, deck: newDeck });
     }
   };
 
@@ -763,6 +787,30 @@ export default function DeckBuilder() {
     const newSlideStyles = { ...(deck.slideStyles || {}) } as Record<string, any>;
     delete newSlideStyles[SlideType.GENERAL];
     const newDeck = { ...deck, slideStyles: newSlideStyles };
+    setDeck(newDeck);
+    syncSentSlideIfNeeded(newDeck);
+  };
+
+  const updateDeckDefaultBackground = (next: BackgroundImageSpec | undefined) => {
+    if (!deck) return;
+    const newDeck: Deck = { ...deck };
+    if (next && typeof next.image === 'string' && next.image.trim()) {
+      newDeck.defaultBackground = next;
+    } else {
+      delete newDeck.defaultBackground;
+    }
+    setDeck(newDeck);
+    syncSentSlideIfNeeded(newDeck);
+  };
+
+  const updateDeckDefaultTitleTextBackground = (next: BackgroundImageSpec | undefined) => {
+    if (!deck) return;
+    const newDeck: Deck = { ...deck };
+    if (next && typeof next.image === 'string' && next.image.trim()) {
+      newDeck.defaultTitleTextBackground = next;
+    } else {
+      delete newDeck.defaultTitleTextBackground;
+    }
     setDeck(newDeck);
     syncSentSlideIfNeeded(newDeck);
   };
@@ -1381,6 +1429,24 @@ export default function DeckBuilder() {
             })()}
             <button onClick={() => resetDeckGeneralDefaults()}>Clear GENERAL defaults</button>
           </div>
+          {deck && (
+            <div data-testid="deck-background-defaults" style={{ marginTop: 12 }}>
+              <BackgroundImagePicker
+                label="Default whole-slide background"
+                testIdPrefix="deck-bg"
+                value={deck.defaultBackground}
+                onChange={updateDeckDefaultBackground}
+                showClear
+              />
+              <BackgroundImagePicker
+                label="Default title text-layer background"
+                testIdPrefix="deck-title-bg"
+                value={deck.defaultTitleTextBackground}
+                onChange={updateDeckDefaultTitleTextBackground}
+                showClear
+              />
+            </div>
+          )}
         </div>
       </div>
 
@@ -1720,6 +1786,93 @@ export default function DeckBuilder() {
                         <label>Image URL/file: <input type="text" value={slide.file || slide.style?.backgroundImage || ''} onChange={e => updateDraftField('file', e.target.value)} /></label>
                       </div>
                     )}
+
+                    <div data-testid="slide-background-overrides" style={{ marginTop: 8 }}>
+                      {(() => {
+                        const wholeResolved = resolveWholeSlideBackground(deck, slide);
+                        const wholeValue = Object.prototype.hasOwnProperty.call(slide, 'background')
+                          ? slide.background
+                          : wholeResolved.image
+                            ? {
+                                image: wholeResolved.image,
+                                fit: wholeResolved.fit,
+                                dim: wholeResolved.dim,
+                              }
+                            : undefined;
+                        return (
+                          <BackgroundImagePicker
+                            label={
+                              wholeResolved.isOverride
+                                ? 'Whole-slide background (slide override)'
+                                : 'Whole-slide background (deck default)'
+                            }
+                            testIdPrefix="slide-bg"
+                            value={wholeValue}
+                            showClear
+                            clearMode="empty"
+                            useDeckDefaultLabel="Use deck default"
+                            onUseDeckDefault={() => {
+                              setSlideEditDraft((prev: any) =>
+                                prev ? clearSlideBackgroundOverride(prev) : prev
+                              );
+                            }}
+                            onChange={(next) => {
+                              if (next === undefined) {
+                                setSlideEditDraft((prev: any) =>
+                                  prev ? clearSlideBackgroundOverride(prev) : prev
+                                );
+                                return;
+                              }
+                              updateDraftField('background', next);
+                            }}
+                          />
+                        );
+                      })()}
+                      {slide.type === SlideType.TITLE &&
+                        (() => {
+                          const titleResolved = resolveTitleTextBackground(deck, slide);
+                          const titleValue = Object.prototype.hasOwnProperty.call(
+                            slide,
+                            'titleTextBackground'
+                          )
+                            ? slide.titleTextBackground
+                            : titleResolved.image
+                              ? {
+                                  image: titleResolved.image,
+                                  fit: titleResolved.fit,
+                                  dim: titleResolved.dim,
+                                }
+                              : undefined;
+                          return (
+                            <BackgroundImagePicker
+                              label={
+                                titleResolved.isOverride
+                                  ? 'Title text-layer background (slide override)'
+                                  : 'Title text-layer background (deck default)'
+                              }
+                              testIdPrefix="slide-title-bg"
+                              value={titleValue}
+                              showClear
+                              clearMode="empty"
+                              useDeckDefaultLabel="Use deck default"
+                              onUseDeckDefault={() => {
+                                setSlideEditDraft((prev: any) =>
+                                  prev ? clearSlideTitleTextBackgroundOverride(prev) : prev
+                                );
+                              }}
+                              onChange={(next) => {
+                                if (next === undefined) {
+                                  setSlideEditDraft((prev: any) =>
+                                    prev ? clearSlideTitleTextBackgroundOverride(prev) : prev
+                                  );
+                                  return;
+                                }
+                                updateDraftField('titleTextBackground', next);
+                              }}
+                            />
+                          );
+                        })()}
+                    </div>
 
                     {slide.type === SlideType.SONG && (
                       <SongSlideEditPanel

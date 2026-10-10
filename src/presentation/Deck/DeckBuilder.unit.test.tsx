@@ -767,3 +767,170 @@ test('Iris: cancel pending song does not reopen previously selected slide editor
   expect(screen.queryByRole('heading', { name: /Editing slide 1/i })).not.toBeInTheDocument();
 });
 
+test('slide override UI can override and reset to deck default', async () => {
+  const deckWithBg = {
+    title: 'Bg Deck',
+    slides: [
+      { type: 'general', title: 'G1', style: {} },
+      { type: 'title', title: 'T1', subTitle: 'S', style: {} },
+    ],
+    defaultBackground: { image: 'data:image/png;base64,deckwhole', fit: 'fill', dim: 0 },
+    defaultTitleTextBackground: { image: 'data:image/png;base64,decktitle', fit: 'fill', dim: 0 },
+  };
+  (global.fetch as jest.Mock).mockResolvedValue({
+    ok: true,
+    status: 200,
+    headers: { get: () => 'image/png' },
+    blob: async () => new Blob([new Uint8Array([9, 8, 7])], { type: 'image/png' }),
+    json: async () => [],
+  } as any);
+
+  render(<DeckBuilder />);
+  await loadFile(makeJsonFile(deckWithBg));
+  await waitFor(() => screen.getByTestId('import-save-prompt'));
+  act(() => {
+    fireEvent.click(screen.getByRole('button', { name: /skip/i }));
+  });
+
+  fireEvent.click(screen.getAllByRole('button', { name: 'Edit' })[0]);
+  await waitFor(() => expect(screen.getByTestId('slide-background-overrides')).toBeInTheDocument());
+  expect(screen.getByTestId('slide-bg')).toBeInTheDocument();
+  expect(screen.queryByTestId('slide-title-bg')).not.toBeInTheDocument();
+
+  fireEvent.change(screen.getByTestId('slide-bg-url'), {
+    target: { value: 'https://example.com/override.png' },
+  });
+  await act(async () => {
+    fireEvent.click(screen.getByTestId('slide-bg-url-apply'));
+  });
+  await waitFor(() =>
+    expect(screen.getByText(/Whole-slide background \(slide override\)/i)).toBeInTheDocument()
+  );
+
+  fireEvent.click(screen.getByTestId('save-slide-button'));
+  await waitFor(() => expect(screen.queryByTestId('deck-slide-editor-panel')).not.toBeInTheDocument());
+
+  let saved = await exportDeckJson();
+  expect(saved.slides[0].background.image.startsWith('data:image/png;base64,')).toBe(true);
+
+  fireEvent.click(screen.getAllByRole('button', { name: 'Edit' })[0]);
+  await waitFor(() => screen.getByTestId('slide-bg-use-deck-default'));
+  fireEvent.click(screen.getByTestId('slide-bg-use-deck-default'));
+  fireEvent.click(screen.getByTestId('save-slide-button'));
+  await waitFor(() => expect(screen.queryByTestId('deck-slide-editor-panel')).not.toBeInTheDocument());
+
+  saved = await exportDeckJson();
+  expect(saved.slides[0].background).toBeUndefined();
+
+  fireEvent.click(screen.getAllByRole('button', { name: 'Edit' })[1]);
+  await waitFor(() => expect(screen.getByTestId('slide-title-bg')).toBeInTheDocument());
+});
+
+test('Send always includes null background defaults when deck has none (LIVE-OLDDECK)', async () => {
+  render(<DeckBuilder />);
+  await loadFile(makeJsonFile(VALID_DECK));
+  await waitFor(() => screen.getByTestId('import-save-prompt'));
+  act(() => {
+    fireEvent.click(screen.getByRole('button', { name: /skip/i }));
+  });
+
+  await act(async () => {
+    fireEvent.click(screen.getAllByRole('button', { name: /^send$/i })[0]);
+  });
+  await waitFor(() => expect(mockSend).toHaveBeenCalled());
+  const payload = mockSend.mock.calls[mockSend.mock.calls.length - 1][0];
+  expect(payload).toEqual(
+    expect.objectContaining({
+      defaultBackground: null,
+      defaultTitleTextBackground: null,
+    })
+  );
+  // JSON wire format keeps explicit null (not omitted keys).
+  const wire = JSON.parse(JSON.stringify(payload));
+  expect(Object.prototype.hasOwnProperty.call(wire, 'defaultBackground')).toBe(true);
+  expect(wire.defaultBackground).toBeNull();
+  expect(wire.defaultTitleTextBackground).toBeNull();
+});
+
+test('Clear deck default re-sends null to Present when a slide is on program', async () => {
+  (global.fetch as jest.Mock).mockResolvedValue({
+    ok: true,
+    status: 200,
+    headers: { get: () => 'image/png' },
+    blob: async () => new Blob([new Uint8Array([1, 2, 3])], { type: 'image/png' }),
+    json: async () => [],
+  } as any);
+
+  render(<DeckBuilder />);
+  act(() => {
+    fireEvent.click(screen.getByRole('button', { name: /new deck/i }));
+  });
+  await waitFor(() => screen.getByTestId('deck-bg'));
+
+  fireEvent.change(screen.getByTestId('deck-bg-url'), {
+    target: { value: 'https://example.com/whole.png' },
+  });
+  await act(async () => {
+    fireEvent.click(screen.getByTestId('deck-bg-url-apply'));
+  });
+  await waitFor(() => screen.getByTestId('deck-bg-preview'));
+
+  await act(async () => {
+    fireEvent.click(screen.getAllByRole('button', { name: /^send$/i })[0]);
+  });
+  await waitFor(() => expect(mockSend).toHaveBeenCalled());
+  mockSend.mockClear();
+
+  await act(async () => {
+    fireEvent.click(screen.getByTestId('deck-bg-clear'));
+  });
+  await waitFor(() => expect(mockSend).toHaveBeenCalled());
+  const payload = mockSend.mock.calls[mockSend.mock.calls.length - 1][0];
+  expect(payload.defaultBackground).toBeNull();
+});
+
+test('deck defaults UI sets whole-slide and title text-layer backgrounds with fill default', async () => {
+  (global.fetch as jest.Mock).mockResolvedValue({
+    ok: true,
+    status: 200,
+    headers: { get: () => 'image/png' },
+    blob: async () => new Blob([new Uint8Array([1, 2, 3])], { type: 'image/png' }),
+    json: async () => [],
+  } as any);
+
+  render(<DeckBuilder />);
+  act(() => {
+    fireEvent.click(screen.getByRole('button', { name: /new deck/i }));
+  });
+
+  await waitFor(() => expect(screen.getByTestId('deck-background-defaults')).toBeInTheDocument());
+  expect(screen.getByTestId('deck-bg')).toBeInTheDocument();
+  expect(screen.getByTestId('deck-title-bg')).toBeInTheDocument();
+
+  fireEvent.change(screen.getByTestId('deck-bg-url'), {
+    target: { value: 'https://example.com/whole.png' },
+  });
+  await act(async () => {
+    fireEvent.click(screen.getByTestId('deck-bg-url-apply'));
+  });
+  await waitFor(() => expect(screen.getByTestId('deck-bg-preview')).toBeInTheDocument());
+  expect((screen.getByTestId('deck-bg-fit') as HTMLSelectElement).value).toBe('fill');
+
+  fireEvent.change(screen.getByTestId('deck-title-bg-url'), {
+    target: { value: 'https://example.com/title.png' },
+  });
+  await act(async () => {
+    fireEvent.click(screen.getByTestId('deck-title-bg-url-apply'));
+  });
+  await waitFor(() => expect(screen.getByTestId('deck-title-bg-preview')).toBeInTheDocument());
+
+  fireEvent.change(screen.getByTestId('deck-bg-dim'), { target: { value: '0.4' } });
+
+  const saved = await exportDeckJson();
+  expect(saved.defaultBackground.image.startsWith('data:image/png;base64,')).toBe(true);
+  expect(saved.defaultBackground.fit).toBe('fill');
+  expect(saved.defaultBackground.dim).toBeCloseTo(0.4);
+  expect(saved.defaultTitleTextBackground.image.startsWith('data:image/png;base64,')).toBe(true);
+  expect(saved.defaultTitleTextBackground.fit).toBe('fill');
+});
+

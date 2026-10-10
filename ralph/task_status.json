@@ -1,1001 +1,136 @@
 {
-  "epic": "epic-004",
-  "branch": "cursor/epic-004-song-library",
+  "epic": "epic-005",
+  "branch": "cursor/epic-005-background-images",
   "baseBranch": "main",
-  "status": "completed",
-  "loop": 61,
-  "persona": "qa",
-  "completeEpic": true,
-  "prUrl": "https://github.com/groundworksdesign/poster/pull/26",
+  "status": "in_progress",
+  "loop": 4,
+  "persona": "planning",
+  "completeEpic": false,
+  "prUrl": "https://github.com/groundworksdesign/poster/pull/28",
   "canonicalStatusFile": "ralph/task_status.json",
+  "maxLoops": 10,
   "sourceArtifacts": [
-    "ralph/specs/20261004-feature-brief-song-library.md",
-    "ralph/specs/20261004-song-library-ux-review-pam.md",
-    "ralph/epic.md",
-    "ralph/specs/20261007-ac-traceability-song-library.md",
-    "ralph/specs/20261007-iris-gate-pr26-fail.md",
-    "ralph/specs/20261008-add-slide-song-scratch-or-linked.md",
-    "ralph/specs/20261008-add-song-redesign.md",
-    "ralph/specs/20261008-add-song-redesign-mockup.html",
-    "ralph/specs/20261008-iris-gate-pr26-d2145f6.md",
-    "ralph/specs/20261009-iris-gate-pr26-3c9a031.md",
-    "ralph/specs/20261009-iris-gate-pr26-c46bf2e-esc.md",
-    "ralph/specs/20261009-iris-gate-pr26-7d46dbf-handtype.md"
+    "ralph/specs/20261008-feature-brief-background-images.md",
+    "ralph/specs/20261008-epic-005-background-images.plan.md",
+    "ralph/specs/20261010-iris-gate-pr28-fail.md",
+    "ralph/epic.md"
   ],
   "codebaseFindings": {
-    "songsTable": "Exists in schema.server.ts (id, title, author, song_json, created_at, updated_at) but unused \u2014 no CRUD, routes, or repo reads/writes.",
-    "songDataType": "SongData has title, author?, verses[]; no book or number fields yet.",
-    "deckBuilderImport": "DeckBuilder song XML/JSON import replaces the whole deck with a one-slide deck; optional save is presentation library (/library/save), not songs table.",
-    "songParser": "parseSongXML + isSongData cover Poster song XML and song-shaped JSON; gathered book JSON parser missing.",
-    "presentStaging": "stagedSongSlide.ts already does title then two lyric lines; leave unchanged (REQ-013).",
-    "libraryUi": "No song library page, picker, search, or slide\u2194library song link field.",
-    "irisLibraryOutlet": "library.tsx default is coming-soon div with no Outlet; library.songs*.tsx are nested children \u2014 verified FIX LOOP 1 planning.",
-    "irisChooserImport": "Fixed: chooser uses shared ImportReviewScreen.",
-    "irisClientProcess": "Fixed DEV loop 12: song-library actions in *.server.ts; client no longer bundles db/library-root/process.",
-    "irisJsonRestoreSongs": "JSON: omit songs key keeps existing; songs key (incl []) replaces. SQLite: pre-epic schema (no songs table or no book/number) preserves when empty; post-epic empty songs replaces.",
-    "irisApplyFlake": "QA loop 15: clear busy + wait Apply enabled; isolation 10/10; Present/stagedSongSlide NO DIFF vs main.",
-    "royScratchVsLinked": "Add slide > SONG: scratch blank unlinked vs linked chooser; scratch Save to library via ImportReviewScreen then gets librarySongId; scratch excluded from prompts until linked (20261008 + amendment).",
-    "irisRegateFollowups": "Iris re-gate bc4320e: apply-decks flake = UpdateDecksPrompt useEffect reset after mount; *.server.ts under routes/ exposed as URL routes (e.g. /library/loader/server).",
-    "addSongRedesign": "Pam mockup: song type/search/scratch/import live in slide edit panel; Add slide under Slides header. Today KindPicker/Chooser overlay under Deck heading; lyrics JSON editor; Load replaces deck; firstVerseLine is one lyric line; arrows move Present unless focus is INPUT/TEXTAREA/SELECT.",
-    "themePersistFlake": "CI run 37845317615: remix-theme-persist Home reopen failed in chooseTheme \u2014 localStorage stayed light after synthetic select change (hydrate race / React onChange).",
-    "irisGateD2145f6": "Iris FAIL d2145f6: (1) single clean file savePayloads before Save; (2) existing scratch null commit still saves old draft; (3) library writes before Save on import/scratch confirm; (4) weakened e2e. Plus N1 keys, N3 array commit, N4 Add by hand, F3 Skip, F5 tag ref, UI mockup gaps, state I.",
-    "irisPassRoyPolish": "Iris PASS 3c9a031/4737baa. Roy before merge: (1) State I fetch library words by id; (2) Esc clear search then type then cancel; existing unsaved confirm; (3) type-card focus-only arrows; menu focus; focus E/B; (4) remove raw Library ID; (5) tighten 3 weakened tests + add 1-3 tests. Cap 6. Final head no [skip ci].",
-    "irisHandtypeFocus": "Iris FAIL 7d46dbf: useEffect([choice,onFocusSaveSlide]) steals focus on every hand-edit keystroke (choice replaced). Race: same risk for search + scratch fields. Focus Save only on first pick into state E."
+    "irisGate": "FAIL f7ce1c0: stale Present defaults (LIVE-OLDDECK/LIVE-CLEAR), CORS URL fetch, tile/fit preview mismatch, N1 wipe, N3 legacy image, no dedupe, GS image picture shows (revert to main hide), N5 non-image file, fill() in e2e"
   },
   "requirements": [
     {
-      "id": "REQ-001",
-      "title": "Empty song library ships; books not bundled",
+      "id": "REQ-008",
+      "title": "URL import via server proxy (no CORS)",
       "todoIds": [
-        "empty-library-schema"
+        "fix-url-proxy-n1-n5"
       ],
-      "status": "done"
+      "status": "pending"
     },
     {
-      "id": "REQ-002",
-      "title": "Add one song by hand",
+      "id": "REQ-011",
+      "title": "Older decks unchanged in live Present session",
       "todoIds": [
-        "add-song-by-hand"
-      ],
-      "status": "done"
-    },
-    {
-      "id": "REQ-003",
-      "title": "Import gathered JSON and Poster song XML/JSON",
-      "todoIds": [
-        "import-review-screen"
-      ],
-      "status": "done"
-    },
-    {
-      "id": "REQ-004",
-      "title": "Multi-song import asks whole book or subset",
-      "todoIds": [
-        "import-review-screen"
-      ],
-      "status": "done"
-    },
-    {
-      "id": "REQ-005",
-      "title": "No-lyrics import asks what to do",
-      "todoIds": [
-        "import-review-screen"
+        "fix-stale-present-backgrounds"
       ],
       "status": "done"
     },
     {
       "id": "REQ-006",
-      "title": "Title-match prompt shows number and lyrics",
+      "title": "Fill/fit/tile match Present in editor previews",
       "todoIds": [
-        "import-review-screen"
-      ],
-      "status": "done"
-    },
-    {
-      "id": "REQ-007",
-      "title": "Add song slide: import or pick from library",
-      "todoIds": [
-        "add-slide-chooser"
-      ],
-      "status": "done"
-    },
-    {
-      "id": "REQ-008",
-      "title": "Pick inserts new slide; does not replace deck",
-      "todoIds": [
-        "add-slide-chooser",
-        "library-search-pick"
-      ],
-      "status": "done"
-    },
-    {
-      "id": "REQ-009",
-      "title": "Find by title, book, or number",
-      "todoIds": [
-        "library-search-pick"
-      ],
-      "status": "done"
-    },
-    {
-      "id": "REQ-010",
-      "title": "Import-while-adding asks save to library",
-      "todoIds": [
-        "add-slide-chooser"
-      ],
-      "status": "done"
-    },
-    {
-      "id": "REQ-011",
-      "title": "Edit and delete library songs",
-      "todoIds": [
-        "library-page"
-      ],
-      "status": "done"
-    },
-    {
-      "id": "REQ-012",
-      "title": "Edit/delete asks about updating decks that use the song",
-      "todoIds": [
-        "linked-update-decks"
-      ],
-      "status": "done"
-    },
-    {
-      "id": "REQ-013",
-      "title": "Present keeps title then two lyric lines",
-      "todoIds": [
-        "present-unchanged"
-      ],
-      "status": "done"
-    },
-    {
-      "id": "REQ-014",
-      "title": "Shared titles can show first verse when picking",
-      "todoIds": [
-        "library-search-pick"
-      ],
-      "status": "done"
-    },
-    {
-      "id": "REQ-015",
-      "title": "Slide stays linked to library song",
-      "todoIds": [
-        "library-search-pick",
-        "linked-update-decks"
-      ],
-      "status": "done"
-    },
-    {
-      "id": "REQ-016",
-      "title": "Ask before overwriting hand-edited linked slides",
-      "todoIds": [
-        "linked-update-decks"
-      ],
-      "status": "done"
-    },
-    {
-      "id": "REQ-017",
-      "title": "Also save to my library checkbox, default checked",
-      "todoIds": [
-        "add-slide-chooser"
-      ],
-      "status": "done"
-    },
-    {
-      "id": "REQ-018",
-      "title": "No-lyrics: title only or skip",
-      "todoIds": [
-        "import-review-screen"
-      ],
-      "status": "done"
-    },
-    {
-      "id": "REQ-019",
-      "title": "Title match: keep both (default), replace, skip",
-      "todoIds": [
-        "import-review-screen"
-      ],
-      "status": "done"
-    },
-    {
-      "id": "REQ-020",
-      "title": "Search matches lyrics too",
-      "todoIds": [
-        "library-search-pick"
-      ],
-      "status": "done"
-    },
-    {
-      "id": "REQ-021",
-      "title": "Library page from main menu and Add song slide",
-      "todoIds": [
-        "library-page"
-      ],
-      "status": "done"
-    },
-    {
-      "id": "REQ-022",
-      "title": "One review screen; skip for single clean song",
-      "todoIds": [
-        "import-review-screen"
-      ],
-      "status": "done"
-    },
-    {
-      "id": "REQ-023",
-      "title": "Deck-update prompt only when song is used; list decks",
-      "todoIds": [
-        "linked-update-decks"
-      ],
-      "status": "done"
-    },
-    {
-      "id": "REQ-024",
-      "title": "Add slide > SONG: scratch blank unlinked or linked via chooser; scratch Save to library",
-      "todoIds": [
-        "add-slide-song-scratch-or-linked"
-      ],
-      "status": "done"
-    },
-    {
-      "id": "REQ-025",
-      "title": "Add song slide redesign inside edit panel (Roy mockup decisions)",
-      "todoIds": [
-        "add-song-panel-redesign"
-      ],
-      "status": "done"
-    },
-    {
-      "id": "REQ-026",
-      "title": "Present arrow/Page keys ignored while focus in slide edit panel or song list",
-      "todoIds": [
-        "fix-present-keys-while-editing"
-      ],
-      "status": "done"
-    },
-    {
-      "id": "REQ-027",
-      "title": "Remix theme persist e2e stable (Home reopen chooseTheme)",
-      "todoIds": [
-        "fix-remix-theme-persist-flake"
-      ],
-      "status": "done"
-    },
-    {
-      "id": "REQ-028",
-      "title": "Defer all panel library writes until Save slide; Also save on single-file import",
-      "todoIds": [
-        "fix-iris-library-defer-until-save"
-      ],
-      "status": "completed"
-    },
-    {
-      "id": "REQ-029",
-      "title": "Existing-slide song panel: null commit stays open; multi-import array applies; F3 Skip unticks Also save",
-      "todoIds": [
-        "fix-iris-library-defer-until-save"
-      ],
-      "status": "completed"
-    },
-    {
-      "id": "REQ-030",
-      "title": "Present keys ignore list/panel click focus; empty-lib Type a new song in panel; manage full first verse",
-      "todoIds": [
-        "fix-iris-keys-empty-lib-manage"
-      ],
-      "status": "completed"
-    },
-    {
-      "id": "REQ-031",
-      "title": "Panel UI matches redesign mockup (menu, keys, Esc, state I, toolbar, insert-after)",
-      "todoIds": [
-        "fix-iris-panel-ui-mockup"
-      ],
-      "status": "completed"
-    },
-    {
-      "id": "REQ-032",
-      "title": "Beta tag ref force-moved to release target commit (F5)",
-      "todoIds": [
-        "fix-iris-beta-tag-ref"
-      ],
-      "status": "completed"
-    },
-    {
-      "id": "REQ-033",
-      "title": "State I: Use library words from current library song; note on open",
-      "todoIds": [
-        "fix-roy-state-i-library-words"
-      ],
-      "status": "completed"
-    },
-    {
-      "id": "REQ-034",
-      "title": "Esc levels + focus cards/menu/E/B; remove raw Library ID",
-      "todoIds": [
-        "fix-roy-esc-focus-library-id"
-      ],
-      "status": "completed"
-    },
-    {
-      "id": "REQ-035",
-      "title": "Tighten weakened e2e/unit asserts; tests for State I, Esc, focus",
-      "todoIds": [
-        "fix-roy-tighten-tests"
-      ],
-      "status": "completed"
-    },
-    {
-      "id": "REQ-036",
-      "title": "Esc 3-press; existing song unsaved confirm; hand-edit fingerprint; cancel no reopen",
-      "todoIds": [
-        "fix-iris-esc-three-press"
+        "fix-preview-match-present"
       ],
       "status": "pending"
     },
     {
-      "id": "REQ-037",
-      "title": "Song panel text fields keep focus while typing (state E focus once)",
+      "id": "REQ-005",
+      "title": "Image picture on top including legacy",
       "todoIds": [
-        "fix-iris-handtype-focus"
+        "fix-n3-greenscreen-dedupe"
       ],
-      "status": "done"
+      "status": "pending"
+    },
+    {
+      "id": "REQ-010",
+      "title": "Green screen main image-picture hide",
+      "todoIds": [
+        "fix-n3-greenscreen-dedupe"
+      ],
+      "status": "pending"
     }
   ],
   "todos": [
     {
-      "id": "empty-library-schema",
-      "content": "Wire the unused local songs table (or equivalent) so a fresh install has an empty library; store title, book, number, lyrics, and a stable song id; do not bundle the three church books.",
+      "id": "fix-stale-present-backgrounds",
+      "content": "Always send full background state (null when empty) on Present payloads; Present resets both images when empty/null. E2E: switch background deck\u2192old deck with Present open; clear deck default with Present open. Fixes LIVE-OLDDECK/LIVE-CLEAR (AC-010/REQ-011).",
       "requirementIds": [
-        "REQ-001"
-      ],
-      "acceptanceCriteria": [
-        "AC-001"
+        "REQ-011"
       ],
       "status": "done",
       "passes": true,
-      "notes": "QA loop 3 PASS (AC-001/REQ-001). Loop 5 QA reaffirms passes:true (dev restored under-written loop-3 fields; QA owns this field).",
-      "qaVerifiedAt": "2026-10-07T22:35:00.000Z"
-    },
-    {
-      "id": "add-song-by-hand",
-      "content": "Add a form to create one library song at a time (title, book, number, verses) so it appears in search afterward.",
-      "requirementIds": [
-        "REQ-002"
-      ],
       "acceptanceCriteria": [
-        "AC-002"
+        "Slide sends always include defaultBackground and defaultTitleTextBackground (null when absent)",
+        "Present clears layers when null/empty arrives",
+        "E2E: old deck after background deck does not keep prior background",
+        "E2E: Clear deck default clears open Present"
       ],
-      "status": "done",
-      "passes": true,
-      "notes": "QA loop 5 PASS AC-002/REQ-002: form title/book/number/verses; POST /library/songs/save; find via GET ?q=; Home link; independent tsc+Jest green.",
-      "qaVerifiedAt": "2026-10-07T22:50:00.000Z"
+      "notes": [
+        "QA loop 3: unit + remix LIVE-OLDDECK/LIVE-CLEAR e2e green."
+      ]
     },
     {
-      "id": "import-review-screen",
-      "content": "Import Doug's gathered JSON plus existing Poster song XML/JSON through one review screen: checklist all checked by default; no-lyrics group (title only or skip); title-match rows with keep both (default) / replace / skip. Skip review for a single clean song file.",
+      "id": "fix-url-proxy-n1-n5",
+      "content": "Fetch image URLs via Remix/Electron server (no renderer CORS); size limit + image content-type. N1: failed URL leaves existing image/override untouched; failed URL on deck-default inherit must not create empty override. N5: file picker images-only (accept + validation). Tests with local no-CORS host. E2E URL fields use pressSequentially.",
       "requirementIds": [
-        "REQ-003",
-        "REQ-004",
-        "REQ-005",
-        "REQ-006",
-        "REQ-018",
-        "REQ-019",
-        "REQ-022"
+        "REQ-008"
       ],
+      "status": "pending",
+      "passes": false,
       "acceptanceCriteria": [
-        "AC-003",
-        "AC-004",
-        "AC-005",
-        "AC-006",
-        "AC-015",
-        "AC-018"
+        "No-CORS host URL embeds successfully via server proxy",
+        "Failed URL shows error without wiping existing image or creating empty override",
+        "Non-image file rejected",
+        "E2E types URL with pressSequentially"
       ],
-      "status": "done",
-      "passes": true,
-      "notes": "QA loop 7 PASS: AC-003/004/005/006/015/018(import)/022 + REQ-018/019. One review screen; checklist all checked; no-lyrics title_only default; title-match keep_both default with number/lyrics; single clean skips review; multi-song waits for Import; library POST only \u2014 DeckBuilder untouched. AC-018 REQ-023 edit/delete deck-prompt deferred to linked-update-decks.",
-      "qaVerifiedAt": "2026-10-07T23:15:00.000Z"
+      "notes": []
     },
     {
-      "id": "add-slide-chooser",
-      "content": "When adding a song slide, offer Pick from library (default) and Import a file. Importing while adding a slide shows Also save to my library checked by default on the same screen. Chosen song becomes a new slide in the open deck and does not replace the deck.",
+      "id": "fix-preview-match-present",
+      "content": "Shared helper so picker and program-thumbnail tile/fit letterbox match Present (scaled Present frame). Add tests for tile density and fit letterbox.",
       "requirementIds": [
-        "REQ-007",
-        "REQ-008",
-        "REQ-010",
-        "REQ-017"
+        "REQ-006"
       ],
+      "status": "pending",
+      "passes": false,
       "acceptanceCriteria": [
-        "AC-007",
-        "AC-009",
-        "AC-014"
+        "Tile preview matches Present tile density via shared helper",
+        "Fit letterbox bars match Present frame aspect",
+        "Unit/integration tests cover shared scaling"
       ],
-      "status": "done",
-      "passes": true,
-      "notes": "QA loop 9 PASS AC-007/009/014 + REQ-007/008/010/017. Pick default; Import + Also save default checked and save follows box; insert splice keeps other slides; empty library points to Import/Add by hand. Regression: top-level Load still replaces for song files; stagedSongSlide/Present + import-save prompt tests green; librarySongId optional.",
-      "qaVerifiedAt": "2026-10-07T23:35:00.000Z"
+      "notes": []
     },
     {
-      "id": "library-search-pick",
-      "content": "Library search matches title, book, number, and lyrics. Results show title, book, and number. Shared titles show the first verse inline. Enter or double-click inserts a linked slide after the current slide.",
-      "requirementIds": [
-        "REQ-008",
-        "REQ-009",
-        "REQ-014",
-        "REQ-015",
-        "REQ-020"
-      ],
-      "acceptanceCriteria": [
-        "AC-007",
-        "AC-008",
-        "AC-012",
-        "AC-013",
-        "AC-016"
-      ],
-      "status": "done",
-      "passes": true,
-      "notes": "QA loop 11 PASS (independent re-verify) AC-008/012/016 + REQ-009/014/015/020 (AC-007 insert/link; AC-013 link portion). Search title/book/number/lyrics; shared titles first verse inline; Enter/double-click; librarySongId set; insert after current via splice (no deck replace). Optional book filter: Pam UX review line \"plus an optional book filter\" (binding sourceArtifact) \u2014 in scope, not invented. Brief omits book filter; Pam is binding. AC-013 REQ-016 hand-edit ask deferred to linked-update-decks.",
-      "qaVerifiedAt": "2026-10-07T22:44:00.000Z"
-    },
-    {
-      "id": "library-page",
-      "content": "Add a library page reachable from the main menu and from Add song slide, with the same search list plus Add, Edit, Delete, Import, and a used-in-N-decks count.",
-      "requirementIds": [
-        "REQ-011",
-        "REQ-021"
-      ],
-      "acceptanceCriteria": [
-        "AC-010",
-        "AC-017"
-      ],
-      "status": "done",
-      "passes": true,
-      "notes": "QA loop 13 PASS AC-017 + REQ-011/021 (AC-010 edit/delete available; deck-update-after-confirm deferred to linked-update-decks). Reachable from Layout nav (main menu) + Home song-library-link + Add song slide. Search parity with picker: same GET /library/songs?q= + book filter + first-verse helpers. usedInDeckCount via ?usage=1 / countUsageBySongId (once per deck). Delete: DELETE songs only / jsonLibraryDeleteSong filters songs; presentations/slides untouched (REQ-016 safety).",
-      "qaVerifiedAt": "2026-10-07T22:50:30.000Z"
-    },
-    {
-      "id": "linked-update-decks",
-      "content": "Keep slides linked to their library song. On edit or delete, ask about updating decks only when the song is used, list those decks with checkboxes, and ask again before overwriting slides that were edited by hand. Deleting never removes slides unless the user selects those decks.",
-      "requirementIds": [
-        "REQ-012",
-        "REQ-015",
-        "REQ-016",
-        "REQ-023"
-      ],
-      "acceptanceCriteria": [
-        "AC-010",
-        "AC-013",
-        "AC-018"
-      ],
-      "status": "done",
-      "passes": true,
-      "notes": "QA loop 15 PASS AC-010/013/018 + REQ-012/015/016/023. Unused edit/delete: no deck prompt. Used: UpdateDecksPrompt checkboxes; apply only selected. Hand-edited: second confirm before overwrite/remove. Delete skips slide removal unless decks selected. Unlinked/legacy untouched; librarySongId kept on edit sync. Persist/open/Present: upsertPresentationWithDb deck_json round-trip + stagedSongSlide probe green.",
-      "qaVerifiedAt": "2026-10-07T22:57:00.000Z"
-    },
-    {
-      "id": "present-unchanged",
-      "content": "Leave Present song staging as title then two lyric lines per stage. Do not change that layout in this epic.",
-      "requirementIds": [
-        "REQ-013"
-      ],
-      "acceptanceCriteria": [
-        "AC-011"
-      ],
-      "status": "done",
-      "passes": true,
-      "notes": "QA loop 17 PASS AC-011 / REQ-013. Independent vs main: Present/ NO DIFF; stagedSongSlide.ts NO DIFF; applyPresentPayload.ts NO DIFF; PresentTypes additive librarySongId? only. Regression: library-linked + linked-update slides still title then two lyric lines (7 stagedSongSlide tests).",
-      "qaVerifiedAt": "2026-10-07T22:59:30.000Z"
-    },
-    {
-      "id": "tests-song-library",
-      "content": "Add tests covering AC-001 through AC-018: empty library, hand add, import formats and review defaults, pick-to-slide without replacing the deck, search including lyrics and first-verse for duplicate titles, save checkbox default, title-only empty lyrics, keep-both default, linked updates with hand-edit ask, and Present two-line staging still green.",
-      "requirementIds": [
-        "REQ-001",
-        "REQ-002",
-        "REQ-003",
-        "REQ-004",
-        "REQ-005",
-        "REQ-006",
-        "REQ-007",
-        "REQ-008",
-        "REQ-009",
-        "REQ-010",
-        "REQ-011",
-        "REQ-012",
-        "REQ-013",
-        "REQ-014",
-        "REQ-015",
-        "REQ-016",
-        "REQ-017",
-        "REQ-018",
-        "REQ-019",
-        "REQ-020",
-        "REQ-021",
-        "REQ-022",
-        "REQ-023"
-      ],
-      "acceptanceCriteria": [
-        "AC-001",
-        "AC-002",
-        "AC-003",
-        "AC-004",
-        "AC-005",
-        "AC-006",
-        "AC-007",
-        "AC-008",
-        "AC-009",
-        "AC-010",
-        "AC-011",
-        "AC-012",
-        "AC-013",
-        "AC-014",
-        "AC-015",
-        "AC-016",
-        "AC-017",
-        "AC-018"
-      ],
-      "status": "done",
-      "passes": true,
-      "notes": "QA loop 19 PASS AC-001..AC-018. Spot-checked each AC test asserts the criterion (map ralph/specs/20261007-ac-traceability-song-library.md; uncovered: none). Independent re-run: tsc 0; Jest 58/364 PASS; build:remix 0; remix e2e 52 PASS; electron e2e 12 PASS (electron install.js + xvfb + ELECTRON_DISABLE_SANDBOX). No dedicated lint job in pr.yml. Release/installer jobs not run (PR packaging).",
-      "qaVerifiedAt": "2026-10-07T23:05:53.000Z"
-    },
-    {
-      "id": "fix-remix-song-library-outlets",
-      "content": "Fix Remix v2 flat-route nesting so /library/songs, /library/songs/add, and /library/songs/import render real UI (not Library coming soon): library.tsx useOutlet() fallback; library.songs.tsx loader+Outlet layout; SongLibraryPage on library.songs._index (update REMIX_ROUTE_ID if needed; keep _data loaders/actions). Add Playwright remix e2e against production build: Home>Song library Add/Import/Edit real UI; chooser library link opens real manage UI.",
-      "requirementIds": [
-        "REQ-002",
-        "REQ-011",
-        "REQ-021"
-      ],
-      "acceptanceCriteria": [
-        "AC-002",
-        "AC-010",
-        "AC-017"
-      ],
-      "status": "done",
-      "passes": true,
-      "notes": "QA fix loop 5 PASS. pnpm test:e2e:remix: remix-dev 52 + song-library prod 2. pr.yml runs combined script. Spec asserts song-library-page / add-song-by-hand / import-songs-review / edit form + chooser open-library \u2192 real page; not coming soon. Present/ + stagedSongSlide.ts NO DIFF vs main. Outlets + loader.server split retained.",
-      "qaVerifiedAt": "2026-10-07T23:47:00.000Z"
-    },
-    {
-      "id": "fix-add-slide-import-review",
-      "content": "AddSongSlideChooser import must use the same import review screen as library import (no-lyrics title_only/skip; title-match keep_both/replace/skip; REQ-005/006/018/019/022). Do not silently save duplicate titles. Keep AC-007 insert without replacing open deck; Also-save checkbox still respected.",
+      "id": "fix-n3-greenscreen-dedupe",
+      "content": "N3: legacy image-slide pictures (style.backgroundImage) still show when deck default exists. Green screen: keep main behaviour \u2014 hide image-slide picture (switch point constant). Restore green-screen image-slide thumbnail test. Deduplicate embedded images via content-hash asset table; old decks still load.",
       "requirementIds": [
         "REQ-005",
-        "REQ-006",
-        "REQ-018",
-        "REQ-019",
-        "REQ-022",
-        "REQ-007",
-        "REQ-008",
-        "REQ-010",
-        "REQ-017"
+        "REQ-010"
       ],
+      "status": "pending",
+      "passes": false,
       "acceptanceCriteria": [
-        "AC-004",
-        "AC-005",
-        "AC-006",
-        "AC-007",
-        "AC-009",
-        "AC-014",
-        "AC-015",
-        "AC-018"
+        "Legacy style.backgroundImage picture on image slides with deck default",
+        "Green screen hides image picture (main); one switch constant",
+        "Green-screen image-slide thumbnail test restored",
+        "Identical images stored once in deck.embeddedImages; refs resolve; old decks load"
       ],
-      "status": "done",
-      "passes": true,
-      "notes": "QA fix loop 9 PASS. Shared ImportReviewScreen + domain helpers; chooser review/Also-save/AC-007 verified. AddSongSlideChooser.unit.test.tsx 5/5 in full Jest (net +1 vs 364: rewrote AC-014 for /import + added REQ-005/006 review case). tsc 0; Jest 58/365; e2e remix 52+3.",
-      "qaVerifiedAt": "2026-10-07T23:54:00.000Z"
-    },
-    {
-      "id": "fix-json-restore-preserve-songs",
-      "content": "When restoring a pre-epic-004 JSON library backup with no songs key, keep existing song library rows (do not wipe to []). Add a unit/integration test covering backup-without-songs preserves songs.",
-      "requirementIds": [
-        "REQ-001"
-      ],
-      "acceptanceCriteria": [
-        "AC-001"
-      ],
-      "status": "done",
-      "passes": true,
-      "notes": "QA fix loop 11 PASS. JSON: no songs key keeps songs + restores decks; songs key incl [] replaces. SQLite row-count heuristic incorrectly overrode deliberate empty backups \u2014 fixed to pre-epic schema detect (no songs table or missing book/number) before openDb migrates. Tests library-json + db-restore-songs; tsc 0; full Jest 59/371.",
-      "qaVerifiedAt": "2026-10-08T00:10:00.000Z"
-    },
-    {
-      "id": "fix-client-process-reference",
-      "content": "Remove client-side process usage that throws ReferenceError: process is not defined on /library/songs. Keep Node process only on server modules. Remix e2e asserts no page errors on song-library navigation.",
-      "requirementIds": [
-        "REQ-021"
-      ],
-      "acceptanceCriteria": [
-        "AC-017"
-      ],
-      "status": "done",
-      "passes": true,
-      "notes": "QA fix loop 13 PASS. Fresh build:remix; song-library client routes + imported chunks have no process.env/sqlite; *.server stubs emptied. ?_data save/import/delete/decks/apply-decks + picker ?q= OK. tsc 0; Jest 59/371; e2e remix 52+3 (pageerror/console guards).",
-      "qaVerifiedAt": "2026-10-08T00:10:00.000Z"
-    },
-    {
-      "id": "fix-song-library-apply-flake",
-      "content": "Stabilize SongLibraryPage unit test REQ-012/023 used song edit apply-decks (~2/8 flake: applies.length 0). Apply busy-disabled while fetchSongs after setDeckPrompt \u2014 wait for Apply enabled and/or clear busy before prompt interaction. QA runs that test 10x in isolation all green.",
-      "requirementIds": [
-        "REQ-012",
-        "REQ-023"
-      ],
-      "acceptanceCriteria": [
-        "AC-010",
-        "AC-013"
-      ],
-      "status": "done",
-      "passes": true,
-      "notes": "QA fix loop 15 PASS (final). Isolation REQ-012/023 apply-decks 10/10. tsc 0; Jest 59/371; build:remix 0; e2e remix 52+3; electron xvfb 12. Present/ + stagedSongSlide.ts NO DIFF vs main. All 5 Iris fix tasks + epic todos passes:true. Side PR #27 closed; only open epic PR #26.",
-      "qaVerifiedAt": "2026-10-08T00:20:00.000Z"
-    },
-    {
-      "id": "add-slide-song-scratch-or-linked",
-      "content": "Add slide > SONG offers two types: (1) Song from scratch \u2014 blank in place, no librarySongId, no chooser; (2) Linked song \u2014 AddSongSlideChooser with librarySongId. Scratch has Save to library via shared ImportReviewScreen (title-match keep-both; no-lyrics REQ-018/019/022); cancel keeps scratch; confirm sets librarySongId. Scratch never in linked-update/apply-decks until linked. Prod e2e: scratch; linked insert; scratch -> Save -> duplicate-title -> linked. Unit: excluded before save, included after. Present/stagedSongSlide byte-identical to main.",
-      "requirementIds": [
-        "REQ-024",
-        "REQ-007",
-        "REQ-012",
-        "REQ-015",
-        "REQ-013",
-        "REQ-018",
-        "REQ-019",
-        "REQ-022"
-      ],
-      "acceptanceCriteria": [
-        "AC-019",
-        "AC-007",
-        "AC-010",
-        "AC-013",
-        "AC-011",
-        "AC-015",
-        "AC-018"
-      ],
-      "status": "done",
-      "passes": true,
-      "notes": "QA loop 18 FINAL PASS AC-019 / REQ-024 (all six items). Prod spot: scratch no librarySongId; ImportReviewScreen Save; cancel keeps scratch; confirm links (keep-both new id). Unit: scratch excluded from linked edit until linked; library edit leaves scratch alone. Prod e2e song-library 4/4. Present/ + stagedSongSlide.ts NO DIFF vs main. Only open epic PR #26 (#27 closed; #23 unrelated). No merge.",
-      "qaVerifiedAt": "2026-10-08T01:30:00.000Z"
-    },
-    {
-      "id": "fix-iris-regate-followups",
-      "content": "Iris re-gate follow-ups: (1) MUST-FIX apply-decks flake \u2014 UpdateDecksPrompt must not reset checkbox selection in a mount effect (useState initializer + key); SongLibraryPage test waits for checkbox checked before Apply; QA runs full SongLibraryPage.unit.test 10x + single test 10x. (2) Non-blocking: move routes/*.server.ts helpers out of routes (e.g. remix/server/) so /library/loader/server is 404; keep route ids and ?_data paths; add 404 test/e2e. (3) Amendment: linked slides that only skipped a prior library update are labelled \"Not updated to the latest library version\" (not \"edited by hand\"); track hand-edited vs out-of-date separately; both still ask before overwrite; both+hand-edit shows edited by hand; legacy decks without the field still validate/open; Present/stagedSongSlide untouched.",
-      "requirementIds": [
-        "REQ-012",
-        "REQ-023"
-      ],
-      "acceptanceCriteria": [
-        "AC-010",
-        "AC-013",
-        "AC-018",
-        "Iris-regate-apply-flake",
-        "Iris-regate-server-route-404",
-        "Iris-regate-handedit-vs-outofdate"
-      ],
-      "status": "done",
-      "passes": true,
-      "notes": "QA loop 21 FINAL PASS. DEV loop 21: relaunch/repoint under song-library prod suite (fresh build:remix) so remix-dev jsxDEV build/ cannot poison server.js. e2e empty build/ 50+7; e2e after remix-dev poison 50+7; tsc 0; Jest 59/385; electron xvfb 12; flake SongLibraryPage full 10/10 + apply-decks single 10/10; Present/ + stagedSongSlide.ts NO DIFF vs main; config-path-alignment 5/5. No dedicated lint job in pr.yml (eslint baseline noise). completeEpic true. No merge.",
-      "qaVerifiedAt": "2026-10-08T01:02:13.000Z"
-    },
-    {
-      "id": "fix-remix-theme-persist-flake",
-      "content": "CI blocker: remix-theme-persist.spec.ts Home reopen \u2014 chooseTheme localStorage stayed light (run 37845317615 on a6ebb77). Find root cause (race after #23 rebase or pre-existing flake) and fix. QA runs that spec 10x green.",
-      "requirementIds": [
-        "REQ-027"
-      ],
-      "acceptanceCriteria": [
-        "Theme-persist-Home-reopen-10x"
-      ],
-      "status": "done",
-      "passes": true,
-      "notes": "QA: root cause = chooseTheme synthetic change raced useTheme hydrate (localStorage stayed light). Fix: wait data-theme-ready + selectOption; useTheme userSetRef + dataset.themeReady. Spec 10x (30 tests) PASS.",
-      "qaVerifiedAt": "2026-10-08T22:40:00.000Z"
-    },
-    {
-      "id": "fix-present-keys-while-editing",
-      "content": "Live-show safety: DeckBuilder keydown (~128-147) must not move Present (Arrow/Page/song up-down) while focus is inside the slide edit panel or the song/slide list. Add a test.",
-      "requirementIds": [
-        "REQ-026"
-      ],
-      "acceptanceCriteria": [
-        "Present-keys-ignored-while-editing"
-      ],
-      "status": "done",
-      "passes": true,
-      "notes": "QA: shouldIgnorePresentShortcuts + DeckBuilder ArrowRight ignored in slide list; baseline outside still sends. Present/staged untouched.",
-      "qaVerifiedAt": "2026-10-08T22:55:00.000Z"
-    },
-    {
-      "id": "add-song-panel-redesign",
-      "content": "Add song redesign per ralph/specs/20261008-add-song-redesign.md + Roy: Add slide below Slides header; panel hosts type choice, linked search/card, scratch editor, import review; Also save unchecked scratch / checked imports; full first verse for duplicate titles; toolbar Load adds song slide; draft joins deck only on Save; Ctrl/Cmd+Enter on search stops on card; unit tests for panel states + e2e both SONG paths; AC-001..018 stay green; Present/stagedSongSlide unchanged.",
-      "requirementIds": [
-        "REQ-025",
-        "REQ-007",
-        "REQ-008",
-        "REQ-014",
-        "REQ-017",
-        "REQ-024"
-      ],
-      "acceptanceCriteria": [
-        "AC-020-panel-states",
-        "AC-020-add-under-slides",
-        "AC-020-also-save-defaults",
-        "AC-020-full-first-verse",
-        "AC-020-toolbar-load-adds",
-        "AC-020-save-joins-deck",
-        "AC-020-ctrl-enter-search",
-        "AC-020-e2e-both-paths"
-      ],
-      "status": "done",
-      "passes": true,
-      "notes": "QA loop FINAL: panel redesign PASS. Add under Slides; linked/scratch/import in panel; Also save unchecked scratch / checked import; full first verse; toolbar Load adds; Save-only join; Ctrl/Cmd+Enter pick-only. e2e 50+7; Jest 413; tsc 0; electron 12; theme 10x; Present/staged NO DIFF.",
-      "qaVerifiedAt": "2026-10-08T23:30:00.000Z"
-    },
-    {
-      "id": "fix-iris-library-defer-until-save",
-      "content": "Iris blockers 1-3 + N3 + F3: Also save box for single clean file (checked); defer ALL library writes (import confirm, single-file, scratch review/Replace) until Save slide; Cancel/x/Esc drops pending ops with library unchanged; saveSlideEdits null commit stays open (keeps Words); array multi-import on existing slide applies; Skip unticks Also save. Strict unit/e2e with library counts.",
-      "requirementIds": [
-        "REQ-028",
-        "REQ-029",
-        "REQ-009",
-        "REQ-014",
-        "REQ-017"
-      ],
-      "acceptanceCriteria": [
-        "Iris-AC-009",
-        "Iris-AC-014",
-        "Iris-decision-5-library",
-        "Iris-scratch-existing-review",
-        "Iris-N3",
-        "Iris-F3"
-      ],
-      "status": "completed",
-      "passes": true,
-      "notes": "QA PASS: jest 418/418; remix-dev e2e 50; song-library 8; electron 12; Present/stagedSongSlide zero diff vs origin/main."
-    },
-    {
-      "id": "fix-iris-keys-empty-lib-manage",
-      "content": "N1: extend presentShortcutGuard so click/focus anywhere in slide list or panel (incl. non-focusable row text/background) blocks Arrow/Page; test. N4: empty-library Type a new song stays in panel scratch; Open song library in new window. Manage page: full first verse for same-title songs.",
-      "requirementIds": [
-        "REQ-030",
-        "REQ-026"
-      ],
-      "acceptanceCriteria": [
-        "Iris-N1",
-        "Iris-N4",
-        "Iris-manage-full-verse"
-      ],
-      "status": "completed",
-      "passes": true,
-      "notes": "QA PASS: jest 418/418; remix-dev e2e 50; song-library 8; electron 12; Present/stagedSongSlide zero diff vs origin/main."
-    },
-    {
-      "id": "fix-iris-panel-ui-mockup",
-      "content": "UI to redesign spec/mockup: remove Start Song/Prev/Next 2 Lines; insert pending+new after selected; add-slide menu \u25be icons S/T/G/I; type cards descriptions+1/2/arrows; highlight active Linked/Scratch; Save slide Ctrl/Cmd+Enter (card saves; search stops on card); Esc one level; Style collapsed for song; Also-save explanation; header \u2715 Close + import review heading; state I Edit words / yellow note / Use library words. Tests for new states/keys.",
-      "requirementIds": [
-        "REQ-031",
-        "REQ-025"
-      ],
-      "acceptanceCriteria": [
-        "Iris-UI-mockup",
-        "Iris-state-I",
-        "Iris-keyboard"
-      ],
-      "status": "completed",
-      "passes": true,
-      "notes": "QA PASS: jest 418/418; remix-dev e2e 50; song-library 8; electron 12; Present/stagedSongSlide zero diff vs origin/main."
-    },
-    {
-      "id": "fix-iris-beta-tag-ref",
-      "content": "F5: pr.yml force-moves beta tag v*-pr.<N> to the release target commit (head SHA) so the tag ref matches the packaged assets.",
-      "requirementIds": [
-        "REQ-032"
-      ],
-      "acceptanceCriteria": [
-        "Iris-F5"
-      ],
-      "status": "completed",
-      "passes": true,
-      "notes": "QA PASS: jest 418/418; remix-dev e2e 50; song-library 8; electron 12; Present/stagedSongSlide zero diff vs origin/main."
-    },
-    {
-      "id": "fix-roy-state-i-library-words",
-      "content": "State I: fetch current library song by librarySongId; seed restore from library words; show yellow note when slide already differs on open; Use library words restores library text.",
-      "requirementIds": [
-        "REQ-033"
-      ],
-      "acceptanceCriteria": [
-        "Roy-state-I"
-      ],
-      "status": "completed",
-      "passes": true,
-      "notes": "QA PASS: jest 421; remix 50+8; electron 12; Present zero-diff."
-    },
-    {
-      "id": "fix-roy-esc-focus-library-id",
-      "content": "Esc: clear search then type choice then cancel pending (deck+library unchanged). Existing slide Esc confirms unsaved. Type cards Left/Right move focus only; Enter/Space/1/2 pick. Add-slide menu focuses first item. State E focus Save slide; empty-lib type\u2192Scratch, state B\u2192Import. Remove raw Library ID text.",
-      "requirementIds": [
-        "REQ-034"
-      ],
-      "acceptanceCriteria": [
-        "Roy-esc",
-        "Roy-focus",
-        "Roy-no-raw-lib-id"
-      ],
-      "status": "completed",
-      "passes": true,
-      "notes": "QA PASS: jest 421; remix 50+8; electron 12; Present zero-diff."
-    },
-    {
-      "id": "fix-roy-tighten-tests",
-      "content": "Tighten GATE weakened asserts (slide-library-song-id after scratch save; DeckBuilder linked id; multi-import not or-card). Add unit/e2e for State I, Esc levels, type-card focus.",
-      "requirementIds": [
-        "REQ-035"
-      ],
-      "acceptanceCriteria": [
-        "Roy-tests"
-      ],
-      "status": "completed",
-      "passes": true,
-      "notes": "QA PASS: jest 421; remix 50+8; electron 12; Present zero-diff."
-    },
-    {
-      "id": "fix-iris-esc-three-press",
-      "content": "Esc: drop stopPropagation so window sees clear-search; 3-press clear\u2192type\u2192cancel. Existing song Esc confirms panel-local dirty. Hand-edit save preserves synced fingerprint. Cancel pending does not reopen selected slide. Real-Esc e2e + hand-edit label test.",
-      "requirementIds": [
-        "REQ-036"
-      ],
-      "acceptanceCriteria": [
-        "Iris-esc-3",
-        "Iris-esc-unsaved",
-        "Iris-hand-edit-label",
-        "Iris-cancel-no-reopen"
-      ],
-      "status": "completed",
-      "passes": true,
-      "notes": "QA PASS loop 58: Esc 3-press via real keys; song dirty confirm; hand-edit fingerprint; cancel no reopen; e2e+unit green."
-    },
-    {
-      "id": "fix-iris-handtype-focus",
-      "content": "Focus Save only on first song pick; key-by-key e2e for hand-edit, search, scratch Title/Book/Number/Words; no premature save.",
-      "requirementIds": [
-        "REQ-037"
-      ],
-      "acceptanceCriteria": [
-        "Iris-handtype",
-        "Race-panel-fields"
-      ],
-      "status": "completed",
-      "passes": true,
-      "notes": "QA PASS loop 61: Save focus only on pick identity; Race field e2e green."
+      "notes": []
     }
   ],
-  "acceptanceCriteria": [
-    "AC-001 (REQ-001): Fresh install has zero library songs",
-    "AC-002 (REQ-002): Hand-added song is findable later",
-    "AC-003 (REQ-003): Import accepts gathered book JSON and Poster song XML/JSON",
-    "AC-004 (REQ-004, 022): Multi-song file does not import until review checklist is confirmed",
-    "AC-005 (REQ-005, 018): No-lyrics songs offer title only or skip; nothing auto-imports",
-    "AC-006 (REQ-006, 019): Title match shows number and lyrics; default keep both; also replace and skip",
-    "AC-007 (REQ-007, 008): Add song slide can import or insert without replacing other slides",
-    "AC-008 (REQ-009): Search by title, book, and number each returns matches",
-    "AC-009 (REQ-010): Saving an imported song into the library happens only after the user says yes",
-    "AC-010 (REQ-011, 012): Edit/delete available; decks update only after confirm",
-    "AC-011 (REQ-013): Present still title then two lines",
-    "AC-012 (REQ-014): Shared titles can show first verse before add",
-    "AC-013 (REQ-015, 016): Linked updates; hand-edited slides need an extra yes",
-    "AC-014 (REQ-017): Also save checkbox checked by default and saving follows the box",
-    "AC-015 (REQ-018, 019): Title-only empty lyrics; keep-both default on title match",
-    "AC-016 (REQ-020): Searching a lyric phrase finds the song",
-    "AC-017 (REQ-021): Library opens from main menu and Add song slide",
-    "AC-018 (REQ-022, 023): Clean multi-song one-click; problem sections only when needed; unused songs edit/delete without deck prompt",
-    "AC-019 (REQ-024): Add slide > SONG offers scratch (blank, unlinked, no chooser) and linked (chooser); scratch Save to library via ImportReviewScreen (cancel keeps scratch; confirm links); scratch excluded from library update prompts until linked; never changed by library edit while scratch",
-    "Iris-regate: linked slide that only skipped a prior library update is labelled \"Not updated to the latest library version\" (not edited by hand); both states ask before overwrite; hand-edit wins when both",
-    "AC-020 (REQ-025): Add song redesign in slide edit panel \u2014 Roy decisions (also-save defaults, full first verse, toolbar Load adds slide, Save-only join, Ctrl/Cmd+Enter pauses on card); Add slide below Slides header; e2e both SONG paths",
-    "Present-keys (REQ-026): Arrow/Page keys do not move Present while focus is in slide edit panel or song list",
-    "Theme-persist (REQ-027): remix-theme-persist Home reopen chooseTheme stable 10x",
-    "Iris-handtype / Race-panel-fields (REQ-037): typing in hand-edit, search, scratch Title/Book/Number/Words keeps focus; Save focus only on first pick"
-  ],
   "selected": {
-    "id": "fix-iris-handtype-focus",
-    "reason": "Iris FAIL 7d46dbf handtype focus + Race panel fields"
+    "id": "fix-url-proxy-n1-n5",
+    "reason": "Stale Present fixed; next REQ-008 CORS proxy plus N1/N5 picker correctness."
   },
-  "outOfScope": [
-    "Bundling the three church books in the app",
-    "Transcribing the five copyright-held songs",
-    "Changing Present two-line staging",
-    "Replacing the open deck on import"
-  ],
-  "openQuestions": [],
-  "blockers": [],
-  "lastUpdated": "2026-10-09T14:57:33.000Z",
-  "qaEvidence": {
-    "taskId": "fix-iris-handtype-focus",
-    "tsc": "exit 0",
-    "jest": "63 suites / 428 tests PASS",
-    "e2eRemixDev": "50 passed",
-    "e2eSongLibrary": "13 passed",
-    "e2eElectron": "12 passed",
-    "presentUnchanged": true,
-    "stagedSongSlideUnchanged": true,
-    "qaPassLoop": 61
-  },
-  "feedback": {
-    "taskId": "fix-iris-handtype-focus",
-    "content": "QA PASS: pickKey Save focus; key-by-key e2e hand-edit/search/scratch. tsc0 jest428 remix50+13 electron12 Present identical. completeEpic true.",
-    "updatedAt": "2026-10-09T14:57:33.000Z"
-  },
-  "fixPass": {
-    "irisGate": "ralph/specs/20261007-iris-gate-pr26-fail.md",
-    "prUrl": "https://github.com/groundworksdesign/poster/pull/26",
-    "headShaAtFail": "15ee17d0c8b523d0f34b9b6d31ed9bde7f0784ef",
-    "budget": 16,
-    "loop": 15,
-    "loopsUsed": 15,
-    "maxLoop": 16,
-    "status": "complete"
-  },
-  "followOnPass": {
-    "decision": "ralph/specs/20261008-add-slide-song-scratch-or-linked.md",
-    "irisRegate": "bc4320e PASS ACs but follow-ups required before final gate",
-    "prUrl": "https://github.com/groundworksdesign/poster/pull/26",
-    "budget": 6,
-    "loop": 21,
-    "loopsUsed": 6,
-    "minLoop": 16,
-    "maxLoop": 21,
-    "status": "complete",
-    "note45f10ffCi": "ignored except noted (Iris reopened before final gate)",
-    "amendment": "hand-edited vs out-of-date labels (librarySongSyncedFingerprint)",
-    "loop21E2eIsolation": "relaunch/repoint under song-library prod suite after fresh build:remix"
-  },
-  "redesignPass": {
-    "spec": "ralph/specs/20261008-add-song-redesign.md",
-    "prUrl": "https://github.com/groundworksdesign/poster/pull/26",
-    "baseHead": "a6ebb7716e2042ef358290cb1009a4ab027e35e1",
-    "budget": 14,
-    "loop": 7,
-    "loopsUsed": 7,
-    "maxLoop": 14,
-    "status": "complete",
-    "royDecisions": [
-      "also-save unchecked scratch / checked imports",
-      "full first verse for duplicate titles",
-      "toolbar Load adds song slide",
-      "draft joins deck only on Save",
-      "Ctrl/Cmd+Enter on search stops on card"
-    ],
-    "finalHeadPending": true
-  },
-  "irisFixPass": {
-    "gate": "ralph/specs/20261008-iris-gate-pr26-d2145f6.md",
-    "prUrl": "https://github.com/groundworksdesign/poster/pull/26",
-    "headShaAtFail": "d2145f67b0fc9e66540e84bba73e01d30a9c083b",
-    "budget": 14,
-    "loop": 5,
-    "loopsUsed": 5,
-    "maxLoop": 14,
-    "status": "complete_ci_green",
-    "headSha": "4737baadc04273535f8474079af25efc1c69cfe3",
-    "ciRunId": 37860810228,
-    "ciResult": "success",
-    "betaTag": "v0.1.19-pr.26",
-    "betaTagSha": "4737baadc04273535f8474079af25efc1c69cfe3"
-  },
-  "royPolishPass": {
-    "gate": "ralph/specs/20261009-iris-gate-pr26-3c9a031.md",
-    "budget": 6,
-    "loop": 4,
-    "loopsUsed": 4,
-    "maxLoop": 6,
-    "status": "qa_local_pass_awaiting_ci"
-  },
-  "irisEscFixPass": {
-    "gate": "ralph/specs/20261009-iris-gate-pr26-c46bf2e-esc.md",
-    "budget": 5,
-    "loop": 1,
-    "loopsUsed": 1,
-    "maxLoop": 5,
-    "status": "in_progress"
-  }
+  "qaReport": "fix-stale-present-backgrounds verified"
 }
