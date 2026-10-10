@@ -178,6 +178,13 @@ async function deckCommandHttp(peerId: string, command: DeckCommand): Promise<un
   return postJson('/api/poster/deck-command', { peerId, command });
 }
 
+async function prepareBrowserSendPayload(payload: unknown): Promise<unknown> {
+  // Rewrite data-URL backgrounds to /api/poster/asset/<hash> so large images
+  // are not stuffed into the deck-command JSON body (Iris 413 / ~75 KB).
+  const { prepareHttpPresentPayload } = await import('../domain/presentAssets');
+  return prepareHttpPresentPayload(payload as Record<string, unknown>);
+}
+
 export async function createDeckSession(): Promise<DeckSession> {
   if (testBackend) {
     return testBackend.createDeckSession();
@@ -226,7 +233,8 @@ export async function createDeckSession(): Promise<DeckSession> {
     peerId,
     sessionId: reg.sessionId,
     send: async (payload, target) => {
-      await deckCommandHttp(peerId, { type: 'send', payload, target: target ?? 'all' });
+      const prepared = await prepareBrowserSendPayload(payload);
+      await deckCommandHttp(peerId, { type: 'send', payload: prepared, target: target ?? 'all' });
     },
     spawnPresent: async () => {
       const result = (await deckCommandHttp(peerId, { type: 'spawn' })) as {
