@@ -1,0 +1,143 @@
+{
+  "epic": "epic-005",
+  "branch": "cursor/epic-005-background-images",
+  "baseBranch": "main",
+  "status": "complete",
+  "loop": 6,
+  "persona": "qa",
+  "completeEpic": true,
+  "prUrl": "https://github.com/groundworksdesign/poster/pull/28",
+  "canonicalStatusFile": "ralph/task_status.json",
+  "maxLoops": 10,
+  "sourceArtifacts": [
+    "ralph/specs/20261008-feature-brief-background-images.md",
+    "ralph/specs/20261008-epic-005-background-images.plan.md",
+    "ralph/specs/20261010-iris-gate-pr28-fail.md",
+    "ralph/epic.md"
+  ],
+  "codebaseFindings": {
+    "irisGate": "Iris LOOP 6 QA: all blockers verified (stale Present, URL proxy, preview parity, N1/N3/N5, dedupe, GS show, pressSequentially)."
+  },
+  "requirements": [
+    {
+      "id": "REQ-008",
+      "title": "URL import via server proxy (no CORS)",
+      "todoIds": [
+        "fix-url-proxy-n1-n5"
+      ],
+      "status": "done"
+    },
+    {
+      "id": "REQ-011",
+      "title": "Older decks unchanged in live Present session",
+      "todoIds": [
+        "fix-stale-present-backgrounds"
+      ],
+      "status": "done"
+    },
+    {
+      "id": "REQ-006",
+      "title": "Fill/fit/tile match Present in editor previews",
+      "todoIds": [
+        "fix-preview-match-present"
+      ],
+      "status": "done"
+    },
+    {
+      "id": "REQ-005",
+      "title": "Image picture on top including legacy",
+      "todoIds": [
+        "fix-n3-greenscreen-dedupe"
+      ],
+      "status": "done"
+    },
+    {
+      "id": "REQ-010",
+      "title": "Green screen shows image picture on top of background",
+      "todoIds": [
+        "fix-n3-greenscreen-dedupe"
+      ],
+      "status": "done"
+    }
+  ],
+  "todos": [
+    {
+      "id": "fix-stale-present-backgrounds",
+      "content": "Always send full background state (null when empty) on Present payloads; Present resets both images when empty/null. E2E: switch background deck\u2192old deck with Present open; clear deck default with Present open. Fixes LIVE-OLDDECK/LIVE-CLEAR (AC-010/REQ-011).",
+      "requirementIds": [
+        "REQ-011"
+      ],
+      "status": "done",
+      "passes": true,
+      "acceptanceCriteria": [
+        "Slide sends always include defaultBackground and defaultTitleTextBackground (null when absent)",
+        "Present clears layers when null/empty arrives",
+        "E2E: old deck after background deck does not keep prior background",
+        "E2E: Clear deck default clears open Present"
+      ],
+      "notes": [
+        "QA loop 3: unit + remix LIVE-OLDDECK/LIVE-CLEAR e2e green.",
+        "QA loop 6: remix e2e LIVE-* still green."
+      ]
+    },
+    {
+      "id": "fix-url-proxy-n1-n5",
+      "content": "Fetch image URLs via Remix/Electron server (no renderer CORS); size limit + image content-type. N1: failed URL leaves existing image/override untouched; failed URL on deck-default inherit must not create empty override. N5: file picker images-only (accept + validation). Tests with local no-CORS host. E2E URL fields use pressSequentially.",
+      "requirementIds": [
+        "REQ-008"
+      ],
+      "status": "done",
+      "passes": true,
+      "acceptanceCriteria": [
+        "No-CORS host URL embeds successfully via server proxy",
+        "Failed URL shows error without wiping existing image or creating empty override",
+        "Non-image file rejected",
+        "E2E types URL with pressSequentially"
+      ],
+      "notes": [
+        "QA loop 6: unit embed/fetch/picker + remix e2e pressSequentially + N1 inherit label."
+      ]
+    },
+    {
+      "id": "fix-preview-match-present",
+      "content": "Shared helper so picker and program-thumbnail tile/fit letterbox match Present (scaled Present frame). Add tests for tile density and fit letterbox.",
+      "requirementIds": [
+        "REQ-006"
+      ],
+      "status": "done",
+      "passes": true,
+      "acceptanceCriteria": [
+        "Tile preview matches Present tile density via shared helper",
+        "Fit letterbox bars match Present frame aspect",
+        "Unit/integration tests cover shared scaling"
+      ],
+      "notes": [
+        "QA loop 6: presentFrame unit + picker preview data-present-frame attribute."
+      ]
+    },
+    {
+      "id": "fix-n3-greenscreen-dedupe",
+      "content": "N3: legacy image-slide pictures (style.backgroundImage) still show when deck default exists. Green screen: SHOW image-slide picture on top of background (switch point constant). Green-screen image-slide thumbnail + Present tests expect picture visible. Deduplicate embedded images via content-hash asset table; old decks still load.",
+      "requirementIds": [
+        "REQ-005",
+        "REQ-010"
+      ],
+      "status": "done",
+      "passes": true,
+      "acceptanceCriteria": [
+        "Legacy style.backgroundImage picture on image slides with deck default",
+        "Green screen shows image picture on top; one switch constant",
+        "Green-screen image-slide thumbnail + Present tests expect picture visible",
+        "Identical images stored once in deck.embeddedImages; refs resolve; old decks load"
+      ],
+      "notes": [
+        "QA loop 6: Present.background N3+GS; thumbnail GS picture; embeddedImages unit; remix GS picture visible."
+      ]
+    }
+  ],
+  "selected": {
+    "id": "fix-n3-greenscreen-dedupe",
+    "reason": "Final Iris todo verified; epic complete."
+  },
+  "qaReport": "ralph/qa-report.md"
+}
