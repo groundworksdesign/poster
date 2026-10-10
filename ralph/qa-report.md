@@ -1,34 +1,27 @@
-# epic-005 QA report — Iris fix loop (PR #28)
+# epic-005 QA report — Iris re-gate fix (0c0ec8f → final)
 
-Iris gate blockers and also-fix items passed QA (loops 1–6). `completeEpic: true`.
+Iris re-gate blockers passed QA. `completeEpic: true`.
 
 ## Blockers
 
 | Item | Result | Evidence |
 | --- | --- | --- |
-| Stale Present (LIVE-OLDDECK / LIVE-CLEAR) | PASS | `applyPresentPayload` + DeckBuilder always-send null; remix e2e LIVE-* |
-| REQ-008 no-CORS URL fetch | PASS | `/api/poster/fetch-image` + `fetchImageBytes` + `embedImageFromUrl` proxy |
-| Tile / fit preview parity | PASS | `presentFrame` + `PresentFramePreview` in picker and program thumbnail |
-| N1 failed URL | PASS | Picker does not call onChange; no empty override on inherit |
-| N3 legacy image picture | PASS | Present uses `file ?? style.backgroundImage` with whole-slide layer |
-| N5 images-only file picker | PASS | `accept="image/*"` + `isImageFile` validation |
-| N4 image dedupe | PASS | `deck.embeddedImages` + `embed:<hash>` refs; old inline data URLs load |
-| Green screen image picture | PASS | `SHOW_IMAGE_PICTURE_IN_GREEN_SCREEN = true` (Roy); Present + thumbnail + e2e |
-| Real-key e2e | PASS | `pressSequentially` for URL field in remix background e2e |
+| URL import body consume | PASS | `express.json` only on command routes; unmocked remix + electron e2e |
+| SSRF hardening | PASS | DNS/redirect block, timeout, 8MB stream, uniform errors, JSON+same-origin; unit tests |
+| Failed URL UX (Race) | PASS | Real error shown; URL input cleared; N1 untouched |
+| Thumbnail scale | PASS | Measured preview width (ResizeObserver); unit test 512px → scale 0.4 |
+| Large Present images | PASS | `/api/poster/asset` refs; remix e2e >100KB reaches Present |
 
-## Present / song staging
+## Server bind choice
 
-- `src/domain/stagedSongSlide.ts` is byte-identical to main.
-- Title font-size behaviour unchanged (unit coverage).
+**Bound to `127.0.0.1` by default** (`HOST` env overrides). Electron already listens on loopback; LAN Present / remote control is listed as future work in the design guide, not a shipped feature. fetch-image is further limited by same-origin JSON checks.
 
-## AC coverage (regression)
+## Kept green
 
-| AC | Result |
-| --- | --- |
-| AC-001–012 | PASS (unit + remix e2e; electron AC-007 round-trip) |
+Stale Present, dedupe, N1/N3/N5, green-screen picture show, ACs, song staging byte-identical to main, existing decks.
 
-## Evidence (local QA)
+## Evidence (local)
 
-- Unit: 485 passed (`src/`, 71 suites)
-- Remix e2e: `remix-background-images.spec.ts` 5/5
-- Electron e2e: `electron-background-images.spec.ts` 1/1 (xvfb)
+- Unit: ssrf/fetch/presentAssets/thumbnail/picker green
+- Remix e2e background: 7/7
+- Electron e2e background: 2/2 (incl. unmocked URL)

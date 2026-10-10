@@ -2,10 +2,10 @@
   "epic": "epic-005",
   "branch": "cursor/epic-005-background-images",
   "baseBranch": "main",
-  "status": "in_progress",
-  "loop": 1,
-  "persona": "planning",
-  "completeEpic": false,
+  "status": "complete",
+  "loop": 5,
+  "persona": "qa",
+  "completeEpic": true,
   "prUrl": "https://github.com/groundworksdesign/poster/pull/28",
   "canonicalStatusFile": "ralph/task_status.json",
   "maxLoops": 8,
@@ -16,71 +16,60 @@
     "ralph/epic.md"
   ],
   "codebaseFindings": {
-    "irisGate": "FAIL 0c0ec8f: fetch-image body consumed by express.json; thumbnail 220 vs 512; deck-command 100kb 413; SSRF on proxy; Race 8MB stream + clear failed URL"
+    "irisGate": "Iris2 QA: fetch-image body+SSRF, thumbnail measured scale, Present asset refs; server binds 127.0.0.1",
+    "serverBind": "127.0.0.1 by default (HOST override). LAN Present is future work; Electron already loopback-only."
   },
   "requirements": [
-    {
-      "id": "REQ-008",
-      "title": "URL import via server proxy (body + SSRF)",
-      "todoIds": ["fix-fetch-image-proxy"],
-      "status": "pending"
-    },
-    {
-      "id": "REQ-006",
-      "title": "Program thumbnail Present-frame scale",
-      "todoIds": ["fix-thumbnail-scale"],
-      "status": "pending"
-    },
-    {
-      "id": "REQ-001",
-      "title": "Large images reach browser Present",
-      "todoIds": ["fix-present-asset-refs"],
-      "status": "pending"
-    }
+    { "id": "REQ-008", "title": "URL import via server proxy (body + SSRF)", "todoIds": ["fix-fetch-image-proxy"], "status": "done" },
+    { "id": "REQ-006", "title": "Program thumbnail Present-frame scale", "todoIds": ["fix-thumbnail-scale"], "status": "done" },
+    { "id": "REQ-001", "title": "Large images reach browser Present", "todoIds": ["fix-present-asset-refs"], "status": "done" }
   ],
   "todos": [
     {
       "id": "fix-fetch-image-proxy",
-      "content": "Stop express.json from consuming /api/poster/fetch-image body; SSRF hardening (DNS+redirect, timeouts, 8MB stream, uniform errors, JSON CT + same-origin/local); show real error; clear/flag failed URL input (N1 untouched); unmocked remix+electron e2e via local image server. Call out server bind choice.",
+      "content": "Stop express.json from consuming /api/poster/fetch-image body; SSRF hardening; show real error; clear failed URL; unmocked remix+electron e2e.",
       "requirementIds": ["REQ-008"],
-      "status": "pending",
-      "passes": false,
+      "status": "done",
+      "passes": true,
       "acceptanceCriteria": [
         "URL import works through real Express+Remix stack (no route mock)",
         "Blocked private/metadata IPs and redirect-to-private; timeout; oversize 8MB",
-        "UI shows real server error; failed URL cleared or flagged; existing image untouched",
+        "UI shows real server error; failed URL cleared; existing image untouched",
         "Electron and Remix e2e unmocked URL import pass"
       ],
-      "notes": []
+      "notes": [
+        "QA: remix REQ-008 unmocked + electron unmocked URL; unit SSRF suite.",
+        "Server bind: 127.0.0.1 default."
+      ]
     },
     {
       "id": "fix-thumbnail-scale",
-      "content": "ProgramThumbnailPanel scales Present frame to measured thumbnail width (not hard-coded 220). Add test.",
+      "content": "ProgramThumbnailPanel scales Present frame to measured thumbnail width.",
       "requirementIds": ["REQ-006"],
-      "status": "pending",
-      "passes": false,
+      "status": "done",
+      "passes": true,
       "acceptanceCriteria": [
         "Background fills full thumbnail preview width",
         "Unit/integration test covers measured scale"
       ],
-      "notes": []
+      "notes": ["QA: programThumbnail integration measures 512 → scale 512/1280."]
     },
     {
       "id": "fix-present-asset-refs",
-      "content": "Browser Present receives large images via asset id/refs (preferred over only raising JSON limit). Test image >100KB reaches browser Present window.",
+      "content": "Browser Present receives large images via asset id/refs.",
       "requirementIds": ["REQ-001"],
-      "status": "pending",
-      "passes": false,
+      "status": "done",
+      "passes": true,
       "acceptanceCriteria": [
         "Image >100KB shows in browser Present (no 413 drop)",
         "Uses asset reference path; dedupe table still used"
       ],
-      "notes": []
+      "notes": ["QA: remix e2e AC-001 large image 120KB green."]
     }
   ],
   "selected": {
-    "id": "fix-fetch-image-proxy",
-    "reason": "Blocker 1: every URL import fails; also required SSRF hardening on same endpoint."
+    "id": "fix-present-asset-refs",
+    "reason": "Final Iris2 todo verified; epic complete."
   },
-  "qaReport": ""
+  "qaReport": "ralph/qa-report.md"
 }
