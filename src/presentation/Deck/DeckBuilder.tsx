@@ -10,6 +10,7 @@ import {
   SongData,
   HorizontalAlign,
   VerticalAlign,
+  BackgroundImageSpec,
 } from '../../domain/PresentTypes';
 import { resolveSlideStyle } from '../../domain/resolveSlideStyle';
 import { maybeNormalizeStyleColor } from '../../domain/normalizeCssColor';
@@ -23,6 +24,7 @@ import { notifyLibraryChanged } from '../libraryRefresh';
 import { openPresentForRuntime } from './openPresentWindow';
 import type { SongSlideChoice } from './AddSongSlideChooser';
 import SongSlideEditPanel, { type SongPanelCommit } from './SongSlideEditPanel';
+import BackgroundImagePicker from './BackgroundImagePicker';
 import {
   notePresentShortcutPointerTarget,
   shouldIgnorePresentShortcuts,
@@ -767,6 +769,30 @@ export default function DeckBuilder() {
     syncSentSlideIfNeeded(newDeck);
   };
 
+  const updateDeckDefaultBackground = (next: BackgroundImageSpec | undefined) => {
+    if (!deck) return;
+    const newDeck: Deck = { ...deck };
+    if (next && typeof next.image === 'string' && next.image.trim()) {
+      newDeck.defaultBackground = next;
+    } else {
+      delete newDeck.defaultBackground;
+    }
+    setDeck(newDeck);
+    syncSentSlideIfNeeded(newDeck);
+  };
+
+  const updateDeckDefaultTitleTextBackground = (next: BackgroundImageSpec | undefined) => {
+    if (!deck) return;
+    const newDeck: Deck = { ...deck };
+    if (next && typeof next.image === 'string' && next.image.trim()) {
+      newDeck.defaultTitleTextBackground = next;
+    } else {
+      delete newDeck.defaultTitleTextBackground;
+    }
+    setDeck(newDeck);
+    syncSentSlideIfNeeded(newDeck);
+  };
+
   const createNewDeck = () => {
     const newDeck: Deck = {
       schemaVersion: CURRENT_SCHEMA_VERSION,
@@ -1381,6 +1407,24 @@ export default function DeckBuilder() {
             })()}
             <button onClick={() => resetDeckGeneralDefaults()}>Clear GENERAL defaults</button>
           </div>
+          {deck && (
+            <div data-testid="deck-background-defaults" style={{ marginTop: 12 }}>
+              <BackgroundImagePicker
+                label="Default whole-slide background"
+                testIdPrefix="deck-bg"
+                value={deck.defaultBackground}
+                onChange={updateDeckDefaultBackground}
+                showClear
+              />
+              <BackgroundImagePicker
+                label="Default title text-layer background"
+                testIdPrefix="deck-title-bg"
+                value={deck.defaultTitleTextBackground}
+                onChange={updateDeckDefaultTitleTextBackground}
+                showClear
+              />
+            </div>
+          )}
         </div>
       </div>
 

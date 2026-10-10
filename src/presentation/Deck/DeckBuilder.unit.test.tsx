@@ -767,3 +767,48 @@ test('Iris: cancel pending song does not reopen previously selected slide editor
   expect(screen.queryByRole('heading', { name: /Editing slide 1/i })).not.toBeInTheDocument();
 });
 
+test('deck defaults UI sets whole-slide and title text-layer backgrounds with fill default', async () => {
+  (global.fetch as jest.Mock).mockResolvedValue({
+    ok: true,
+    status: 200,
+    headers: { get: () => 'image/png' },
+    blob: async () => new Blob([new Uint8Array([1, 2, 3])], { type: 'image/png' }),
+    json: async () => [],
+  } as any);
+
+  render(<DeckBuilder />);
+  act(() => {
+    fireEvent.click(screen.getByRole('button', { name: /new deck/i }));
+  });
+
+  await waitFor(() => expect(screen.getByTestId('deck-background-defaults')).toBeInTheDocument());
+  expect(screen.getByTestId('deck-bg')).toBeInTheDocument();
+  expect(screen.getByTestId('deck-title-bg')).toBeInTheDocument();
+
+  fireEvent.change(screen.getByTestId('deck-bg-url'), {
+    target: { value: 'https://example.com/whole.png' },
+  });
+  await act(async () => {
+    fireEvent.click(screen.getByTestId('deck-bg-url-apply'));
+  });
+  await waitFor(() => expect(screen.getByTestId('deck-bg-preview')).toBeInTheDocument());
+  expect((screen.getByTestId('deck-bg-fit') as HTMLSelectElement).value).toBe('fill');
+
+  fireEvent.change(screen.getByTestId('deck-title-bg-url'), {
+    target: { value: 'https://example.com/title.png' },
+  });
+  await act(async () => {
+    fireEvent.click(screen.getByTestId('deck-title-bg-url-apply'));
+  });
+  await waitFor(() => expect(screen.getByTestId('deck-title-bg-preview')).toBeInTheDocument());
+
+  fireEvent.change(screen.getByTestId('deck-bg-dim'), { target: { value: '0.4' } });
+
+  const saved = await exportDeckJson();
+  expect(saved.defaultBackground.image.startsWith('data:image/png;base64,')).toBe(true);
+  expect(saved.defaultBackground.fit).toBe('fill');
+  expect(saved.defaultBackground.dim).toBeCloseTo(0.4);
+  expect(saved.defaultTitleTextBackground.image.startsWith('data:image/png;base64,')).toBe(true);
+  expect(saved.defaultTitleTextBackground.fit).toBe('fill');
+});
+
