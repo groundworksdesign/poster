@@ -3,8 +3,8 @@
   "branch": "cursor/epic-005-background-images",
   "baseBranch": "main",
   "status": "in_progress",
-  "loop": 5,
-  "persona": "dev",
+  "loop": 6,
+  "persona": "qa",
   "completeEpic": false,
   "prUrl": null,
   "canonicalStatusFile": "ralph/task_status.json",
@@ -98,7 +98,7 @@
       "todoIds": [
         "image-import-embed"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "REQ-009",
@@ -106,7 +106,7 @@
       "todoIds": [
         "image-import-embed"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "REQ-010",
@@ -158,13 +158,15 @@
         "REQ-008",
         "REQ-009"
       ],
-      "status": "pending",
-      "passes": false,
+      "status": "done",
+      "passes": true,
       "acceptanceCriteria": [
         "AC-007: File and URL images are embedded and survive source deletion / offline / moved deck",
         "AC-008: Failed URL shows error and leaves the field empty"
       ],
-      "notes": []
+      "notes": [
+        "QA loop 6: embedImage + BackgroundImagePicker tests green; file/URL embed to data URL; failed URL error + empty field; Use deck default hook present."
+      ]
     },
     {
       "id": "deck-defaults-ui",
@@ -265,10 +267,7 @@
       "notes": []
     }
   ],
-  "selected": {
-    "id": "image-import-embed",
-    "reason": "data-model is done. Image embed is required before deck/slide UI can set background images from file or URL (REQ-008/009, AC-007/008)."
-  },
-  "qaReport": null,
+  "selected": null,
+  "qaReport": "image-import-embed verified",
   "maxLoops": 24
 }
