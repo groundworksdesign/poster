@@ -1,5 +1,5 @@
 {
   "branch": "cursor/epic-005-background-images",
-  "lastLog": "[ralph] epic-005 complete: final head for PR CI (no skip ci)",
-  "updatedAt": "2026-10-10T16:50:00.000Z"
+  "lastLog": "[ralph] epic-005 Iris fix loop: GATE FAIL f7ce1c0; select fix-stale-present-backgrounds",
+  "updatedAt": "2026-10-10T18:38:49.000Z"
 }
