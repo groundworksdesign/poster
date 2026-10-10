@@ -37,6 +37,8 @@ export async function launchPosterApp(opts: LaunchPosterOptions): Promise<Electr
   delete env.POSTER_LIBRARY_PATH;
   delete env.POSTER_DB_PATH;
   delete env.POSTER_LIBRARY_JSON_PATH;
+  // E2E-only: allow the hardened image proxy to fetch a local test image host.
+  env.POSTER_ALLOW_LOOPBACK_FETCH = '1';
   if (opts.posterHome) {
     env.POSTER_HOME = opts.posterHome;
   }

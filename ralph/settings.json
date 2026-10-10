@@ -14,7 +14,7 @@
   "dockerComposeFile": "",
   "dockerService": "ralph-agent",
   "epicBaseBranch": "main",
-  "dockerWorkBranch": "cursor/epic-004-song-library",
+  "dockerWorkBranch": "cursor/epic-005-background-images",
   "dockerIsolateBranch": false,
   "dockerMergeStrategy": "work-branch",
   "dockerPoolSize": 1,

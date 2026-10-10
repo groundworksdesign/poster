@@ -53,6 +53,10 @@ if (build) {
 }
 
 const port = process.env.PORT || 3000;
-app.listen(port, () => {
-  console.log("Server listening on port", port);
+// Bind loopback by default. LAN Present / remote control is not a shipped feature
+// yet (design guide lists it as future work); Electron already binds 127.0.0.1.
+// Override with HOST=0.0.0.0 only when intentionally exposing the server.
+const host = process.env.HOST || "127.0.0.1";
+app.listen(port, host, () => {
+  console.log(`Server listening on http://${host}:${port}`);
 });

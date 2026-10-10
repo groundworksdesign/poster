@@ -1,167 +1,127 @@
 ---
-name: Song library
-epic: epic-004
+name: Background images
+epic: epic-005
 status: approved
 source_artifacts:
-  - id: 20261004-001
-    title: Poster song library
-    path: 20261004-feature-brief-song-library.md
-overview: "Ship an empty local song library with add-by-hand, one-screen file import, search and pick onto a new linked slide, and library edit/delete that can update decks after the user confirms."
+  - id: 20261008-001
+    title: Poster background images
+    path: ralph/specs/20261008-feature-brief-background-images.md
+  - id: 20261008-002
+    title: Epic 005 plan — Background images
+    path: ralph/specs/20261008-epic-005-background-images.plan.md
+overview: "Add a whole-slide background image on every slide type and a separate image behind title slide text. Each has one deck default with per-slide override, a fill, fit, or tile choice, and dimming toward black. Images come from a file or URL and are copied into the deck."
 todos:
-  - id: empty-library-schema
-    content: "Wire the unused local songs table (or equivalent) so a fresh install has an empty library, store title, book, number, lyrics, and a stable song id, and do not bundle the three church books."
-    status: completed
-  - id: add-song-by-hand
-    content: "Add a form to create one library song at a time (title, book, number, verses) so it appears in search afterward (REQ-002)."
-    status: completed
-  - id: import-review-screen
-    content: "Import Doug's gathered JSON plus existing Poster song XML/JSON through one review screen: checklist of songs all checked by default, no-lyrics group (title only or skip), title-match rows showing number and lyrics with keep both (default) / replace / skip. Skip the review screen for a single clean song file (REQ-003–006, 018–019, 022)."
-    status: completed
-  - id: add-slide-chooser
-    content: "When adding a song slide, offer Pick from library (default) and Import a file. Importing while adding a slide shows Also save to my library checked by default on the same screen. The chosen song becomes a new slide in the open deck and does not replace the deck (REQ-007, 008, 010, 017)."
-    status: completed
-  - id: add-slide-song-scratch-or-linked
-    content: "Add slide > SONG offers two types: (1) Song from scratch — blank song slide in place, no librarySongId, no chooser; (2) Linked song — AddSongSlideChooser (pick/import + Also save) with librarySongId. Scratch has Save to library via ImportReviewScreen (title-match keep-both; no-lyrics; cancel keeps scratch; confirm sets librarySongId). Scratch never appears in linked-update/apply-decks until linked. Prod e2e: scratch, linked insert, scratch→Save→duplicate-title→linked. Unit: excluded before save, included after (REQ-024)."
-    status: completed
-  - id: library-search-pick
-    content: "Library search matches title, book, number, and lyrics. Results show title, book, and number. Shared titles show the first verse inline. Enter or double-click inserts a linked slide after the current slide (REQ-009, 014, 015, 020)."
-    status: completed
-  - id: library-page
-    content: "Add a library page reachable from the main menu and from Add song slide, with the same search list plus Add, Edit, Delete, Import, and a used-in-N-decks count (REQ-011, 021)."
-    status: completed
-  - id: linked-update-decks
-    content: "Keep slides linked to their library song. On edit or delete, ask about updating decks only when the song is used, list those decks with checkboxes, and ask again before overwriting slides that were edited by hand. Deleting never removes slides unless the user selects those decks (REQ-012, 015, 016, 023)."
-    status: completed
-  - id: present-unchanged
-    content: "Leave Present song staging as title then two lyric lines per stage. Do not change that layout in this epic (REQ-013)."
-    status: completed
-  - id: tests-song-library
-    content: "Add tests covering AC-001 through AC-018: empty library, hand add, import formats and review defaults, pick-to-slide without replacing the deck, search including lyrics and first-verse for duplicate titles, save checkbox default, title-only empty lyrics, keep-both default, linked updates with hand-edit ask, and Present two-line staging still green."
-    status: completed
-  - id: fix-iris-regate-followups
-    content: "Iris re-gate follow-ups: fix UpdateDecksPrompt apply-decks selection reset (MUST-FIX); move routes/*.server.ts helpers out of routes so /library/loader/server is 404; hand-edited vs out-of-date labels (Not updated to the latest library version) via librarySongSyncedFingerprint (REQ-012/023)."
-    status: completed
-  - id: fix-remix-theme-persist-flake
-    content: "CI blocker: remix-theme-persist Home reopen (chooseTheme localStorage) flake after rebase onto #23 — find root cause (race vs flake) and fix; QA runs that spec 10x green."
-    status: completed
-  - id: fix-present-keys-while-editing
-    content: "Live-show safety: DeckBuilder page-wide Arrow/Page key handler must NOT move Present while focus is inside the slide edit panel or the song list; add a unit/integration test."
-    status: completed
-  - id: add-song-panel-redesign
-    content: "Add song redesign (Pam mockup + Roy decisions): Add slide below Slides header; type choice + linked/scratch/import inside slide edit panel; Also save unchecked for scratch / checked for imports; full first verse for duplicate titles; toolbar Load adds song slide (no deck replace); draft slide joins deck only on Save; Ctrl/Cmd+Enter on search stops on song card; panel states unit tests + e2e both SONG paths; Iris AC-001..018 stay green; Present/stagedSongSlide unchanged."
-    status: completed
-
-  - id: fix-iris-library-defer-until-save
-    content: "Iris blockers: Also save on single-file; defer library writes until Save slide; Cancel drops pending; existing-slide null commit stays open; multi-import array; F3 Skip unticks Also save."
+  - id: data-model
+    content: "Extend the deck and slide data so the deck holds one default whole-slide image and one default title text-layer image, each with fit (fill, fit, or tile, default fill) and dim level, and each slide can override either or inherit the deck default. Decks saved before this change load with no background images and look the same (REQ-001–004, 006, 007, 011)."
     status: pending
-  - id: fix-iris-keys-empty-lib-manage
-    content: "N1 Present keys on list/panel click; N4 Type a new song in panel; manage page full first verse."
+  - id: image-import-embed
+    content: "Add an image picker that accepts a local file or a web URL and copies the image into the deck so it still shows offline, after the source is deleted, and on another computer. A failed URL download shows an error and leaves the field empty (REQ-008, 009)."
     status: pending
-  - id: fix-iris-panel-ui-mockup
-    content: "UI mockup polish: toolbar, insert-after, menu keys, type cards, Esc/Ctrl+Enter, state I, Style collapsed."
+  - id: deck-defaults-ui
+    content: "In DeckBuilder deck settings, add the default whole-slide background image and default title text-layer image, each with image picker, fill/fit/tile choice, dimming slider, and clear (REQ-003, 006, 007)."
     status: pending
-  - id: fix-iris-beta-tag-ref
-    content: "F5: force-move beta tag ref to release head commit in pr.yml."
+  - id: slide-override-ui
+    content: "In each slide's editor, add an override for the whole-slide background (all slide types) and, on title slides, for the text-layer image. Each has image picker, fill/fit/tile, dimming slider, and Use deck default to reset (REQ-001, 002, 004, 006, 007)."
     status: pending
-
-  - id: fix-roy-state-i-library-words
-    status: completed
-    content: "State I: restore from current library song words; yellow note on open when already hand-edited."
-    status: completed
-  - id: fix-roy-esc-focus-library-id
-    status: completed
-    content: "Esc levels + unsaved confirm; type-card/menu/E/B focus; remove raw Library ID."
-    status: completed
-  - id: fix-roy-tighten-tests
-    status: completed
-    content: "Tighten 3 weakened tests; add State I / Esc / focus tests."
-    status: completed
-  - id: fix-iris-esc-three-press
-    content: "Esc 3-press; song unsaved confirm; hand-edit fingerprint; cancel no reopen; real Esc e2e."
-    status: completed
-  - id: fix-iris-handtype-focus
-    content: "Focus Save only on first song pick; key-by-key e2e for hand-edit + search + scratch fields; no premature save."
-    status: completed
-
+  - id: render-editor-present
+    content: "Render in both the editor preview and Present: whole-slide layer with fit and dimming toward black under all slide content; on image slides the slide's picture fitted on top with the background visible around it; on title slides the text-layer image filling the title and subtitle area with its own fit and dimming under the text (REQ-001, 002, 005–007)."
+    status: pending
+  - id: green-screen
+    content: "Keep both background images visible in green screen mode (REQ-010)."
+    status: pending
+  - id: tests-background-images
+    content: "Add tests for AC-001 through AC-012: background shown on each slide type, title text-layer image separate from whole-slide image, deck default vs override vs reset, image slide picture on top, fill/fit/tile rendering and fill default, dimming darkens, file and URL images survive source deletion and offline and a moved deck, failed URL shows error with empty field, green screen keeps both, and an existing deck opens unchanged. Include save/reload round-trip in Remix and Electron."
+    status: pending
 isProject: false
 ---
 
-# Epic 004: Song library
+# Epic 005: Background images
 
 ## Goal
 
-Poster has a local song library that starts empty. Users add songs by hand or import files through one review screen, find songs by title, book, number, or lyrics, and add a linked song slide to the open deck. Editing or deleting a library song can update the decks that use it after the user confirms.
+Every Poster slide can show a whole-slide background image, and title slides can also show a separate image behind their title and subtitle. The deck sets one default for each image, and any slide can override either one. Both images get a fill, fit, or tile choice and a dimming slider. Images come from a local file or a web URL and are copied into the deck.
 
 ## Current Baseline
 
-- Song slides and Present two-line staging already exist.
-- Importing a song XML or song-shaped JSON today replaces the whole deck.
-- A `songs` table exists in the local Poster database but is unused.
-- Doug's gathered books live as import files only; they must not ship inside the app.
+- `src/domain/PresentTypes.tsx`: `SlideCSS` already has `backgroundImage`, `backgroundSize`, `backgroundPosition`, and `backgroundColor`. `Deck.slideStyles` holds styles per slide type, and each `Slide` has its own `style`.
+- `src/presentation/Present/Present.tsx` (around lines 301–319): image slides use `slide.file ?? style.backgroundImage`, and other slides use `style.backgroundImage`. Title text sits on a solid `backgroundColor`.
+- DeckBuilder: deck default background color around line 1339, and the "Image URL/file" field around line 1720.
+- Green screen mode currently changes slide backgrounds.
+- Song presenting (`src/presentation/Present/` and `src/domain/stagedSongSlide.ts`) must stay byte-identical to main unless this plan explicitly requires Present-side background render. If Present must change for backgrounds, keep song staging logic untouched and call it out.
+- Title font size behaviour must stay unchanged.
+- Older decks without these fields must look exactly the same as before.
+
+## Key decisions (Roy)
+
+- One deck default per image (whole-slide background and title text-layer background), with a per-slide override and a "Use deck default" reset.
+- Fill / fit / tile, with fill as the default. Dimming toward black is available on both images.
+- Images from a local file or a URL are copied into the deck, so the deck is self-contained. A failed URL shows an error and leaves the field empty.
+- On image slides, the slide's picture is fitted on top of the background.
+- Green screen mode keeps both images.
+- Older decks without these fields look exactly the same as before.
 
 ## Implementation Plan
 
-1. Persist library songs with stable ids; ship empty.
-2. Build the import review screen and parsers for gathered JSON plus existing song XML/JSON.
-3. Build Add song slide chooser, library picker, and library page.
-4. Store a library song id on slides added from the library; wire edit/delete update prompts.
-5. Keep Present staging unchanged.
-6. Cover AC-001–AC-018 with automated tests.
+1. Data model: add deck-level defaults and slide-level overrides for the whole-slide image and the title text-layer image, each with fit and dim. Keep the existing fields readable so older decks load unchanged.
+2. Image import: one picker for file or URL that copies the image into the deck's storage. A failed URL download shows an error and leaves the field empty.
+3. Deck settings UI for the two defaults.
+4. Slide editor UI for overrides, with Use deck default to reset.
+5. Rendering in the editor preview and Present, including the image-slide stacking and the title text layer.
+6. Green screen keeps both images.
+7. Tests.
 
 ### Out of scope
 
-- Bundling the three church books in the app
-- Transcribing the five copyright-held songs
-- Changing how Present stages a song slide
-- Replacing the open deck with an imported song
+- A shared image library across decks.
+- Video or animated backgrounds.
+- Text-layer images on slide types other than title.
+- Separate deck defaults per slide type.
 
 ## Data Flow
 
 ```mermaid
 flowchart TD
-  addSlide[Add song slide] --> kind{Scratch or Linked}
-  kind -->|Scratch| blank[Blank song slide no librarySongId]
-  blank -->|Save to library| saveReview[ImportReviewScreen]
-  saveReview -->|confirm| linkedFromScratch[Slide gets librarySongId]
-  saveReview -->|cancel| blank
-  kind -->|Linked| choice{Pick or Import}
-  choice -->|Pick| search[Search title book number lyrics]
-  search --> slide[New linked slide in open deck]
-  choice -->|Import| review[One review screen]
-  review --> slide
-  review --> library[(Song library)]
-  linkedFromScratch --> library
-  manage[Library page] --> library
-  library -->|edit or delete with confirm| decks[Linked decks only]
+  A[Deck default whole-slide image] --> C{Slide override?}
+  C -- yes --> D[Slide background]
+  C -- no --> A
+  D --> E[Fit and dim toward black]
+  A --> E
+  E --> F[Whole-slide layer]
+  F --> G{Slide type}
+  G -- image --> H[Picture fitted on top]
+  G -- title --> I[Text-layer image: deck default or override, fit and dim]
+  I --> J[Title and subtitle]
+  G -- other --> K[Slide content]
 ```
 
 ## Primary Files Expected to Change
 
-- Local DB / songs persistence and any migration from schema version 1
-- Deck builder add-slide and song import paths (`DeckBuilder`, song parser)
-- New library UI (picker, review screen, manage page)
-- Slide / song types so a slide can hold a library song id
-- Present path only as needed to keep existing staging green
+- `src/domain/PresentTypes.tsx` (deck and slide background fields)
+- `src/presentation/Present/Present.tsx` (rendering — keep song staging untouched)
+- DeckBuilder (deck defaults and slide override controls)
+- Deck save/load and image storage code
+- Green screen handling
+- Tests alongside these
 
 ## Validation
 
-- [x] Fresh install has zero library songs (AC-001 / REQ-001)
-- [x] Hand-added song is findable later (AC-002 / REQ-002)
-- [x] Import accepts gathered book JSON and existing Poster song XML/JSON (AC-003 / REQ-003)
-- [x] Multi-song file does not import until the review checklist is confirmed (AC-004 / REQ-004, 022)
-- [x] No-lyrics songs offer title only or skip; nothing auto-imports (AC-005, AC-015 / REQ-005, 018)
-- [x] Title match shows number and lyrics; default keep both; also replace and skip (AC-006, AC-015 / REQ-006, 019)
-- [x] Add song slide can import or insert without replacing other slides (AC-007 / REQ-007, 008)
-- [x] Search by title, book, number, and lyrics works; shared titles can show first verse (AC-008, AC-012, AC-016 / REQ-009, 014, 020)
-- [x] Also save to my library starts checked and only saves when checked (AC-009, AC-014 / REQ-010, 017)
-- [x] Edit/delete available; decks update only after confirm; hand-edited slides need an extra yes (AC-010, AC-013, AC-018 / REQ-011, 012, 015, 016, 023)
-- [x] Present still title then two lines (AC-011 / REQ-013)
-- [x] Library opens from main menu and Add song slide (AC-017 / REQ-021)
-- [x] Add slide > SONG offers scratch (blank, unlinked) and linked (chooser); scratch Save to library via ImportReviewScreen; scratch excluded from update prompts until linked (AC-019 / REQ-024)
-- [x] Add song redesign inside slide edit panel (Roy-approved Pam mockup); toolbar Load adds song slide; Present keys ignored while editing (AC-020+)
+Definition of Done: all of the following pass.
+
+- AC-001 (REQ-001): A background image can be set on, and is shown in Present for, general, title, song, image, audio, and video slides.
+- AC-002 (REQ-002): A title slide shows its text-layer image behind the title and subtitle, separate from the whole-slide background.
+- AC-003 (REQ-003, REQ-004): A deck default applies to every slide without an override. An override shows the slide's own image, and Use deck default goes back to the deck image.
+- AC-004 (REQ-005): An image slide shows its picture fitted on top with the background visible around it.
+- AC-005 (REQ-006): Fill, fit, and tile each render as named, and new images default to fill.
+- AC-006 (REQ-007): The dimming slider visibly darkens the image toward black in the editor and in Present.
+- AC-007 (REQ-008, REQ-009): A file image and a URL image both still show after the source is deleted, while offline, and after the deck is moved to another computer.
+- AC-008 (REQ-008): A URL that fails to download shows an error and leaves the field empty.
+- AC-009 (REQ-010): Green screen mode still shows both images.
+- AC-010 (REQ-011): A deck saved on the current release opens with the same look.
+- AC-011: The deck has a single default for each image, applied across all slide types.
+- AC-012: CI passes, and Present song staging and existing title font-size behavior are unchanged.
 
 ## Risks to manage
 
-- Same title must not force overwrite; keep both is the default.
-- Do not fill empty copyright songs by scanning or transcription.
-- Existing decks without library links must keep working; only newly linked slides participate in updates.
+- Embedded images make deck files bigger. Keep the original image bytes and don't duplicate an image that's used on many slides.
+- PR #26 changes song slides and DeckBuilder. Start this after #26 merges, rebased on main (done: base is v0.1.19 / #26).
+- Text readability over busy images depends on dimming, so check song lyrics and title text at the default dim level.

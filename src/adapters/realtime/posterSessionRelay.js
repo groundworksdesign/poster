@@ -9,7 +9,12 @@ function getState() {
     globalThis[GLOBAL_KEY] = {
       graph: new PosterSessionGraph(),
       streamClients: new Map(),
+      /** @type {Map<string, { mime: string, bytes: Buffer }>} */
+      assets: new Map(),
     };
+  }
+  if (!globalThis[GLOBAL_KEY].assets) {
+    globalThis[GLOBAL_KEY].assets = new Map();
   }
   return globalThis[GLOBAL_KEY];
 }
@@ -113,10 +118,37 @@ function createSseResponse(peerId, kind) {
   });
 }
 
-function mountPosterSessionRelay(app) {
-  app.use('/api/poster', require('express').json());
+function putAsset(hash, dataUrl) {
+  if (typeof hash !== 'string' || !hash || typeof dataUrl !== 'string') {
+    return { ok: false, error: 'hash-and-dataUrl-required' };
+  }
+  const m = /^data:([^;,]+);base64,(.+)$/i.exec(dataUrl);
+  if (!m) return { ok: false, error: 'invalid-data-url' };
+  const mime = m[1];
+  const bytes = Buffer.from(m[2], 'base64');
+  getState().assets.set(hash, { mime, bytes });
+  return { ok: true, hash };
+}
 
-  app.post('/api/poster/deck-command', (req, res) => {
+function getAsset(hash) {
+  return getState().assets.get(hash) || null;
+}
+
+function isLoopbackRemote(req) {
+  const remote = req.socket?.remoteAddress || '';
+  const ip = remote.startsWith('::ffff:') ? remote.slice(7) : remote;
+  return ip === '127.0.0.1' || ip === '::1' || /^127\./.test(ip);
+}
+
+function mountPosterSessionRelay(app) {
+  const express = require('express');
+  // IMPORTANT: do NOT mount express.json() on all of /api/poster — that consumes
+  // the body before Remix (or other) handlers for /api/poster/fetch-image.
+  // Parse JSON only on the Express-owned command routes.
+  const jsonSmall = express.json({ limit: '1mb' });
+  const jsonAssets = express.json({ limit: '16mb' });
+
+  app.post('/api/poster/deck-command', jsonSmall, (req, res) => {
     const peerId = req.body?.peerId;
     const command = req.body?.command;
     if (!peerId || !command) {
@@ -126,7 +158,7 @@ function mountPosterSessionRelay(app) {
     res.json(processDeckCommand(peerId, command));
   });
 
-  app.post('/api/poster/present-event', (req, res) => {
+  app.post('/api/poster/present-event', jsonSmall, (req, res) => {
     const peerId = req.body?.peerId;
     const event = req.body?.event;
     if (!peerId || !event) {
@@ -134,6 +166,31 @@ function mountPosterSessionRelay(app) {
       return;
     }
     res.json(processPresentEvent(peerId, event));
+  });
+
+  app.post('/api/poster/asset', jsonAssets, (req, res) => {
+    if (!isLoopbackRemote(req)) {
+      res.status(403).json({ ok: false, error: 'forbidden' });
+      return;
+    }
+    const ct = String(req.headers['content-type'] || '').toLowerCase();
+    if (!ct.includes('application/json')) {
+      res.status(400).json({ ok: false, error: 'forbidden' });
+      return;
+    }
+    const result = putAsset(req.body?.hash, req.body?.dataUrl);
+    res.status(result.ok ? 200 : 400).json(result);
+  });
+
+  app.get('/api/poster/asset/:hash', (req, res) => {
+    const asset = getAsset(req.params.hash);
+    if (!asset) {
+      res.status(404).end();
+      return;
+    }
+    res.setHeader('Content-Type', asset.mime);
+    res.setHeader('Cache-Control', 'private, max-age=3600');
+    res.send(asset.bytes);
   });
 
   app.get('/api/poster/stream/deck', (req, res) => {
@@ -181,7 +238,7 @@ function mountPosterSessionRelay(app) {
     res.json({ ok: true, messages: drainQueue(peerId) });
   });
 
-  app.post('/api/poster/test/reset', (req, res) => {
+  app.post('/api/poster/test/reset', jsonSmall, (req, res) => {
     if (process.env.NODE_ENV === 'production') {
       res.status(404).end();
       return;
@@ -189,6 +246,7 @@ function mountPosterSessionRelay(app) {
     const state = getState();
     state.graph = new PosterSessionGraph();
     state.streamClients.clear();
+    state.assets = new Map();
     res.json({ ok: true });
   });
 }
@@ -200,10 +258,13 @@ module.exports = {
   processPresentEvent,
   createSseResponse,
   drainQueue,
+  putAsset,
+  getAsset,
   _resetForTests: () => {
     const state = getState();
     state.graph = new PosterSessionGraph();
     state.streamClients.clear();
     state.queues = new Map();
+    state.assets = new Map();
   },
 };

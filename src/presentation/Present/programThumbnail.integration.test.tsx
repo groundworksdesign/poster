@@ -204,26 +204,90 @@ test('ProgramThumbnailPanel renders blank output without slide content', () => {
   expect(screen.queryByTestId('program-thumbnail-lines')).not.toBeInTheDocument();
 });
 
-test('ProgramThumbnailPanel matches green-screen output and suppresses image backgrounds', () => {
+test('ProgramThumbnailPanel scales Present frame to the measured preview width', () => {
+  // jsdom layout is 0-width unless we stub; stub ResizeObserver + client box.
+  const originalRO = (global as any).ResizeObserver;
+  (global as any).ResizeObserver = class {
+    cb: ResizeObserverCallback;
+    constructor(cb: ResizeObserverCallback) {
+      this.cb = cb;
+    }
+    observe(el: Element) {
+      Object.defineProperty(el, 'getBoundingClientRect', {
+        configurable: true,
+        value: () => ({ width: 512, height: 288, top: 0, left: 0, bottom: 288, right: 512, x: 0, y: 0, toJSON() {} }),
+      });
+      this.cb([{ target: el } as ResizeObserverEntry], this as unknown as ResizeObserver);
+    }
+    unobserve() {}
+    disconnect() {}
+  };
+
+  render(
+    <ProgramThumbnailPanel
+      program={{
+        title: 'Wide thumb',
+        slideType: 'general',
+        slideStyle: { color: '#fff' },
+        backgroundColor: '#111',
+        color: '#fff',
+        useGreenScreen: false,
+        wholeBackground: {
+          image: 'data:image/png;base64,whole',
+          fit: 'fill',
+          dim: 0,
+          isOverride: false,
+        },
+      }}
+    />,
+  );
+
+  const shell = screen.getByTestId('program-thumbnail-shell');
+  expect(shell).toBeInTheDocument();
+  const preview = screen.getByTestId('program-thumbnail-preview');
+  expect(preview).toHaveAttribute('data-preview-width', '512');
+  const frame = screen.getByTestId('program-thumbnail-present-frame');
+  // 512 / 1280 Present viewport width — whole stage (text + bg) is scaled.
+  expect(Number(frame.getAttribute('data-frame-scale'))).toBeCloseTo(512 / 1280, 5);
+  expect(frame).toHaveAttribute('data-frame-width', '1280');
+  expect(screen.getByTestId('program-thumbnail-whole-bg')).toBeInTheDocument();
+  expect(frame).toContainElement(screen.getByTestId('program-thumbnail-title'));
+
+  (global as any).ResizeObserver = originalRO;
+});
+
+test('ProgramThumbnailPanel green screen keeps epic-005 backgrounds; shows image-slide picture on top', () => {
   render(
     <ProgramThumbnailPanel
       program={{
         title: 'Green-screen slide',
-        subTitle: 'No image',
+        subTitle: 'With picture',
         slideFile: 'https://example.com/slide.jpg',
         slideStyle: { backgroundColor: '#222', color: '#fff', backgroundImage: 'https://example.com/style.jpg' },
         backgroundColor: 'transparent',
         color: '#fff',
         slideType: 'image',
         useGreenScreen: true,
+        wholeBackground: {
+          image: 'data:image/png;base64,whole',
+          fit: 'fill',
+          dim: 0.2,
+          isOverride: false,
+        },
       }}
     />,
   );
 
-  const preview = screen.getByTestId('program-thumbnail-preview');
-  expect(preview).toHaveStyle({ backgroundColor: '#00b140' });
-  expect(preview).not.toHaveStyle({ backgroundImage: 'url(https://example.com/slide.jpg)' });
-  expect(preview).not.toHaveStyle({ backgroundImage: 'url(https://example.com/style.jpg)' });
+  const stage = screen.getByTestId('program-thumbnail-present-frame');
+  expect(stage).toHaveStyle({ backgroundColor: '#00b140' });
+  // Legacy CSS backgrounds stay off in green screen.
+  expect(stage).not.toHaveStyle({ backgroundImage: 'url(https://example.com/slide.jpg)' });
+  expect(stage).not.toHaveStyle({ backgroundImage: 'url(https://example.com/style.jpg)' });
+  // Epic-005 whole-slide layer + image-slide picture on top (Roy GS decision).
+  expect(screen.getByTestId('program-thumbnail-whole-bg')).toBeInTheDocument();
+  expect(screen.getByTestId('program-thumbnail-image-picture')).toHaveStyle({
+    backgroundImage: 'url(https://example.com/slide.jpg)',
+  });
   expect(screen.getByTestId('program-thumbnail-title')).toHaveTextContent('Green-screen slide');
   const lowerThird = screen.getByTestId('program-thumbnail-lower-third');
   expect(lowerThird).toHaveStyle({ backgroundColor: '#222' });
@@ -250,8 +314,8 @@ test('ProgramThumbnailPanel matches Present lower-third for title/subtitle green
     />,
   );
 
-  const preview = screen.getByTestId('program-thumbnail-preview');
-  expect(preview).toHaveStyle({ backgroundColor: '#00b140', justifyContent: 'flex-end' });
+  const stage = screen.getByTestId('program-thumbnail-present-frame');
+  expect(stage).toHaveStyle({ backgroundColor: '#00b140', justifyContent: 'flex-end' });
   const bar = screen.getByTestId('program-thumbnail-lower-third');
   expect(bar).toHaveStyle({ backgroundColor: '#003366', width: '100%' });
   expect(screen.getByTestId('program-thumbnail-title')).toHaveTextContent(
@@ -283,8 +347,10 @@ test('ProgramThumbnailPanel preserves Present alignment and typography', () => {
     />,
   );
 
-  const preview = screen.getByTestId('program-thumbnail-preview');
-  expect(preview).toHaveStyle({ justifyContent: 'flex-end', alignItems: 'flex-end', fontWeight: 'bold' });
+  const stage = screen.getByTestId('program-thumbnail-present-frame');
+  expect(stage).toHaveStyle({ justifyContent: 'flex-end', alignItems: 'flex-end', fontWeight: 'bold' });
   expect(screen.getByTestId('program-thumbnail-title')).toHaveStyle({ fontSize: '48px' });
   expect(screen.getByTestId('program-thumbnail-subtitle')).toHaveStyle({ fontSize: '24px' });
+  // Title keeps Present font size inside the logical stage (scaled as a whole).
+  expect(stage).toContainElement(screen.getByTestId('program-thumbnail-title'));
 });

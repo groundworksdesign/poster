@@ -1,5 +1,10 @@
-import type { Slide, SlideCSS, SongData } from './PresentTypes';
+import type { BackgroundImageSpec, Slide, SlideCSS, SongData } from './PresentTypes';
 import { SlideType } from './PresentTypes';
+import {
+  resolveTitleTextBackground,
+  resolveWholeSlideBackground,
+  type ResolvedBackgroundImage,
+} from './backgroundImage';
 
 /** Compact program snapshot for deck thumbnail (not a full PresentData dump). */
 export type ProgramThumbnailState = {
@@ -15,6 +20,10 @@ export type ProgramThumbnailState = {
   color?: string;
   lines?: string[];
   useGreenScreen?: boolean;
+  /** Resolved whole-slide background (epic-005); kept in green screen. */
+  wholeBackground?: ResolvedBackgroundImage;
+  /** Resolved title text-layer background (epic-005); kept in green screen. */
+  titleTextBackground?: ResolvedBackgroundImage;
 };
 
 /**
@@ -26,8 +35,18 @@ export function buildProgramThumbnail(input: {
   songData: SongData | null;
   segmentIndex: number;
   useGreenScreen: boolean;
+  defaultBackground?: BackgroundImageSpec;
+  defaultTitleTextBackground?: BackgroundImageSpec;
 }): ProgramThumbnailState | null {
-  const { slide, message, songData, segmentIndex, useGreenScreen } = input;
+  const {
+    slide,
+    message,
+    songData,
+    segmentIndex,
+    useGreenScreen,
+    defaultBackground,
+    defaultTitleTextBackground,
+  } = input;
   if (!slide && (message === null || message === undefined || message === '')) {
     return null;
   }
@@ -50,6 +69,12 @@ export function buildProgramThumbnail(input: {
     state.subTitleFontSize = slide.subTitleFontSize;
     state.backgroundColor = useGreenScreen ? 'transparent' : slide.style?.backgroundColor;
     state.color = slide.style?.color;
+
+    const deckProxy = { defaultBackground, defaultTitleTextBackground };
+    const whole = resolveWholeSlideBackground(deckProxy as any, slide);
+    const titleText = resolveTitleTextBackground(deckProxy as any, slide);
+    if (whole.image) state.wholeBackground = whole;
+    if (titleText.image && slide.type === SlideType.TITLE) state.titleTextBackground = titleText;
 
     if (slide.type === SlideType.SONG && songData) {
       const allLines = songData.verses.flatMap((v) => v.lines);
