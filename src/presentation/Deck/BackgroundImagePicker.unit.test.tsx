@@ -55,6 +55,8 @@ describe('BackgroundImagePicker', () => {
     expect(screen.getByTestId('bg-picker-error').textContent).toMatch(/Could not download/i);
     expect(onChange).not.toHaveBeenCalled();
     expect(screen.getByTestId('bg-picker-preview')).toBeInTheDocument();
+    // Race: failed URL is cleared from the input; existing image stays.
+    expect((screen.getByTestId('bg-picker-url') as HTMLInputElement).value).toBe('');
     fetchMock.mockRestore();
   });
 
@@ -73,6 +75,7 @@ describe('BackgroundImagePicker', () => {
 
     await waitFor(() => expect(screen.getByTestId('bg-picker-error')).toBeInTheDocument());
     expect(onChange).not.toHaveBeenCalled();
+    expect((screen.getByTestId('bg-picker-url') as HTMLInputElement).value).toBe('');
     fetchMock.mockRestore();
   });
 

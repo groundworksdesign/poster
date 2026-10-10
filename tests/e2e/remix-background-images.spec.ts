@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
+import { startLocalImageServer } from './localImageServer';
 
 const TINY =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
@@ -96,10 +97,32 @@ test.describe('epic-005 background images (remix)', () => {
     await context.close();
   });
 
+  test('REQ-008 unmocked: URL import via real /api/poster/fetch-image + local image host', async ({
+    page,
+    baseURL,
+  }) => {
+    const img = await startLocalImageServer();
+    const base = baseURL || 'http://127.0.0.1:3000';
+    try {
+      await page.goto(`${base}/deck`, { waitUntil: 'domcontentloaded' });
+      await page.getByRole('button', { name: /new deck/i }).click();
+      await expect(page.getByTestId('deck-background-defaults')).toBeVisible({ timeout: 15000 });
+
+      // Do not mock fetch-image — exercise the real Remix/Express stack.
+      await page.getByTestId('deck-bg-url').pressSequentially(img.pngUrl);
+      await page.getByTestId('deck-bg-url-apply').click();
+      await expect(page.getByTestId('deck-bg-preview')).toBeVisible({ timeout: 15000 });
+      await expect(page.getByTestId('deck-bg-error')).toHaveCount(0);
+    } finally {
+      await img.close();
+    }
+  });
+
   test('AC-003/007/008: override reset, failed URL, export/reimport round-trip', async ({
     page,
     baseURL,
   }) => {
+    const img = await startLocalImageServer();
     const base = baseURL || 'http://127.0.0.1:3000';
     await page.goto(`${base}/deck`, { waitUntil: 'domcontentloaded' });
     await loadDeck(page, deckWithBackgrounds);
@@ -107,23 +130,16 @@ test.describe('epic-005 background images (remix)', () => {
     await page.getByRole('button', { name: 'Edit' }).first().click();
     await expect(page.getByTestId('slide-background-overrides')).toBeVisible();
 
-    await page.route('**/api/poster/fetch-image', async (route) => {
-      if (route.request().method() !== 'POST') {
-        await route.continue();
-        return;
-      }
-      await route.fulfill({
-        status: 400,
-        contentType: 'application/json',
-        body: JSON.stringify({ ok: false, error: 'Could not download the image (HTTP 404).' }),
-      });
-    });
-    await page.getByTestId('slide-bg-url').pressSequentially('https://example.com/missing-bg.png');
+    // Unmocked failure through the real proxy (404 from local image host).
+    await page.getByTestId('slide-bg-url').pressSequentially(img.missingUrl);
     await page.getByTestId('slide-bg-url-apply').click();
     await expect(page.getByTestId('slide-bg-error')).toBeVisible({ timeout: 10000 });
-    await expect(page.getByTestId('slide-bg-error')).toContainText(/Could not download/i);
+    await expect(page.getByTestId('slide-bg-error')).toContainText(/Could not download|did not return/i);
+    // Race: failed URL cleared from the input.
+    await expect(page.getByTestId('slide-bg-url')).toHaveValue('');
     // N1: failed URL on inherit must not create an empty override.
     await expect(page.getByText(/Whole-slide background \(deck default\)/i)).toBeVisible();
+    await img.close();
 
     await page.getByTestId('slide-bg-fit').selectOption('tile');
     await page.getByTestId('save-slide-button').click();
@@ -216,6 +232,53 @@ test.describe('epic-005 background images (remix)', () => {
     await expect(presentation.getByText('Old After BG')).toBeVisible({ timeout: 10000 });
     await expect(presentation.getByTestId('present-whole-bg')).toHaveCount(0);
     await expect(presentation.getByTestId('present-title-text-bg')).toHaveCount(0);
+
+    await context.close();
+  });
+
+  test('AC-001 large image: >100KB background reaches browser Present via asset refs', async ({
+    browser,
+    baseURL,
+  }) => {
+    const base = baseURL || 'http://127.0.0.1:3000';
+    // ~120KB raw → ~160KB base64; previously 413'd express.json (100kb) on deck-command.
+    const bigDataUrl = `data:image/png;base64,${Buffer.alloc(120_000, 7).toString('base64')}`;
+    const bigDeck = {
+      title: 'Big BG Deck',
+      date: '2026-10-10',
+      location: '',
+      useGreenScreen: false,
+      notes: '',
+      slideStyles: {},
+      defaultBackground: { image: bigDataUrl, fit: 'fill', dim: 0 },
+      slides: [
+        {
+          id: 'big-1',
+          type: 'general',
+          title: 'Big Image Slide',
+          style: { backgroundColor: '#111', color: '#fff' },
+        },
+      ],
+    };
+
+    const context = await browser.newContext();
+    const deckPage = await context.newPage();
+    await deckPage.goto(`${base}/deck`, { waitUntil: 'domcontentloaded' });
+    await expect(deckPage.getByTestId('deck-session-ready')).toHaveAttribute('data-ready', 'true', {
+      timeout: 15000,
+    });
+
+    const [presentation] = await Promise.all([
+      context.waitForEvent('page'),
+      deckPage.getByTestId('open-present').click(),
+    ]);
+    await presentation.waitForLoadState('domcontentloaded');
+    await expect(presentation.getByTestId('present-ready')).toBeVisible({ timeout: 15000 });
+
+    await loadDeck(deckPage, bigDeck);
+    await deckPage.locator('#slides').getByRole('button', { name: 'Send' }).first().click();
+    await expect(presentation.getByText('Big Image Slide')).toBeVisible({ timeout: 15000 });
+    await expect(presentation.getByTestId('present-whole-bg')).toBeVisible({ timeout: 15000 });
 
     await context.close();
   });

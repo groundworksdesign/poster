@@ -33,13 +33,19 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
   webServer: {
-    command: `node "${ensureRemixPublicIndex}" && PORT=${REMIX_PORT} pnpm exec remix dev`,
+    // POSTER_ALLOW_LOOPBACK_FETCH: e2e-only so a local image host can exercise the real proxy.
+    command: `node "${ensureRemixPublicIndex}" && PORT=${REMIX_PORT} POSTER_ALLOW_LOOPBACK_FETCH=1 pnpm exec remix dev`,
     cwd: repoRoot,
     url: `${origin}/deck`,
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
     stdout: 'pipe',
     stderr: 'pipe',
+    env: {
+      ...process.env,
+      PORT: String(REMIX_PORT),
+      POSTER_ALLOW_LOOPBACK_FETCH: '1',
+    },
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
 });

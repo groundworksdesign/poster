@@ -85,7 +85,9 @@ export default function BackgroundImagePicker({
     setBusy(false);
     if (!result.ok) {
       // N1: failed URL leaves existing image and override/inherit state untouched.
+      // Race: clear the failed URL from the input so it does not look applied.
       setError(result.error);
+      setUrlDraft('');
       return;
     }
     applyEmbedded(result.dataUrl, value);
@@ -134,8 +136,14 @@ export default function BackgroundImagePicker({
           value={urlDraft}
           disabled={busy}
           data-testid={`${testIdPrefix}-url`}
+          aria-invalid={error ? true : undefined}
           onChange={(e) => setUrlDraft(e.target.value)}
-          style={{ minWidth: 220 }}
+          style={{
+            minWidth: 220,
+            ...(error
+              ? { outline: '2px solid #b00020', borderColor: '#b00020' }
+              : null),
+          }}
         />
         <button
           type="button"

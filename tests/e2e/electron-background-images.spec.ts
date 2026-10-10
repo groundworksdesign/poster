@@ -6,9 +6,11 @@ import {
   launchPosterApp,
   waitForHome,
   openDeckFromLibrary,
+  openDeckWindow,
   openPresentWindow,
   closeApp,
 } from './electronHelpers';
+import { startLocalImageServer } from './localImageServer';
 
 const TINY =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
@@ -86,6 +88,36 @@ test.describe('Electron: background images save/reload', () => {
       await expect(present.getByTestId('present-title-text-bg')).toBeVisible();
     } finally {
       await closeApp(app);
+      fs.rmSync(sandbox, { recursive: true, force: true });
+    }
+  });
+
+  test('REQ-008 unmocked: URL import through Electron packaged server stack', async () => {
+    const img = await startLocalImageServer();
+    const sandbox = makeSandbox('poster-electron-bg-url-');
+    const homeDir = path.join(sandbox, 'home');
+    fs.mkdirSync(homeDir, { recursive: true });
+    let app: ElectronApplication | undefined;
+    try {
+      app = await launchPosterApp({
+        home: homeDir,
+        userDataDir: path.join(sandbox, 'user-data'),
+      });
+      const home = await waitForHome(app);
+      const deck = await openDeckWindow(app, home);
+      await expect(deck.getByTestId('deck-session-ready')).toHaveAttribute('data-ready', 'true', {
+        timeout: 20000,
+      });
+      await deck.getByRole('button', { name: /new deck/i }).click();
+      await expect(deck.getByTestId('deck-background-defaults')).toBeVisible({ timeout: 15000 });
+      // Real Express+Remix stack (no route mock); proves body is not consumed by express.json.
+      await deck.getByTestId('deck-bg-url').pressSequentially(img.pngUrl);
+      await deck.getByTestId('deck-bg-url-apply').click();
+      await expect(deck.getByTestId('deck-bg-preview')).toBeVisible({ timeout: 15000 });
+      await expect(deck.getByTestId('deck-bg-error')).toHaveCount(0);
+    } finally {
+      await closeApp(app);
+      await img.close();
       fs.rmSync(sandbox, { recursive: true, force: true });
     }
   });
