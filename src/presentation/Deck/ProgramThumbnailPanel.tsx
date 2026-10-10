@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useLayoutEffect, useRef, useState } from 'react';
 import type { ProgramThumbnailState } from '../../application/SessionTransport';
 import { VerticalAlign } from '../../domain/PresentTypes';
 import { SHOW_IMAGE_PICTURE_IN_GREEN_SCREEN } from '../../domain/greenScreenImagePicture';
@@ -57,8 +57,24 @@ export function ProgramThumbnailPanel({ program }: ProgramThumbnailPanelProps) {
   const hasTitleBlock = !!(program?.title || program?.subTitle);
   const hasLines = !!(program?.lines && program.lines.length > 0);
   const isTitle = program?.slideType === 'title';
-  // Thumbnail preview is ~220px wide in CSS; scale Present frame into it.
-  const frameScale = presentFramePreviewScale(220, isTitle);
+  const previewRef = useRef<HTMLDivElement | null>(null);
+  // CSS max-width is 32rem (~512px); measure the real box so the Present frame fills it.
+  const [previewWidth, setPreviewWidth] = useState(512);
+
+  useLayoutEffect(() => {
+    const el = previewRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const measure = () => {
+      const w = Math.round(el.getBoundingClientRect().width);
+      if (w > 0) setPreviewWidth(w);
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [hasProgram, program?.slideType, program?.wholeBackground?.image]);
+
+  const frameScale = presentFramePreviewScale(previewWidth, isTitle);
   const showImagePicture =
     !!program?.wholeBackground?.image &&
     program.slideType === 'image' &&
@@ -75,7 +91,9 @@ export function ProgramThumbnailPanel({ program }: ProgramThumbnailPanelProps) {
       <h3>On program</h3>
       {hasProgram ? (
         <div
+          ref={previewRef}
           data-testid="program-thumbnail-preview"
+          data-preview-width={previewWidth}
           className="deck-program-thumbnail-preview"
           style={{
             position: 'relative',
@@ -121,6 +139,7 @@ export function ProgramThumbnailPanel({ program }: ProgramThumbnailPanelProps) {
             >
               <div
                 data-testid="program-thumbnail-present-frame"
+                data-frame-scale={frameScale.scale}
                 style={{
                   width: frameScale.frame.width,
                   height: frameScale.frame.height,

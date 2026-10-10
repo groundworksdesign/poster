@@ -204,6 +204,54 @@ test('ProgramThumbnailPanel renders blank output without slide content', () => {
   expect(screen.queryByTestId('program-thumbnail-lines')).not.toBeInTheDocument();
 });
 
+test('ProgramThumbnailPanel scales Present frame to the measured preview width', () => {
+  // jsdom layout is 0-width unless we stub; stub ResizeObserver + client box.
+  const originalRO = (global as any).ResizeObserver;
+  (global as any).ResizeObserver = class {
+    cb: ResizeObserverCallback;
+    constructor(cb: ResizeObserverCallback) {
+      this.cb = cb;
+    }
+    observe(el: Element) {
+      Object.defineProperty(el, 'getBoundingClientRect', {
+        configurable: true,
+        value: () => ({ width: 512, height: 288, top: 0, left: 0, bottom: 288, right: 512, x: 0, y: 0, toJSON() {} }),
+      });
+      this.cb([{ target: el } as ResizeObserverEntry], this as unknown as ResizeObserver);
+    }
+    unobserve() {}
+    disconnect() {}
+  };
+
+  render(
+    <ProgramThumbnailPanel
+      program={{
+        title: 'Wide thumb',
+        slideType: 'general',
+        slideStyle: { color: '#fff' },
+        backgroundColor: '#111',
+        color: '#fff',
+        useGreenScreen: false,
+        wholeBackground: {
+          image: 'data:image/png;base64,whole',
+          fit: 'fill',
+          dim: 0,
+          isOverride: false,
+        },
+      }}
+    />,
+  );
+
+  const preview = screen.getByTestId('program-thumbnail-preview');
+  expect(preview).toHaveAttribute('data-preview-width', '512');
+  const frame = screen.getByTestId('program-thumbnail-present-frame');
+  // 512 / 1280 Present viewport width
+  expect(Number(frame.getAttribute('data-frame-scale'))).toBeCloseTo(512 / 1280, 5);
+  expect(screen.getByTestId('program-thumbnail-whole-bg')).toBeInTheDocument();
+
+  (global as any).ResizeObserver = originalRO;
+});
+
 test('ProgramThumbnailPanel green screen keeps epic-005 backgrounds; shows image-slide picture on top', () => {
   render(
     <ProgramThumbnailPanel
