@@ -128,9 +128,21 @@ export default function Presentation() {
       songData,
       segmentIndex,
       useGreenScreen,
+      defaultBackground,
+      defaultTitleTextBackground,
     });
     session.reportProgramState(program);
-  }, [slide, message, songData, segmentIndex, useGreenScreen, loading, sessionError]);
+  }, [
+    slide,
+    message,
+    songData,
+    segmentIndex,
+    useGreenScreen,
+    defaultBackground,
+    defaultTitleTextBackground,
+    loading,
+    sessionError,
+  ]);
 
   const hasElectronFullscreenBridge = () =>
     typeof window !== 'undefined' &&

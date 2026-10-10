@@ -1,6 +1,7 @@
 import React from 'react';
 import type { ProgramThumbnailState } from '../../application/SessionTransport';
 import { VerticalAlign } from '../../domain/PresentTypes';
+import BackgroundImageLayer from '../shared/BackgroundImageLayer';
 
 export type ProgramThumbnailPanelProps = {
   program: ProgramThumbnailState | null;
@@ -81,28 +82,74 @@ export function ProgramThumbnailPanel({ program }: ProgramThumbnailPanelProps) {
                   ? 'flex-end'
                   : 'center',
             justifyContent: previewJustify(program),
+            // Legacy CSS backgrounds stay off in green screen (pre-epic-005 look).
+            // Epic-005 whole-slide layers are painted below and kept in green screen.
             backgroundImage:
-              !isGreenScreen && program.slideFile
+              !program.wholeBackground?.image && !isGreenScreen && program.slideFile
                 ? `url(${program.slideFile})`
-                : !isGreenScreen && style?.backgroundImage
+                : !program.wholeBackground?.image && !isGreenScreen && style?.backgroundImage
                   ? `url(${style.backgroundImage})`
                   : undefined,
             backgroundSize: style?.backgroundSize ?? 'cover',
             backgroundPosition: style?.backgroundPosition ?? 'center',
+            overflow: 'hidden',
           }}
         >
+          {program.wholeBackground?.image ? (
+            <BackgroundImageLayer
+              resolved={program.wholeBackground}
+              testId="program-thumbnail-whole-bg"
+              zIndex={0}
+            />
+          ) : null}
+          {program.wholeBackground?.image &&
+          program.slideType === 'image' &&
+          program.slideFile ? (
+            <div
+              data-testid="program-thumbnail-image-picture"
+              aria-hidden
+              style={{
+                position: 'absolute',
+                inset: 0,
+                zIndex: 1,
+                backgroundImage: `url(${program.slideFile})`,
+                backgroundSize: 'contain',
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'center',
+                pointerEvents: 'none',
+              }}
+            />
+          ) : null}
           {program.message ? (
-            <div data-testid="program-thumbnail-message" className="deck-program-thumbnail-message">
+            <div
+              data-testid="program-thumbnail-message"
+              className="deck-program-thumbnail-message"
+              style={{ position: 'relative', zIndex: 2 }}
+            >
               {program.message}
             </div>
           ) : null}
 
           {lowerThird && (hasTitleBlock || hasLines) ? (
-            <div data-testid="program-thumbnail-lower-third" style={lowerThird}>
+            <div
+              data-testid="program-thumbnail-lower-third"
+              style={{ ...lowerThird, position: 'relative', zIndex: 2, overflow: 'hidden' }}
+            >
+              {program.titleTextBackground?.image ? (
+                <BackgroundImageLayer
+                  resolved={program.titleTextBackground}
+                  testId="program-thumbnail-title-text-bg"
+                  zIndex={0}
+                />
+              ) : null}
               {program.title ? (
                 <div
                   data-testid="program-thumbnail-title"
-                  style={{ fontSize: program.titleFontSize ?? style?.fontSize }}
+                  style={{
+                    position: 'relative',
+                    zIndex: 2,
+                    fontSize: program.titleFontSize ?? style?.fontSize,
+                  }}
                 >
                   {program.title}
                 </div>
@@ -110,13 +157,17 @@ export function ProgramThumbnailPanel({ program }: ProgramThumbnailPanelProps) {
               {program.subTitle ? (
                 <div
                   data-testid="program-thumbnail-subtitle"
-                  style={{ fontSize: program.subTitleFontSize ?? style?.fontSize }}
+                  style={{
+                    position: 'relative',
+                    zIndex: 2,
+                    fontSize: program.subTitleFontSize ?? style?.fontSize,
+                  }}
                 >
                   {program.subTitle}
                 </div>
               ) : null}
               {hasLines ? (
-                <div data-testid="program-thumbnail-lines">
+                <div data-testid="program-thumbnail-lines" style={{ position: 'relative', zIndex: 2 }}>
                   {program.lines!.map((line, idx) => (
                     <div key={idx}>{line}</div>
                   ))}
@@ -124,11 +175,22 @@ export function ProgramThumbnailPanel({ program }: ProgramThumbnailPanelProps) {
               ) : null}
             </div>
           ) : (
-            <>
+            <div style={{ position: 'relative', zIndex: 2, width: '100%' }}>
+              {program.titleTextBackground?.image ? (
+                <BackgroundImageLayer
+                  resolved={program.titleTextBackground}
+                  testId="program-thumbnail-title-text-bg"
+                  zIndex={0}
+                />
+              ) : null}
               {program.title ? (
                 <div
                   data-testid="program-thumbnail-title"
-                  style={{ fontSize: program.titleFontSize ?? style?.fontSize }}
+                  style={{
+                    position: 'relative',
+                    zIndex: 2,
+                    fontSize: program.titleFontSize ?? style?.fontSize,
+                  }}
                 >
                   {program.title}
                 </div>
@@ -136,19 +198,23 @@ export function ProgramThumbnailPanel({ program }: ProgramThumbnailPanelProps) {
               {program.subTitle ? (
                 <div
                   data-testid="program-thumbnail-subtitle"
-                  style={{ fontSize: program.subTitleFontSize ?? style?.fontSize }}
+                  style={{
+                    position: 'relative',
+                    zIndex: 2,
+                    fontSize: program.subTitleFontSize ?? style?.fontSize,
+                  }}
                 >
                   {program.subTitle}
                 </div>
               ) : null}
               {hasLines ? (
-                <div data-testid="program-thumbnail-lines">
+                <div data-testid="program-thumbnail-lines" style={{ position: 'relative', zIndex: 2 }}>
                   {program.lines!.map((line, idx) => (
                     <div key={idx}>{line}</div>
                   ))}
                 </div>
               ) : null}
-            </>
+            </div>
           )}
 
           {!program.title &&

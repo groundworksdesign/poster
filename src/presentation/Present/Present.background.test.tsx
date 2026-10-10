@@ -112,6 +112,26 @@ test('AC-005 / AC-006: fit modes and dim overlay render', async () => {
   expect(screen.getByTestId('present-whole-bg-dim')).toHaveAttribute('data-dim', '0.5');
 });
 
+test('AC-009: green screen keeps whole-slide and title text-layer images', async () => {
+  const { deck } = await mountPresent();
+  await act(async () => {
+    await deck.send({
+      slide: {
+        id: 'gs-title',
+        type: SlideType.TITLE,
+        title: 'GS',
+        subTitle: 'Mode',
+        style: { backgroundColor: '#222', color: '#fff' },
+      },
+      defaultBackground: { image: TINY_PNG, fit: 'fill', dim: 0.1 },
+      defaultTitleTextBackground: { image: TINY_TITLE, fit: 'fit', dim: 0 },
+      useGreenScreen: true,
+    });
+  });
+  await waitFor(() => expect(screen.getByTestId('present-whole-bg')).toBeInTheDocument());
+  expect(screen.getByTestId('present-title-text-bg')).toBeInTheDocument();
+});
+
 test('AC-010: older deck with only style.backgroundImage keeps legacy look (no new layer)', async () => {
   const { deck } = await mountPresent();
   await act(async () => {
