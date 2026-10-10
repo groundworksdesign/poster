@@ -2,10 +2,10 @@
   "epic": "epic-005",
   "branch": "cursor/epic-005-background-images",
   "baseBranch": "main",
-  "status": "in_progress",
-  "loop": 5,
-  "persona": "dev",
-  "completeEpic": false,
+  "status": "complete",
+  "loop": 6,
+  "persona": "qa",
+  "completeEpic": true,
   "prUrl": "https://github.com/groundworksdesign/poster/pull/28",
   "canonicalStatusFile": "ralph/task_status.json",
   "maxLoops": 10,
@@ -16,7 +16,7 @@
     "ralph/epic.md"
   ],
   "codebaseFindings": {
-    "irisGate": "FAIL f7ce1c0: stale Present defaults (LIVE-OLDDECK/LIVE-CLEAR), CORS URL fetch, tile/fit preview mismatch, N1 wipe, N3 legacy image, no dedupe, GS image picture (Roy: SHOW via switch), N5 non-image file, fill() in e2e"
+    "irisGate": "Iris LOOP 6 QA: all blockers verified (stale Present, URL proxy, preview parity, N1/N3/N5, dedupe, GS show, pressSequentially)."
   },
   "requirements": [
     {
@@ -25,7 +25,7 @@
       "todoIds": [
         "fix-url-proxy-n1-n5"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "REQ-011",
@@ -41,7 +41,7 @@
       "todoIds": [
         "fix-preview-match-present"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "REQ-005",
@@ -49,7 +49,7 @@
       "todoIds": [
         "fix-n3-greenscreen-dedupe"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "REQ-010",
@@ -57,7 +57,7 @@
       "todoIds": [
         "fix-n3-greenscreen-dedupe"
       ],
-      "status": "pending"
+      "status": "done"
     }
   ],
   "todos": [
@@ -76,7 +76,8 @@
         "E2E: Clear deck default clears open Present"
       ],
       "notes": [
-        "QA loop 3: unit + remix LIVE-OLDDECK/LIVE-CLEAR e2e green."
+        "QA loop 3: unit + remix LIVE-OLDDECK/LIVE-CLEAR e2e green.",
+        "QA loop 6: remix e2e LIVE-* still green."
       ]
     },
     {
@@ -85,8 +86,8 @@
       "requirementIds": [
         "REQ-008"
       ],
-      "status": "in_progress",
-      "passes": false,
+      "status": "done",
+      "passes": true,
       "acceptanceCriteria": [
         "No-CORS host URL embeds successfully via server proxy",
         "Failed URL shows error without wiping existing image or creating empty override",
@@ -94,7 +95,7 @@
         "E2E types URL with pressSequentially"
       ],
       "notes": [
-        "LOOP 5 DEV: proxy route + embedImage client POST; N1/N5 picker; e2e pressSequentially."
+        "QA loop 6: unit embed/fetch/picker + remix e2e pressSequentially + N1 inherit label."
       ]
     },
     {
@@ -103,15 +104,15 @@
       "requirementIds": [
         "REQ-006"
       ],
-      "status": "in_progress",
-      "passes": false,
+      "status": "done",
+      "passes": true,
       "acceptanceCriteria": [
         "Tile preview matches Present tile density via shared helper",
         "Fit letterbox bars match Present frame aspect",
         "Unit/integration tests cover shared scaling"
       ],
       "notes": [
-        "LOOP 5 DEV: presentFrame + PresentFramePreview wired into picker and thumbnail."
+        "QA loop 6: presentFrame unit + picker preview data-present-frame attribute."
       ]
     },
     {
@@ -121,8 +122,8 @@
         "REQ-005",
         "REQ-010"
       ],
-      "status": "in_progress",
-      "passes": false,
+      "status": "done",
+      "passes": true,
       "acceptanceCriteria": [
         "Legacy style.backgroundImage picture on image slides with deck default",
         "Green screen shows image picture on top; one switch constant",
@@ -130,13 +131,13 @@
         "Identical images stored once in deck.embeddedImages; refs resolve; old decks load"
       ],
       "notes": [
-        "Roy: SHOW_IMAGE_PICTURE_IN_GREEN_SCREEN = true."
+        "QA loop 6: Present.background N3+GS; thumbnail GS picture; embeddedImages unit; remix GS picture visible."
       ]
     }
   ],
   "selected": {
-    "id": "fix-url-proxy-n1-n5",
-    "reason": "Stale Present fixed; next REQ-008 CORS proxy plus N1/N5 picker correctness."
+    "id": "fix-n3-greenscreen-dedupe",
+    "reason": "Final Iris todo verified; epic complete."
   },
-  "qaReport": "fix-stale-present-backgrounds verified"
+  "qaReport": "ralph/qa-report.md"
 }
