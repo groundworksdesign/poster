@@ -3,8 +3,8 @@
   "branch": "cursor/epic-005-background-images",
   "baseBranch": "main",
   "status": "in_progress",
-  "loop": 3,
-  "persona": "qa",
+  "loop": 4,
+  "persona": "planning",
   "completeEpic": false,
   "prUrl": null,
   "canonicalStatusFile": "ralph/task_status.json",
@@ -265,7 +265,10 @@
       "notes": []
     }
   ],
-  "selected": null,
-  "qaReport": "data-model verified",
+  "selected": {
+    "id": "image-import-embed",
+    "reason": "data-model is done. Image embed is required before deck/slide UI can set background images from file or URL (REQ-008/009, AC-007/008)."
+  },
+  "qaReport": null,
   "maxLoops": 24
 }
