@@ -3,8 +3,8 @@
   "branch": "cursor/epic-005-background-images",
   "baseBranch": "main",
   "status": "in_progress",
-  "loop": 4,
-  "persona": "planning",
+  "loop": 5,
+  "persona": "dev",
   "completeEpic": false,
   "prUrl": "https://github.com/groundworksdesign/poster/pull/28",
   "canonicalStatusFile": "ralph/task_status.json",
@@ -16,7 +16,7 @@
     "ralph/epic.md"
   ],
   "codebaseFindings": {
-    "irisGate": "FAIL f7ce1c0: stale Present defaults (LIVE-OLDDECK/LIVE-CLEAR), CORS URL fetch, tile/fit preview mismatch, N1 wipe, N3 legacy image, no dedupe, GS image picture shows (revert to main hide), N5 non-image file, fill() in e2e"
+    "irisGate": "FAIL f7ce1c0: stale Present defaults (LIVE-OLDDECK/LIVE-CLEAR), CORS URL fetch, tile/fit preview mismatch, N1 wipe, N3 legacy image, no dedupe, GS image picture (Roy: SHOW via switch), N5 non-image file, fill() in e2e"
   },
   "requirements": [
     {
@@ -85,7 +85,7 @@
       "requirementIds": [
         "REQ-008"
       ],
-      "status": "pending",
+      "status": "in_progress",
       "passes": false,
       "acceptanceCriteria": [
         "No-CORS host URL embeds successfully via server proxy",
@@ -93,7 +93,9 @@
         "Non-image file rejected",
         "E2E types URL with pressSequentially"
       ],
-      "notes": []
+      "notes": [
+        "LOOP 5 DEV: proxy route + embedImage client POST; N1/N5 picker; e2e pressSequentially."
+      ]
     },
     {
       "id": "fix-preview-match-present",
@@ -101,14 +103,16 @@
       "requirementIds": [
         "REQ-006"
       ],
-      "status": "pending",
+      "status": "in_progress",
       "passes": false,
       "acceptanceCriteria": [
         "Tile preview matches Present tile density via shared helper",
         "Fit letterbox bars match Present frame aspect",
         "Unit/integration tests cover shared scaling"
       ],
-      "notes": []
+      "notes": [
+        "LOOP 5 DEV: presentFrame + PresentFramePreview wired into picker and thumbnail."
+      ]
     },
     {
       "id": "fix-n3-greenscreen-dedupe",
@@ -117,7 +121,7 @@
         "REQ-005",
         "REQ-010"
       ],
-      "status": "pending",
+      "status": "in_progress",
       "passes": false,
       "acceptanceCriteria": [
         "Legacy style.backgroundImage picture on image slides with deck default",
@@ -126,7 +130,7 @@
         "Identical images stored once in deck.embeddedImages; refs resolve; old decks load"
       ],
       "notes": [
-        "Roy: flip SHOW_IMAGE_PICTURE_IN_GREEN_SCREEN to true."
+        "Roy: SHOW_IMAGE_PICTURE_IN_GREEN_SCREEN = true."
       ]
     }
   ],
