@@ -2,8 +2,8 @@
   "epic": "epic-005",
   "branch": "cursor/epic-005-background-images",
   "baseBranch": "main",
-  "status": "planning",
-  "loop": 0,
+  "status": "in_progress",
+  "loop": 1,
   "persona": "planning",
   "completeEpic": false,
   "prUrl": null,
@@ -13,7 +13,16 @@
     "ralph/specs/20261008-epic-005-background-images.plan.md",
     "ralph/epic.md"
   ],
-  "codebaseFindings": {},
+  "codebaseFindings": {
+    "presentTypes": "SlideCSS has backgroundImage/Size/Position/Color only. Deck has slideStyles per slide type; no deck-level whole-slide or title text-layer image fields. Slide has file for media; no background override/fit/dim fields.",
+    "resolveSlideStyle": "Merges GENERAL -> type -> slide.style shallowly; no background-image resolution helper yet.",
+    "presentRender": "Present.tsx computeContainerStyle uses style.backgroundImage (image slides: slide.file ?? style.backgroundImage) and hides backgrounds when useGreenScreen. Title text sits on solid backgroundColor / green-screen band.",
+    "deckBuilder": "Deck settings expose backgroundColor/color/font; image slides have Image URL/file. No deck default background image UI, no fit/dim, no Use deck default.",
+    "imageEmbed": "No whole-image embed helper for backgrounds; FileReader used for song/deck JSON import only. Images are not copied into deck storage as data URLs for backgrounds.",
+    "greenScreen": "useGreenScreen currently suppresses backgroundImage and uses transparent / colored bands — must change later to keep both images (REQ-010).",
+    "songStaging": "stagedSongSlide.ts and Present song staging must stay byte-identical or staging logic untouched; Present may gain background layers without changing staging.",
+    "schemaVersion": "CURRENT_SCHEMA_VERSION / schema.ts pattern exists; older decks omit new fields and must load unchanged (REQ-011)."
+  },
   "requirements": [
     {
       "id": "REQ-001",
@@ -178,7 +187,10 @@
       "notes": []
     }
   ],
-  "selected": null,
+  "selected": {
+    "id": "data-model",
+    "reason": "Nothing from epic-005 exists in the codebase yet. Data model (deck defaults + slide overrides + fit/dim + old-deck compatibility) unblocks import, UI, render, and tests."
+  },
   "qaReport": null,
   "maxLoops": 24
 }
