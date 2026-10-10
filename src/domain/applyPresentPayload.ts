@@ -1,4 +1,4 @@
-import type { PresentData, SongData } from './PresentTypes';
+import type { BackgroundImageSpec, PresentData, SongData } from './PresentTypes';
 import { SlideType } from './PresentTypes';
 
 /** Apply a PresentData payload to presenter state setters. */
@@ -10,6 +10,8 @@ export function applyPresentPayload(
     setUseGreenScreen: (value: boolean) => void;
     setSongData: (data: SongData | null) => void;
     setSegmentIndex: (fn: (i: number) => number) => void;
+    setDefaultBackground?: (value: BackgroundImageSpec | undefined) => void;
+    setDefaultTitleTextBackground?: (value: BackgroundImageSpec | undefined) => void;
   },
 ): void {
   if ((present as any).data && (present as any).data.lyricsNavigation) {
@@ -23,6 +25,15 @@ export function applyPresentPayload(
     return;
   }
 
+  const applyDeckBackgroundDefaults = () => {
+    if ('defaultBackground' in present) {
+      handlers.setDefaultBackground?.(present.defaultBackground);
+    }
+    if ('defaultTitleTextBackground' in present) {
+      handlers.setDefaultTitleTextBackground?.(present.defaultTitleTextBackground);
+    }
+  };
+
   // `slide: null` is an explicit program-out command, not an omitted field.
   // Message-only payloads omit `slide` entirely — do not treat that as blank.
   if (present.slide === null) {
@@ -31,10 +42,12 @@ export function applyPresentPayload(
     handlers.setUseGreenScreen(!!present.useGreenScreen);
     handlers.setSongData(null);
     handlers.setSegmentIndex(() => 0);
+    applyDeckBackgroundDefaults();
   } else if (present.slide) {
     handlers.setSlide(present.slide);
     handlers.setMessage(present.message ?? null);
     handlers.setUseGreenScreen(!!present.useGreenScreen);
+    applyDeckBackgroundDefaults();
 
     if (present.slide.type === SlideType.SONG && present.slide.lyrics) {
       handlers.setSongData(present.slide.lyrics as SongData);
@@ -48,5 +61,6 @@ export function applyPresentPayload(
     if (present.useGreenScreen !== undefined && present.useGreenScreen !== null) {
       handlers.setUseGreenScreen(!!present.useGreenScreen);
     }
+    applyDeckBackgroundDefaults();
   }
 }

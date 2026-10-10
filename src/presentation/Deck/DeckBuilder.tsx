@@ -300,7 +300,12 @@ export default function DeckBuilder() {
     // Explicit program-out only. Do not coerce a missing `slide` to null —
     // message-only / clear-message sends must leave Present's slide alone.
     if (props.slide === null) {
-      const payload = new PresentData({ ...props, slide: null });
+      const payload = new PresentData({
+        ...props,
+        slide: null,
+        defaultBackground: deck?.defaultBackground,
+        defaultTitleTextBackground: deck?.defaultTitleTextBackground,
+      });
       const target = sendTargetRef.current;
       void deckSessionRef.current?.send(payload, target);
       setLastSentSlideId(null);
@@ -315,7 +320,11 @@ export default function DeckBuilder() {
       const resolvedStyle = resolveSlideStyle(deck, sl);
       return { ...sl, style: resolvedStyle };
     };
-    const payloadProps: Record<string, unknown> = { ...props };
+    const payloadProps: Record<string, unknown> = {
+      ...props,
+      defaultBackground: deck?.defaultBackground,
+      defaultTitleTextBackground: deck?.defaultTitleTextBackground,
+    };
     if (props.slide) {
       payloadProps.slide = safeSlide(props.slide);
     } else {
