@@ -6,7 +6,7 @@
   "loop": 22,
   "persona": "release",
   "completeEpic": true,
-  "prUrl": null,
+  "prUrl": "https://github.com/groundworksdesign/poster/pull/28",
   "canonicalStatusFile": "ralph/task_status.json",
   "sourceArtifacts": [
     "ralph/specs/20261008-feature-brief-background-images.md",
