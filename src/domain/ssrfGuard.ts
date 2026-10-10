@@ -75,7 +75,7 @@ export async function resolvePublicAddress(hostname: string): Promise<string> {
     }
     return hostname;
   }
-  let records: dns.LookupAddress[];
+  let records: Array<{ address: string; family: number }>;
   try {
     records = await dns.lookup(hostname, { all: true, verbatim: true });
   } catch {
