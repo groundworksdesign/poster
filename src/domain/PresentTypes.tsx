@@ -29,10 +29,26 @@ export type SlideCSS = {
   fontFamily?: string;
   fontSize?: string;
   fontWeight?: string;
-  // background image support
+  // background image support (legacy per-style fields; still read for older decks)
   backgroundImage?: string;
   backgroundSize?: string;
   backgroundPosition?: string;
+};
+
+/** How a background image is sized within its layer. Default is fill. */
+export type BackgroundFit = 'fill' | 'fit' | 'tile';
+
+/**
+ * One background image layer: embedded src, fit mode, and dim toward black.
+ * Used for deck defaults and per-slide overrides (whole-slide and title text-layer).
+ */
+export type BackgroundImageSpec = {
+  /** Embedded image (typically a data URL). Absent or empty means no image. */
+  image?: string;
+  /** fill | fit | tile. Default fill when omitted. */
+  fit?: BackgroundFit;
+  /** 0 = no dimming, 1 = fully black. Default 0 when omitted. */
+  dim?: number;
 };
 
 export type SongVerse = {
@@ -64,6 +80,17 @@ export type Slide = {
    * Absent on older decks — those still validate and open.
    */
   librarySongSyncedFingerprint?: string;
+  /**
+   * Whole-slide background override for this slide.
+   * Absent/undefined = inherit the deck default (Use deck default).
+   * Present (including empty image) = slide owns the layer.
+   */
+  background?: BackgroundImageSpec;
+  /**
+   * Title text-layer background override (title slides).
+   * Absent/undefined = inherit the deck default (Use deck default).
+   */
+  titleTextBackground?: BackgroundImageSpec;
   // Optional segment helpers (backwards-compat)
   lines?: string[];
   firstVerse?: number;
@@ -104,5 +131,15 @@ export type Deck = {
   notes: string;
   slideStyles: Record<string, SlideCSS>;
   slides: Slide[];
+  /**
+   * One whole-slide background default for the entire deck (all slide types).
+   * Absent on older decks — those look the same as before.
+   */
+  defaultBackground?: BackgroundImageSpec;
+  /**
+   * One title text-layer background default for the entire deck.
+   * Absent on older decks — those look the same as before.
+   */
+  defaultTitleTextBackground?: BackgroundImageSpec;
 };
 
