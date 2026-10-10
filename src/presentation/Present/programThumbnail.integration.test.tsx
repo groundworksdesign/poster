@@ -204,28 +204,22 @@ test('ProgramThumbnailPanel renders blank output without slide content', () => {
   expect(screen.queryByTestId('program-thumbnail-lines')).not.toBeInTheDocument();
 });
 
-test('ProgramThumbnailPanel green screen keeps epic-005 backgrounds; suppresses legacy CSS images', () => {
+test('ProgramThumbnailPanel green screen keeps epic-005 backgrounds; shows image-slide picture on top', () => {
   render(
     <ProgramThumbnailPanel
       program={{
         title: 'Green-screen slide',
-        subTitle: 'With layers',
+        subTitle: 'With picture',
         slideFile: 'https://example.com/slide.jpg',
         slideStyle: { backgroundColor: '#222', color: '#fff', backgroundImage: 'https://example.com/style.jpg' },
         backgroundColor: 'transparent',
         color: '#fff',
-        slideType: 'title',
+        slideType: 'image',
         useGreenScreen: true,
         wholeBackground: {
           image: 'data:image/png;base64,whole',
           fit: 'fill',
           dim: 0.2,
-          isOverride: false,
-        },
-        titleTextBackground: {
-          image: 'data:image/png;base64,title',
-          fit: 'fit',
-          dim: 0,
           isOverride: false,
         },
       }}
@@ -237,9 +231,11 @@ test('ProgramThumbnailPanel green screen keeps epic-005 backgrounds; suppresses 
   // Legacy CSS backgrounds stay off in green screen.
   expect(preview).not.toHaveStyle({ backgroundImage: 'url(https://example.com/slide.jpg)' });
   expect(preview).not.toHaveStyle({ backgroundImage: 'url(https://example.com/style.jpg)' });
-  // Epic-005 layers remain visible (AC-009).
+  // Epic-005 whole-slide layer + image-slide picture on top (Roy GS decision).
   expect(screen.getByTestId('program-thumbnail-whole-bg')).toBeInTheDocument();
-  expect(screen.getByTestId('program-thumbnail-title-text-bg')).toBeInTheDocument();
+  expect(screen.getByTestId('program-thumbnail-image-picture')).toHaveStyle({
+    backgroundImage: 'url(https://example.com/slide.jpg)',
+  });
   expect(screen.getByTestId('program-thumbnail-title')).toHaveTextContent('Green-screen slide');
   const lowerThird = screen.getByTestId('program-thumbnail-lower-third');
   expect(lowerThird).toHaveStyle({ backgroundColor: '#222' });

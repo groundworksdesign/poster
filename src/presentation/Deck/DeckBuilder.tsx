@@ -32,6 +32,12 @@ import {
   resolveWholeSlideBackground,
 } from '../../domain/backgroundImage';
 import {
+  internBackgroundImageSpec,
+  materializeBackgroundImageSpec,
+  materializeSlideBackgrounds,
+  pruneEmbeddedImages,
+} from '../../domain/embeddedImages';
+import {
   notePresentShortcutPointerTarget,
   shouldIgnorePresentShortcuts,
 } from './presentShortcutGuard';
@@ -307,8 +313,12 @@ export default function DeckBuilder() {
         ...props,
         slide: null,
         // Always send both keys (null when absent) so Present clears stale layers.
-        defaultBackground: sourceDeck?.defaultBackground ?? null,
-        defaultTitleTextBackground: sourceDeck?.defaultTitleTextBackground ?? null,
+        // Materialize embed refs so Present does not need the asset table.
+        defaultBackground:
+          materializeBackgroundImageSpec(sourceDeck, sourceDeck?.defaultBackground) ?? null,
+        defaultTitleTextBackground:
+          materializeBackgroundImageSpec(sourceDeck, sourceDeck?.defaultTitleTextBackground) ??
+          null,
       });
       const target = sendTargetRef.current;
       void deckSessionRef.current?.send(payload, target);
@@ -322,13 +332,16 @@ export default function DeckBuilder() {
       // ensure slide has an id so we can track it for sync across edits/reorder
       (sl as any).id = (sl as any).id ?? genId();
       const resolvedStyle = resolveSlideStyle(sourceDeck, sl);
-      return { ...sl, style: resolvedStyle };
+      const withStyle = { ...sl, style: resolvedStyle };
+      return materializeSlideBackgrounds(sourceDeck, withStyle);
     };
     const payloadProps: Record<string, unknown> = {
       ...props,
       // Always send both keys (null when absent) so Present clears stale layers.
-      defaultBackground: sourceDeck?.defaultBackground ?? null,
-      defaultTitleTextBackground: sourceDeck?.defaultTitleTextBackground ?? null,
+      defaultBackground:
+        materializeBackgroundImageSpec(sourceDeck, sourceDeck?.defaultBackground) ?? null,
+      defaultTitleTextBackground:
+        materializeBackgroundImageSpec(sourceDeck, sourceDeck?.defaultTitleTextBackground) ?? null,
     };
     delete payloadProps.deck;
     if (props.slide) {
@@ -793,11 +806,14 @@ export default function DeckBuilder() {
 
   const updateDeckDefaultBackground = (next: BackgroundImageSpec | undefined) => {
     if (!deck) return;
-    const newDeck: Deck = { ...deck };
+    let newDeck: Deck = { ...deck };
     if (next && typeof next.image === 'string' && next.image.trim()) {
-      newDeck.defaultBackground = next;
+      const interned = internBackgroundImageSpec(newDeck, next);
+      newDeck = interned.deck;
+      newDeck.defaultBackground = interned.spec;
     } else {
       delete newDeck.defaultBackground;
+      newDeck = pruneEmbeddedImages(newDeck);
     }
     setDeck(newDeck);
     syncSentSlideIfNeeded(newDeck);
@@ -805,11 +821,14 @@ export default function DeckBuilder() {
 
   const updateDeckDefaultTitleTextBackground = (next: BackgroundImageSpec | undefined) => {
     if (!deck) return;
-    const newDeck: Deck = { ...deck };
+    let newDeck: Deck = { ...deck };
     if (next && typeof next.image === 'string' && next.image.trim()) {
-      newDeck.defaultTitleTextBackground = next;
+      const interned = internBackgroundImageSpec(newDeck, next);
+      newDeck = interned.deck;
+      newDeck.defaultTitleTextBackground = interned.spec;
     } else {
       delete newDeck.defaultTitleTextBackground;
+      newDeck = pruneEmbeddedImages(newDeck);
     }
     setDeck(newDeck);
     syncSentSlideIfNeeded(newDeck);
@@ -1434,16 +1453,17 @@ export default function DeckBuilder() {
               <BackgroundImagePicker
                 label="Default whole-slide background"
                 testIdPrefix="deck-bg"
-                value={deck.defaultBackground}
+                value={materializeBackgroundImageSpec(deck, deck.defaultBackground) ?? undefined}
                 onChange={updateDeckDefaultBackground}
                 showClear
               />
               <BackgroundImagePicker
                 label="Default title text-layer background"
                 testIdPrefix="deck-title-bg"
-                value={deck.defaultTitleTextBackground}
+                value={materializeBackgroundImageSpec(deck, deck.defaultTitleTextBackground) ?? undefined}
                 onChange={updateDeckDefaultTitleTextBackground}
                 showClear
+                titleSlidePreview
               />
             </div>
           )}
@@ -1791,7 +1811,7 @@ export default function DeckBuilder() {
                       {(() => {
                         const wholeResolved = resolveWholeSlideBackground(deck, slide);
                         const wholeValue = Object.prototype.hasOwnProperty.call(slide, 'background')
-                          ? slide.background
+                          ? materializeBackgroundImageSpec(deck, slide.background) ?? slide.background
                           : wholeResolved.image
                             ? {
                                 image: wholeResolved.image,
@@ -1823,7 +1843,17 @@ export default function DeckBuilder() {
                                 );
                                 return;
                               }
-                              updateDraftField('background', next);
+                              if (!deck) {
+                                updateDraftField('background', next);
+                                return;
+                              }
+                              if (typeof next.image === 'string' && next.image.trim()) {
+                                const interned = internBackgroundImageSpec(deck, next);
+                                setDeck(interned.deck);
+                                updateDraftField('background', interned.spec);
+                              } else {
+                                updateDraftField('background', next);
+                              }
                             }}
                           />
                         );
@@ -1835,7 +1865,8 @@ export default function DeckBuilder() {
                             slide,
                             'titleTextBackground'
                           )
-                            ? slide.titleTextBackground
+                            ? materializeBackgroundImageSpec(deck, slide.titleTextBackground) ??
+                              slide.titleTextBackground
                             : titleResolved.image
                               ? {
                                   image: titleResolved.image,
@@ -1854,6 +1885,7 @@ export default function DeckBuilder() {
                               value={titleValue}
                               showClear
                               clearMode="empty"
+                              titleSlidePreview
                               useDeckDefaultLabel="Use deck default"
                               onUseDeckDefault={() => {
                                 setSlideEditDraft((prev: any) =>
@@ -1867,7 +1899,17 @@ export default function DeckBuilder() {
                                   );
                                   return;
                                 }
-                                updateDraftField('titleTextBackground', next);
+                                if (!deck) {
+                                  updateDraftField('titleTextBackground', next);
+                                  return;
+                                }
+                                if (typeof next.image === 'string' && next.image.trim()) {
+                                  const interned = internBackgroundImageSpec(deck, next);
+                                  setDeck(interned.deck);
+                                  updateDraftField('titleTextBackground', interned.spec);
+                                } else {
+                                  updateDraftField('titleTextBackground', next);
+                                }
                               }}
                             />
                           );

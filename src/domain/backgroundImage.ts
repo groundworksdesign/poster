@@ -4,6 +4,7 @@ import {
   Deck,
   Slide,
 } from './PresentTypes';
+import { resolveEmbeddedImageRef } from './embeddedImages';
 
 /** Default fit for new background images (REQ-006 / AC-005). */
 export const DEFAULT_BACKGROUND_FIT: BackgroundFit = 'fill';
@@ -74,11 +75,15 @@ export function resolveWholeSlideBackground(
   slide?: Slide | null
 ): ResolvedBackgroundImage {
   const slideHasOverride = Boolean(slide && Object.prototype.hasOwnProperty.call(slide, 'background'));
-  return resolveBackgroundLayer(
+  const resolved = resolveBackgroundLayer(
     deck?.defaultBackground,
     slide?.background,
     slideHasOverride
   );
+  return {
+    ...resolved,
+    image: resolveEmbeddedImageRef(deck, resolved.image),
+  };
 }
 
 /** Title text-layer background: deck.defaultTitleTextBackground vs slide.titleTextBackground. */
@@ -89,11 +94,15 @@ export function resolveTitleTextBackground(
   const slideHasOverride = Boolean(
     slide && Object.prototype.hasOwnProperty.call(slide, 'titleTextBackground')
   );
-  return resolveBackgroundLayer(
+  const resolved = resolveBackgroundLayer(
     deck?.defaultTitleTextBackground,
     slide?.titleTextBackground,
     slideHasOverride
   );
+  return {
+    ...resolved,
+    image: resolveEmbeddedImageRef(deck, resolved.image),
+  };
 }
 
 /**

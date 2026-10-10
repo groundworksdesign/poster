@@ -53,7 +53,7 @@
     },
     {
       "id": "REQ-010",
-      "title": "Green screen main image-picture hide",
+      "title": "Green screen shows image picture on top of background",
       "todoIds": [
         "fix-n3-greenscreen-dedupe"
       ],
@@ -112,7 +112,7 @@
     },
     {
       "id": "fix-n3-greenscreen-dedupe",
-      "content": "N3: legacy image-slide pictures (style.backgroundImage) still show when deck default exists. Green screen: keep main behaviour \u2014 hide image-slide picture (switch point constant). Restore green-screen image-slide thumbnail test. Deduplicate embedded images via content-hash asset table; old decks still load.",
+      "content": "N3: legacy image-slide pictures (style.backgroundImage) still show when deck default exists. Green screen: SHOW image-slide picture on top of background (switch point constant). Green-screen image-slide thumbnail + Present tests expect picture visible. Deduplicate embedded images via content-hash asset table; old decks still load.",
       "requirementIds": [
         "REQ-005",
         "REQ-010"
@@ -121,11 +121,13 @@
       "passes": false,
       "acceptanceCriteria": [
         "Legacy style.backgroundImage picture on image slides with deck default",
-        "Green screen hides image picture (main); one switch constant",
-        "Green-screen image-slide thumbnail test restored",
+        "Green screen shows image picture on top; one switch constant",
+        "Green-screen image-slide thumbnail + Present tests expect picture visible",
         "Identical images stored once in deck.embeddedImages; refs resolve; old decks load"
       ],
-      "notes": []
+      "notes": [
+        "Roy: flip SHOW_IMAGE_PICTURE_IN_GREEN_SCREEN to true."
+      ]
     }
   ],
   "selected": {

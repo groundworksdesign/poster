@@ -88,6 +88,11 @@ test.describe('epic-005 background images (remix)', () => {
     await expect(presentation.getByTestId('present-whole-bg')).toBeVisible({ timeout: 10000 });
     await expect(presentation.getByTestId('present-title-text-bg')).toBeVisible();
 
+    // Roy: image-slide picture stays visible on top of the background in green screen.
+    await sendButtons.nth(1).click();
+    await expect(presentation.getByTestId('present-whole-bg')).toBeVisible({ timeout: 10000 });
+    await expect(presentation.getByTestId('present-image-picture')).toBeVisible();
+
     await context.close();
   });
 
@@ -102,13 +107,23 @@ test.describe('epic-005 background images (remix)', () => {
     await page.getByRole('button', { name: 'Edit' }).first().click();
     await expect(page.getByTestId('slide-background-overrides')).toBeVisible();
 
-    await page.route('**/missing-bg.png', (route) =>
-      route.fulfill({ status: 404, body: 'missing' })
-    );
-    await page.getByTestId('slide-bg-url').fill('https://example.com/missing-bg.png');
+    await page.route('**/api/poster/fetch-image', async (route) => {
+      if (route.request().method() !== 'POST') {
+        await route.continue();
+        return;
+      }
+      await route.fulfill({
+        status: 400,
+        contentType: 'application/json',
+        body: JSON.stringify({ ok: false, error: 'Could not download the image (HTTP 404).' }),
+      });
+    });
+    await page.getByTestId('slide-bg-url').pressSequentially('https://example.com/missing-bg.png');
     await page.getByTestId('slide-bg-url-apply').click();
     await expect(page.getByTestId('slide-bg-error')).toBeVisible({ timeout: 10000 });
     await expect(page.getByTestId('slide-bg-error')).toContainText(/Could not download/i);
+    // N1: failed URL on inherit must not create an empty override.
+    await expect(page.getByText(/Whole-slide background \(deck default\)/i)).toBeVisible();
 
     await page.getByTestId('slide-bg-fit').selectOption('tile');
     await page.getByTestId('save-slide-button').click();

@@ -143,6 +143,48 @@ test('AC-009: green screen keeps whole-slide and title text-layer images', async
   expect(screen.getByTestId('present-title-text-bg')).toBeInTheDocument();
 });
 
+test('N3: legacy style.backgroundImage picture shows when deck default exists', async () => {
+  const { deck } = await mountPresent();
+  await act(async () => {
+    await deck.send({
+      slide: {
+        id: 'img-legacy',
+        type: SlideType.IMAGE,
+        title: 'Legacy pic',
+        style: { backgroundImage: TINY_PIC },
+      },
+      defaultBackground: { image: TINY_PNG, fit: 'fill', dim: 0 },
+      useGreenScreen: false,
+    });
+  });
+  await waitFor(() => expect(screen.getByTestId('present-image-picture')).toBeInTheDocument());
+  expect(screen.getByTestId('present-image-picture')).toHaveStyle({
+    backgroundImage: `url(${TINY_PIC})`,
+  });
+});
+
+test('green screen shows image-slide picture on top of deck background', async () => {
+  const { deck } = await mountPresent();
+  await act(async () => {
+    await deck.send({
+      slide: {
+        id: 'img-gs',
+        type: SlideType.IMAGE,
+        title: 'Pic',
+        file: TINY_PIC,
+        style: { backgroundColor: '#222' },
+      },
+      defaultBackground: { image: TINY_PNG, fit: 'fill', dim: 0 },
+      useGreenScreen: true,
+    });
+  });
+  await waitFor(() => expect(screen.getByTestId('present-whole-bg')).toBeInTheDocument());
+  expect(screen.getByTestId('present-image-picture')).toHaveStyle({
+    backgroundImage: `url(${TINY_PIC})`,
+    backgroundSize: 'contain',
+  });
+});
+
 test('LIVE-OLDDECK: sending a deck with null defaults clears a prior background', async () => {
   const { deck } = await mountPresent();
   await act(async () => {

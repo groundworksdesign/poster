@@ -1,6 +1,9 @@
 /**
  * Copy a local file or remote URL image into an embedded data URL so a deck
  * stays self-contained (REQ-008, REQ-009 / AC-007, AC-008).
+ *
+ * URL downloads go through the Remix/Electron server proxy so hosts without
+ * CORS headers still work (Iris REQ-008).
  */
 
 export type EmbedImageSuccess = {
@@ -19,8 +22,18 @@ export type EmbedImageResult = EmbedImageSuccess | EmbedImageFailure;
 
 const DATA_URL_RE = /^data:([a-zA-Z0-9.+-]+\/[a-zA-Z0-9.+-]+)?(;base64)?,/i;
 
+/** Client path for the server-side image fetch proxy. */
+export const FETCH_IMAGE_API_PATH = '/api/poster/fetch-image';
+
 export function isDataUrl(value: string): boolean {
   return DATA_URL_RE.test(value.trim());
+}
+
+export function isImageFile(file: Blob & { type?: string; name?: string }): boolean {
+  if (file.type && file.type.startsWith('image/')) return true;
+  // Some environments omit type; fall back to extension.
+  const name = typeof (file as File).name === 'string' ? (file as File).name : '';
+  return /\.(png|jpe?g|gif|webp|bmp|svg|ico|avif)$/i.test(name);
 }
 
 function blobToDataUrl(blob: Blob): Promise<string> {
@@ -35,11 +48,14 @@ function blobToDataUrl(blob: Blob): Promise<string> {
   });
 }
 
-/** Embed a local File/Blob as a data URL. */
+/** Embed a local File/Blob as a data URL. Rejects non-image types (N5). */
 export async function embedImageFromFile(file: Blob): Promise<EmbedImageResult> {
   try {
     if (!file || file.size === 0) {
       return { ok: false, error: 'The selected file is empty.' };
+    }
+    if (!isImageFile(file)) {
+      return { ok: false, error: 'Please choose an image file.' };
     }
     const dataUrl = await blobToDataUrl(file);
     return {
@@ -54,9 +70,9 @@ export async function embedImageFromFile(file: Blob): Promise<EmbedImageResult> 
 }
 
 /**
- * Fetch a URL and embed the response body as a data URL.
+ * Fetch a URL via the server proxy and embed as a data URL.
  * Already-embedded data URLs are returned as-is.
- * On any failure, returns ok:false with an error string (caller must leave the field empty).
+ * On any failure, returns ok:false (caller must NOT wipe an existing image — N1).
  */
 export async function embedImageFromUrl(
   url: string,
@@ -81,20 +97,24 @@ export async function embedImageFromUrl(
   }
 
   try {
-    const res = await fetchImpl(trimmed, { method: 'GET', mode: 'cors', credentials: 'omit' });
-    if (!res.ok) {
-      return { ok: false, error: `Could not download the image (HTTP ${res.status}).` };
+    const res = await fetchImpl(FETCH_IMAGE_API_PATH, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({ url: trimmed }),
+    });
+    let body: EmbedImageResult | null = null;
+    try {
+      body = (await res.json()) as EmbedImageResult;
+    } catch {
+      body = null;
     }
-    const blob = await res.blob();
-    if (!blob || blob.size === 0) {
-      return { ok: false, error: 'The URL did not return an image.' };
+    if (body && typeof body.ok === 'boolean') {
+      return body;
     }
-    const mime = blob.type || res.headers.get('content-type') || '';
-    if (mime && !mime.startsWith('image/') && !mime.startsWith('application/octet-stream')) {
-      return { ok: false, error: 'The URL did not return an image.' };
-    }
-    const dataUrl = await blobToDataUrl(blob);
-    return { ok: true, dataUrl, mimeType: mime || undefined };
+    return {
+      ok: false,
+      error: `Could not download the image (HTTP ${res.status}).`,
+    };
   } catch (err) {
     const message =
       err instanceof Error && err.message
@@ -106,9 +126,7 @@ export async function embedImageFromUrl(
 
 /**
  * If `dataUrl` already appears on the deck (default or any slide), return that
- * existing string so in-memory references stay shared. JSON may still repeat the
- * value when multiple overrides embed the same bytes; inheritance avoids the
- * common multi-slide duplication by keeping one deck default.
+ * existing string so in-memory references stay shared.
  */
 export function findExistingEmbeddedImage(
   dataUrl: string,

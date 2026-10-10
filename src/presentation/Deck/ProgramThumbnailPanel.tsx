@@ -1,7 +1,11 @@
 import React from 'react';
 import type { ProgramThumbnailState } from '../../application/SessionTransport';
 import { VerticalAlign } from '../../domain/PresentTypes';
+import { SHOW_IMAGE_PICTURE_IN_GREEN_SCREEN } from '../../domain/greenScreenImagePicture';
+import { presentFramePreviewScale } from '../../domain/presentFrame';
 import BackgroundImageLayer from '../shared/BackgroundImageLayer';
+
+export { SHOW_IMAGE_PICTURE_IN_GREEN_SCREEN };
 
 export type ProgramThumbnailPanelProps = {
   program: ProgramThumbnailState | null;
@@ -41,7 +45,6 @@ function previewJustify(program: ProgramThumbnailState): React.CSSProperties['ju
   const v = program.slideStyle?.verticalAlign;
   if (v === VerticalAlign.TOP) return 'flex-start';
   if (v === VerticalAlign.BOTTOM) return 'flex-end';
-  // Present middle (and unset) = centered overlay.
   return 'center';
 }
 
@@ -53,6 +56,15 @@ export function ProgramThumbnailPanel({ program }: ProgramThumbnailPanelProps) {
   const lowerThird = program ? greenScreenLowerThirdStyle(program) : null;
   const hasTitleBlock = !!(program?.title || program?.subTitle);
   const hasLines = !!(program?.lines && program.lines.length > 0);
+  const isTitle = program?.slideType === 'title';
+  // Thumbnail preview is ~220px wide in CSS; scale Present frame into it.
+  const frameScale = presentFramePreviewScale(220, isTitle);
+  const showImagePicture =
+    !!program?.wholeBackground?.image &&
+    program.slideType === 'image' &&
+    !!(program.slideFile || program.slideStyle?.backgroundImage) &&
+    (!isGreenScreen || SHOW_IMAGE_PICTURE_IN_GREEN_SCREEN);
+  const imagePictureSrc = program?.slideFile || program?.slideStyle?.backgroundImage;
 
   return (
     <div
@@ -68,7 +80,9 @@ export function ProgramThumbnailPanel({ program }: ProgramThumbnailPanelProps) {
           style={{
             position: 'relative',
             padding: lowerThird ? 0 : undefined,
-            backgroundColor: isGreenScreen ? '#00b140' : (program.backgroundColor || style?.backgroundColor || '#111'),
+            backgroundColor: isGreenScreen
+              ? '#00b140'
+              : program.backgroundColor || style?.backgroundColor || '#111',
             color: program.color || style?.color || '#fff',
             fontFamily: style?.fontFamily,
             fontSize: style?.fontSize,
@@ -83,7 +97,6 @@ export function ProgramThumbnailPanel({ program }: ProgramThumbnailPanelProps) {
                   : 'center',
             justifyContent: previewJustify(program),
             // Legacy CSS backgrounds stay off in green screen (pre-epic-005 look).
-            // Epic-005 whole-slide layers are painted below and kept in green screen.
             backgroundImage:
               !program.wholeBackground?.image && !isGreenScreen && program.slideFile
                 ? `url(${program.slideFile})`
@@ -96,29 +109,49 @@ export function ProgramThumbnailPanel({ program }: ProgramThumbnailPanelProps) {
           }}
         >
           {program.wholeBackground?.image ? (
-            <BackgroundImageLayer
-              resolved={program.wholeBackground}
-              testId="program-thumbnail-whole-bg"
-              zIndex={0}
-            />
-          ) : null}
-          {program.wholeBackground?.image &&
-          program.slideType === 'image' &&
-          program.slideFile ? (
             <div
-              data-testid="program-thumbnail-image-picture"
               aria-hidden
               style={{
                 position: 'absolute',
                 inset: 0,
-                zIndex: 1,
-                backgroundImage: `url(${program.slideFile})`,
-                backgroundSize: 'contain',
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'center',
+                overflow: 'hidden',
+                zIndex: 0,
                 pointerEvents: 'none',
               }}
-            />
+            >
+              <div
+                data-testid="program-thumbnail-present-frame"
+                style={{
+                  width: frameScale.frame.width,
+                  height: frameScale.frame.height,
+                  transform: `scale(${frameScale.scale})`,
+                  transformOrigin: 'top left',
+                  position: 'relative',
+                }}
+              >
+                <BackgroundImageLayer
+                  resolved={program.wholeBackground}
+                  testId="program-thumbnail-whole-bg"
+                  zIndex={0}
+                />
+                {showImagePicture && imagePictureSrc ? (
+                  <div
+                    data-testid="program-thumbnail-image-picture"
+                    aria-hidden
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      zIndex: 1,
+                      backgroundImage: `url(${imagePictureSrc})`,
+                      backgroundSize: 'contain',
+                      backgroundRepeat: 'no-repeat',
+                      backgroundPosition: 'center',
+                      pointerEvents: 'none',
+                    }}
+                  />
+                ) : null}
+              </div>
+            </div>
           ) : null}
           {program.message ? (
             <div

@@ -158,5 +158,11 @@ export type Deck = {
    * Absent on older decks — those look the same as before.
    */
   defaultTitleTextBackground?: BackgroundImageSpec;
+  /**
+   * Content-hash → embedded data URL table. Background specs may store
+   * `embed:<hash>` refs instead of repeating the same bytes (Iris N4).
+   * Absent on older decks — inline data URLs still load.
+   */
+  embeddedImages?: Record<string, string>;
 };
 

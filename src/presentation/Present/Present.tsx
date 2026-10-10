@@ -19,6 +19,7 @@ import { applyPresentPayload } from '../../domain/applyPresentPayload';
 import { useTheme } from '../useTheme';
 import { buildProgramThumbnail } from '../../domain/programThumbnail';
 import BackgroundImageLayer from '../shared/BackgroundImageLayer';
+import { SHOW_IMAGE_PICTURE_IN_GREEN_SCREEN } from '../../domain/greenScreenImagePicture';
 
 /**
  * REQ-010: Mark that Present client JS evaluated in the browser.
@@ -316,12 +317,14 @@ export default function Presentation() {
   /** New epic-005 layer when a resolved whole-slide image exists. */
   const useWholeLayer = Boolean(wholeBg.image);
   /**
-   * Image-slide picture source. With a whole-slide layer, only slide.file is the
-   * picture (fitted on top). Without, keep legacy file ?? style.backgroundImage.
+   * Image-slide picture: file first, then legacy style.backgroundImage (N3).
+   * Shown in green screen when SHOW_IMAGE_PICTURE_IN_GREEN_SCREEN is true (Roy).
    */
-  const imagePictureSrc = useWholeLayer
-    ? slide?.file
-    : slide?.file ?? slide?.style?.backgroundImage;
+  const imagePictureSrc = slide?.file ?? slide?.style?.backgroundImage;
+  const showImagePicture =
+    useWholeLayer &&
+    Boolean(imagePictureSrc) &&
+    (!useGreenScreen || SHOW_IMAGE_PICTURE_IN_GREEN_SCREEN);
   /** Legacy CSS background for older decks with no epic-005 whole-slide image. */
   const legacyCssBackgroundImage =
     !useWholeLayer &&
@@ -576,7 +579,7 @@ export default function Presentation() {
         ) : slide?.type === SlideType.IMAGE ? (
           <div id="image-slide" style={{ ...computeContainerStyle(), position: 'relative', ...slideFrameStyle() }}>
             {renderWholeSlideBackground()}
-            {useWholeLayer && imagePictureSrc ? (
+            {showImagePicture && imagePictureSrc ? (
               <div
                 data-testid="present-image-picture"
                 style={{

@@ -8,6 +8,7 @@ import {
   normalizeBackgroundFit,
 } from '../../domain/backgroundImage';
 import { embedImageFromFile, embedImageFromUrl } from '../../domain/embedImage';
+import PresentFramePreview from '../shared/PresentFramePreview';
 
 export type BackgroundImagePickerProps = {
   label: string;
@@ -25,11 +26,13 @@ export type BackgroundImagePickerProps = {
    */
   clearMode?: 'unset' | 'empty';
   testIdPrefix?: string;
+  /** When true, preview uses title-slide Present frame aspect. */
+  titleSlidePreview?: boolean;
 };
 
 /**
  * File or URL image picker that always embeds into a data URL.
- * Failed URL downloads show an error and leave the field empty (AC-008).
+ * Failed URL downloads show an error and leave existing state untouched (N1).
  */
 export default function BackgroundImagePicker({
   label,
@@ -40,6 +43,7 @@ export default function BackgroundImagePicker({
   showClear = true,
   clearMode = 'unset',
   testIdPrefix = 'bg-picker',
+  titleSlidePreview = false,
 }: BackgroundImagePickerProps) {
   const fileRef = useRef<HTMLInputElement | null>(null);
   const [urlDraft, setUrlDraft] = useState('');
@@ -66,8 +70,8 @@ export default function BackgroundImagePicker({
     const result = await embedImageFromFile(file);
     setBusy(false);
     if (!result.ok) {
+      // N1/N5: show error; do not wipe an existing image or create an empty override.
       setError(result.error);
-      onChange(makeBackgroundImageSpec('', { fit, dim }));
       return;
     }
     applyEmbedded(result.dataUrl, value);
@@ -80,10 +84,8 @@ export default function BackgroundImagePicker({
     const result = await embedImageFromUrl(urlDraft);
     setBusy(false);
     if (!result.ok) {
+      // N1: failed URL leaves existing image and override/inherit state untouched.
       setError(result.error);
-      // Leave the field empty on failure (AC-008).
-      onChange(makeBackgroundImageSpec('', { fit, dim }));
-      setUrlDraft('');
       return;
     }
     applyEmbedded(result.dataUrl, value);
@@ -91,18 +93,20 @@ export default function BackgroundImagePicker({
   };
 
   const onFit = (next: BackgroundFit) => {
+    if (!hasImage) return;
     onChange({
       ...(value || {}),
-      image: value?.image || '',
+      image: value!.image,
       fit: next,
       dim,
     });
   };
 
   const onDim = (next: number) => {
+    if (!hasImage) return;
     onChange({
       ...(value || {}),
-      image: value?.image || '',
+      image: value!.image,
       fit,
       dim: normalizeBackgroundDim(next),
     });
@@ -175,32 +179,14 @@ export default function BackgroundImagePicker({
         )}
       </div>
       {hasImage && (
-        <div
-          data-testid={`${testIdPrefix}-preview`}
-          title="Embedded background preview"
-          style={{
-            width: 160,
-            height: 90,
-            backgroundImage: `url(${value!.image})`,
-            backgroundSize: fit === 'tile' ? 'auto' : fit === 'fit' ? 'contain' : 'cover',
-            backgroundRepeat: fit === 'tile' ? 'repeat' : 'no-repeat',
-            backgroundPosition: 'center',
-            backgroundColor: '#111',
-            position: 'relative',
-          }}
-        >
-          {dim > 0 && (
-            <div
-              data-testid={`${testIdPrefix}-dim-overlay`}
-              style={{
-                position: 'absolute',
-                inset: 0,
-                backgroundColor: `rgba(0,0,0,${dim})`,
-                pointerEvents: 'none',
-              }}
-            />
-          )}
-        </div>
+        <PresentFramePreview
+          testId={`${testIdPrefix}-preview`}
+          image={value!.image}
+          fit={fit}
+          dim={dim}
+          isTitleSlide={titleSlidePreview}
+          previewWidth={160}
+        />
       )}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center' }}>
         <label>

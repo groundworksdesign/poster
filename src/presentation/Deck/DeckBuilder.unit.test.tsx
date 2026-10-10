@@ -777,13 +777,20 @@ test('slide override UI can override and reset to deck default', async () => {
     defaultBackground: { image: 'data:image/png;base64,deckwhole', fit: 'fill', dim: 0 },
     defaultTitleTextBackground: { image: 'data:image/png;base64,decktitle', fit: 'fill', dim: 0 },
   };
-  (global.fetch as jest.Mock).mockResolvedValue({
-    ok: true,
-    status: 200,
-    headers: { get: () => 'image/png' },
-    blob: async () => new Blob([new Uint8Array([9, 8, 7])], { type: 'image/png' }),
-    json: async () => [],
-  } as any);
+  (global.fetch as jest.Mock).mockImplementation(async (input: RequestInfo) => {
+    if (String(input).includes('/api/poster/fetch-image')) {
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          ok: true,
+          dataUrl: 'data:image/png;base64,CQgH',
+          mimeType: 'image/png',
+        }),
+      } as any;
+    }
+    return { ok: true, json: async () => [] } as any;
+  });
 
   render(<DeckBuilder />);
   await loadFile(makeJsonFile(deckWithBg));
@@ -811,7 +818,9 @@ test('slide override UI can override and reset to deck default', async () => {
   await waitFor(() => expect(screen.queryByTestId('deck-slide-editor-panel')).not.toBeInTheDocument());
 
   let saved = await exportDeckJson();
-  expect(saved.slides[0].background.image.startsWith('data:image/png;base64,')).toBe(true);
+  expect(saved.slides[0].background.image.startsWith('embed:')).toBe(true);
+  const overrideHash = saved.slides[0].background.image.slice('embed:'.length);
+  expect(saved.embeddedImages[overrideHash].startsWith('data:image/png;base64,')).toBe(true);
 
   fireEvent.click(screen.getAllByRole('button', { name: 'Edit' })[0]);
   await waitFor(() => screen.getByTestId('slide-bg-use-deck-default'));
@@ -853,13 +862,20 @@ test('Send always includes null background defaults when deck has none (LIVE-OLD
 });
 
 test('Clear deck default re-sends null to Present when a slide is on program', async () => {
-  (global.fetch as jest.Mock).mockResolvedValue({
-    ok: true,
-    status: 200,
-    headers: { get: () => 'image/png' },
-    blob: async () => new Blob([new Uint8Array([1, 2, 3])], { type: 'image/png' }),
-    json: async () => [],
-  } as any);
+  (global.fetch as jest.Mock).mockImplementation(async (input: RequestInfo) => {
+    if (String(input).includes('/api/poster/fetch-image')) {
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          ok: true,
+          dataUrl: 'data:image/png;base64,AQID',
+          mimeType: 'image/png',
+        }),
+      } as any;
+    }
+    return { ok: true, json: async () => [] } as any;
+  });
 
   render(<DeckBuilder />);
   act(() => {
@@ -890,13 +906,20 @@ test('Clear deck default re-sends null to Present when a slide is on program', a
 });
 
 test('deck defaults UI sets whole-slide and title text-layer backgrounds with fill default', async () => {
-  (global.fetch as jest.Mock).mockResolvedValue({
-    ok: true,
-    status: 200,
-    headers: { get: () => 'image/png' },
-    blob: async () => new Blob([new Uint8Array([1, 2, 3])], { type: 'image/png' }),
-    json: async () => [],
-  } as any);
+  (global.fetch as jest.Mock).mockImplementation(async (input: RequestInfo) => {
+    if (String(input).includes('/api/poster/fetch-image')) {
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          ok: true,
+          dataUrl: 'data:image/png;base64,AQID',
+          mimeType: 'image/png',
+        }),
+      } as any;
+    }
+    return { ok: true, json: async () => [] } as any;
+  });
 
   render(<DeckBuilder />);
   act(() => {
@@ -927,10 +950,14 @@ test('deck defaults UI sets whole-slide and title text-layer backgrounds with fi
   fireEvent.change(screen.getByTestId('deck-bg-dim'), { target: { value: '0.4' } });
 
   const saved = await exportDeckJson();
-  expect(saved.defaultBackground.image.startsWith('data:image/png;base64,')).toBe(true);
+  expect(saved.defaultBackground.image.startsWith('embed:')).toBe(true);
   expect(saved.defaultBackground.fit).toBe('fill');
   expect(saved.defaultBackground.dim).toBeCloseTo(0.4);
-  expect(saved.defaultTitleTextBackground.image.startsWith('data:image/png;base64,')).toBe(true);
+  expect(saved.defaultTitleTextBackground.image.startsWith('embed:')).toBe(true);
   expect(saved.defaultTitleTextBackground.fit).toBe('fill');
+  const hashWhole = saved.defaultBackground.image.slice('embed:'.length);
+  const hashTitle = saved.defaultTitleTextBackground.image.slice('embed:'.length);
+  expect(saved.embeddedImages[hashWhole].startsWith('data:image/png;base64,')).toBe(true);
+  expect(saved.embeddedImages[hashTitle].startsWith('data:image/png;base64,')).toBe(true);
 });
 
