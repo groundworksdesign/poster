@@ -1,5 +1,5 @@
 {
-  "branch": "cursor/epic-004-song-library",
-  "lastLog": "[ralph] epic-004 LOOP 19 DEV amendment: hand-edit vs out-of-date labels; budget max 21; [skip ci]",
-  "updatedAt": "2026-10-08T02:00:00.000Z"
+  "branch": "cursor/epic-005-background-images",
+  "lastLog": "[ralph] epic-005 setup: archive epic-004 status, copy specs, reset task_status completeEpic:false",
+  "updatedAt": "2026-10-10T16:40:00.000Z"
 }

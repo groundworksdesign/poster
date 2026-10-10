@@ -5,10 +5,7 @@ status: approved
 source_artifacts:
   - id: 20261008-001
     title: Poster background images
-    path: ralph/specs/20261008-feature-brief-background-images.md
-  - id: 20261008-002
-    title: Epic 005 plan — Background images
-    path: ralph/specs/20261008-epic-005-background-images.plan.md
+    path: 20261008-feature-brief-background-images.md
 overview: "Add a whole-slide background image on every slide type and a separate image behind title slide text. Each has one deck default with per-slide override, a fill, fit, or tile choice, and dimming toward black. Images come from a file or URL and are copied into the deck."
 todos:
   - id: data-model
@@ -30,7 +27,7 @@ todos:
     content: "Keep both background images visible in green screen mode (REQ-010)."
     status: pending
   - id: tests-background-images
-    content: "Add tests for AC-001 through AC-012: background shown on each slide type, title text-layer image separate from whole-slide image, deck default vs override vs reset, image slide picture on top, fill/fit/tile rendering and fill default, dimming darkens, file and URL images survive source deletion and offline and a moved deck, failed URL shows error with empty field, green screen keeps both, and an existing deck opens unchanged. Include save/reload round-trip in Remix and Electron."
+    content: "Add tests for AC-001 through AC-012: background shown on each slide type, title text-layer image separate from whole-slide image, deck default vs override vs reset, image slide picture on top, fill/fit/tile rendering and fill default, dimming darkens, file and URL images survive source deletion and offline and a moved deck, failed URL shows error with empty field, green screen keeps both, and an existing deck opens unchanged."
     status: pending
 isProject: false
 ---
@@ -44,21 +41,9 @@ Every Poster slide can show a whole-slide background image, and title slides can
 ## Current Baseline
 
 - `src/domain/PresentTypes.tsx`: `SlideCSS` already has `backgroundImage`, `backgroundSize`, `backgroundPosition`, and `backgroundColor`. `Deck.slideStyles` holds styles per slide type, and each `Slide` has its own `style`.
-- `src/presentation/Present/Present.tsx` (around lines 301–319): image slides use `slide.file ?? style.backgroundImage`, and other slides use `style.backgroundImage`. Title text sits on a solid `backgroundColor`.
-- DeckBuilder: deck default background color around line 1339, and the "Image URL/file" field around line 1720.
+- `Present.tsx` (around lines 301–319): image slides use `slide.file ?? style.backgroundImage`, and other slides use `style.backgroundImage`. Title text sits on a solid `backgroundColor`.
+- DeckBuilder: deck default background color around line 1096, and the "Image URL/file" field around line 1315.
 - Green screen mode currently changes slide backgrounds.
-- Song presenting (`src/presentation/Present/` and `src/domain/stagedSongSlide.ts`) must stay byte-identical to main unless this plan explicitly requires Present-side background render. If Present must change for backgrounds, keep song staging logic untouched and call it out.
-- Title font size behaviour must stay unchanged.
-- Older decks without these fields must look exactly the same as before.
-
-## Key decisions (Roy)
-
-- One deck default per image (whole-slide background and title text-layer background), with a per-slide override and a "Use deck default" reset.
-- Fill / fit / tile, with fill as the default. Dimming toward black is available on both images.
-- Images from a local file or a URL are copied into the deck, so the deck is self-contained. A failed URL shows an error and leaves the field empty.
-- On image slides, the slide's picture is fitted on top of the background.
-- Green screen mode keeps both images.
-- Older decks without these fields look exactly the same as before.
 
 ## Implementation Plan
 
@@ -97,7 +82,7 @@ flowchart TD
 ## Primary Files Expected to Change
 
 - `src/domain/PresentTypes.tsx` (deck and slide background fields)
-- `src/presentation/Present/Present.tsx` (rendering — keep song staging untouched)
+- `Present.tsx` (rendering)
 - DeckBuilder (deck defaults and slide override controls)
 - Deck save/load and image storage code
 - Green screen handling
@@ -123,5 +108,5 @@ Definition of Done: all of the following pass.
 ## Risks to manage
 
 - Embedded images make deck files bigger. Keep the original image bytes and don't duplicate an image that's used on many slides.
-- PR #26 changes song slides and DeckBuilder. Start this after #26 merges, rebased on main (done: base is v0.1.19 / #26).
+- PR #26 changes song slides and DeckBuilder. Start this after #26 merges, rebased on main.
 - Text readability over busy images depends on dimming, so check song lyrics and title text at the default dim level.
