@@ -3,8 +3,8 @@
   "branch": "cursor/epic-005-background-images",
   "baseBranch": "main",
   "status": "in_progress",
-  "loop": 2,
-  "persona": "dev",
+  "loop": 3,
+  "persona": "qa",
   "completeEpic": false,
   "prUrl": null,
   "canonicalStatusFile": "ralph/task_status.json",
@@ -19,7 +19,7 @@
     "presentRender": "Present.tsx computeContainerStyle uses style.backgroundImage (image slides: slide.file ?? style.backgroundImage) and hides backgrounds when useGreenScreen. Title text sits on solid backgroundColor / green-screen band.",
     "deckBuilder": "Deck settings expose backgroundColor/color/font; image slides have Image URL/file. No deck default background image UI, no fit/dim, no Use deck default.",
     "imageEmbed": "No whole-image embed helper for backgrounds; FileReader used for song/deck JSON import only. Images are not copied into deck storage as data URLs for backgrounds.",
-    "greenScreen": "useGreenScreen currently suppresses backgroundImage and uses transparent / colored bands — must change later to keep both images (REQ-010).",
+    "greenScreen": "useGreenScreen currently suppresses backgroundImage and uses transparent / colored bands \u2014 must change later to keep both images (REQ-010).",
     "songStaging": "stagedSongSlide.ts and Present song staging must stay byte-identical or staging logic untouched; Present may gain background layers without changing staging.",
     "schemaVersion": "CURRENT_SCHEMA_VERSION / schema.ts pattern exists; older decks omit new fields and must load unchanged (REQ-011)."
   },
@@ -27,89 +27,137 @@
     {
       "id": "REQ-001",
       "title": "Whole-slide background on every slide type",
-      "todoIds": ["data-model", "slide-override-ui", "render-editor-present"],
+      "todoIds": [
+        "data-model",
+        "slide-override-ui",
+        "render-editor-present"
+      ],
       "status": "pending"
     },
     {
       "id": "REQ-002",
       "title": "Title text-layer background image",
-      "todoIds": ["data-model", "slide-override-ui", "render-editor-present"],
+      "todoIds": [
+        "data-model",
+        "slide-override-ui",
+        "render-editor-present"
+      ],
       "status": "pending"
     },
     {
       "id": "REQ-003",
       "title": "Deck defaults for both images",
-      "todoIds": ["data-model", "deck-defaults-ui"],
+      "todoIds": [
+        "data-model",
+        "deck-defaults-ui"
+      ],
       "status": "pending"
     },
     {
       "id": "REQ-004",
       "title": "Per-slide override and Use deck default reset",
-      "todoIds": ["data-model", "slide-override-ui"],
+      "todoIds": [
+        "data-model",
+        "slide-override-ui"
+      ],
       "status": "pending"
     },
     {
       "id": "REQ-005",
       "title": "Image slide picture fitted on top of background",
-      "todoIds": ["render-editor-present"],
+      "todoIds": [
+        "render-editor-present"
+      ],
       "status": "pending"
     },
     {
       "id": "REQ-006",
       "title": "Fill / fit / tile; fill default",
-      "todoIds": ["data-model", "deck-defaults-ui", "slide-override-ui", "render-editor-present"],
+      "todoIds": [
+        "data-model",
+        "deck-defaults-ui",
+        "slide-override-ui",
+        "render-editor-present"
+      ],
       "status": "pending"
     },
     {
       "id": "REQ-007",
       "title": "Dimming toward black",
-      "todoIds": ["data-model", "deck-defaults-ui", "slide-override-ui", "render-editor-present"],
+      "todoIds": [
+        "data-model",
+        "deck-defaults-ui",
+        "slide-override-ui",
+        "render-editor-present"
+      ],
       "status": "pending"
     },
     {
       "id": "REQ-008",
       "title": "Local file or URL image source",
-      "todoIds": ["image-import-embed"],
+      "todoIds": [
+        "image-import-embed"
+      ],
       "status": "pending"
     },
     {
       "id": "REQ-009",
       "title": "Images copied into the deck (self-contained)",
-      "todoIds": ["image-import-embed"],
+      "todoIds": [
+        "image-import-embed"
+      ],
       "status": "pending"
     },
     {
       "id": "REQ-010",
       "title": "Green screen keeps both images",
-      "todoIds": ["green-screen"],
+      "todoIds": [
+        "green-screen"
+      ],
       "status": "pending"
     },
     {
       "id": "REQ-011",
       "title": "Older decks open unchanged",
-      "todoIds": ["data-model", "tests-background-images"],
+      "todoIds": [
+        "data-model",
+        "tests-background-images"
+      ],
       "status": "pending"
     }
   ],
   "todos": [
     {
       "id": "data-model",
-      "content": "Extend the deck and slide data so the deck holds one default whole-slide image and one default title text-layer image, each with fit (fill, fit, or tile, default fill) and dim level, and each slide can override either or inherit the deck default. Decks saved before this change load with no background images and look the same (REQ-001–004, 006, 007, 011).",
-      "requirementIds": ["REQ-001", "REQ-002", "REQ-003", "REQ-004", "REQ-006", "REQ-007", "REQ-011"],
-      "status": "pending",
-      "passes": false,
+      "content": "Extend the deck and slide data so the deck holds one default whole-slide image and one default title text-layer image, each with fit (fill, fit, or tile, default fill) and dim level, and each slide can override either or inherit the deck default. Decks saved before this change load with no background images and look the same (REQ-001\u2013004, 006, 007, 011).",
+      "requirementIds": [
+        "REQ-001",
+        "REQ-002",
+        "REQ-003",
+        "REQ-004",
+        "REQ-006",
+        "REQ-007",
+        "REQ-011"
+      ],
+      "status": "done",
+      "passes": true,
       "acceptanceCriteria": [
         "AC-003: Deck default applies; override and Use deck default reset work at data layer",
         "AC-005: New images default to fill",
         "AC-010: Older decks without these fields load with the same look",
         "AC-011: Single deck default for each image across all slide types"
       ],
-      "notes": []
+      "notes": [
+        "QA loop 3: unit tests green; Present/stagedSongSlide unchanged vs main; old decks resolve to no image; fill default; single deck default across types; override/reset helpers verified."
+      ]
     },
     {
       "id": "image-import-embed",
       "content": "Add an image picker that accepts a local file or a web URL and copies the image into the deck so it still shows offline, after the source is deleted, and on another computer. A failed URL download shows an error and leaves the field empty (REQ-008, 009).",
-      "requirementIds": ["REQ-008", "REQ-009"],
+      "requirementIds": [
+        "REQ-008",
+        "REQ-009"
+      ],
       "status": "pending",
       "passes": false,
       "acceptanceCriteria": [
@@ -121,7 +169,11 @@
     {
       "id": "deck-defaults-ui",
       "content": "In DeckBuilder deck settings, add the default whole-slide background image and default title text-layer image, each with image picker, fill/fit/tile choice, dimming slider, and clear (REQ-003, 006, 007).",
-      "requirementIds": ["REQ-003", "REQ-006", "REQ-007"],
+      "requirementIds": [
+        "REQ-003",
+        "REQ-006",
+        "REQ-007"
+      ],
       "status": "pending",
       "passes": false,
       "acceptanceCriteria": [
@@ -135,7 +187,13 @@
     {
       "id": "slide-override-ui",
       "content": "In each slide's editor, add an override for the whole-slide background (all slide types) and, on title slides, for the text-layer image. Each has image picker, fill/fit/tile, dimming slider, and Use deck default to reset (REQ-001, 002, 004, 006, 007).",
-      "requirementIds": ["REQ-001", "REQ-002", "REQ-004", "REQ-006", "REQ-007"],
+      "requirementIds": [
+        "REQ-001",
+        "REQ-002",
+        "REQ-004",
+        "REQ-006",
+        "REQ-007"
+      ],
       "status": "pending",
       "passes": false,
       "acceptanceCriteria": [
@@ -148,8 +206,14 @@
     },
     {
       "id": "render-editor-present",
-      "content": "Render in both the editor preview and Present: whole-slide layer with fit and dimming toward black under all slide content; on image slides the slide's picture fitted on top with the background visible around it; on title slides the text-layer image filling the title and subtitle area with its own fit and dimming under the text (REQ-001, 002, 005–007).",
-      "requirementIds": ["REQ-001", "REQ-002", "REQ-005", "REQ-006", "REQ-007"],
+      "content": "Render in both the editor preview and Present: whole-slide layer with fit and dimming toward black under all slide content; on image slides the slide's picture fitted on top with the background visible around it; on title slides the text-layer image filling the title and subtitle area with its own fit and dimming under the text (REQ-001, 002, 005\u2013007).",
+      "requirementIds": [
+        "REQ-001",
+        "REQ-002",
+        "REQ-005",
+        "REQ-006",
+        "REQ-007"
+      ],
       "status": "pending",
       "passes": false,
       "acceptanceCriteria": [
@@ -165,7 +229,9 @@
     {
       "id": "green-screen",
       "content": "Keep both background images visible in green screen mode (REQ-010).",
-      "requirementIds": ["REQ-010"],
+      "requirementIds": [
+        "REQ-010"
+      ],
       "status": "pending",
       "passes": false,
       "acceptanceCriteria": [
@@ -176,7 +242,19 @@
     {
       "id": "tests-background-images",
       "content": "Add tests for AC-001 through AC-012: background shown on each slide type, title text-layer image separate from whole-slide image, deck default vs override vs reset, image slide picture on top, fill/fit/tile rendering and fill default, dimming darkens, file and URL images survive source deletion and offline and a moved deck, failed URL shows error with empty field, green screen keeps both, and an existing deck opens unchanged. Include save/reload round-trip in Remix and Electron.",
-      "requirementIds": ["REQ-001", "REQ-002", "REQ-003", "REQ-004", "REQ-005", "REQ-006", "REQ-007", "REQ-008", "REQ-009", "REQ-010", "REQ-011"],
+      "requirementIds": [
+        "REQ-001",
+        "REQ-002",
+        "REQ-003",
+        "REQ-004",
+        "REQ-005",
+        "REQ-006",
+        "REQ-007",
+        "REQ-008",
+        "REQ-009",
+        "REQ-010",
+        "REQ-011"
+      ],
       "status": "pending",
       "passes": false,
       "acceptanceCriteria": [
@@ -187,10 +265,7 @@
       "notes": []
     }
   ],
-  "selected": {
-    "id": "data-model",
-    "reason": "Nothing from epic-005 exists in the codebase yet. Data model (deck defaults + slide overrides + fit/dim + old-deck compatibility) unblocks import, UI, render, and tests."
-  },
-  "qaReport": null,
+  "selected": null,
+  "qaReport": "data-model verified",
   "maxLoops": 24
 }
