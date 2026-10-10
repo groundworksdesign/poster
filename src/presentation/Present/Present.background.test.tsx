@@ -29,10 +29,17 @@ async function mountPresent() {
   return pair;
 }
 
-test('AC-001: whole-slide background renders for title, general, and image slides', async () => {
+test('AC-001: whole-slide background renders for every slide type', async () => {
   const { deck } = await mountPresent();
 
-  for (const type of [SlideType.TITLE, SlideType.GENERAL, SlideType.IMAGE]) {
+  for (const type of [
+    SlideType.TITLE,
+    SlideType.GENERAL,
+    SlideType.IMAGE,
+    SlideType.SONG,
+    SlideType.AUDIO,
+    SlideType.VIDEO,
+  ]) {
     await act(async () => {
       await deck.send({
         slide: {
@@ -40,6 +47,10 @@ test('AC-001: whole-slide background renders for title, general, and image slide
           type,
           title: `T-${type}`,
           file: type === SlideType.IMAGE ? TINY_PIC : undefined,
+          lyrics:
+            type === SlideType.SONG
+              ? { title: 'Song', verses: [{ number: 1, lines: ['line a', 'line b'] }] }
+              : undefined,
           style: { backgroundColor: '#111', color: '#fff' },
         },
         defaultBackground: { image: TINY_PNG, fit: 'fill', dim: 0 },
