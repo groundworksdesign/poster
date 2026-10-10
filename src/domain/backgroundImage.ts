@@ -157,3 +157,4 @@ export function makeBackgroundImageSpec(
     dim: normalizeBackgroundDim(options?.dim),
   };
 }
+

@@ -3,7 +3,7 @@
   "branch": "cursor/epic-005-background-images",
   "baseBranch": "main",
   "status": "completed",
-  "loop": 22,
+  "loop": 23,
   "persona": "release",
   "completeEpic": true,
   "prUrl": "https://github.com/groundworksdesign/poster/pull/28",
