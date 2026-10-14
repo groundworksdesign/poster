@@ -1,0 +1,2 @@
+- [x] Requirements testable
+- [x] No implementation leakage
